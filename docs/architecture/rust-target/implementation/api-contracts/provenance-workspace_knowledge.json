@@ -1897,5 +1897,20 @@
     "privateAnchor": "Exactcanonical linked identity_registration selected-company, never businessrole; strictsourcefreerecoverycodec",
     "sourceReview": "Independent static GETshadow defect fixed preservingopaqueIDlookup; valid duplicate/case-equivalent aliases match canonical nativeproducer; libraryserver0 distinguishedfrom actual binary1check",
     "limits": "Application/private scoped rollback and source-free codec checks plus real HTTP negative gates and stdio fixtures. Outer signed restore/current fullagentworkflow actualMCPserver/reconnect still require integrated qualification before whole717closure."
+  },
+  "r81OriginalPartyCli716": {
+    "componentProof": {
+      "path": "/tmp/rentemester-rust-reports/r81-party-cli716-component-accepted.json",
+      "sha256": "02248d0981b0a65b2430c255e3ffbd6b63b8c86428556447a9018bce39ed770a"
+    },
+    "new_ids": [
+      "cli:party create",
+      "cli:party search",
+      "cli:party inspect",
+      "cli:party link-role"
+    ],
+    "currentUniverse": "1560=642HTTP493CLI425MCP",
+    "helpChanges": "OriginalPartyHelp now6; old rootdescriptor unchanged plus one additive4commanddescriptor",
+    "scope": "Original CLI identity lifecycle only; whole716originalkeys compatibility and all55finalscope remain"
   }
 }

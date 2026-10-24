@@ -5046,6 +5046,11 @@
             "usage": "party --help"
           },
           {
+            "name": "party create|search|inspect|link-role",
+            "scope": "explicit identity-only creation and current scoped role lifecycle; human cookie authority, bounded JSON files, no inferred role or retry",
+            "usage": "party --help"
+          },
+          {
             "name": "corporate-record ingest|list|inspect|download|link|enrich|supersede",
             "scope": "original legal evidence lifecycle through current credential authority, explicit company anchor and local/remote binding; no retry",
             "usage": "corporate-record --help"

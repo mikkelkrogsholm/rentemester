@@ -6116,6 +6116,10 @@
       "const": {
         "authority": "Human cookie only. Optional --actor user:ID asserts current cookie identity; --workspace is an equality assertion only with --local-profile. Both full writable party scopes required. No stdin, inferred merge, identity rewrite, retries or generated keys/hashes. Same human may propose and approve.",
         "commands": [
+          "party create --input JSONFILE --confirm yes",
+          "party search [--query TEXT --cursor 0 --limit 25]",
+          "party inspect --party-id ID",
+          "party link-role --party-id ID --role ROLE [--defaults JSONFILE] --confirm yes",
           "party propose-merge --from-party-id ID --into-party-id ID --review-assertion TEXT --confirm yes",
           "party approve-merge --from-party-id ID --proposal-hash SHA --confirm yes"
         ],
@@ -11777,6 +11781,802 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "OriginalPartyLifecycleCreateFile": {
+      "type": "object",
+      "properties": {
+        "partyId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "kind": {
+          "enum": [
+            "person",
+            "organization",
+            "public_authority",
+            "financial_institution"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1280
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 640
+          },
+          "maxItems": 16
+        },
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "identifier": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "identifierKind": {
+                "enum": [
+                  "dk_cvr",
+                  "eu_vat",
+                  "non_eu"
+                ]
+              }
+            },
+            "required": [
+              "country",
+              "identifierKind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewAssertion": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "source",
+        "observedAt",
+        "reviewAssertion"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyLifecycleFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyLifecycle_createInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party create"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party create"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party create"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalPartyLifecycle_searchInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party search"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "query": {
+              "type": "string",
+              "maxLength": 512,
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party search"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "query": {
+              "type": "string",
+              "maxLength": 512,
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party search"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "query": {
+              "type": "string",
+              "maxLength": 512,
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalPartyLifecycle_inspectInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "partyId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "partyId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalPartyLifecycle_link_roleInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party link-role"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "role": {
+              "type": "string"
+            },
+            "defaults": {
+              "type": "string",
+              "minLength": 1
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "partyId",
+            "role",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party link-role"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "role": {
+              "type": "string"
+            },
+            "defaults": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "partyId",
+            "role",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party link-role"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "partyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "role": {
+              "type": "string"
+            },
+            "defaults": {
+              "type": "string",
+              "minLength": 1
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

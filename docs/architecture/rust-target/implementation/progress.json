@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "8original intercompany disposition MCPnativeprofile adapters overexisting SDK/server; exactplaninnerok/7event10linkprojection, business/confirmation/parse distinction, globalstatuscurrentcompanyadmission and nativeconditionalreplay/legacywitnesses.10actualcompiledstdiofixtures retained; current1556contracts/prior1548businessrows/417definitions unchanged. No new financial/provider effects or whole717claim.",
-  "code_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
+  "current_increment": "R81/R82 originalpartyCLI4commandflow accepted, whole716coverage still open",
+  "code_revision": "d2b1830a890845100b1cc7de38d4909ef8d6d475",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "40of55originalissuesCLOSED15OPEN. OriginaldispositionMCPnativeprofileaccepted; whole717remaining22names/full31workflow/currentregistry/annotations/service-revocation/reconnect and explicitprofiledispositions. NativecommonRust/sameReactTauri/manualdesktopLAST/fullreleasecutoverretirement remain.",
+  "state": "original_party_cli_component_accepted_whole716_open",
   "issues_closed": 40,
   "next": [
-    "Closure-oriented716triage proved4missingoriginalCLIkeys: party create/search/inspect/link-role. Complete that smallest wholeidentity->roleCLIflow through existing SDK/CreateIdentity/server; no backendgap. Reconcileentire716originalR01key/output/stream/retry/launcher/runtimecriteria and CLOSEonlyonfullacceptance.",
-    "717remaining22originalnames/full31workflows/currentbindings/annotations/revocation/reconnect; retainall55originalscope/J01-J07/fullnative/release/cutover/retirement; finalinstalleddesktopLAST."
+    "Complete remaining originalCLI compatibility in existing716, group/company/reg independentownedfamilies over existing common engine andSDK; no new backend/queue.",
+    "Preserve40of55closed15open/alloriginalscope; installedmanualdesktop remains LAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Actual normalMFA/currentMCPserver identity-only create with canonicalduplicatealiases; explicitrole and role-freeprivateanchor; restartfreshMFA and independentlyverified signedsource-free restore underfreshMFAowner preserve exact parties/source/history/roles andzerojournals. Rawrunnerfailed only legacyfixturetail; exacttwo scannedintake originals andprovider[] independentlyvalidated, all2758source/artifact/browser pins rehashed. No thirdrun, no old7documentparty or rawoverallPASS claim.",
+  "previous_verified_increment": "8original intercompany disposition MCPnativeprofile adapters overexisting SDK/server; exactplaninnerok/7event10linkprojection, business/confirmation/parse distinction, globalstatuscurrentcompanyadmission and nativeconditionalreplay/legacywitnesses.10actualcompiledstdiofixtures retained; current1556contracts/prior1548businessrows/417definitions unchanged. No new financial/provider effects or whole717claim.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -2659,7 +2659,7 @@
                 "at": "2026-10-20T20:30:22.480Z",
                 "fact": {
                   "kind": "activated",
-                  "reason": "M\u00e5lets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige n\u00f8gle",
+                  "reason": "Målets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige nøgle",
                   "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}"
                 },
                 "previousStateHash": "c5b1c83b7b4b0edb67b694fcb414bf2d7068362eb8ebcda96b14415f61c21b89",
@@ -2689,7 +2689,7 @@
               "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
               "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
               "at": "2026-10-20T20:28:33.933Z",
-              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og n\u00f8glehash",
+              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og nøglehash",
               "restoreBoundaryId": 10,
               "targetUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg"
             },
@@ -3013,7 +3013,7 @@
                 "at": "2026-10-20T20:30:22.480Z",
                 "fact": {
                   "kind": "activated",
-                  "reason": "M\u00e5lets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige n\u00f8gle",
+                  "reason": "Målets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige nøgle",
                   "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}"
                 },
                 "previousStateHash": "c5b1c83b7b4b0edb67b694fcb414bf2d7068362eb8ebcda96b14415f61c21b89",
@@ -3043,7 +3043,7 @@
               "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
               "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
               "at": "2026-10-20T20:28:33.933Z",
-              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og n\u00f8glehash",
+              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og nøglehash",
               "restoreBoundaryId": 10,
               "targetUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg"
             },
@@ -3906,7 +3906,7 @@
           ]
         ]
       },
-      "scope": "Service document facts\u2192payable\u2192bank payment plus in-flight revocation/restart. No installed native or source-free restore claim."
+      "scope": "Service document facts→payable→bank payment plus in-flight revocation/restart. No installed native or source-free restore claim."
     },
     "service_mail102": {
       "report": "/tmp/rentemester-rust-reports/native-service-mail102.json",
@@ -3958,7 +3958,7 @@
       "provenance": "/tmp/rentemester-rust-reports/rust-container105-provenance.json",
       "provenance_sha256": "04d5436b6d73973e4bcb6cc5d69a39d107a04de4b03bcce3255cd465e027bb21",
       "image_configuration_digest": "sha256:a0a3f8baed2f7de333bc68e319b15cbd088f34d2bf48bb1aa2a579c07606e622",
-      "scope": "PASS actual dedicated Linux arm64 read-only/no capabilities/no JS runtime; normal owner/MFA\u2192125.50post/reports/CSV/PDF/original\u2192stop0\u2192new container samevolume/MFA/readback/replay no duplicate\u2192stop0; packaged PDF parse, CLI/MCP help only; no fullR53/HTTPS/GUI/release claim"
+      "scope": "PASS actual dedicated Linux arm64 read-only/no capabilities/no JS runtime; normal owner/MFA→125.50post/reports/CSV/PDF/original→stop0→new container samevolume/MFA/readback/replay no duplicate→stop0; packaged PDF parse, CLI/MCP help only; no fullR53/HTTPS/GUI/release claim"
     },
     "rust_package106": {
       "container": "/tmp/rentemester-rust-reports/rust-container106.json",
@@ -4198,7 +4198,7 @@
         "HTTP/CLI/MCP explicit target assignment refusal, exact source/mail/bothcompany books/docs unchanged",
         "HTTP/CLI/MCP mailalias refusal while A locked",
         "actual signed two-company backup unlocks",
-        "MCPassignment\u2192CLIhandoff\u2192CLI/MCP explicit same-document replay, full source/doc/original byte parity",
+        "MCPassignment→CLIhandoff→CLI/MCP explicit same-document replay, full source/doc/original byte parity",
         "alias update plus freshMFArestart/source/alias/original/targetstate parity",
         "independentlymatched artifacts/helperidentity and ownedcleanup"
       ],
@@ -8276,7 +8276,7 @@
       "owned_processes_stopped": true,
       "worker_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived147.json",
-      "remaining": "R44/R45 next original invoice issuance\u2192posting\u2192bank settlement\u2192credit note\u2192refund\u2192147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop."
+      "remaining": "R44/R45 next original invoice issuance→posting→bank settlement→credit note→refund→147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop."
     },
     "invoice_lifecycle148": {
       "issue": 717,
@@ -13537,7 +13537,7 @@
           "criteria": [
             [
               "Revisioned dimensions/budgets preserve facts",
-              "original-dimensions177-actual.json at0733e5ac: assignment/lifecycle/conflict/history, budget20 vs actual5+7.5 and exact variance; original-budget172-actual.json at5a1c6f55: revision80\u219290/actual100, stale review refusal."
+              "original-dimensions177-actual.json at0733e5ac: assignment/lifecycle/conflict/history, budget20 vs actual5+7.5 and exact variance; original-budget172-actual.json at5a1c6f55: revision80→90/actual100, stale review refusal."
             ],
             [
               "Reconciled analytics with uncertainty",
@@ -14696,8 +14696,8 @@
       "gdd_revision": "sha256:b76dad1692007876a8c73cc2742e599990989ce0d696f4e234d1d15c609d453d",
       "criteria": {
         "accrualExactAllocation": "Original169 retained fixed three-type source-backed allocation/recognition/reversal/closed/refusal/recovery evidence; relevant source modules unchanged, not rerun.",
-        "mileageRateDateConfigAndDuplicatePost": "Pure boundaries + immutable explicitcompanyconfig + exactstoredtrip/rate/vehicle/date/evidence match; no rerating or statutory default. Actual normalMFA one12.35km*explicit2.00=24.70DKK expense3699debit/liability7399credit, noVAT/payment; actualsharedUI preview\u2192review\u2192confirm once. CLI/MCP canonicalpreview/readback and exact originalprincipal/key replay return durable receipt with NOsecondjournal. Differentkey and reader refuse.",
-        "closedInvalidMissingNoPartialWrites": "Integrated6backend tests and targeted strengthened directclosedNEWpost proof: validpreviewthenclose\u2192realpostrefused withzerojournal/lines/receipt/auditwrites; missingoriginal/hash/invalidinterval/vehicle/rate/config/stale/currentrole/revocation and outerrollback retained exact. Serverstrictwire1 + SDK3/CLI2/MCP2 + UI14. Actual missingdoc/stalepreview/reader/differentkey refusals leave snapshotsunchanged."
+        "mileageRateDateConfigAndDuplicatePost": "Pure boundaries + immutable explicitcompanyconfig + exactstoredtrip/rate/vehicle/date/evidence match; no rerating or statutory default. Actual normalMFA one12.35km*explicit2.00=24.70DKK expense3699debit/liability7399credit, noVAT/payment; actualsharedUI preview→review→confirm once. CLI/MCP canonicalpreview/readback and exact originalprincipal/key replay return durable receipt with NOsecondjournal. Differentkey and reader refuse.",
+        "closedInvalidMissingNoPartialWrites": "Integrated6backend tests and targeted strengthened directclosedNEWpost proof: validpreviewthenclose→realpostrefused withzerojournal/lines/receipt/auditwrites; missingoriginal/hash/invalidinterval/vehicle/rate/config/stale/currentrole/revocation and outerrollback retained exact. Serverstrictwire1 + SDK3/CLI2/MCP2 + UI14. Actual missingdoc/stalepreview/reader/differentkey refusals leave snapshotsunchanged."
       },
       "checks": [
         {
@@ -15786,7 +15786,7 @@
         "coldBuild": {
           "path": "/tmp/rm105-image-build2.log",
           "sha256": "2a0708ff37081b16a883c5e75adb087efe8f3f624ffc0db9f2111ffffaa4f70f",
-          "source": "historical105/0b36e959dirty+recorded105\u21929942afe5",
+          "source": "historical105/0b36e959dirty+recorded105→9942afe5",
           "limits": "218downloads223compilations in pinned Linuxarm64Rust1.94.1; not currentlock/coldcurrentbuild."
         },
         "minimalTests": {
@@ -15944,7 +15944,7 @@
       "sgd_run": "rust-r36-email709-closure-20261024T002159.565952000",
       "model_revision": "sha256:eaac3170917f823def9d2297c14ed7b1626b2b48dfa5e28be42a001ea28f14f8",
       "criteria": {
-        "oneOccurrenceAndUnknownSend": "Raw50 durable4generations/lostreply accepted requests1 and accepted690 actual two immutablepairs/currentexactrefusals; raw102 acceptedduplicate sameattemptID, definite550+explicitreviewedretry, DATA/noACK processdeath\u2192restart\u2192unknownblocking\u2192explicit evidence reconciliation. No blind resend or implicitpost.",
+        "oneOccurrenceAndUnknownSend": "Raw50 durable4generations/lostreply accepted requests1 and accepted690 actual two immutablepairs/currentexactrefusals; raw102 acceptedduplicate sameattemptID, definite550+explicitreviewedretry, DATA/noACK processdeath→restart→unknownblocking→explicit evidence reconciliation. No blind resend or implicitpost.",
         "inertInspectionAndCredentials": "Source status/list/read and explicit email_dry_run neverinvoke sender. Genuine102 smtpSecretAbsentFromBusinessWorkspace and155 credentialsAbsent sourcefree restore. Privateprovidercredentials stay outside ledger/report/logs; acceptedfocusedrefusal/redaction retained.",
         "existingEnhancement": "#611 verified OPEN. Synthetic localTLS/nativeSMTPcontractproof does not claim completion of whole real-email enhancement or externalmailboxdelivery.",
         "localHostedLifecycleAndJ07Technical": "Accepted690 actual activebrowserclose/reopen/native restart, explicitpause/catchup/skip/dispatch,3stale/resolvedrefusals,13sharedUItests, trustedCopenhagenUTC midnight/spring/fallDST andboundedmissedreadonlycalendar. UIshows lastactual/next/missed/queue/error, stopsmissed/unknown/restore, noimplied localunattendedservice. Retainedhosted53/restore52 explicitservice/currentgrantor/inactiveimportedauthority. Fullphysicalsleep/installedmanualJ07 remainsfinalepicgate."
@@ -16961,7 +16961,7 @@
     },
     {
       "increment": "Group40 Ownership",
-      "result": "PASS ordinary invitation/verification/two distinct MFA principals, browser proposal\u2192independent review\u2192exactapply, datedsuccession/fullhashhistory/sourceoriginals, CLI/MCP parity, refusals/unchangedjournals, fresh-MFA restart; Product8permittednormalfive-readregistry fixes captured503busy.",
+      "result": "PASS ordinary invitation/verification/two distinct MFA principals, browser proposal→independent review→exactapply, datedsuccession/fullhashhistory/sourceoriginals, CLI/MCP parity, refusals/unchangedjournals, fresh-MFA restart; Product8permittednormalfive-readregistry fixes captured503busy.",
       "evidence": [
         "/tmp/rm-platform40-ownership-actual.log",
         "/tmp/rentemester-rust-reports/native-ownership-integrated40.json"
@@ -17125,7 +17125,7 @@
       "depends_on": [
         "Approved /tmp/rm-platform57-batch-contract.md fixes source-backed plan and atomic_v1 execution policy.",
         "Batch core consumes transaction-local rule and stored VAT/purchase proof adapters; web consumes exact source-shaped routes.",
-        "Canonical party with explicit company role \u2192 reviewed exact-identifier document link \u2192 truthful complete ready workbench. No automatic party resolution, SQL fixture seed or blocker bypass."
+        "Canonical party with explicit company role → reviewed exact-identifier document link → truthful complete ready workbench. No automatic party resolution, SQL fixture seed or blocker bypass."
       ],
       "acceptance": "Two original-linked and explicitly party-linked DKK purchases, exact persisted plan, distinct current reviewer of unchanged sources, atomic two-posting apply with real audit/TB/range reconciliation/VAT checks; stale/self/authority/fence/rollback/replay/restart proof.",
       "status": "COMPLETE finite Group57: actual browser/client/replay/restart and signed source-free restore passed; integrated historical party-link/rule-proof validators f1fcbcc5 requalified by platform57_historical_proof_validation. Stop after acceptance; remaining whole mission and legacy/provider families stay open.",
@@ -17133,14 +17133,14 @@
       "recovery": "Persist binds explicit caller runKey and reviewed expectedPlanHash. Lost runId recovers through current-authorized read-only exact runKey lookup; no automatic mutation retry."
     },
     {
-      "delivery": "Group58 R20 direct-bank purchase \u2192 dated payable and settlement correction",
+      "delivery": "Group58 R20 direct-bank purchase → dated payable and settlement correction",
       "owner": "root transport/clients/integration/actual; rust_client_cli native core and narrow writer seams; rust_budget existing modal/type/candidate handling; rust_mileage owned actual helper",
       "depends_on": [
         "Approved /tmp/rm-platform58-direct-bank-contract.md; exact source-v1 plan,16KiB bounded body and required caller operation key.",
         "Keep ordinary unregisteredDocuments/register/pay guards; expose additive authoritative directBankCorrectionCandidates.",
         "Current auth/physical originals/transfer fence before any mutation or receipt replay; one company transaction for reversal, bill, settlement and canonical bank supersession."
       ],
-      "acceptance": "Original-backed shifted-date DKK purchase \u2192 readable exact reviewed web correction \u2192 invoice-date payable and bank-date settlement, immutable original, unchanged final expense/VAT/bank, historical open/paid balances, canonical single bank relation, exact native client replay and fresh-MFA restart. Meaningful core stale/refusal/atomicity tests.",
+      "acceptance": "Original-backed shifted-date DKK purchase → readable exact reviewed web correction → invoice-date payable and bank-date settlement, immutable original, unchanged final expense/VAT/bank, historical open/paid balances, canonical single bank relation, exact native client replay and fresh-MFA restart. Meaningful core stale/refusal/atomicity tests.",
       "status": "COMPLETE finite Group58 whole web/CLI/MCP/replay/restart and independently verified signed source-free restore qualified by platform58_direct_bank_correction. No extra perfection round; broader mission remains open."
     },
     {
@@ -17330,7 +17330,7 @@
       "delivery": "Group70 explicit optional invoice-extraction evidence lifecycle",
       "owner": "root contract/config/SDK/CLI/MCP/integration/actual; rust_accruals engine/storage/legacy/nativecodec/backup/purchaseguards; rust_client_cli admitted app/host/HTTP; rust_budget hardened runtimeHTTPS; rust_mileage actual TLS/MFA/restart/sourcefree helper",
       "status": "COMPLETE finite Group70. Group70 actual PASS at997e39ee: ordinary verified-MFA users, five synthetic registered PDFs, explicit configured verified-TLS extraction, fifteen cited fields and exact cache, conflict and malformed/unavailable evidence, concurrent current-role revocation leaves only started history, explicit manual web10exempt expense exactly1journal/2lines. Canonical HTTP/CLI/MCP parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve five extraction tables, BLOBs, exact physical originals, journal and audit with no provider credentials or rerun. All3binaries/fullweb/helper hashes independently matched;23actions,ownedcleanuptrue. Two helper-only corrections canonicalDKbuyer/actor user:subject; product unchanged.",
-      "acceptance": "Ordinary MFA registered synthetic PDF\u2192explicit confirmed configured HTTPS extraction\u2192cited completed/conflict/failure evidence and exact cache\u2192manual existing web purchase; revoked authority during provider leaves started history/no result, no Owner/SQL lock across network. Canonical HTTP/CLI/MCP, restart and independently verified signed source-free fresh-owner recovery preserve five-table evidence/BLOB/original history without provider credentials/rerun. No extracted accounting/metadata inference.",
+      "acceptance": "Ordinary MFA registered synthetic PDF→explicit confirmed configured HTTPS extraction→cited completed/conflict/failure evidence and exact cache→manual existing web purchase; revoked authority during provider leaves started history/no result, no Owner/SQL lock across network. Canonical HTTP/CLI/MCP, restart and independently verified signed source-free fresh-owner recovery preserve five-table evidence/BLOB/original history without provider credentials/rerun. No extracted accounting/metadata inference.",
       "contract": "/tmp/rm-platform70-invoice-extraction-contract.md",
       "abi": "/tmp/rm-platform70-invoice-extraction-abi.md",
       "remaining_source_parity": "Configured automatic ordinary HTTP-upload extraction is Group71, integrated b471c9bb; tests/actual pending. No automatic inbox/corporate extraction and no full TypeScript-retirement claim.",
@@ -17369,7 +17369,7 @@
     {
       "delivery": "Group72 named bank profile import",
       "owner": "root integration; rust_accruals engine/storage; rust_client_cli app/host/HTTP; rust_budget clients/existingUI; rust_mileage actualhelper",
-      "status": "COMPLETE finite Group72. Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100\u21921130 and2new gaprows1120\u2192900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated.",
+      "status": "COMPLETE finite Group72. Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated.",
       "contract": "/tmp/rm-platform72-bank-profile-contract.md",
       "acceptance": "Source registry only danske-bank; existing UI explicit profile/account imports exact Unicode source with declaredDMY, quoting/raw/mapped references and balancecontinuity; duplicate skips, gap warnings/exceptions, atomic malformed/profile/FX/account refusals; no journals; canonical clients/restart/signed source-free restore. Browser UTF8 text decoding does not preserve file-levelBOM/Windows1252 bytes.",
       "remaining_parity": "Separate source unmatched bank candidate/description/refresh synchronization remains required; do not abbreviate rules or claim all bank importer parity.",
@@ -17400,7 +17400,7 @@
       "delivery": "Group73 real Bilagsmail intake and explicit inbox metadata review",
       "owner": "root contracts/integration/actual acceptance; four isolated workers delivered runtime/core/application/web plus clients/helper",
       "status": "COMPLETE finite Group73. Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice.",
-      "acceptance": "Normal MFA mailbox configuration and real synthetic IMAP fetch \u2192 exact EML/attachment retention/provenance/dedup \u2192 original download and explicit target-bound metadata review in existing inbox \u2192 exactly-once unposted document; current revocation/configdelete/transfer/noGETI/O, restart and signed source-free recovery preserve evidence with credentials/polling inactive. No implicit ordinary-upload extraction71 or inferred accounting.",
+      "acceptance": "Normal MFA mailbox configuration and real synthetic IMAP fetch → exact EML/attachment retention/provenance/dedup → original download and explicit target-bound metadata review in existing inbox → exactly-once unposted document; current revocation/configdelete/transfer/noGETI/O, restart and signed source-free recovery preserve evidence with credentials/polling inactive. No implicit ordinary-upload extraction71 or inferred accounting.",
       "source_prep": "/tmp/rm-platform73-mail-prep.md",
       "contract": "/tmp/rm-platform73-mail-contract.md",
       "evidence": {
@@ -17450,7 +17450,7 @@
       "owner": "root contract/integration/actual; four isolated engine, posting, credit-close and web-client writers",
       "status": "QUALIFIED:19 actual ordinary-MFA actions at948e4406; exact classified postings/credits/cash/VAT/dated close, HTTP/CLI/MCP, fresh-MFA restart, four independently verified signed archives and one source-free fresh-owner restore plus reopen. Independent root audit PASS. Full mission OPEN.",
       "contract": "/tmp/rm-platform75-domestic-vat-contract.md",
-      "acceptance": "Existing web explicit classification/basis and truthful PDF \u2192 immutable issue \u2192 one current-authorized classified posting \u2192 cumulative partial/final credits preserving every original net/VAT cent \u2192 ordinary receipt/refund and dated VAT/close \u2192 HTTP/CLI/MCP and signed source-free original/history recovery. Other invoice variants remain explicit full-goal followups.",
+      "acceptance": "Existing web explicit classification/basis and truthful PDF → immutable issue → one current-authorized classified posting → cumulative partial/final credits preserving every original net/VAT cent → ordinary receipt/refund and dated VAT/close → HTTP/CLI/MCP and signed source-free original/history recovery. Other invoice variants remain explicit full-goal followups.",
       "evidence": {
         "source_revision": "948e4406",
         "actual_report": "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run4.json",
@@ -17525,7 +17525,7 @@
       "owner": "root contract/integration/actual; isolated issuance, cash-credit, trusted VIES-report and web-client writers",
       "status": "Group77 qualified at7c8a81f4:19 ordinary-MFA actions through existing web EUR service preview/issue/post, explicit trusted TLS VIES, partial/final receipts, credits and refunds, dated EU-sales/VAT and four-phase HTTP/CLI/MCP equality. EUR100 at7.40 freezes DKK740; original principal is conserved and actual bank rates yield final DKK3 FX gain. Dated EU basis740 then592 then0, seven journals and four bank rows; denied/duplicate/provider-mismatch/revoked-held operations preserve evidence. Four independently verified signed full-workspace archives retain exact tables, originals and historical audit, with only documented restore-boundary append; source-free fresh-owner restore and reopen PASS. Root independent audit and owned cleanup PASS. Shared Cargo cache and30GiB/15GiB disk gates implemented and qualified. Full mission/epic672 and installed native financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform77-eu-sales-contract.md",
-      "acceptance": "Existing web explicit EUR/service/VIES preview and issue \u2192 classified DKK posting \u2192 partial/final actual-FX bank receipts \u2192 original-carrying partial/final credits and refunds \u2192 dated EU-sales/VAT \u2192 canonical clients and signed source-free fresh-owner recovery.",
+      "acceptance": "Existing web explicit EUR/service/VIES preview and issue → classified DKK posting → partial/final actual-FX bank receipts → original-carrying partial/final credits and refunds → dated EU-sales/VAT → canonical clients and signed source-free fresh-owner recovery.",
       "evidence": {
         "source_revision": "7c8a81f46a143da3054c429ef40a02bd36f11135",
         "actual_report": "/tmp/rentemester-rust-reports/eu-sales-integrated77-run4.json",
@@ -17570,7 +17570,7 @@
       "owner": "root VAT-source proof/integration/SDK/actual; isolated domain/PDF, web and actual-helper writers",
       "status": "Group78 qualified at 0fa54236: 19 ordinary-MFA actions through existing web full private invoice without buyer CVR and reduced simplified invoice without fabricated buyer/quantities. Gross100.07 retains net80.06/VAT20.01; original sources and cumulative credit counters drive exact VAT control without relaxing ordinary errors. Two sales, three receipts, three original-linked credits, three refunds, exactly11journals/6bankrows, VAT70.01 then12.01 then0 and final accounts zero. Full HTTP/CLI/MCP canonical reads and exact full/simplified preview input/PDF parity in four phases. Fresh-MFA restart and four independently verified signed full-workspace archives preserve exact tables, originals and audit, with only documented restore-boundary append at fresh-owner source-free restore/reopen. Independent root audit and owned cleanup PASS. Full mission/epic672 and installed native financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform78-private-simplified-contract.md",
-      "acceptance": "Ordinary full private and reduced gross-based simplified invoices \u2192 truthful immutable PDF and net/VAT posting \u2192 partial/final cash/credit/refund \u2192 exact source-based VAT and native client previews \u2192 four signed archives and source-free fresh-owner recovery.",
+      "acceptance": "Ordinary full private and reduced gross-based simplified invoices → truthful immutable PDF and net/VAT posting → partial/final cash/credit/refund → exact source-based VAT and native client previews → four signed archives and source-free fresh-owner recovery.",
       "evidence": {
         "source_revision": "0fa5423676d354c5716895b797be790cdf15f57e",
         "actual_report": "/tmp/rentemester-rust-reports/private-sales-integrated78-run2.json",
@@ -17607,7 +17607,7 @@
       "owner": "root clients/integration/actual; isolated domain, access/HTTP, web and actual-helper writers",
       "status": "Group79 qualified at b9faa564: ordinary MFA existing web explicit OSS income classification and reviewed ordinary reversal. Exactly3journals/2originals preserve domestic base100/VAT25 and final receivable125, incomecredit100, bank0, VATcredit25. Dated OSS1000/count1, current0/count2 and reversal-only-1000/count1; original historical report retained. Current reviewer read/write denial, revocation, duplicate keys and malformed selectors preserve evidence. Full HTTP/CLI/MCP accounting and three dated OSS windows agree across source/restart/source-free fresh-owner restore/reopen. Four independently verified signed full archives preserve exact tables, original bytes and historical audit with only documented restore-boundary append. Base only, no foreign VAT computation or tax submission. Full mission/epic672 and installed native financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform79-oss-contract.md",
-      "acceptance": "Retained original \u2192 explicitly classified OSS income journal \u2192 dated base without DK VAT/B/C \u2192 reviewed ordinary reversal \u2192 preserved original historical basis \u2192 canonical clients/restart/signed source-free recovery.",
+      "acceptance": "Retained original → explicitly classified OSS income journal → dated base without DK VAT/B/C → reviewed ordinary reversal → preserved original historical basis → canonical clients/restart/signed source-free recovery.",
       "evidence": {
         "source_revision": "b9faa564dcb0ccf14d5562dbab1d4aa8656809fe",
         "actual_report": "/tmp/rentemester-rust-reports/oss-integrated79-run2.json",
@@ -17639,7 +17639,7 @@
       "owner": "root SDK/integration/actual; isolated domain/PDF/storage, web and actual-helper writers",
       "status": "Group80 qualified at 059b05a9: 19 ordinary-MFA actions through existing web full standard invoice with foreign buyer identifier, explicit delivery period and document/per-line unit codes; reduced simplified invoice with delivery date and no fabricated buyer or quantities. Exact preview/issue input, immutable original and PDF metadata retained; no inferred VIES validity or tax treatment. Existing partial/final receipt, original credit and refund flow retains VAT70.01 then12.01 then0, exactly11journals/6bankrows and final zero accounts. Four-phase HTTP/CLI/MCP canonical reads and exact metadata-input preview/PDF equality; restart and four independently verified signed full archives with source-free fresh-owner restore/reopen retain exact evidence. Full mission/epic672, historical foreign reverse-charge/FX compatibility and installed native financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform80-invoice-metadata-contract.md",
-      "acceptance": "Explicit delivery date or paired period and unit metadata with foreign ordinary buyer \u2192 same web preview/issue facts and truthful immutable PDF/original \u2192 whole cash/credit/refund accounting \u2192 canonical clients/restart/signed source-free recovery.",
+      "acceptance": "Explicit delivery date or paired period and unit metadata with foreign ordinary buyer → same web preview/issue facts and truthful immutable PDF/original → whole cash/credit/refund accounting → canonical clients/restart/signed source-free recovery.",
       "evidence": {
         "source_revision": "059b05a92c7a8f2e586d81ba813508852da06fe8",
         "actual_report": "/tmp/rentemester-rust-reports/invoice-metadata-integrated80.json",
@@ -17666,7 +17666,7 @@
       "owner": "root sourcequote posting/FX review/clients/integration/actual; isolated domain+EUreport, web and actual-helper writers",
       "status": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform81-reverse-contract.md",
-      "acceptance": "Explicit trusted VIES and reviewed source basis \u2192 native EUR invoice/original/PDF/posting \u2192 side full credits and main cash/partial credits/refunds \u2192 dated EU/frozen FX \u2192 canonical clients/restart/signed source-free recovery. Historical legacy byte compatibility tested in core/storage without actual migration claim.",
+      "acceptance": "Explicit trusted VIES and reviewed source basis → native EUR invoice/original/PDF/posting → side full credits and main cash/partial credits/refunds → dated EU/frozen FX → canonical clients/restart/signed source-free recovery. Historical legacy byte compatibility tested in core/storage without actual migration claim.",
       "evidence": {
         "source_revision": "e56c74f71af233413109854318fbf055d092e589",
         "actual_report": "/tmp/rentemester-rust-reports/foreign-reverse-integrated81.json",
@@ -17697,9 +17697,9 @@
     {
       "delivery": "Group82 unmatched bank tasks and reviewed purchase booking",
       "owner": "root integration/UI/ingest and actual; isolated storage, task clients, archived reads and actual helper writers",
-      "status": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import \u2192 wrong-currency/unique/ambiguous late purchase originals \u2192 explicit outgoing Bank web selection and reviewed expense posting \u2192 CLI review and MCP already-resolved no-op \u2192 reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN.",
+      "status": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN.",
       "contract": "/tmp/rm-platform82-bank-flow-contract.md",
-      "acceptance": "Import \u2192 late original evidence without invented matches \u2192 reviewed outgoing purchase posting \u2192 review-only clients \u2192 canonical current rights/restart/signed source-free recovery.",
+      "acceptance": "Import → late original evidence without invented matches → reviewed outgoing purchase posting → review-only clients → canonical current rights/restart/signed source-free recovery.",
       "evidence": {
         "source_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
         "actual_report": "/tmp/rentemester-rust-reports/unmatched-bank-integrated82-run3.json",
@@ -17731,7 +17731,7 @@
       "owner": "root runtime/application/HTTP/framing/integration/actual; isolated engine-storage, web, clients and actual-helper writers",
       "status": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN.",
       "contract": "/tmp/rm-platform83-bank-bytes-contract.md",
-      "acceptance": "Original UTF8/BOM and named Windows1252 bank bytes \u2192 stable duplicate row identity \u2192 actual booking verifies exact archived bytes \u2192 canonical clients/restart/signed source-free recovery.",
+      "acceptance": "Original UTF8/BOM and named Windows1252 bank bytes → stable duplicate row identity → actual booking verifies exact archived bytes → canonical clients/restart/signed source-free recovery.",
       "evidence": {
         "source_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
         "actual_report": "/tmp/rentemester-rust-reports/bank-original-bytes-integrated83-run2.json",
@@ -17779,7 +17779,7 @@
         "Existing webContactForm/CvrCard; explicit save andsync remainseparate actions."
       ],
       "acceptance": "20actualsteps;2rawcache rows/1manualcustomer/4syncaudits/noaccountingchanges;exact4localTLSproviderrequests;missingcredentialrestart/cache/status;four signedsourcefree snapshots/reopen andclientinnerparity.",
-      "status": "COMPLETE finite Group85. Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup\u2192blank prefill\u2192cached lookup preserving manualname/email\u2192separate explicit save; owncompanyCVRsync nineidentityfields\u2192fiscal7vsconfigured1 warning\u2192repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN.",
+      "status": "COMPLETE finite Group85. Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN.",
       "cleanup": "All3ownedworktrees removed; originalcommits/patchIDs/recoveryrefs recorded in rentemester-cleanup-recovery-2026-10-20/integrated85-final.json."
     },
     {
@@ -17807,14 +17807,14 @@
     {
       "delivery": "Group89 TS workspace adoption and durable source retirement",
       "owner": "root integration/operator/actual; isolated storage company/control, runtime stage, host orchestration workers",
-      "acceptance": "Existing TS business data and originals \u2192 exact review \u2192 source retirement \u2192 native adoption \u2192 fresh owner/MFA \u2192 new accounting \u2192 source-free backup/restore/restart without duplicate accounting/delivery",
+      "acceptance": "Existing TS business data and originals → exact review → source retirement → native adoption → fresh owner/MFA → new accounting → source-free backup/restore/restart without duplicate accounting/delivery",
       "status": "First actual corpus extended and qualified through continued accounting + archived signed source-free restore/restart in Group90; see current state. Full mission remains open."
     },
     {
       "delivery": "Group90 migrated accounting and archived source-free recovery",
       "owner": "root runtime/application/status/integration/actual; isolated host snapshot/validator worker",
-      "acceptance": "Actual TS active+archived posted invoices \u2192 native adoption/newpost/replay/restart \u2192 websignedbackup \u2192 source/keyunavailable independentverify \u2192 freshowner/MFA/newpost/replay/restart with exact originals/history and no old-intent duplication",
-      "status": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies \u2192 reviewed native adoption \u2192 normal owner/MFA \u2192 native journal/replay/restart \u2192 existing web signedbackup download \u2192 both sources/signingkey deleted \u2192 independent native verification \u2192 fresh physical restore preserving logicalworkspaceID \u2192 new owner/MFA \u2192 old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate \u2192 fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
+      "acceptance": "Actual TS active+archived posted invoices → native adoption/newpost/replay/restart → websignedbackup → source/keyunavailable independentverify → freshowner/MFA/newpost/replay/restart with exact originals/history and no old-intent duplication",
+      "status": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
     },
     {
       "delivery": "Group91 J03 browser/Rust lost reply and pending access revocation",
@@ -17838,13 +17838,13 @@
       "delivery": "Group97 service bank receipt payment and Group98 installed manual-post closure recovery",
       "owner": "root adapters, original-key recovery, clients, integration and actual proofs; invoice_domain80 isolated bank/settlement domain worker; exception_read82 read-only design/material review",
       "status": "QUALIFIED_SCOPED_JOURNEYS; later Group99 closes current-package native smoke; FULL_MISSION_OPEN",
-      "acceptance": "Same invoice to zero debtor through CLI/MCP/exact archived bytes/one payment/restart, plus actual native accepted200 fullquit/reopen normalMFA and same receipt remote\u2192local new origin, explicit ack no new financial effect.62web+5receipt+3service+37bank tests; exact current package manifests; final current GUI smoke unqualified because Mac locked. Group99 later qualifies current a36617cd ordinary local-MFA smoke with five prior entries retained."
+      "acceptance": "Same invoice to zero debtor through CLI/MCP/exact archived bytes/one payment/restart, plus actual native accepted200 fullquit/reopen normalMFA and same receipt remote→local new origin, explicit ack no new financial effect.62web+5receipt+3service+37bank tests; exact current package manifests; final current GUI smoke unqualified because Mac locked. Group99 later qualifies current a36617cd ordinary local-MFA smoke with five prior entries retained."
     },
     {
-      "delivery": "Group99 installed local source\u2192HTTPS target managed transfer",
+      "delivery": "Group99 installed local source→HTTPS target managed transfer",
       "owner": "root installed UI, fixture adaptations, integration, auth/readback/replay and terminal custody; exception_read82 read-only bounded fixture review",
       "status": "QUALIFIED_SCOPED_INSTALLED_MANAGED_J06; FULL_R54_AND_MISSION_OPEN",
-      "acceptance": "Native freeze/export/save\u2192independent trust/stage finalHTTPS\u2192fresh owner verification/MFA\u2192original receipt map\u2192reviewed exact challenge release\u2192target activation\u2192exact old replay without booking\u2192one native new0.45\u2192source moved refusal and target active/two entries after full native/server restart. One unknown SMTP attempt/no resend; original PDF/JSON/receipts preserved; terminal readonly SQL and owned-process cleanup verified. Future fixtures require explicit completed archive marker and retain native profiles for explicit cleanup."
+      "acceptance": "Native freeze/export/save→independent trust/stage finalHTTPS→fresh owner verification/MFA→original receipt map→reviewed exact challenge release→target activation→exact old replay without booking→one native new0.45→source moved refusal and target active/two entries after full native/server restart. One unknown SMTP attempt/no resend; original PDF/JSON/receipts preserved; terminal readonly SQL and owned-process cleanup verified. Future fixtures require explicit completed archive marker and retain native profiles for explicit cleanup."
     },
     {
       "delivery": "Group100 installed local/hosted automation lifecycle",
@@ -17855,7 +17855,7 @@
       "preparation_report": "/tmp/rentemester-rust-reports/native-automation100-preparation.json"
     },
     {
-      "delivery": "Group101 service scanned purchase original\u2192payable\u2192bank payment",
+      "delivery": "Group101 service scanned purchase original→payable→bank payment",
       "owner": "root document stages/credential-bound precharged admission/host/HTTP/client integration/actual; invoice_domain80 isolated payable domain + separate actual helper worktree",
       "status": "QUALIFIED_SCOPED_SERVER_CLI_MCP_PURCHASE_FLOW; FULL_R13_R45_AND_MISSION_OPEN",
       "acceptance": "Required verified TLS scan outside Owner/SQL locks, fresh exact credential/company/physical authority before publication and one logical usage charge; service CLI upload and MCP exact original, explicit payable recognition, outgoing exact-original bank import, payment on original booked creditor despite mapping change, no duplicate expense/VAT, zero payable and canonical bank reconciliation, in-flight revocation no publication and real normal-MFA restart.",
@@ -17912,10 +17912,10 @@
       "cleanup": "Both isolated103workers physically removed; synthetic fixture removed and owned process paths absent. No separatetargetcaches."
     },
     {
-      "delivery": "Group110\u2192111 complete backup status and optional bookkeeping lock",
+      "delivery": "Group110→111 complete backup status and optional bookkeeping lock",
       "owner": "root common contract, retention integration and actual proof; isolated native_catalogue106 pure policy (integrated87ff9180); readonly container_contract104 legacy and admission map",
       "status": "FINANCIAL USER FLOW QUALIFIED111b through web/HTTP/CLI/MCP/human+service, including reviewed policy mutations whilelocked, actual artifact recovery and one posting/restart. Full control-only legacygate parity remains ACTIVE, not complete.",
-      "acceptance": "Read status \u2192 explicitly enable lock \u2192 overdue bookkeeping refuses without effects \u2192 create retained signed backup \u2192 freshness lock clears \u2192 bookkeeping succeeds across server/web/CLI/MCP and service/jobs, persists restart; offsite proof separate.",
+      "acceptance": "Read status → explicitly enable lock → overdue bookkeeping refuses without effects → create retained signed backup → freshness lock clears → bookkeeping succeeds across server/web/CLI/MCP and service/jobs, persists restart; offsite proof separate.",
       "evidence": "native_backup_lock111 plus preserved native_backup_retention110",
       "remaining": "Control-only metadata/group/parties/inbox/mailintake gates; actual SMTP/keyrotation/restore qualifications as relevant, then full backup-governance/provider/discovery/release scope."
     },
@@ -17978,7 +17978,7 @@
       "owner": "root integrated pure engine from native_catalogue106; storage integration mapped by adoption_company89",
       "status": "COMPLETE finite Group121 DKK scopes; entire mission remains active. Original R19/source require explicit corrected foreign-interest refusals, not a new positive foreign-interest feature. Installed desktop GUI last.",
       "acceptance": "Targeted evidence plus actual web whole financial flow, exact HTTP/CLI/MCP reads/refusals, current roles/backup/date/confirm/duplicate gates, original bytes, five-component audit, exact normal-MFA restart and independent signed export. Positive CLI/MCP mutations, paid/ambiguous actual refusals, foreign-interest, source-free restore and GUI not claimed by this actual run.",
-      "next": "Validated effective-dated principal History, origin/correction/receipt claims, conservative original-account capacity and causal historic plans, distinct calc/register/post/correction transports and shared UI, complete financial flow and restart. Preserve current foreign principal/compensation, audit and period gates; avoid principal_open\u2192validated_claims recursion.",
+      "next": "Validated effective-dated principal History, origin/correction/receipt claims, conservative original-account capacity and causal historic plans, distinct calc/register/post/correction transports and shared UI, complete financial flow and restart. Preserve current foreign principal/compensation, audit and period gates; avoid principal_open→validated_claims recursion.",
       "contract": "/tmp/rm121-interest-contract.md"
     },
     {
@@ -17999,9 +17999,9 @@
     "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
   "pending_deliveries": [
-    "Group67 native GUI local/remote opening\u2192receipt\u2192reports+restart acceptance; code/tests/build ready, CUA noWindowsAvailable interaction blocker; screenshots available",
-    "Group68 native GUI local/remote company\u2192archive\u2192accounts\u2192opening\u2192reports+restart acceptance; code/tests/build ready, current CUA noWindowsAvailable interaction blocker; screenshots available",
-    "Group69 native GUI fiscal review/close\u2192annual obligations/report+restart and independent offline backup verification; implementation/test/build ready, CUA noWindowsAvailable interaction blocker; screenshots available"
+    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, CUA noWindowsAvailable interaction blocker; screenshots available",
+    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current CUA noWindowsAvailable interaction blocker; screenshots available",
+    "Group69 native GUI fiscal review/close→annual obligations/report+restart and independent offline backup verification; implementation/test/build ready, CUA noWindowsAvailable interaction blocker; screenshots available"
   ],
   "completion_gates": [
     "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",
@@ -18047,7 +18047,7 @@
       "current_increment": "Danske Bank profile through existing web import, clients and signed source-free recovery qualified",
       "code_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
       "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
-      "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100\u21921130 and2new gaprows1120\u2192900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail\u2192explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN."
+      "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail→explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN."
     },
     {
       "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
@@ -18107,7 +18107,7 @@
       "current_increment": "Interactive CVR lookup and protected company sync qualified",
       "code_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
       "spec_revision": "sha256:88d7ae1a667bd5c35dd317a44a96a61bdd63b1672e1c4b519644f6fe11acfb4e",
-      "state": "Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup\u2192blank prefill\u2192cached lookup preserving manualname/email\u2192separate explicit save; owncompanyCVRsync nineidentityfields\u2192fiscal7vsconfigured1 warning\u2192repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN."
+      "state": "Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN."
     },
     {
       "current_increment": "Installed shared-web Rust desktop local owner/MFA onboarding and managed reopen qualified",
@@ -18119,7 +18119,7 @@
       "current_increment": "Actual TS two-company adoption, new native accounting and archived signed source-free restore/restart qualified",
       "code_revision": "2197bea2621278fd6938e37de8b06a8e7e0b7cc1",
       "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-      "state": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies \u2192 reviewed native adoption \u2192 normal owner/MFA \u2192 native journal/replay/restart \u2192 existing web signedbackup download \u2192 both sources/signingkey deleted \u2192 independent native verification \u2192 fresh physical restore preserving logicalworkspaceID \u2192 new owner/MFA \u2192 old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate \u2192 fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
+      "state": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
     },
     {
       "current_increment": "Group91 browser/Rust lost-posting reconciliation and pending company-access revocation qualified; installed remote J03 remains open",
@@ -18143,7 +18143,7 @@
       "current_increment": "Group105 dedicated Rust container built and actually qualified on Linux arm64: normal web owner/MFA,125.50posting/reports/original/replay, packaged PDF parse and two clean Docker stops/reopen; Rust release provenance gates remain open",
       "code_revision": "9942afe5a04445e6ed8f021916f7403290df1284",
       "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-      "state": "Group105 adds a separate pinned Dockerfile.rust and compose/exec entrypoint: compiled Rust server/CLI/MCP/PDF worker, built shared React, exact PDFium archive/library/licenses, dated GPG-verified Debian snapshot, native ldd closure and package inventory. Bun/Python/Rust toolchains stay in build stages, absent in runtime. Serialized per-architecture BuildKit Cargo cache uses shared guard with explicit preflight even on artifact reuse; target excluded from Docker context. Actual Linux arm64 image sha256:a0a3f8baed2f7de333bc68e319b15cbd088f34d2bf48bb1aa2a579c07606e622 passes read-only root,UID10001,umask077,NNP and all5zero capability sets, normal owner verification/MFA,125.50balanced posting, income/balance/trial CSV/PDF text/deterministic downloads, original TXT upload/refusals, Docker SIGTERM exit0, fresh container reopen normal MFA/exact posting/report/original/idempotent replay no duplicate, second stop0. Separate networkless packaged PDF helper parses exact synthetic text and SHA256; packaged CLI/MCP --help only. Initial failed report retained: stale helper invented zero prior result instead of existing null/prior_native_year_not_present; repaired helper and expected synthetic fixture name, no product accounting change. Fresh complete qualification passes; private screenshots/exports separately retained, owned container and both volumes verified absent. Actual image source base0b36e959 plus recorded source changes is truthfully dirty-labelled; source later committed9942afe5. Exact evidence/provenance files bind image and binaries/runner/source/logs. Full R53 release/cargo/PDF/SBOM/provenance/native-interface review/promotion, independent no-cache reproducibility, HTTPS proxy/operator recovery and broaderplatform gates remain OPEN. Next minimal compatible path is strict Rust manifest variant alongside unchanged Bunv1, preserving exact manifest/image review approval and digest-only promotion with equivalent native interface proof. All earlier Group99\u2013104 evidence retained; full Rust mission/epic672/TSretirement and final installed GUI remain OPEN. No unlock request during implementation."
+      "state": "Group105 adds a separate pinned Dockerfile.rust and compose/exec entrypoint: compiled Rust server/CLI/MCP/PDF worker, built shared React, exact PDFium archive/library/licenses, dated GPG-verified Debian snapshot, native ldd closure and package inventory. Bun/Python/Rust toolchains stay in build stages, absent in runtime. Serialized per-architecture BuildKit Cargo cache uses shared guard with explicit preflight even on artifact reuse; target excluded from Docker context. Actual Linux arm64 image sha256:a0a3f8baed2f7de333bc68e319b15cbd088f34d2bf48bb1aa2a579c07606e622 passes read-only root,UID10001,umask077,NNP and all5zero capability sets, normal owner verification/MFA,125.50balanced posting, income/balance/trial CSV/PDF text/deterministic downloads, original TXT upload/refusals, Docker SIGTERM exit0, fresh container reopen normal MFA/exact posting/report/original/idempotent replay no duplicate, second stop0. Separate networkless packaged PDF helper parses exact synthetic text and SHA256; packaged CLI/MCP --help only. Initial failed report retained: stale helper invented zero prior result instead of existing null/prior_native_year_not_present; repaired helper and expected synthetic fixture name, no product accounting change. Fresh complete qualification passes; private screenshots/exports separately retained, owned container and both volumes verified absent. Actual image source base0b36e959 plus recorded source changes is truthfully dirty-labelled; source later committed9942afe5. Exact evidence/provenance files bind image and binaries/runner/source/logs. Full R53 release/cargo/PDF/SBOM/provenance/native-interface review/promotion, independent no-cache reproducibility, HTTPS proxy/operator recovery and broaderplatform gates remain OPEN. Next minimal compatible path is strict Rust manifest variant alongside unchanged Bunv1, preserving exact manifest/image review approval and digest-only promotion with equivalent native interface proof. All earlier Group99–104 evidence retained; full Rust mission/epic672/TSretirement and final installed GUI remain OPEN. No unlock request during implementation."
     },
     {
       "current_increment": "Group106 actual Rust package identity and strict manifest v2/local human approval; Linux arm64 accounting/reopen accepted; CI release integration remains open",
@@ -18176,7 +18176,7 @@
       "state": "Group110 removes a concrete prerequisite for complete backup-status/optional-bookkeeping-lock flow. Successful native whole-workspace backup now retains exact signed wire at fixed protected workspace/native-backups/<fullSHA>.native-backup.json before download response and appends trusted native_backup_created workspace audit inside held current-human control transaction. Private700directory/600singlelink regularfiles, protected ancestor/ACL/nofollow validation, exclusive temp/fsync/no-replace and signature/inventory/workspace/hash reread reuse109 filesystem contract. No operator destination or client path authority needed. Metadata binds wirehash/size/publicsigningkeyhash/createdtime plus every company slug/ledgerUUID/signed snapshot hash, no credentials or active grants. Retention-attempt and auditcommit failure remain OutcomeUnknown without deleting landed data. Backup cache is excluded from portable archive, no recursive files. Inventory query ignores source-local receipts before latest native_portable_restore boundary; history retained without claiming source files exist on new instance. Pure engine policy integrated worker a6bd91a4 as87ff9180: exact >7day freshness, activity-sensitive due, neverbacked due/earliestactivity lock anchor, optin and grace, noactivity no lock, typed validated instants/overflow. Five policy and two inventory tests pass; defaulttime parsing feature enabled after diagnosed compile error without new lockfile changes. Initial actual harness shadowed digest function with local variable and failed before runtime creation; renamed archive_digest. Actual110b normal owner MFA servicepurchase/web signed placement/client parity/duplicate/tamper/revocation/restart flow passes and independently verifies two retained signed SQLite archives after all servers stop; exact private files/inventory persisted and accounting counts unchanged. Owned cleanup true. Guarded server/CLI/MCP build plus eight-crate all-target strictClippy pass, readonly material review no blockers, root AST updated. No GUI/unlock. Full status display, settings, current-file qualification and write fence through human/service/jobs NOT implemented yet; native integrity backup unknown and no lock enforced remain truthful. Next complete that whole flow then remaining cloud/destination/governance/health-audit, R53 release/parity/migration/recovery/TS retirement and final installed GUI; full mission/epic672 remain OPEN."
     },
     {
-      "current_increment": "Group113 mail/inbox backup gates integrated; actual two-company HTTP/CLI/MCP target refusal\u2192qualified backup\u2192exact handoff/original/replay/restart and mailalias refusal/recovery accepted",
+      "current_increment": "Group113 mail/inbox backup gates integrated; actual two-company HTTP/CLI/MCP target refusal→qualified backup→exact handoff/original/replay/restart and mailalias refusal/recovery accepted",
       "code_revision": "afe320db + Group113 inbox transaction/target/recovery integration in this commit",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group113 completes the current mail/inbox backup-lock increment. New human mailbox config/delete/alias and human/service poll admission check current company backup policy after full current authority/grant binding; refusals rollback usage with control writer. Already admitted fetch completion retains actual observation/cursor/failure with existing auth/grant/transfer checks. Inbox metadata/claims use held control+company Immediate transactions; ingest checks anchor, assignment/review explicit destination, readonly candidate companies excluded. Host temporary assignment/ingest selection restores original on reusable success/refusal, restoration failure is unknown/retired. Fresh claim and fresh publication gated; exact prior document recovery checks original and finalizes source without duplicate under newly active lock. Five actualhost inbox unit tests and five appmail tests pass, including locked B/unlocked A/no claim, originalscope restoration, prior durable-split recovery underlock, service quota rollback and synthetic admitted received/failure completion. Native server/CLI/MCP build and strict6crate all-targetClippy pass; readonly review no actionable defects. Actual113 normalMFA creates two companies through API, B historical bank viaCSV, B locked before candidate-source ingress at unlocked A, HTTP/CLI/MCP target-B assignment refusal without source/mail/bothcompany state changes, then actualweb A lock and HTTP/CLI/MCP alias refusals. Current signed two-companybackup unlocks; MCPassignment/CLIcompletion and explicitclient replay/source/doc/original parity, alias update, freshMFArestart. PrimaryA terminal0documents/1bank/1journal, targetB1document/1bank/0journal; all binary/twohelper/runner hashes independentlymatched and ownedprocess/profilecleanup verified. No realIMAP/config/poll/SMTP/keyrotation/offsite/GUI claim. Prior111/112 evidence and entiremission preserved; required remote backup/destination administration/health/audit/governance/discovery/release/platform/migration/TS retirement and final installeddesktop acceptance remain open."
@@ -18233,7 +18233,7 @@
       "current_increment": "Group122 established bad-debt writeoff, remaining principal and separate claim receipt, DKK/foreign actual carrying and VAT across native web/CLI/MCP accepted",
       "code_revision": "1ca1e318 plus root confirmed app/host/server, all-invoice period assurance and corrected foreign-interest refusal integration",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-      "state": "Group122 completes source-defined established bad-debt writeoff for DKK and foreign invoices, exact partial/full/cumulative VAT splits, remaining actual DKK carrying and later bank FX/principal receipts, with separate claims retained and paid. Current human MFA/bogf\u00f8ringsret, invoice/credit/bank originals, current role/revocation, backup/date/period and explicit confirmation remain. Native catalogue252. Actual normal-MFA sharedweb accepted-loss/dropped-reply/manual canonical reconciliation blocks repeat, second deliberate CLI partial loss and MCP remaining EUR loss all succeed. DKK two312.50 losses leave625principal plus310 compensation; actual625+310 receipts clear both. EUR125 frozen929.01, payment50.05 with375.38 actual cash/371.98relief leaves74.95 and557.03carrying; loss557.03 splits445.62expense/111.41VAT. Exactly10journals/4bank/4distinctJSON-PDFdocuments, VATpayable199.39; all5auditcomponents clean, HTTP/CLI/MCP exact status/originals, freshMFA restart and independent signed export verified. All-invoice period assurance validates even no-claim loss invoices; librarytests cover cumulative VAT, laterforeignreceipts, closures/refusals and sourcehistory. Original R01/R19/frozen source require explicit corrected foreign-interest refusal rather than a new positive foreign-interest feature; five-action/no-effects test passes. No legal loss establishment, source-free restore of this new flow, recovered written-off debt, service write or installed GUI claimed. Full original rewrite/GDD/epic672 remains active: remaining imported-receivable/control and supported lifecycle/recovery, release/install/transfer/platform and TypeScript retirement gates; installed desktop acceptance last."
+      "state": "Group122 completes source-defined established bad-debt writeoff for DKK and foreign invoices, exact partial/full/cumulative VAT splits, remaining actual DKK carrying and later bank FX/principal receipts, with separate claims retained and paid. Current human MFA/bogføringsret, invoice/credit/bank originals, current role/revocation, backup/date/period and explicit confirmation remain. Native catalogue252. Actual normal-MFA sharedweb accepted-loss/dropped-reply/manual canonical reconciliation blocks repeat, second deliberate CLI partial loss and MCP remaining EUR loss all succeed. DKK two312.50 losses leave625principal plus310 compensation; actual625+310 receipts clear both. EUR125 frozen929.01, payment50.05 with375.38 actual cash/371.98relief leaves74.95 and557.03carrying; loss557.03 splits445.62expense/111.41VAT. Exactly10journals/4bank/4distinctJSON-PDFdocuments, VATpayable199.39; all5auditcomponents clean, HTTP/CLI/MCP exact status/originals, freshMFA restart and independent signed export verified. All-invoice period assurance validates even no-claim loss invoices; librarytests cover cumulative VAT, laterforeignreceipts, closures/refusals and sourcehistory. Original R01/R19/frozen source require explicit corrected foreign-interest refusal rather than a new positive foreign-interest feature; five-action/no-effects test passes. No legal loss establishment, source-free restore of this new flow, recovered written-off debt, service write or installed GUI claimed. Full original rewrite/GDD/epic672 remains active: remaining imported-receivable/control and supported lifecycle/recovery, release/install/transfer/platform and TypeScript retirement gates; installed desktop acceptance last."
     },
     {
       "current_increment": "Group140 R45 discover the existing native bank/bookkeeping batch journey",
@@ -18523,7 +18523,7 @@
         "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
         "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
         "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
-        "Do not repeat unchanged accepted Group88\u201399 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
+        "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
       ]
     },
     {
@@ -18751,6 +18751,18 @@
         "Whole71722otheroriginalnames/full31workflows/actualregistry/annotations/service-revocation/reconnect and explicitsource/nativecompatibility dispositions remain; no whole717closure.",
         "All55originalscope/J01-J07/commonRustengine/sameReactwebTauri/finalnative/release/cutover/retirement unchanged; manualinstalleddesktopLAST."
       ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "d2b1830a890845100b1cc7de38d4909ef8d6d475",
+      "report": "/tmp/rentemester-rust-reports/r81-party-cli716-component-accepted.json",
+      "sha256": "02248d0981b0a65b2430c255e3ffbd6b63b8c86428556447a9018bce39ed770a",
+      "scope": "Originalparty4CLI lifecycle over commonSDK/server; canonicalidentity/null-empty-omitted serverIDallocation, exactflatJSON/human/0-1-2/currentactor/explicitlocalruntime/roles,8compilednewandoldmergefixtures. Exact1560operationcontracts/additivediscovery validated withoutreplaying accepted server effects.",
+      "remaining": [
+        "Original265keycomparison still82literalkeys afterparty4:80without originaldispatch/disposition and2regulatoryoriginaloutputmismatches; native renamed commands alone are not original compatibility.",
+        "Whole716requiresallperoperation contracts andruntime/credential/file/confirmation/streams/0-1-2 evidence. Full71722originalnames/fullworkflow/reconnect and all55finalnative/release/cutover/retirement gates unchanged."
+      ]
     }
   ],
   "scope_clarifications": [
@@ -18769,7 +18781,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 714,
+    "current_issue": 716,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
