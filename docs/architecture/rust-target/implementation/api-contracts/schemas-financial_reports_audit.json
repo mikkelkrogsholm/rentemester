@@ -2782,7 +2782,8 @@
           "items": {
             "type": "string"
           },
-          "minItems": 1
+          "minItems": 1,
+          "maxItems": 1
         }
       },
       "required": [
@@ -7193,7 +7194,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/TrialEnvelope"
@@ -7209,7 +7210,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7253,7 +7254,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/TrialEnvelope"
@@ -7277,7 +7278,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/IncomeEnvelope"
@@ -7293,7 +7294,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7337,7 +7338,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/IncomeEnvelope"
@@ -7361,7 +7362,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/BalanceEnvelope"
@@ -7377,7 +7378,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7421,7 +7422,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/BalanceEnvelope"
@@ -7445,7 +7446,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/OverviewEnvelope"
@@ -7461,7 +7462,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7505,7 +7506,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/OverviewEnvelope"
@@ -7529,7 +7530,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/Cashflow"
@@ -7545,7 +7546,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7589,7 +7590,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/Cashflow"
@@ -7613,7 +7614,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/Portfolio"
@@ -7629,7 +7630,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7673,7 +7674,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/Portfolio"
@@ -7697,7 +7698,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/AuditPage"
@@ -7713,7 +7714,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7757,7 +7758,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/AuditPage"
@@ -7781,7 +7782,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/AuditVerification"
@@ -7797,7 +7798,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7841,7 +7842,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/AuditVerification"
@@ -7865,7 +7866,7 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "data": {
           "$ref": "#/$defs/ExportBytes"
@@ -7881,7 +7882,7 @@
       "type": "object",
       "properties": {
         "isError": {
-          "type": "boolean"
+          "const": false
         },
         "content": {
           "type": "array",
@@ -7925,7 +7926,7 @@
           "type": "object",
           "properties": {
             "ok": {
-              "type": "boolean"
+              "const": true
             },
             "data": {
               "$ref": "#/$defs/ExportBytes"
@@ -8496,10 +8497,7 @@
           "type": "string"
         },
         "year": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -8997,7 +8995,9 @@
         }
       },
       "required": [
-        "--company"
+        "--company",
+        "--report",
+        "--format"
       ],
       "additionalProperties": false
     },
@@ -9166,6 +9166,155 @@
         "--to"
       ],
       "additionalProperties": false
+    },
+    "ProtocolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "const": [
+            "HTTP protocol negotiation is incompatible"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliExportBusinessFalse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "$ref": "#/$defs/Failure"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolExportBusinessFalse": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/CliExportBusinessFalse"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/CliExportBusinessFalse"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "RpcToolExportBusinessFalse": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "$ref": "#/$defs/ToolExportBusinessFalse"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "DatedTemplateQuery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "report": {
+              "const": "balance"
+            },
+            "asOf": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "report",
+            "asOf"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "report": {
+              "enum": [
+                "trial-balance",
+                "profit-loss"
+              ]
+            },
+            "from": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "to": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "report",
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

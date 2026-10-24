@@ -1,14 +1,14 @@
-# Financial reports and audit — #677 partial handoff
+# Financial reports and audit — #677 scoped contract delivery
 
-**Not complete; not accepted.** Main retains integration and semantic acceptance. No issue closure, runtime replay, provider approval, or whole-epic acceptance is claimed. Prior accepted partitions and all55/J01–J07/final desktop/release/cutover/retirement remain unchanged.
+42 frozen operation rows are specified with all eight contract fields, partition-local Draft2020-12 schemas, and current source-byte provenance. This bounded repair retains the previous substantial schema/source work rather than regenerating accepted partitions. Main owns actual-diff semantic review, integration and acceptance; oracle validation is not semantic acceptance or issue closure.
 
-## Concrete blocker / stop rule
+## Repair and checks
 
-Stopped after two artifact-generation failures, as mandated. First generator failed with `NameError: name 'REDACTED' is not defined` while declaring export byte maxItems; subsequent incremental writes preserved schemas using 96*1024*1024. Second operation-generation attempt failed its source anchor assertion: `crates/rentemester-application/src/periods.rs`, needle `pub fn audit_evidence(` does not match the actual declaration. The generator kept rows in memory until its final write, so operations JSONL remains empty and provenance remains initial metadata. Do not interpret status metadata in these drafts as acceptance.
-
-Existing oracle executed: `python3 /tmp/r56-677-oracle.py financial_reports_audit` **FAIL**, `AssertionError: Coverage/duplicates/extra/gaps` (empty operations file). No PASS evidence is claimed. No test setup was added.
-
-Graphify query ran first. Required `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed: 34009 nodes / 107681 edges; generated observations remain outside owned files.
+- Repaired the empty operations JSONL and provenance stub with 42 incrementally persisted rows and 46 focused source bindings.
+- Preserved existing definitions; added exact protocol refusal, bounded dated template selector correlation and retained export-businessfalse wrappers. Tightened successful native envelope booleans and cashflow public year typing after the global MCP selector guard.
+- Existing check: `python3 /tmp/r56-677-oracle.py financial_reports_audit` — **PASS**, 42 exact selected operations, resolved source-bound schema contracts; whole677 remains open.
+- One repair setup failure referenced nonexistent MCP `src/lib.rs`; corrected to actual `src/main.rs` Session declaration. No new harness, dependencies or test infrastructure.
+- Graphify query ran before actual-source reading. Required extract is run before delivery, outside owned files.
 
 ## Preserved source findings
 
@@ -23,8 +23,10 @@ Graphify query ran first. Required `graphify extract . --code-only --no-cluster 
 - Exception sourceEvidence/postingPreview genuinely read arbitrary retained JSON via exceptions::parsed; own field-specific arbitrary-JSON schema was preserved. Do not substitute unrelated accepted StoredJson scope.
 - CLI local_binding consumes global local-profile split/attached first, private Unix exact-origin noTCPfallback; normalized remote flags differ public argv. Earlier remote guard rejects service-key-file for report-export/portfolio/cashflow, notwithstanding later helper support. Original dated parser accepts attached values; native remote parser split-only; local experimental parser exactly three split pairs.
 
-## Draft limitations requiring lead repair
+## Scope and review boundaries
 
-Schemas are substantial partial declarations, not semantically accepted. Operation records, sourceRefs and provenance still require generation/inspection. RPC schema includes selected leaf parse messages and session framing pairs but is not yet connected through operation rows. Success/refusal correlations and parser schemas require final review; no oracle-only semantic acceptance is implied. Do not integrate as complete.
+The first four contracts connect public parsing/output/refusal/protocol representations to retained source schemas. HTTP HEAD notes distinguish suppressed constructor JSON from actual bodyless wire responses; selected leaves are not projected into unrelated R54 early405 behavior. Dynamic authority/stage failures retain their source-bound mappings rather than claiming a clean audit on successful transport. RPC errors remain explicit code/message pairs, not a code/message Cartesian product.
 
-Only the four owned flat files were written. No production, dependencies, other partitions, runtime/server/provider/financial/posting/auth effects, git commit or issue status changes.
+No runtime, Cargo, server, browser, network, SMTP/IMAP, provider, posting, financial, upload, scanner, consent, job or auth effects were executed. No live-provider approval or universal replay key is claimed. Repeated observation is not replay; missing response and changed authority do not establish rollback of control/service metadata.
+
+Only the four owned flat files changed. Prior accepted partitions, all55/J01–J07/final desktop/release/cutover/retirement, and accepted runtime/userflow evidence retain their actual scope without replay. No commit/push/merge or issue status change.
