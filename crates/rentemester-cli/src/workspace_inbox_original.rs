@@ -298,6 +298,25 @@ fn nonempty(v: &Value) -> bool {
 fn nullable(v: Option<&Value>) -> bool {
     v.is_some_and(|v| v.is_null() || nonempty(v))
 }
+fn canonical_text(value: &Value) -> Option<&str> {
+    value
+        .as_str()
+        .map(rentemester_engine::company_knowledge::trim)
+}
+fn ingest_intent(body: &Value, receipt: &Value) -> bool {
+    canonical_text(&body["filename"]) == receipt["filename"].as_str()
+        && ["mimeType", "transport", "metadata"]
+            .iter()
+            .all(|k| body[k] == receipt[k])
+        && body["receivedAt"]
+            .as_str()
+            .and_then(|s| rentemester_engine::company_knowledge::iso(s).ok())
+            .is_some_and(|s| receipt["receivedAt"] == s)
+        && match body.get("transportIdentity") {
+            None | Some(Value::Null) => receipt.get("transportIdentity") == Some(&Value::Null),
+            Some(value) => canonical_text(value) == receipt["transportIdentity"].as_str(),
+        }
+}
 fn source(v: &Value) -> bool {
     [
         "sourceId",
@@ -423,6 +442,7 @@ pub fn execute(args: &[String]) -> Output {
     let json_mode = f.contains_key("--json") || f.get("--format") == Some(&"json");
     let fail = |s: &str| emit(json!({"ok":false,"errors":[s]}), json_mode, op);
     let id = f.get("--source-id").copied().unwrap_or("");
+    let canonical_id = rentemester_engine::company_knowledge::trim(id);
     let mutation = action(op, id);
     let mut body = json!({"confirm":true});
     let mut expected_sha = None;
@@ -504,7 +524,7 @@ pub fn execute(args: &[String]) -> Output {
             let prior = api.workspace_inbox_source(f["--company"], id).await?;
             if prior["ok"] != true
                 || !source(&prior["source"])
-                || prior["source"]["sourceId"] != id
+                || prior["source"]["sourceId"] != canonical_id
                 || prior["source"]["visibilityAnchorSlug"] != f["--company"]
             {
                 return Err(rentemester_client::Error::Protocol);
@@ -564,16 +584,13 @@ pub fn execute(args: &[String]) -> Output {
                     let s = &v["source"];
                     source(s)
                         && s["visibilityAnchorSlug"] == f["--company"]
-                        && (id.is_empty() || s["sourceId"] == id)
+                        && (id.is_empty() || s["sourceId"] == canonical_id)
                         && expected_sha.as_ref().is_none_or(|sha| s["sha256"] == *sha)
                         && prior_sha.as_ref().is_none_or(|sha| s["sha256"] == *sha)
                         && (op != "ingest"
-                            || (body
-                                .get("sourceId")
-                                .is_none_or(|id| id.is_null() || *id == s["sourceId"])
-                                && ["filename", "mimeType", "transport", "metadata"]
-                                    .iter()
-                                    .all(|k| body[k] == s[k])))
+                            || (body.get("sourceId").is_none_or(|id| {
+                                id.is_null() || canonical_text(id) == s["sourceId"].as_str()
+                            }) && ingest_intent(&body, s)))
                         && (!matches!(op, "assign" | "complete")
                             || s["assignments"].as_array().is_some_and(|a| {
                                 a.iter().any(|a| {

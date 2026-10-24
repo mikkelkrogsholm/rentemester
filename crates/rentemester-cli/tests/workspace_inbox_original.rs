@@ -17,13 +17,30 @@ fn call(args: &[&str]) -> Output {
         .output()
         .unwrap()
 }
-fn source() -> Value {
-    json!({"sourceId":"source/synthetic","visibilityAnchorSlug":"synthetic","sha256":rentemester_storage::invoice_email::sha(b"abc"),"filename":"synthetic.bin","mimeType":"application/octet-stream","transport":"upload","transportIdentity":null,"receivedAt":"2026-01-01T00:00:00Z","metadata":{"futureFact":{"kept":true}},"createdBy":"user:synthetic","createdAt":"2026-01-01T00:00:00Z","exception":null,"assignments":[],"history":[{"event_type":"ingested","payload_hash":"a".repeat(64),"actor":"user:synthetic","created_at":"2026-01-01T00:00:00Z","payload":{"sourceHash":rentemester_storage::invoice_email::sha(b"abc")}}]})
+fn event(kind: &str, payload: Value) -> Value {
+    let hash = rentemester_storage::invoice_email::sha(
+        serde_json::to_string(&payload).unwrap().as_bytes(),
+    );
+    json!({"event_type":kind,"payload_hash":hash,"actor":"user:synthetic","created_at":"2026-01-01T00:00:00.000Z","payload":payload})
 }
+fn source() -> Value {
+    let hash = rentemester_storage::invoice_email::sha(b"abc");
+    json!({"sourceId":"source/synthetic","visibilityAnchorSlug":"synthetic","sha256":hash,"filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","transportIdentity":null,"receivedAt":"2026-01-01T00:00:00.000Z","metadata":{"documentType":"cash_register_receipt"},"createdBy":"user:synthetic","createdAt":"2026-01-01T00:00:00.000Z","exception":null,"assignments":[],"history":[event("ingested",json!({"sourceHash":hash,"filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","transportIdentity":null})),event("candidate_resolved",json!({"candidates":[{"companySlug":"distinct-target","evidenceKind":"portal","evidence":"Synthetic upload"}]}))]})
+}
+
 fn response(op: &str) -> Value {
     let mut s = source();
     if matches!(op, "assign" | "complete") {
-        s["assignments"] = json!([{"companySlug":"distinct-target","state":if op=="assign"{"approved"}else{"completed"},"documentId":if op=="complete"{json!(17)}else{Value::Null},"documentNo":if op=="complete"{json!("D17")}else{Value::Null},"assignedBy":"user:synthetic","assignedAt":"2026-01-01T00:00:00Z","completedAt":if op=="complete"{json!("2026-01-01T00:00:00Z")}else{Value::Null}}]);
+        s["assignments"] = json!([{"companySlug":"distinct-target","state":if op=="assign"{"approved"}else{"completed"},"documentId":if op=="complete"{json!(17)}else{Value::Null},"documentNo":if op=="complete"{json!("D17")}else{Value::Null},"assignedBy":"user:synthetic","assignedAt":"2026-01-01T00:00:00.000Z","completedAt":if op=="complete"{json!("2026-01-01T00:00:00.000Z")}else{Value::Null}}]);
+    }
+    if matches!(op, "assign" | "complete") {
+        s["history"]
+            .as_array_mut()
+            .unwrap()
+            .push(event("assigned", json!({"companySlug":"distinct-target"})));
+        if op == "complete" {
+            s["history"].as_array_mut().unwrap().push(event("handoff_completed",json!({"companySlug":"distinct-target","documentId":17,"documentNo":"D17","sourceHash":rentemester_storage::invoice_email::sha(b"abc")})));
+        }
     }
     if op == "list" {
         json!({"ok":true,"rows":[s],"count":1,"nextCursor":null})
@@ -88,7 +105,7 @@ fn observe_custom(
     std::fs::create_dir(&dir).unwrap();
     private(&dir.join("cookie"), b"session=synthetic");
     private(&dir.join("bytes"), b"abc");
-    let metadata = json!({"filename":"synthetic.bin","mimeType":"application/octet-stream","transport":"upload","receivedAt":"2026-01-01T00:00:00Z","metadata":{"futureFact":{"kept":true}}});
+    let metadata = json!({"filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","receivedAt":"2026-01-01T00:00:00.000Z","metadata":{"documentType":"cash_register_receipt"},"sourceId":"source/synthetic","candidates":[{"companySlug":"distinct-target","evidenceKind":"portal","evidence":"Synthetic upload"}]});
     let metadata = custom_metadata.unwrap_or(metadata);
     private(&dir.join("metadata"), metadata.to_string().as_bytes());
     let operation = op.to_owned();
@@ -529,7 +546,7 @@ fn exact_json_precedence_and_split_globals() {
 fn native_boundaries_and_authority_injection_refuse_before_credentials() {
     let dir = std::env::temp_dir().join(format!("rm-inbox-injection-{}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
-    let base = json!({"filename":"synthetic.bin","mimeType":"application/octet-stream","transport":"upload","receivedAt":"2026-01-01T00:00:00Z","metadata":{}});
+    let base = json!({"filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","receivedAt":"2026-01-01T00:00:00.000Z","metadata":{}});
     let mut cases = Vec::new();
     for key in [
         "actor",
@@ -605,4 +622,68 @@ fn native_boundaries_and_authority_injection_refuse_before_credentials() {
         assert_eq!(o.status.code(), Some(1));
     }
     std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn canonical_ingest_receipt_and_original_intent_are_checked_without_rewriting_wire() {
+    let metadata = json!({"sourceId":" source/synthetic ","filename":" synthetic.txt","mimeType":"text/plain","transport":"upload","receivedAt":"2026-01-01T01:00:00+01:00","metadata":{"documentType":"cash_register_receipt"},"candidates":[{"companySlug":"distinct-target","evidenceKind":"portal","evidence":"Synthetic upload"}]});
+    let good = observe_custom(
+        "ingest",
+        200,
+        response("ingest"),
+        false,
+        None,
+        false,
+        None,
+        Some(metadata),
+    );
+    assert_eq!(
+        good.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&good.stdout)
+    );
+    let metadata = json!({"sourceId":"source/synthetic","filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","receivedAt":"2026-01-01T00:00:00Z","metadata":{"documentType":"cash_register_receipt"},"candidates":[{"companySlug":"distinct-target","evidenceKind":"portal","evidence":"Synthetic upload"}]});
+    let mut wrong = response("ingest");
+    wrong["source"]["receivedAt"] = json!("2026-02-01T00:00:00.000Z");
+    let bad = observe_custom(
+        "ingest",
+        200,
+        wrong,
+        false,
+        None,
+        false,
+        None,
+        Some(metadata.clone()),
+    );
+    assert_eq!(bad.status.code(), Some(1));
+    let mut metadata = metadata;
+    metadata["transportIdentity"] = json!("explicit-upload-identity");
+    let bad = observe_custom(
+        "ingest",
+        200,
+        response("ingest"),
+        false,
+        None,
+        false,
+        None,
+        Some(metadata),
+    );
+    assert_eq!(bad.status.code(), Some(1));
+    // Advisory staging facts remain exact and do not assert completion eligibility.
+    let facts = json!({"futureFact":{"kept":true}});
+    let metadata = json!({"filename":"synthetic.txt","mimeType":"text/plain","transport":"upload","receivedAt":"2026-01-01T00:00:00.000Z","metadata":facts,"sourceId":"source/synthetic","candidates":[{"companySlug":"distinct-target","evidenceKind":"portal","evidence":"Synthetic upload"}]});
+    let mut reply = response("ingest");
+    reply["source"]["metadata"] = facts;
+    let staged = observe_custom(
+        "ingest",
+        200,
+        reply,
+        false,
+        None,
+        false,
+        None,
+        Some(metadata),
+    );
+    assert_eq!(staged.status.code(), Some(0));
 }
