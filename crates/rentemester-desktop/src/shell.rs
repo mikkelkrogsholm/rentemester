@@ -605,6 +605,11 @@ fn backup_menu(app: &AppHandle, id: &str) {
                     return;
                 }
             };
+            show_info(
+                &handle,
+                "Kontrol af valgt backup",
+                format!("{}\n\nKONTROLLEN KØRER\nIngen backup er godkendt endnu. Resultatet vises her, når den skrivebeskyttede kontrol er afsluttet.", review.description()),
+            );
             let binary = lease.0.options.server_binary.clone();
             tauri::async_runtime::spawn(async move {
                 let result = tauri::async_runtime::spawn_blocking(move || {
