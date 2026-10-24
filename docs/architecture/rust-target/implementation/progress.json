@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R05 #677 whole acceptance:1490 exact advertised contracts639HTTP464CLI387MCP/38source-reviewed partitions, explicit legacyReact compatibility/currentprotocol refusal/safeclientoutcomes; diagnosed publicHEAD corrected with existing64HEADcases31routes RED/GREEN.",
-  "code_revision": "909af0cfe12b16303585680928b1d0930492dce8",
-  "spec_revision": "sha256:c0bb5907d6d4daea98d20bbd72995f5edbf1540a2c2810f929a69ad3f5ba6814",
-  "state": "Whole677 accepted and readyforGitHubclosure;37of55 currentlyclosed18open until realclosure. All55originalscope/J01-J07/manualdesktoplast/release/cutover/retirement retained.",
+  "current_increment": "R43 #715 wholeclienttransport accepted: currentSDK TLSunknownCA/wronghostname refusebeforecredentials and trustedHTTPS succeeds; typedprotocol/auth/binary/cancellation and exactorigin/account/workspace/companycontext/recovery proofs current-sourcebound. No financial/provider effectreplay.",
+  "code_revision": "39150862e7aab0594fb9025aaf1b93d099791259",
+  "spec_revision": "sha256:74441161672cf10094b54ace6b9a397c7310a58d1d70309c3149f914dcc50b4b",
+  "state": "38of55originalissues actuallyCLOSED17OPEN; whole715 acceptedreadyforGitHubclosure. Whole677CLOSED. All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Close actualGitHub677 using fullcriterion evidence; then choose smallest necessary whole existingissue and preserve all otheroriginalscope."
+    "Close actualGitHub715 with fullcriterion evidence, then triage next necessary whole originalissue without replaying accepted effects."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -17,7 +17,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R57 #677:234exact ownership/recovery contracts reviewed/repaired/integrated. Ownership/corporate/dispositions60,group/reconciliation57,backup/transfer/restore69,archive/privacy48; fourcurrentcontractchecks and unchangedR54source/binary/log evidence accepted withoutfinancial/provider replay.",
+  "previous_verified_increment": "R05 #677 whole acceptance:1490 exact advertised contracts639HTTP464CLI387MCP/38source-reviewed partitions, explicit legacyReact compatibility/currentprotocol refusal/safeclientoutcomes; diagnosed publicHEAD corrected with existing64HEADcases31routes RED/GREEN.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16299,6 +16299,15 @@
         "mcp": 387,
         "partitions": 38
       }
+    },
+    "r43_client715_whole_accepted": {
+      "issue": 715,
+      "whole_issue_accepted": true,
+      "source_revision": "39150862e7aab0594fb9025aaf1b93d099791259",
+      "report": "/tmp/rentemester-rust-reports/r43-client715-whole-accepted.json",
+      "sha256": "a163f45575b534341341c437f35aa5097d5e5d300cf3ebd843af027239a631fc",
+      "sgd_run": "rust-r60-client715-qualification-20261024T075838.138259000",
+      "remaining": "Otheroriginalissues and finalinstalledGUI712/722/release/cutover/retirement remain."
     }
   },
   "verified_history": [
@@ -18396,7 +18405,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 677,
+    "current_issue": 715,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
