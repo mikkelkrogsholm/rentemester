@@ -294,9 +294,20 @@ fn credential_generation_is_stable_and_changes_with_private_admission() {
         ))
         .unwrap()
     };
+    let original = c("synthetic-key", "test");
     assert_eq!(
-        c("synthetic-key", "test").credential_generation(),
-        c("synthetic-key", "test").credential_generation()
+        original.credential_generation(),
+        original.credential_generation()
+    );
+    let rotated = c("rotated-key", "test");
+    let restored = c("synthetic-key", "test");
+    assert_ne!(
+        original.credential_generation(),
+        rotated.credential_generation()
+    );
+    assert_ne!(
+        original.credential_generation(),
+        restored.credential_generation()
     );
     assert_ne!(
         c("synthetic-key", "test").credential_generation(),

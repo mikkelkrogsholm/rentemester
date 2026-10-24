@@ -1,7 +1,6 @@
 //! Inbound listing and signed-URL byte transport only. No XML signature validation.
 use super::*;
 use sha2::{Digest, Sha256};
-use std::sync::OnceLock;
 
 /// Opaque provider row. Signed download capabilities never leave this module.
 pub struct ReceivedRecord {
@@ -23,16 +22,12 @@ pub struct ReceivedPage {
     pub has_next: bool,
 }
 
-// A process-private, salted witness, stable for equivalent admitted configuration.
-// Never persist, serialize, or log it.
+// A process-private instance epoch. Reconstructing equivalent credentials must not
+// revive an admission held across rotation away and back. The getter stays stable
+// for the same live Client. Never persist, serialize, or log this witness.
 pub(super) fn generation(config: &Config) -> Result<[u8; 32], Error> {
-    static SALT: OnceLock<Result<[u8; 32], Error>> = OnceLock::new();
-    let salt = SALT.get_or_init(|| {
-        let mut salt = [0; 32];
-        getrandom::fill(&mut salt).map_err(|_| Error::Configuration)?;
-        Ok(salt)
-    });
-    let salt = salt.as_ref().map_err(|e| *e)?;
+    let mut salt = [0; 32];
+    getrandom::fill(&mut salt).map_err(|_| Error::Configuration)?;
     let mut hash = Sha256::new();
     hash.update(salt);
     for field in [
