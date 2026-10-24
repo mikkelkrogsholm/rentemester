@@ -415,8 +415,9 @@ mod tests {
         for suffix in ["create-identity"] {
             let url = format!("{origin}/api/companies/a/workspace-parties/{suffix}");
             let valid = json!({"partyId":"synthetic-identity","kind":"organization","name":"Synthetic identity","source":"synthetic-review","observedAt":"2026-01-01","reviewAssertion":"Synthetic reviewed","confirm":true});
+            // Static POST route must preserve GET inspection for the pre-existing valid opaque ID.
+            assert_eq!(client.get(&url).send().await.unwrap().status(),StatusCode::UNAUTHORIZED);
             for method in [
-                reqwest::Method::GET,
                 reqwest::Method::HEAD,
                 reqwest::Method::PUT,
                 reqwest::Method::DELETE,
