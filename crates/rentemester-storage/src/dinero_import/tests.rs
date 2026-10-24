@@ -1204,3 +1204,75 @@ fn changed_role_or_journal_head_invalidates_review_before_chart_updates() {
         tx.rollback().unwrap();
     }
 }
+
+#[test]
+fn original_import94_complete_dinero_history_openitems_rollback_and_refusal() {
+    let (_, mut db) = db();
+    let bytes = source("24500,000000", false);
+    let decoded = decode_source(&bytes).unwrap();
+    let before = snapshot(&db);
+    {
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let p = prepare(&tx, &decoded, latest()).unwrap();
+        let result = run_original(&tx, &p, latest(), "synthetic", NOW, &[]).unwrap();
+        assert_eq!(result["sourceSystem"], "dinero");
+        assert_eq!(
+            result["historicalEntriesPosted"].as_array().unwrap().len(),
+            3
+        );
+        assert_eq!(result["migrationOpenItems"]["batchCount"], 1);
+        verify_sources(&tx, &bytes);
+        assert!(apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).is_err());
+        tx.rollback().unwrap();
+    }
+    assert_eq!(snapshot(&db), before);
+    let bad = decode_source(&source("24501,000000", false)).unwrap();
+    {
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let p = prepare(&tx, &bad, latest()).unwrap();
+        assert!(apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).is_err());
+    }
+    assert_eq!(snapshot(&db), before);
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let p = prepare(&tx, &decoded, latest()).unwrap();
+    apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).unwrap();
+    tx.commit().unwrap();
+    verify_sources(&db, &bytes);
+}
+
+#[test]
+fn original_import94_chart_only_uses_actual_changes_company_decisions_without_fake_journal() {
+    let (_, mut db) = db();
+    let bytes = chart_source();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    seed_wrong_account(&tx);
+    let p = prepare(&tx, &decode_source(&bytes).unwrap(), latest()).unwrap();
+    let result = run_original(&tx, &p, latest(), "synthetic", NOW, &[]).unwrap();
+    assert_eq!(result["ok"], true);
+    assert_eq!(result["openingBalanceLineCount"], 0);
+    assert!(result.get("entryId").is_none());
+    assert!(result.get("historicalEntriesPosted").is_none());
+    assert_eq!(result["chart"]["existing"], json!(["1000"]));
+    assert_eq!(result["chart"]["updated"], json!(["1000"]));
+    assert_eq!(result["chart"]["differences"].as_array().unwrap().len(), 1);
+    assert_eq!(result["company"]["updatedFields"], json!(["cvr"]));
+    assert!(
+        result["company"]["notes"][0]
+            .as_str()
+            .unwrap()
+            .contains("name kept")
+    );
+    assert!(
+        result.get("archiveIntegrity").is_none(),
+        "directory package never claims raw ZIP evidence"
+    );
+    verify_sources(&tx, &bytes);
+}

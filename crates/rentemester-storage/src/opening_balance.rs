@@ -222,15 +222,6 @@ fn prepare_mode(
         credit: validation.total_credit,
     })
 }
-pub(crate) fn prepare_import(
-    tx: &Transaction<'_>,
-    input: &Input,
-    verified: &[VerifiedArchive],
-    latest: Date,
-    _admitted: &crate::dinero_import::AdmittedVoucher,
-) -> Result<Prepared, Error> {
-    prepare_mode(tx, input, verified, latest, true, None)
-}
 /// Fresh-key domain callback only. The authorized adapter owns durable keyed receipts and commit.
 pub fn apply(
     tx: &Transaction<'_>,
@@ -240,32 +231,23 @@ pub fn apply(
     actor: Actor<'_>,
     now_ms: i64,
 ) -> Result<Value, Error> {
-    apply_mode(tx, input, verified, latest, actor, now_ms, None, None)
-}
-pub(crate) fn apply_import(
-    tx: &Transaction<'_>,
-    input: &Apply,
-    verified: &[VerifiedArchive],
-    latest: Date,
-    actor: Actor<'_>,
-    now_ms: i64,
-    admitted: &crate::dinero_import::AdmittedVoucher,
-) -> Result<Value, Error> {
     apply_mode(
         tx,
-        input,
+        &input.input,
+        Some(input),
         verified,
         latest,
         actor,
         now_ms,
-        Some(admitted),
+        None,
         None,
     )
 }
 #[allow(clippy::too_many_arguments)]
 fn apply_mode(
     tx: &Transaction<'_>,
-    input: &Apply,
+    input: &Input,
+    reviewed: Option<&Apply>,
     verified: &[VerifiedArchive],
     latest: Date,
     actor: Actor<'_>,
@@ -274,8 +256,10 @@ fn apply_mode(
     synthetic_source: Option<&crate::synthetic_import::Input>,
 ) -> Result<Value, Error> {
     journal_post::require_current(tx)?;
-    crate::idempotency::validate_key(&input.idempotency_key)?;
-    if !input.confirm
+    if let Some(reviewed) = reviewed {
+        crate::idempotency::validate_key(&reviewed.idempotency_key)?;
+    }
+    if reviewed.is_some_and(|r| !r.confirm)
         || actor.program != PROGRAM
         || !actor.subject.starts_with("user:")
         || actor.subject.len() <= 5
@@ -286,21 +270,19 @@ fn apply_mode(
     }
     let prepared = prepare_mode(
         tx,
-        &input.input,
+        input,
         verified,
         latest,
         admitted.is_some(),
         synthetic_source,
     )?;
-    if input.plan_hash != prepared.hash {
+    if reviewed.is_some_and(|r| r.plan_hash != prepared.hash) {
         return Err(refused("opening plan changed; review a fresh plan"));
     }
     if !prepared.blockers.is_empty() {
         return Err(refused(prepared.blockers.join("; ")));
     }
-    let request = input
-        .input
-        .request(&prepared.binding.source_basis.currency)?;
+    let request = input.request(&prepared.binding.source_basis.currency)?;
     let posted = if let Some(admitted) = admitted {
         journal_post::post_import_opening(tx, &request, latest, actor.subject, admitted)?
     } else {
@@ -320,7 +302,7 @@ fn apply_mode(
     }
     let created_at = rentemester_engine::company_knowledge::timestamp(now_ms)?;
     let record = Record {
-        cut_over_date: input.input.cut_over_date,
+        cut_over_date: input.cut_over_date,
         journal_entry_id: posted["entryId"].as_i64().ok_or_else(|| sql("entry"))?,
         journal_entry_no: posted["entryNo"]
             .as_str()
@@ -591,12 +573,30 @@ pub(crate) fn apply_synthetic(
     crate::synthetic_import::verify_opening(source, &input.input)?;
     apply_mode(
         tx,
-        input,
+        &input.input,
+        Some(input),
         verified,
         latest,
         actor,
         now_ms,
         None,
         Some(source),
+    )
+}
+
+/// Server-owned original admission: the plan is derived under the caller's transaction.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn apply_original(
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
+    admitted: Option<&crate::dinero_import::AdmittedVoucher>,
+    source: Option<&crate::synthetic_import::Input>,
+) -> Result<Value, Error> {
+    apply_mode(
+        tx, input, None, verified, latest, actor, now_ms, admitted, source,
     )
 }

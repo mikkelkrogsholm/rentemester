@@ -180,3 +180,107 @@ pub fn apply(
 
 #[cfg(test)]
 mod tests;
+
+/// Original one-command admission. The caller owns authority and atomic rollback.
+pub fn run_original(
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
+) -> Result<Value, Error> {
+    let parsed = source(input)?;
+    let accounts = chart(&parsed);
+    let changes = source_chart::prepare(tx, &accounts)?;
+    let at = rentemester_engine::company_knowledge::timestamp(now_ms)?;
+    source_chart::apply(
+        tx,
+        &accounts,
+        &changes,
+        actor
+            .subject
+            .strip_prefix("user:")
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| refused("current human actor required"))?,
+        &at,
+    )?;
+    let result = opening_balance::apply_original(
+        tx,
+        &opening(&parsed),
+        verified,
+        latest,
+        actor,
+        now_ms,
+        None,
+        Some(input),
+    )?;
+    let record = &result["openingBalance"];
+    Ok(
+        json!({"ok":true,"sourceSystem":"synthetic-csv","cutOverDate":parsed.cut_over_date,
+        "openingBalanceLineCount":parsed.opening_balances.len(),"historicalEntriesSkipped":0,"chart":original_chart(&changes, &[])?,
+        "entryId":record["journalEntryId"],"entryNo":record["journalEntryNo"],"entryHash":record["journalEntryHash"],
+        "auditTrail":["Import started from source system 'synthetic-csv'", "Source chart reconciled", "Opening balance posted"],
+        "appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[]}),
+    )
+}
+
+/// Source presentation of the actual shared chart decisions, never guessed from final rows.
+pub(crate) fn original_chart(
+    changes: &[source_chart::Change],
+    unmapped: &[String],
+) -> Result<Value, Error> {
+    let (mut created, mut existing, mut updated, mut differences, mut conflicts) =
+        (vec![], vec![], vec![], vec![], vec![]);
+    for change in changes {
+        if change.before.is_some() {
+            existing.push(change.account_no.clone());
+        }
+        match change.action.as_str() {
+            "create" => created.push(change.account_no.clone()),
+            "unchanged" => (),
+            "conflict" => conflicts.push(
+                change
+                    .conflict
+                    .clone()
+                    .ok_or_else(|| refused("chart conflict details unavailable"))?,
+            ),
+            "update" => {
+                let before = change
+                    .before
+                    .as_ref()
+                    .ok_or_else(|| refused("chart update has no original definition"))?;
+                let after = &change.after;
+                let mut mismatch = vec![];
+                for (field, old, new) in [
+                    ("name", before.name.as_str(), after.name.as_str()),
+                    ("type", before.kind.as_str(), after.kind.as_str()),
+                    (
+                        "normal_balance",
+                        before.normal_balance.as_str(),
+                        after.normal_balance.as_str(),
+                    ),
+                    (
+                        "default_vat_code",
+                        before.default_vat_code.as_deref().unwrap_or(""),
+                        after.default_vat_code.as_deref().unwrap_or(""),
+                    ),
+                ] {
+                    if old != new {
+                        mismatch.push(format!("{field} ('{old}' -> '{new}')"));
+                    }
+                }
+                updated.push(change.account_no.clone());
+                differences.push(format!(
+                    "account {}: reclassified to source — {}",
+                    change.account_no,
+                    mismatch.join(", ")
+                ));
+            }
+            _ => return Err(refused("unknown source chart decision")),
+        }
+    }
+    Ok(
+        json!({"created":created,"existing":existing,"updated":updated,"differences":differences,"conflicts":conflicts,"unmappedVatCodes":unmapped}),
+    )
+}
