@@ -34,3 +34,9 @@ Only the four owned flat files changed. Prior accepted partitions, all55/J01–J
 
 ## Lead source-review repair
 Actual service_company constructors append required usage/business on admitted results. Four native report envelopes now retain a distinct human branch and service branch (business committed; usage committed/not_committed). Failures retain human shape plus required serialized service stages; status correlation and HEAD stripping remain explicit. Existing raw Money, nested audit availability, arbitrary evidence JSON and CLI/MCP adapters are unchanged.
+
+## R63/R64 original audit CLI compatibility
+
+New advertised `cli:audit verify` reuses the unchanged validated native full verifier. Available findings project flat `{ok,entries,errors}`: clean0, corrupt1; native `remote audit-verify` remains exit0 observation wrapper. JSON/human/globalformat and private local/remote bindings have six compiled fixtures. A real128byte preflight bug was corrected by delegating fullPATH validation to existinglocalbinding; a valid80byteslug gives a >128bytefullpath with unchangedfixedworkspace/shortsocket, RED2/GREEN0 and no TCPfallback. An initialinvalidworkspaceRoot test was diagnosed and retained, not usedto weakennamespace rules.
+
+Unavailable/credential/protocol/authorization/localbinding failures are sanitizedcatch-shaped errors with no inventedcount/schema. Originaloffline pending-schema inspection remains explicitly unsupported bynativev1; full716/launcher/otherR01 requirements and714/712manualdependencies remainopen. ActualcompiledRoothelp differs byonly thisonecommand; all1490prioroperation semantics remainunchanged, with affectedcurrent sourcehashes refreshed. Currentuniverse is1491:639HTTP465CLI387MCP across38partitions. No financial/provider/authentication effects replayed.

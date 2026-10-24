@@ -168,7 +168,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -233,7 +233,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
       "needle": "if args.first().map(String::as_str) != Some(\"trial-balance\")"
     },
     {
@@ -292,5 +292,55 @@
         "needle": "pub(super) fn failure("
       }
     ]
+  },
+  "originalAudit716": {
+    "new_id": "cli:audit verify",
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-cli/src/audit_verify_original.rs",
+        "sha256": "6ec2dd8a58f8e148eae0ad78c791cdd47c658d0a597df85ad0c08250679ae554",
+        "needle": "pub fn execute"
+      },
+      {
+        "path": "crates/rentemester-cli/src/main.rs",
+        "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+        "needle": "audit_verify_original::preflight"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_args.rs",
+        "sha256": "7188202b051f23d89334f067f9fbc40d7ddb968ca73c7052683a9b311c032063",
+        "needle": "fn migrated"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_discovery.rs",
+        "sha256": "8295604963b3296e7e332c935f3262228d323e180cfb3cd63bd6321e2bedf8a7",
+        "needle": "pub fn help"
+      },
+      {
+        "path": "crates/rentemester-cli/src/local_binding.rs",
+        "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+        "needle": "fn local_company"
+      },
+      {
+        "path": "crates/rentemester-client/src/local_runtime.rs",
+        "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+        "needle": "pub fn load"
+      },
+      {
+        "path": "crates/rentemester-client/src/audit_verify.rs",
+        "sha256": "51f355e3ea53488b2c13904c54036c3321b44a975427a6200bc6b8476780081f",
+        "needle": "fn checked"
+      },
+      {
+        "path": "src/cli/audit.ts",
+        "sha256": "fd357bf8839d25254b38ec36d961e8159b1ebfb2475191a3c7cc007985bcca1e",
+        "needle": "dispatch.on(\"audit\", \"verify\""
+      }
+    ],
+    "source_review": "Originalflatprojection over unchangedvalidatednative5componentverifier;6actualcompiledCLItests and validlongpathREDGREEN. Rootcompiledhelp adds onlyoneidentity. Nativeobservationunchanged; originaloffline-schema/whole716scope retained.",
+    "proof": {
+      "path": "/tmp/rentemester-rust-reports/r63-audit716-compatibility-proof.json",
+      "sha256": "e4ce7de0246577c50ce0fd4b1e5a06f08234fa92b1d4644f61c2b3949497bca0"
+    }
   }
 }

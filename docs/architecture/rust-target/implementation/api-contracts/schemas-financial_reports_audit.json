@@ -9513,6 +9513,390 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OriginalAuditCliInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "audit verify"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "server",
+            "cookieFile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "audit verify"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "serviceKeyFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "server",
+            "serviceKeyFile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "audit verify"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "localProfile",
+            "cookieFile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "audit verify"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "serviceKeyFile": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "localProfile",
+            "serviceKeyFile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "enum": [
+                "audit",
+                "audit verify"
+              ]
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "serviceKeyFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "not": {
+                "required": [
+                  "server",
+                  "localProfile"
+                ]
+              }
+            },
+            {
+              "not": {
+                "required": [
+                  "cookieFile",
+                  "serviceKeyFile"
+                ]
+              }
+            },
+            {
+              "not": {
+                "required": [
+                  "localProfile",
+                  "allowLoopbackHttp"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "OriginalAuditClean": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "entries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "entries",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAuditFindings": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "entries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "entries",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAuditCatch": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Audit verification unavailable: private credential or transport refused",
+              "Audit verification runtime unavailable",
+              "Audit verification unavailable; offline schema projection unsupported by native audit verification v1",
+              "Audit verification unavailable: transport, authorization or protocol refused",
+              "Audit verification unavailable: local binding refused"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAuditHelp": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "const": "Read-only CompanyRead; no stdin, actor override, confirmation, repair, retry or fallback."
+        },
+        "commands": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "audit verify --company SLUG|VERIFIED_LOCAL_PATH"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "compatibility": {
+          "const": "Native audit verification v1 only. Offline pending-schema metadata is unavailable through this API; fail closed without invented schema or entry counts."
+        },
+        "connection": {
+          "const": "--server ORIGIN or --local-profile ABSOLUTE_PATH; --cookie-file PATH or --service-key-file PATH; --allow-loopback-http; --json or --format json|human"
+        },
+        "exitCodes": {
+          "type": "object",
+          "properties": {
+            "0": {
+              "const": "verified clean"
+            },
+            "1": {
+              "const": "findings or unavailable observation"
+            },
+            "2": {
+              "const": "usage"
+            }
+          },
+          "required": [
+            "0",
+            "1",
+            "2"
+          ],
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "current": {
+              "const": "{ok,entries,errors}"
+            },
+            "refusal": {
+              "const": "{ok:false,errors}"
+            }
+          },
+          "required": [
+            "current",
+            "refusal"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "authority",
+        "commands",
+        "compatibility",
+        "connection",
+        "exitCodes",
+        "output"
+      ],
+      "additionalProperties": false
     }
   }
 }

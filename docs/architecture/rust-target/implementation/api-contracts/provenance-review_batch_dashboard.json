@@ -202,7 +202,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
       "needle": "mod mileage_posting;"
     },
     {
@@ -217,7 +217,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "sha256": "7188202b051f23d89334f067f9fbc40d7ddb968ca73c7052683a9b311c032063",
       "needle": "//! Source-backed argv structure only. Family adapters own allowed flags and domain types."
     },
     {
