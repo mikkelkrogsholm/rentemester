@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R61/R62 #714 headlessreadiness accepted: strictreadonly schema/history/physical/integrity/namespace states, current/setup200 and sanitizedunavailable503 with noauthorityroutes. Firstownersetup and originalstartupdisposal controls preserved. ActualHTTP7new+retainedno-config,5storage2servertests and exact1490currentcontracts source/binary/logbound.",
-  "code_revision": "8562d6dd7b631e777ad7d63c3cbb4f51435388a6",
-  "spec_revision": "sha256:51129bb8e1547555705edeaf2acb231611cb1f3ec2819b921583fd67837ad6f6",
-  "state": "39of55originalissues actuallyCLOSED16OPEN, including677and715CLOSED. Whole714OPEN: original712finalinstallednativeidentity/vault/cancellation dependency plus wholeoriginalscope reconciliation retained; manualdesktoplast. All55/J01-J07/release/cutover/retirement retained.",
+  "current_increment": "R63/R64 original audit verify CLI accepted: one native verifier; authoritative flat clean/findings JSON and humanstreams exit0/1, explicit private local/remote transport, failclosed unavailable/protocol/auth refusal. Sixcompiledchecks and valid longPATH RED2/GREEN0; nativeobservation untouched. Exact1491contracts:639HTTP465CLI387MCP/38partitions.",
+  "code_revision": "fe541864783dca8c774d28057e99e549258ef36d",
+  "spec_revision": "sha256:9d2e231b92eda3258f20b507ec7e10bf6c1daa3a1d0583fa369b4cf8f41fb2bc",
+  "state": "39of55originalissues actuallyCLOSED16OPEN. Whole716 originalCLI/launcher/offlineschema parity stillOPEN;714/712finalinstalledmanualdependency retained, desktoplast. Alloriginal55/J01-J07/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Nextnecessary #716 wholeoriginalauditverify journey: originalflatfindings/streams/exits through existingnativeverifier, no newengine; keep fullCLI/launchercompatibility and714dependency open."
+    "Close next smallest necessary existing wholeissue from current39/55acceptedstate; full716originalCLI/launcher and714/712finalnative dependencies remain explicit."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -17,7 +17,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R43 #715 wholeclienttransport accepted: currentSDK TLSunknownCA/wronghostname refusebeforecredentials and trustedHTTPS succeeds; typedprotocol/auth/binary/cancellation and exactorigin/account/workspace/companycontext/recovery proofs current-sourcebound. No financial/provider effectreplay.",
+  "previous_verified_increment": "R61/R62 #714 headlessreadiness accepted: strictreadonly schema/history/physical/integrity/namespace states, current/setup200 and sanitizedunavailable503 with noauthorityroutes. Firstownersetup and originalstartupdisposal controls preserved. ActualHTTP7new+retainedno-config,5storage2servertests and exact1490currentcontracts source/binary/logbound.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16321,6 +16321,21 @@
         "Original#712 finalinstallednativeidentity/vault/cancellation dependency retained; manualdesktoplast",
         "Whole714 otheroriginalscope/criterion reconciliation and all55/J01-J07/release/cutover/retirement remain"
       ]
+    },
+    "r63_r64_original_audit716": {
+      "issue": 716,
+      "whole_issue_accepted": false,
+      "status": "Originalauditverify component accepted; exact1491currentcontracts",
+      "source_revision": "fe541864783dca8c774d28057e99e549258ef36d",
+      "report": "/tmp/rentemester-rust-reports/r64-original-audit716-contracts-accepted.json",
+      "sha256": "11c44f1686a4d8770f90eaabe390349d6f06c671f3da5d46e0ecab217ad96686",
+      "sgd_run": "rust-r64-original-audit716-contracts-20261024T094223.308928000",
+      "remaining": [
+        "Whole716 alloriginalCLI operations and actualdefaultlauncher/copy-onlyemptyPATH/TTY-pipe/exitcode/machineoutput/local-remote parity and dependencies, not thisonecommand",
+        "Original offline pending-schema metadata branch unsupported bynativev1; explicitfailclosed boundary, no acceptancewaiver",
+        "Whole714/712 dependencies and finalinstalledmanualdesktoplast retained",
+        "All55/J01-J07/security/accounting/backup/provider/release/cutover/retirement retained"
+      ]
     }
   },
   "verified_history": [
@@ -18418,7 +18433,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 714,
+    "current_issue": 716,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
