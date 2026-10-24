@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R43 #715 wholeclienttransport accepted: currentSDK TLSunknownCA/wronghostname refusebeforecredentials and trustedHTTPS succeeds; typedprotocol/auth/binary/cancellation and exactorigin/account/workspace/companycontext/recovery proofs current-sourcebound. No financial/provider effectreplay.",
-  "code_revision": "39150862e7aab0594fb9025aaf1b93d099791259",
-  "spec_revision": "sha256:74441161672cf10094b54ace6b9a397c7310a58d1d70309c3149f914dcc50b4b",
-  "state": "38of55originalissues actuallyCLOSED17OPEN; whole715 acceptedreadyforGitHubclosure. Whole677CLOSED. All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
+  "current_increment": "R61/R62 #714 headlessreadiness accepted: strictreadonly schema/history/physical/integrity/namespace states, current/setup200 and sanitizedunavailable503 with noauthorityroutes. Firstownersetup and originalstartupdisposal controls preserved. ActualHTTP7new+retainedno-config,5storage2servertests and exact1490currentcontracts source/binary/logbound.",
+  "code_revision": "8562d6dd7b631e777ad7d63c3cbb4f51435388a6",
+  "spec_revision": "sha256:51129bb8e1547555705edeaf2acb231611cb1f3ec2819b921583fd67837ad6f6",
+  "state": "39of55originalissues actuallyCLOSED16OPEN, including677and715CLOSED. Whole714OPEN: original712finalinstallednativeidentity/vault/cancellation dependency plus wholeoriginalscope reconciliation retained; manualdesktoplast. All55/J01-J07/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Close actualGitHub715 with fullcriterion evidence, then triage next necessary whole originalissue without replaying accepted effects."
+    "Nextnecessary #716 wholeoriginalauditverify journey: originalflatfindings/streams/exits through existingnativeverifier, no newengine; keep fullCLI/launchercompatibility and714dependency open."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -17,7 +17,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R05 #677 whole acceptance:1490 exact advertised contracts639HTTP464CLI387MCP/38source-reviewed partitions, explicit legacyReact compatibility/currentprotocol refusal/safeclientoutcomes; diagnosed publicHEAD corrected with existing64HEADcases31routes RED/GREEN.",
+  "previous_verified_increment": "R43 #715 wholeclienttransport accepted: currentSDK TLSunknownCA/wronghostname refusebeforecredentials and trustedHTTPS succeeds; typedprotocol/auth/binary/cancellation and exactorigin/account/workspace/companycontext/recovery proofs current-sourcebound. No financial/provider effectreplay.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16308,6 +16308,19 @@
       "sha256": "a163f45575b534341341c437f35aa5097d5e5d300cf3ebd843af027239a631fc",
       "sgd_run": "rust-r60-client715-qualification-20261024T075838.138259000",
       "remaining": "Otheroriginalissues and finalinstalledGUI712/722/release/cutover/retirement remain."
+    },
+    "r61_r62_server714_readiness": {
+      "issue": 714,
+      "whole_issue_accepted": false,
+      "status": "Headlessreadinesscomponent accepted; exactcurrent1490contracts retained",
+      "source_revision": "8562d6dd7b631e777ad7d63c3cbb4f51435388a6",
+      "report": "/tmp/rentemester-rust-reports/r62-server714-readiness-contracts-accepted.json",
+      "sha256": "ca4976d7dcccf60bb5e38197d05f72e4a9823df1c0fe3dfb07d076d0bdfc6b4e",
+      "sgd_run": "rust-r62-server714-readiness-contracts-20261024T084920.881131000",
+      "remaining": [
+        "Original#712 finalinstallednativeidentity/vault/cancellation dependency retained; manualdesktoplast",
+        "Whole714 otheroriginalscope/criterion reconciliation and all55/J01-J07/release/cutover/retirement remain"
+      ]
     }
   },
   "verified_history": [
@@ -18405,7 +18418,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 715,
+    "current_issue": 714,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
