@@ -1,15 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R89/R90 original profile -> verified archive -> CFO read flow accepted; whole717 open",
-  "code_revision": "37bc04cab106054a8fe1f19d7986be7322d792d5",
+  "current_increment": "R91 full713bankbaseline/upstream integration accepted; pending GitHub closure",
+  "code_revision": "ced2964c7affc5f22bed6d1cb41fbcce343126ac",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_read_flow_component_accepted_whole717_open",
+  "state": "bank_roadmap713_whole_accepted_ready_to_close",
   "issues_closed": 40,
   "next": [
-    "717:18otheroriginalMCP names; all31originalworkflowdescriptions and completeperoperation/service/revocation/isolation/protocol/reconnect acceptance remain.",
-    "OriginalCFOworkspaceassertion requiresverifiedlocalruntime; remoteoriginalworkspaceidentity andfilesystemcompanyselectors remainexplicitnativebindingboundaries, notwholeparity.",
-    "71646otheroriginalCLIkeys/overview/bootstrap/path/full265; full55originalissues/J01-J07/finalrelease/cutover/retirement remain; manualinstalleddesktopLAST."
+    "All11existingupstreambankissues remainopen under363 including futureprovideridentity/consent/secretgenerations/preparestageplanapply/fake/sandbox/release.643strongidentity/ambiguousCSVprovideroverlap and642fullschema/migration/allprojectionacceptance not claimed.",
+    "712finalTaurilogin/cancellation/OSsecrets and717fulloriginalworkflow/service/reconnect remainopen. Full55issueepic/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST retained."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R87/R88 originalcontactCSV flow andofflineimportsystems accepted; samecommonRustbackend, whole716open",
+  "previous_verified_increment": "R89/R90 original profile -> verified archive -> CFO read flow accepted; whole717 open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16613,6 +16612,10 @@
     "r90_original_read_flow": {
       "path": "/private/tmp/rentemester-rust-reports/r90-original-read717-current-contracts-qualified.json",
       "sha256": "dcc3292e87cdb226732d1d1800bd7e6c055955ea6d4112bdc8771e091604715a"
+    },
+    "r91_bank713_whole": {
+      "path": "/private/tmp/rentemester-rust-reports/r91-byo-bank713-whole-accepted.json",
+      "sha256": "e42a419f734eb02556896acff5222464fab2ae4cc56e01cad2d1c216b3a8e2ca"
     }
   },
   "verified_history": [
@@ -18830,6 +18833,19 @@
         "717:18otheroriginalMCP names; all31originalworkflowdescriptions and completeperoperation/service/revocation/isolation/protocol/reconnect acceptance remain.",
         "OriginalCFOworkspaceassertion requiresverifiedlocalruntime; remoteoriginalworkspaceidentity andfilesystemcompanyselectors remainexplicitnativebindingboundaries, notwholeparity.",
         "71646otheroriginalCLIkeys/overview/bootstrap/path/full265; full55originalissues/J01-J07/finalrelease/cutover/retirement remain; manualinstalleddesktopLAST."
+      ]
+    },
+    {
+      "issue": 713,
+      "wholeIssueAccepted": true,
+      "wholeIssueClosed": false,
+      "source_revision": "ced2964c7affc5f22bed6d1cb41fbcce343126ac",
+      "report": "/tmp/rentemester-rust-reports/r91-byo-bank713-whole-accepted.json",
+      "sha256": "e42a419f734eb02556896acff5222464fab2ae4cc56e01cad2d1c216b3a8e2ca",
+      "scope": "All11existingbankreferences/18baselinecontractpendingcases,4actualcompiledfakecases/retained693proofs; no providerfeature/payment/dependencywaiver.",
+      "remaining": [
+        "All11existingupstreambankissues remainopen under363 including futureprovideridentity/consent/secretgenerations/preparestageplanapply/fake/sandbox/release.643strongidentity/ambiguousCSVprovideroverlap and642fullschema/migration/allprojectionacceptance not claimed.",
+        "712finalTaurilogin/cancellation/OSsecrets and717fulloriginalworkflow/service/reconnect remainopen. Full55issueepic/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST retained."
       ]
     }
   ],
