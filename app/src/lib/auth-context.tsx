@@ -1,3 +1,4 @@
+import { loginAttempts } from "./login-attempt";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { authClient } from "./auth-client";
 import { ApiError, request } from "./api/_shared";
@@ -72,13 +73,18 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (loginAttempts.snapshot() !== "active") setLoading(true);
     setBootstrapError(null);
+    if (["cleaning", "blocked"].includes(loginAttempts.snapshot())) { clear(); return; }
     try {
+      const attemptEpoch = loginAttempts.epoch;
       const current = await currentSession();
+      if (attemptEpoch !== loginAttempts.epoch) return;
+      try { loginAttempts.assertSession(current?.user ?? null); }
+      catch { await loginAttempts.cancel(); throw new Error("Account not confirmed"); }
       if (generation.current !== currentGeneration) return;
       const user = current?.user ?? null;
-      setSession(user);
+      if (loginAttempts.snapshot() !== "active") setSession(user);
       setCurrentSessionId(current?.sessionId ?? null);
       if (!user || !user.emailVerified || !user.twoFactorEnabled) {
         setContext(null);
@@ -86,11 +92,16 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       }
       const value = await request<SessionContext & { ok: true }>("/api/me", { signal: controller.signal });
       if (generation.current !== currentGeneration) return;
+      loginAttempts.assertSession(value.user);
       if (value.user.id !== user.id) throw new ApiError("auth_unavailable", "Din session og adgang stemmer ikke overens. Log ind igen.", 0);
+      loginAttempts.completeAdoption();
+      setSession(user);
       setContext({ user: value.user, workspaceRole: value.workspaceRole, companies: value.companies });
     } catch (error) {
       if (generation.current !== currentGeneration) return;
-      if (error instanceof ApiError && (error.status === 401 || error.code === "unauthorized")) clear();
+      if (loginAttempts.snapshot() === "active") await loginAttempts.cancel();
+      if (loginAttempts.snapshot() === "cleaning" || loginAttempts.snapshot() === "blocked") { clear(); }
+      else if (error instanceof ApiError && (error.status === 401 || error.code === "unauthorized")) clear();
       else {
         // Unknown authentication is not a logout or permission to show stale books.
         setContext(null);

@@ -1,5 +1,6 @@
+import { loginAttempts, type LoginAttempt } from "../lib/login-attempt";
 import { Button, Input } from "../components/ui";
-import { FormEvent, useEffect, useState, type ReactNode } from "react";
+import { FormEvent, useEffect, useState, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "../lib/auth-context";
@@ -21,6 +22,19 @@ export function LoginView() {
     navigate({ pathname: location.pathname, search: params.size ? `?${params}` : "" }, { replace: true });
   }, [location.pathname, location.search, navigate, verificationNotice]);
   const { refresh } = useAuth();
+  const attempt = useRef<LoginAttempt | null>(null);
+  const status = useSyncExternalStore(loginAttempts.subscribe, loginAttempts.snapshot);
+  useEffect(() => () => { if (attempt.current) void loginAttempts.cancel(attempt.current); }, []);
+  const cancel = () => {
+    const current = attempt.current; attempt.current = null;
+    setPassword(""); setCode(""); setNeedsTotp(false); setNativeEnrollment(false); setError(null); setBusy(false);
+    if (current) void loginAttempts.cancel(current);
+  };
+  const adopt = async (current: LoginAttempt) => {
+    loginAttempts.ready(current);
+    await refresh();
+    if (loginAttempts.current(current)) { attempt.current = null; loginAttempts.finish(current); }
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [needsTotp, setNeedsTotp] = useState(false);
@@ -30,9 +44,12 @@ export function LoginView() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const submit = async (event: FormEvent) => {
-    event.preventDefault(); setBusy(true); setError(null);
+    event.preventDefault(); if (busy || status !== "idle") return; setBusy(true); setError(null);
+    const current = loginAttempts.start(email); attempt.current = current;
     try {
-      const result = await authClient.signIn.email({ email, password, rememberMe: false }, { retry: 0 });
+      const result = await loginAttempts.run(current, () => authClient.signIn.email({ email, password, rememberMe: false }, { retry: 0 }));
+      if (!loginAttempts.current(current)) return;
+      loginAttempts.remember(current, (result.data as { user?: { id: string; email: string } } | null)?.user);
       if (result.error?.code === "MFA_ENROLLMENT_REQUIRED" && result.error.status === 409) {
         setPassword(""); setNativeEnrollment(true); return;
       }
@@ -41,24 +58,31 @@ export function LoginView() {
         setPassword("");
         setNeedsTotp(true);
       }
-      else await refresh();
-    } catch { setError("Kunne ikke logge ind. Kontrollér dine oplysninger og prøv igen."); }
-    finally { setBusy(false); }
+      else await adopt(current);
+    } catch { if (loginAttempts.current(current)) { cancel(); setError("Kunne ikke logge ind. Kontrollér dine oplysninger og prøv igen."); } }
+    finally { if (loginAttempts.current(current)) { setPassword(""); setBusy(false); } }
   };
   const verify = async (event: FormEvent) => {
-    event.preventDefault(); setBusy(true); setError(null);
+    event.preventDefault(); const current = attempt.current; if (busy || !current || !loginAttempts.current(current)) return; setBusy(true); setError(null);
     try {
-      const result = verificationMethod === "totp"
-        ? await authClient.twoFactor.verifyTotp({ code, trustDevice: false }, { retry: 0 })
-        : await authClient.twoFactor.verifyBackupCode({ code, trustDevice: false }, { retry: 0 });
-      if (result.error) throw new Error("two factor verification failed");
-      await refresh();
+      const result = await loginAttempts.run(current, () => verificationMethod === "totp"
+        ? authClient.twoFactor.verifyTotp({ code, trustDevice: false }, { retry: 0 })
+        : authClient.twoFactor.verifyBackupCode({ code, trustDevice: false }, { retry: 0 }));
+      if (!loginAttempts.current(current)) return;
+      if (result.error) {
+        if (result.error.status && [400, 401, 403, 429].includes(result.error.status)) { setError("Koden kunne ikke bekræftes. Prøv igen."); return; }
+        throw new Error("two factor verification unconfirmed");
+      }
+      loginAttempts.remember(current, (result.data as { user?: { id: string; email: string } } | null)?.user);
+      await adopt(current);
     }
-    catch { setError("Koden kunne ikke bekræftes. Prøv igen."); }
-    finally { setCode(""); setBusy(false); }
+    catch { if (loginAttempts.current(current)) { cancel(); setError("Koden kunne ikke bekræftes. Prøv igen."); } }
+    finally { if (loginAttempts.current(current)) { setCode(""); setBusy(false); } }
   };
-  if (nativeEnrollment) return <NativeEnrollmentView email={email} onLogin={() => { setNativeEnrollment(false); setNeedsTotp(false); setPassword(""); setError(null); }} />;
+  if (status === "cleaning" || status === "blocked") return <AuthPanel title="Log ind"><p role="status">{status === "cleaning" ? "Annullering afventer svar og sikker logout. Ingen nye login kan sendes endnu." : "Logout kunne ikke bekræftes. Login er blokeret."}</p>{status === "blocked" && <Button onClick={() => void loginAttempts.cancel()}>Kontrollér logout</Button>}</AuthPanel>;
+  if (nativeEnrollment && attempt.current) return <NativeEnrollmentView email={email} attempt={attempt.current} onLogin={cancel} onAdopt={() => adopt(attempt.current!)} />;
   return <AuthPanel title={needsTotp ? "Bekræft din kode" : "Log ind"}>
+    {(busy || needsTotp) && <Button type="button" onClick={cancel}>Annullér</Button>}
     {verificationNotice && <p className="banner error" role="alert">{verificationNotice}</p>}
     {error && <p className="banner error" role="alert">{error}</p>}
     {needsTotp ? <form onSubmit={verify}>
@@ -71,8 +95,7 @@ export function LoginView() {
   </AuthPanel>;
 }
 
-function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () => void }) {
-  const { refresh } = useAuth();
+function NativeEnrollmentView({ email, attempt, onLogin, onAdopt }: { email: string; attempt: LoginAttempt; onLogin: () => void; onAdopt: () => Promise<void> }) {
   const [password, setPassword] = useState("");
   const [setupKey, setSetupKey] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -82,8 +105,10 @@ function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () =
   const [error, setError] = useState<string | null>(null);
   const begin = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setError(null);
-    try { setSetupKey(await beginNativeEnrollment(email, password)); }
+    try { const key = await loginAttempts.run(attempt, () => beginNativeEnrollment(email, password)); if (loginAttempts.current(attempt)) setSetupKey(key); }
     catch (error) {
+      if (!loginAttempts.current(attempt)) return;
+      if (!(error instanceof NativeEnrollmentFailure) || error.unconfirmed) { setUnconfirmed(true); return; }
       setError(error instanceof NativeEnrollmentFailure && !error.unconfirmed
         ? "Kunne ikke starte opsætningen. Kontrollér dine oplysninger."
         : "Opsætningen kunne ikke bekræftes. Den kan være startet. Indtast din adgangskode for at starte igen, eller gå tilbage til login.");
@@ -92,8 +117,9 @@ function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () =
   };
   const confirm = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setError(null);
-    try { setCodes(await confirmNativeEnrollment(code)); setSetupKey(null); }
+    try { const result = await loginAttempts.run(attempt, () => confirmNativeEnrollment(code)); if (!loginAttempts.current(attempt)) return; setCodes(result); setSetupKey(null); }
     catch (error) {
+      if (!loginAttempts.current(attempt)) return;
       if (!(error instanceof NativeEnrollmentFailure) || error.unconfirmed) {
         setSetupKey(null); setPassword(""); setUnconfirmed(true);
       } else setError("Koden kunne ikke bekræftes. Kontrollér koden og prøv igen.");
@@ -101,7 +127,7 @@ function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () =
   };
   const acknowledge = async () => {
     setCodes([]); setBusy(true);
-    try { await refresh(); } finally { setBusy(false); onLogin(); }
+    try { await onAdopt(); } finally { setBusy(false); }
   };
   return <AuthPanel title="Opsæt totrinsbekræftelse">
     {error && <p role="alert" className="banner error">{error}</p>}
@@ -109,7 +135,7 @@ function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () =
       : codes.length ? <section aria-label="Recovery codes"><h3>Gem dine recovery codes</h3><p>Opsætningen er gennemført. Gem koderne sikkert nu. De vises kun denne ene gang.</p><ul>{codes.map((backup) => <li key={backup}>{backup}</li>)}</ul><Button type="button" disabled={busy} onClick={() => void acknowledge()}>Jeg har gemt koderne</Button></section>
       : setupKey ? <form onSubmit={confirm}><p>Åbn din autentifikator-app, vælg Tilføj konto og derefter Indtast opsætningsnøgle. Vælg en tidsbaseret kode (TOTP).</p><p>Konto: {email}. Tjeneste: Rentemester.</p><label>Opsætningsnøgle<Input aria-label="Opsætningsnøgle" readOnly value={setupKey} autoComplete="off" spellCheck={false} /></label><p>Brug 6 cifre og et interval på 30 sekunder, hvis appen spørger.</p><label>Engangskode<Input aria-label="Engangskode" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required /></label><Button type="submit" disabled={busy}>Bekræft opsætning</Button><Button type="button" disabled={busy} onClick={() => { setSetupKey(null); setCode(""); setError(null); }}>Start opsætning forfra</Button></form>
       : <form onSubmit={begin}><p>Bekræft din adgangskode for at tilføje Rentemester i din autentifikator-app.</p><label>Adgangskode<Input aria-label="Adgangskode" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><Button type="submit" disabled={busy}>Start opsætning</Button></form>}
-    {!unconfirmed && !codes.length && <Button type="button" disabled={busy} onClick={onLogin}>Tilbage til login</Button>}
+    {!unconfirmed && <Button type="button" onClick={() => { setPassword(""); setCode(""); setSetupKey(null); setCodes([]); onLogin(); }}>Tilbage til login</Button>}
   </AuthPanel>;
 }
 

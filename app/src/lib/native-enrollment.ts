@@ -1,3 +1,4 @@
+import { protocolHeaders } from "./api/_protocol";
 /** Native-only password-bound ceremony; one same-origin fetch, no mutation retries. */
 export class NativeEnrollmentFailure extends Error {
   constructor(public readonly unconfirmed: boolean) { super("Enrollment request refused"); }
@@ -6,9 +7,10 @@ async function post(path: "begin" | "confirm", body: object): Promise<unknown> {
   let response: Response;
   let value: unknown;
   try {
+    const admission = await protocolHeaders(`/api/auth/mfa-enrollment/${path}`, "POST");
     response = await fetch(`/api/auth/mfa-enrollment/${path}`, {
       method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error",
-      headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+      headers: { ...admission, "content-type": "application/json" }, body: JSON.stringify(body),
     });
     value = await response.json();
   } catch { throw new NativeEnrollmentFailure(true); }

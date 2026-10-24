@@ -1,3 +1,4 @@
+import { withProtocol } from "../test/protocol";
 import { beforeEach, expect, mock, test } from "bun:test";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -23,7 +24,7 @@ for (const status of [429, 503]) {
   test(`temporary session HTTP ${status} blocks access explicitly and permits a read-only refresh`, async () => {
     sessionStatus = status;
     let contextReads = 0;
-    stubGlobal("fetch", async () => {
+    stubAuthFetch( async () => {
       contextReads++;
       return response(context);
     });
@@ -42,7 +43,7 @@ for (const status of [429, 503]) {
 
 test("unavailable workspace context hides old grants, while definite unauthorized clears identity", async () => {
   let status = 200;
-  stubGlobal("fetch", async () => response(status === 200 ? context : { ok: false, code: status === 401 ? "unauthorized" : "busy" }, status));
+  stubAuthFetch( async () => response(status === 200 ? context : { ok: false, code: status === 401 ? "unauthorized" : "busy" }, status));
   const { result } = renderHook(useAuth, { wrapper });
   await waitFor(() => expect(result.current.context?.user.id).toBe(user.id));
   status = 503;
@@ -66,7 +67,7 @@ function deferred<T>() {
 test("logout invalidates an already authorized workspace context reply", async () => {
   const pending = deferred<Response>();
   let reads = 0;
-  stubGlobal("fetch", () => { reads++; return pending.promise; });
+  stubAuthFetch( () => { reads++; return pending.promise; });
   const { result } = renderHook(useAuth, { wrapper });
   await waitFor(() => expect(reads).toBe(1));
   act(() => result.current.clear());
@@ -81,7 +82,7 @@ test("logout invalidates a pending session reply before it can load workspace gr
   const pending = deferred<ReturnType<typeof defaultSession>>();
   let reads = 0;
   sessionLoader = () => pending.promise;
-  stubGlobal("fetch", async () => { reads++; return response(context); });
+  stubAuthFetch( async () => { reads++; return response(context); });
   const { result } = renderHook(useAuth, { wrapper });
   act(() => result.current.clear());
   await act(async () => { pending.resolve(defaultSession()); });
@@ -96,7 +97,7 @@ test.each([200, 401])("old context HTTP %s cannot overwrite or log out a newer i
   const pending = deferred<Response>();
   const nextUser = { ...user, id: "synthetic-next-reader", email: "next@example.invalid" };
   let reads = 0;
-  stubGlobal("fetch", async () => ++reads === 1 ? pending.promise : response({ ...context, user: nextUser }));
+  stubAuthFetch( async () => ++reads === 1 ? pending.promise : response({ ...context, user: nextUser }));
   const { result } = renderHook(useAuth, { wrapper });
   await waitFor(() => expect(reads).toBe(1));
   sessionUser = nextUser;
@@ -112,7 +113,7 @@ test("old completion cannot finish a newer pending refresh", async () => {
   const first = deferred<Response>();
   const second = deferred<Response>();
   let reads = 0;
-  stubGlobal("fetch", () => ++reads === 1 ? first.promise : second.promise);
+  stubAuthFetch( () => ++reads === 1 ? first.promise : second.promise);
   const { result } = renderHook(useAuth, { wrapper });
   await waitFor(() => expect(reads).toBe(1));
   let refresh!: Promise<void>;
@@ -127,9 +128,13 @@ test("old completion cannot finish a newer pending refresh", async () => {
 });
 
 test("session and workspace identity must agree", async () => {
-  stubGlobal("fetch", async () => response({ ...context, user: { ...user, id: "synthetic-other-user" } }));
+  stubAuthFetch( async () => response({ ...context, user: { ...user, id: "synthetic-other-user" } }));
   const { result } = renderHook(useAuth, { wrapper });
   await waitFor(() => expect(result.current.loading).toBe(false));
   expect(result.current.context).toBeNull();
   expect(result.current.bootstrapError).toBeTruthy();
 });
+
+function stubAuthFetch(handler: (input: RequestInfo | URL, init?: RequestInit) => Promise<any>) {
+  stubGlobal("fetch", withProtocol(handler, [["GET", "/api/health"], ["GET", "/api/me"], ["GET", "/api/companies"], ["POST", "/api/auth/mfa-enrollment/begin"], ["POST", "/api/auth/mfa-enrollment/confirm"]]));
+}

@@ -1,3 +1,4 @@
+import { withProtocol } from "./test/protocol";
 import { describe, expect, test, vi, beforeEach } from "bun:test";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -33,7 +34,7 @@ import { request } from "./lib/api/_shared";
 import { mockFetch } from "./test/fixtures";
 
 function hostedFetch(extra: Record<string, unknown> = {}) {
-  stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+  stubAuthFetch( vi.fn(async (input: RequestInfo | URL) => {
     const path = String(input).replace(/^https?:\/\/[^/]+/, "").split("?")[0];
     if (path === "/api/health") return new Response(JSON.stringify({ ok: true, deploymentProfile: "hosted" }), { headers: { "content-type": "application/json" } });
     if (path === "/api/me") return new Response(JSON.stringify({ ok: true, user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true }, workspaceRole: "workspace_owner", companies: [{ slug: "allowed", name: "Allowed ApS", role: "owner", archived: false }], ...extra }), { headers: { "content-type": "application/json" } });
@@ -57,6 +58,39 @@ describe("hosted cockpit auth shell", () => {
     authMocks.requestPasswordReset.mockResolvedValue({ data: { status: true } });
     authMocks.sendVerificationEmail.mockResolvedValue({ data: { status: true } });
     authMocks.resetPassword.mockResolvedValue({ data: { status: true } });
+  });
+
+  for (const stage of ["signin", "totp", "backup", "unmount"] as const) test(`cancel ${stage} fences late cookie response until cleanup readback`, async () => {
+    let settle!: (value: any) => void;
+    const pending = new Promise<any>(resolve => { settle = resolve; });
+    let logout!: (value: any) => void;
+    const cleanup = new Promise<any>(resolve => { logout = resolve; });
+    authMocks.getSession.mockResolvedValue({ data: null });
+    authMocks.signOut.mockReturnValueOnce(cleanup);
+    authMocks.signInEmail.mockResolvedValue({ data: { twoFactorRedirect: true } });
+    if (stage === "signin" || stage === "unmount") authMocks.signInEmail.mockReturnValueOnce(pending);
+    else if (stage === "totp") authMocks.verifyTotp.mockReturnValueOnce(pending);
+    else authMocks.verifyBackupCode.mockReturnValueOnce(pending);
+    hostedFetch(); const mounted = renderApp(); const user = userEvent.setup();
+    await user.type(await screen.findByLabelText("E-mail"), "owner@example.test");
+    await user.type(screen.getByLabelText("Adgangskode"), "ephemeral-password");
+    await user.click(screen.getByRole("button", { name: "Log ind" }));
+    if (stage === "totp" || stage === "backup") {
+      await screen.findByLabelText("Engangskode");
+      if (stage === "backup") await user.click(screen.getByRole("button", { name: "Brug recovery code" }));
+      await user.type(screen.getByLabelText(stage === "backup" ? "Recovery code" : "Engangskode"), "123456");
+      await user.click(screen.getByRole("button", { name: "Bekræft" }));
+    }
+    if (stage === "unmount") { mounted.unmount(); renderApp(); }
+    else await user.click(screen.getByRole("button", { name: "Annullér" }));
+    expect(await screen.findByText(/Annullering afventer/)).toBeInTheDocument();
+    expect(authMocks.signOut).not.toHaveBeenCalled(); expect(screen.queryByLabelText("Adgangskode")).not.toBeInTheDocument();
+    await act(async () => { settle({ data: { user: { id: "late", email: "owner@example.test" } } }); });
+    await waitFor(() => expect(authMocks.signOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("button", { name: "Log ind" })).not.toBeInTheDocument();
+    await act(async () => { logout({ data: { status: true } }); });
+    expect(await screen.findByRole("button", { name: "Log ind" })).toBeInTheDocument();
+    expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
   });
 
   test("no hosted session shows login and never fetches portfolio", async () => {
@@ -169,7 +203,7 @@ describe("hosted cockpit auth shell", () => {
     authMocks.getSession.mockResolvedValue({ data: null });
     authMocks.signInEmail.mockResolvedValue({ data: null, error: { code: "MFA_ENROLLMENT_REQUIRED", status: 409 } });
     hostedFetch(); const base = globalThis.fetch;
-    stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    stubAuthFetch( vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input);
       if (path.startsWith("/api/auth/mfa-enrollment/")) return reply(path, init);
       return base(input, init);
@@ -201,6 +235,7 @@ describe("hosted cockpit auth shell", () => {
     expect(screen.queryByLabelText("Opsætningsnøgle")).not.toBeInTheDocument();
     for(const code of recoveryCodes) expect(screen.getByText(code)).toBeInTheDocument();
     expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
     await user.click(screen.getByRole("button",{name:"Jeg har gemt koderne"}));
     await waitFor(()=>expect(authMocks.getSession).toHaveBeenCalledTimes(2));
     expect(calls).toEqual(["/api/auth/mfa-enrollment/begin","/api/auth/mfa-enrollment/confirm"]);
@@ -229,17 +264,14 @@ describe("hosted cockpit auth shell", () => {
     expect(screen.getByLabelText("Opsætningsnøgle")).toBeInTheDocument(); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
   });
 
-  test("native setup failed begin clears password and permits an explicit password-bound restart", async()=>{
+  test("native setup unknown begin requires cleanup, not another credential effect", async()=>{
     let begins=0;
-    const user=await nativeSetup(async()=>{ begins++; return begins===1?json({code:"AUTH_UNCONFIRMED"},503):json({method:"totp",totpURI:setupUri}); });
-    expect(await screen.findByRole("alert")).toHaveTextContent("Opsætningen kunne ikke bekræftes");
-    expect(screen.getByLabelText("Adgangskode")).toHaveValue(""); expect(begins).toBe(1);
-    await user.type(screen.getByLabelText("Adgangskode"),"new-password-proof");
-    await user.click(screen.getByRole("button",{name:"Start opsætning"}));
-    expect(await screen.findByLabelText("Opsætningsnøgle")).toBeInTheDocument(); expect(begins).toBe(2);
-    await user.click(screen.getByRole("button",{name:"Start opsætning forfra"}));
-    expect(screen.queryByLabelText("Opsætningsnøgle")).not.toBeInTheDocument(); expect(screen.getByLabelText("Adgangskode")).toHaveValue("");
-    expect(begins).toBe(2); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+    const user=await nativeSetup(async()=>{ begins++; return json({code:"AUTH_UNCONFIRMED"},503); });
+    expect(await screen.findByText(/Vi kunne ikke bekræfte resultatet/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Adgangskode")).not.toBeInTheDocument(); expect(begins).toBe(1);
+    await user.click(screen.getByRole("button",{name:"Tilbage til login"}));
+    await screen.findByRole("button",{name:"Log ind"});
+    expect(authMocks.signOut).toHaveBeenCalledTimes(1); expect(begins).toBe(1);
   });
 
   test("enrollment error code with a different HTTP status cannot enter native setup", async()=>{
@@ -267,7 +299,7 @@ describe("hosted cockpit auth shell", () => {
   test("TOTP result errors remain generic and do not enter the cockpit", async () => {
     authMocks.getSession.mockResolvedValue({ data: null });
     authMocks.signInEmail.mockResolvedValue({ data: { twoFactorRedirect: true } });
-    authMocks.verifyTotp.mockResolvedValue({ data: null, error: { message: "provider detail" } }); hostedFetch(); renderApp();
+    authMocks.verifyTotp.mockResolvedValue({ data: null, error: { status: 401, message: "provider detail" } }); hostedFetch(); renderApp();
     const user = userEvent.setup();
     await user.type(await screen.findByLabelText("E-mail"), "owner@example.test");
     await user.type(screen.getByLabelText("Adgangskode"), "not-stored-password");
@@ -300,7 +332,7 @@ describe("hosted cockpit auth shell", () => {
   test("recovery-code failures stay generic and can switch back to TOTP", async () => {
     authMocks.getSession.mockResolvedValue({ data: null });
     authMocks.signInEmail.mockResolvedValue({ data: { twoFactorRedirect: true } });
-    authMocks.verifyBackupCode.mockResolvedValue({ data: null, error: { message: "provider detail" } }); hostedFetch(); renderApp();
+    authMocks.verifyBackupCode.mockResolvedValue({ data: null, error: { status: 401, message: "provider detail" } }); hostedFetch(); renderApp();
     const user = userEvent.setup();
     await user.type(await screen.findByLabelText("E-mail"), "owner@example.test");
     await user.type(screen.getByLabelText("Adgangskode"), "not-stored-password");
@@ -516,14 +548,14 @@ describe("hosted cockpit auth shell", () => {
   test("a normal API 401 after the cockpit loaded clears stale UI to login", async () => {
     authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
     hostedFetch(); renderApp(); await screen.findByText("owner@example.test");
-    stubGlobal("fetch", vi.fn(async () => new Response("unauthorized", { status: 401 })));
+    stubAuthFetch( vi.fn(async () => new Response("unauthorized", { status: 401 })));
     await act(async () => { await expect(request("/api/companies")).rejects.toMatchObject({ code: "unauthorized" }); });
     expect(await screen.findByRole("heading", { name: "Log ind" })).toBeInTheDocument();
     expect(screen.queryByText("owner@example.test")).not.toBeInTheDocument();
   });
 
   test("health failure or unknown profile never starts auth or cockpit", async () => {
-    stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ ok: true, deploymentProfile: "unknown" }), { headers: { "content-type": "application/json" } })));
+    stubAuthFetch( vi.fn(async () => new Response(JSON.stringify({ ok: true, deploymentProfile: "unknown" }), { headers: { "content-type": "application/json" } })));
     renderApp();
     expect(await screen.findByRole("alert")).toHaveTextContent("Kunne ikke bekræfte");
     expect(authMocks.getSession).not.toHaveBeenCalled();
@@ -560,7 +592,7 @@ describe("hosted cockpit auth shell", () => {
   });
 
   test("failed health never starts auth or cockpit", async () => {
-    stubGlobal("fetch", vi.fn(async () => new Response("unavailable", { status: 503 })));
+    stubAuthFetch( vi.fn(async () => new Response("unavailable", { status: 503 })));
     renderApp();
     expect(await screen.findByRole("alert")).toHaveTextContent("Kunne ikke bekræfte");
     expect(authMocks.getSession).not.toHaveBeenCalled();
@@ -597,3 +629,7 @@ describe("hosted cockpit auth shell", () => {
   });
 
 });
+
+function stubAuthFetch(handler: (input: RequestInfo | URL, init?: RequestInit) => Promise<any>) {
+  stubGlobal("fetch", withProtocol(handler, [["GET", "/api/health"], ["GET", "/api/me"], ["GET", "/api/companies"], ["POST", "/api/auth/mfa-enrollment/begin"], ["POST", "/api/auth/mfa-enrollment/confirm"]]));
+}
