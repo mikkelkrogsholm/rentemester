@@ -334,6 +334,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/workspace-parties/{id}/role",post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}/assertion",post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}/alias",post(parties::handle))
+        .route("/api/companies/{slug}/workspace-parties/{id}/propose-merge",post(parties::handle))
+        .route("/api/companies/{slug}/workspace-parties/{id}/approve-merge",post(parties::handle))
         .route("/api/companies/{slug}/knowledge",get(company_knowledge::handle))
         .route("/api/companies/{slug}/knowledge/propose",post(company_knowledge::handle))
         .route("/api/companies/{slug}/knowledge/review",post(company_knowledge::handle))

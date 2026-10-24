@@ -9,7 +9,7 @@ use rentemester_storage::{parties as storage, workspace_context::Catalog};
 use rusqlite::{Connection, TransactionBehavior};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
-pub use storage::{Alias, Assertion, Create, Role};
+pub use storage::{Alias, ApproveMerge, Assertion, Create, ProposeMerge, Role};
 pub enum Action<'a> {
     List {
         query: Option<&'a str>,
@@ -21,6 +21,8 @@ pub enum Action<'a> {
     Role(&'a str, &'a Role),
     Assertion(&'a str, &'a Assertion),
     Alias(&'a str, &'a Alias),
+    ProposeMerge(&'a str, &'a ProposeMerge),
+    ApproveMerge(&'a str, &'a ApproveMerge),
 }
 /// Full live company sets from trusted catalog/current control. No workspace-owner bypass.
 pub fn company_sets(
@@ -161,6 +163,28 @@ pub fn execute_scoped(
                 storage::assertion(&tx, id, input, &actor, &stamp)?;
                 id.into()
             }
+            Action::ProposeMerge(id, input) => {
+                let target = rentemester_engine::parties::bounded(&input.into_party_id, 64)?;
+                authorize_merge(&tx, id, &target, &visible, &writable, slug, clock, backup)?;
+                let hash = storage::propose_merge(&tx, id, input, &actor, &stamp)?;
+                return Ok(json!({"proposalHash":hash}));
+            }
+            Action::ApproveMerge(id, input) => {
+                authorize_update(&tx, id, &visible, &writable)?;
+                let proposal = storage::merge_proposal(&tx, id, input)?;
+                authorize_merge(
+                    &tx,
+                    id,
+                    &proposal.into_party_id,
+                    &visible,
+                    &writable,
+                    slug,
+                    clock,
+                    backup,
+                )?;
+                storage::approve_merge(&tx, id, input, &actor, &stamp)?;
+                id.into()
+            }
             Action::Alias(id, input) => {
                 authorize_update(&tx, id, &visible, &writable)?;
                 let mut scopes = storage::scopes(&tx, id)?;
@@ -227,4 +251,28 @@ pub(crate) fn execute(
         action,
         &mut crate::backup_status::UnlockedTestScopes,
     )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn authorize_merge(
+    tx: &rusqlite::Transaction<'_>,
+    id: &str,
+    target: &str,
+    visible: &BTreeSet<String>,
+    writable: &BTreeSet<String>,
+    slug: &str,
+    clock: &dyn Clock,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
+) -> Result<(), rentemester_engine::Error> {
+    authorize_update(tx, id, visible, writable)?;
+    authorize_update(tx, target, visible, writable)?;
+    if id == target {
+        return Err(rentemester_engine::parties::refused(
+            "cannot merge a party into itself",
+        ));
+    }
+    let mut scopes = storage::scopes(tx, id)?;
+    scopes.extend(storage::scopes(tx, target)?);
+    scopes.insert(slug.to_owned());
+    backup.require(tx, clock, &scopes.into_iter().collect::<Vec<_>>())
 }
