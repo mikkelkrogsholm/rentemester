@@ -147,7 +147,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "match run(args)"
     },
     {

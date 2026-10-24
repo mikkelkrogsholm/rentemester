@@ -51,17 +51,17 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_discovery.rs",
-      "sha256": "8295604963b3296e7e332c935f3262228d323e180cfb3cd63bd6321e2bedf8a7",
+      "sha256": "5c1e8f50c9ea5c2d3462c590cac87d351476f1758502cf45520e56b25d84ab75",
       "needle": "pub fn execute"
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "7188202b051f23d89334f067f9fbc40d7ddb968ca73c7052683a9b311c032063",
+      "sha256": "05f3f2486e7c0e82d8ac394b9c1380a206aa7038224642e161a49f92db1e469f",
       "needle": "pub fn prepare_with_output"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "fn main()"
     },
     {
@@ -71,7 +71,7 @@
     },
     {
       "path": "crates/rentemester-storage/src/lib.rs",
-      "sha256": "82af00f55d58d0d7cd19e519ef06700c201cfa51f753decb20413f35fef04e47",
+      "sha256": "0629a89e081b77e282ba3acdcf096b4c1d47d4dc84ec4cc9d64d8f7d495ac8bf",
       "needle": "fn with_writable_copy"
     },
     {
@@ -179,5 +179,65 @@
       "path": "/tmp/rentemester-rust-reports/r63-audit716-discovery-delta.json",
       "sha256": "867cc77e07e8b69bd6e108240c5cdd91babb9d598abb3d29ad15bd235f7e8da5"
     }
+  },
+  "originalHealthcheck716": {
+    "new_id": "cli:system healthcheck",
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-storage/src/healthcheck.rs",
+        "sha256": "ef161dbfac751d15880d21c0e8f1c15ef1e784ca42d780bd75dd0bb123715ccf",
+        "needle": "pub fn inspect_company"
+      },
+      {
+        "path": "crates/rentemester-storage/src/lib.rs",
+        "sha256": "0629a89e081b77e282ba3acdcf096b4c1d47d4dc84ec4cc9d64d8f7d495ac8bf",
+        "needle": "pub mod healthcheck"
+      },
+      {
+        "path": "crates/rentemester-storage/src/snapshot.rs",
+        "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28",
+        "needle": "pub(super) fn capture_at"
+      },
+      {
+        "path": "crates/rentemester-storage/src/migration.rs",
+        "sha256": "708fb44faf17aa7e6a2b55fd0c446e990894cbde6c2d42ee18c66e79370aa315",
+        "needle": "pub(super) fn strict_history"
+      },
+      {
+        "path": "crates/rentemester-storage/src/company_baseline.rs",
+        "sha256": "0b7ed80bef0d720da982cf8c097c6a22a9250d9e7a2e915aab6f6c23984c1957",
+        "needle": "pub(super) fn recognizes"
+      },
+      {
+        "path": "crates/rentemester-cli/src/system_healthcheck_original.rs",
+        "sha256": "144eae3bd5b67e7958141578792feb712d3d132bf5a5a9d7638753fffa1d34f7",
+        "needle": "pub fn execute"
+      },
+      {
+        "path": "crates/rentemester-cli/src/main.rs",
+        "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
+        "needle": "system_healthcheck_original::execute"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_args.rs",
+        "sha256": "05f3f2486e7c0e82d8ac394b9c1380a206aa7038224642e161a49f92db1e469f",
+        "needle": "Healthcheck's machine dialect"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_discovery.rs",
+        "sha256": "5c1e8f50c9ea5c2d3462c590cac87d351476f1758502cf45520e56b25d84ab75",
+        "needle": "pub fn help"
+      },
+      {
+        "path": "src/cli/init.ts",
+        "sha256": "7ba6d7109d869ecccd809518aec33ff0be14c28b593103b1c8795454c2ee946e",
+        "needle": "dispatch.on(\"system\", \"healthcheck\""
+      }
+    ],
+    "proof": {
+      "path": "/tmp/rentemester-rust-reports/r65-healthcheck716-proof.json",
+      "sha256": "9052b5a55468295df92b5142d4f586baf981ece078876b7229a87272359e0450"
+    },
+    "review": "Originalfivechecks and flatJSON/human0/1/2 through existingreadonlySnapshot/catalogue;4storage4CLIchecks and actualancestorREDGREEN. Roothelpaddsoneentryonly. No sourcewrites/network/authority; full716requirementsremain."
   }
 }

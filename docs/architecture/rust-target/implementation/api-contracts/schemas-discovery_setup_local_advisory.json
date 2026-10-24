@@ -5036,6 +5036,11 @@
       "const": {
         "commands": [
           {
+            "name": "system healthcheck",
+            "scope": "offline read-only five filesystem checks and protected snapshot schema diagnostic; remote health is aggregate-only and cannot substitute this report",
+            "usage": "system healthcheck --company PATH [--json | --format json|human]"
+          },
+          {
             "name": "bookkeeping-batch plan|persist|dry-run|approve|apply|status",
             "scope": "reviewed expected hash, four explicitly confirmed writes including durable dry-run; current human cookie authority, atomic_v1 receipts and legacy inspect-only history; no retry",
             "usage": "bookkeeping-batch --help"
@@ -6655,6 +6660,1168 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OriginalHealthcheckInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "system healthcheck"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "help": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "system healthcheck"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "help": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalHealthcheckReport": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "maxItems": 0,
+              "items": {
+                "type": "string"
+              }
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "maxItems": 0,
+              "items": {
+                "type": "string"
+              }
+            },
+            "schema_outdated": {
+              "const": false
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "current"
+                },
+                "currentVersion": {
+                  "const": 36
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "maxItems": 0,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5,
+              "minItems": 1
+            },
+            "schema_outdated": {
+              "const": false
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "current"
+                },
+                "currentVersion": {
+                  "const": 36
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "maxItems": 0,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5
+            },
+            "schema_outdated": {
+              "const": true
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "pending"
+                },
+                "currentVersion": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 35
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "checksum": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "checksum"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5
+            },
+            "schema_outdated": {
+              "const": false
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "newer"
+                },
+                "currentVersion": {
+                  "type": "integer",
+                  "minimum": 37,
+                  "maximum": 9223372036854775807
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "maxItems": 0,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "error": {
+                  "const": "Ledger schema is newer than this runtime"
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5
+            },
+            "schema_outdated": {
+              "const": false
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "corrupt"
+                },
+                "currentVersion": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "maxItems": 0,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "error": {
+                  "const": "Ledger schema or integrity validation failed"
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5
+            },
+            "schema_outdated": {
+              "const": false
+            },
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "unavailable"
+                },
+                "currentVersion": {
+                  "const": 0
+                },
+                "requiredVersion": {
+                  "const": 36
+                },
+                "pending": {
+                  "type": "array",
+                  "maxItems": 0,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "error": {
+                  "const": "Protected ledger snapshot unavailable"
+                }
+              },
+              "required": [
+                "status",
+                "currentVersion",
+                "requiredVersion",
+                "pending",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "checks": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "company_root"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "data_dir"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "ledger"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "documents"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "const": "config"
+                    },
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "company_root",
+                  "data_dir",
+                  "ledger",
+                  "documents",
+                  "config"
+                ]
+              },
+              "uniqueItems": true,
+              "maxItems": 5,
+              "minItems": 1
+            },
+            "schema_outdated": {
+              "const": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "checks",
+            "missing",
+            "schema_outdated"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalHealthcheckHelp": {
+      "const": "system healthcheck --company PATH [--json | --format json|human]\nOffline read-only company diagnostic: company_root, data_dir, ledger, documents, config and protected snapshot schema inspection. Explicit company path required; no environment/default company. No server, cookie, local-profile, actor, stdin, repair or mutation inputs. Remote health is aggregate-only and cannot substitute this report. Human diagnostics (including failures) go to stdout; explicit JSON is pretty-printed, flat and unwrapped. Exit 0 clean, 1 diagnostic failure, 2 usage.\n"
     }
   }
 }

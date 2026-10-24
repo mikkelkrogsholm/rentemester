@@ -5,17 +5,17 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "match run(args)"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "if recurring_original::accepts"
     },
     {
@@ -25,7 +25,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "7188202b051f23d89334f067f9fbc40d7ddb968ca73c7052683a9b311c032063",
+      "sha256": "05f3f2486e7c0e82d8ac394b9c1380a206aa7038224642e161a49f92db1e469f",
       "needle": "pub fn prepare_with_output"
     },
     {

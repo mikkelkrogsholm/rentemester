@@ -40,17 +40,17 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "91b40f1cbb6470e5921a5784ba64e2582f3b5960cbd54e49c6b4f205e258b796",
+      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
       "needle": "fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {"
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "7188202b051f23d89334f067f9fbc40d7ddb968ca73c7052683a9b311c032063",
+      "sha256": "05f3f2486e7c0e82d8ac394b9c1380a206aa7038224642e161a49f92db1e469f",
       "needle": "pub fn option(token: &str) -> (&str, Option<&str>) {"
     },
     {
       "path": "crates/rentemester-cli/src/original_discovery.rs",
-      "sha256": "8295604963b3296e7e332c935f3262228d323e180cfb3cd63bd6321e2bedf8a7",
+      "sha256": "5c1e8f50c9ea5c2d3462c590cac87d351476f1758502cf45520e56b25d84ab75",
       "needle": "pub fn help() -> Value {"
     },
     {
