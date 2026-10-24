@@ -343,5 +343,6 @@
     "mcp:send_public_invoice",
     "mcp:set_bilagsmail_alias"
   ],
-  "acceptance": "Strict existing Python oracle is structural only; main retains independent actual-source semantic review and integration acceptance. No whole #677 closure; prior1285/34partitions and55scope/J01-J07/finaldesktop/release/cutover/retirement unchanged."
+  "acceptance": "Strict existing Python oracle is structural only; main retains independent actual-source semantic review and integration acceptance. No whole #677 closure; prior1285/34partitions and55scope/J01-J07/finaldesktop/release/cutover/retirement unchanged.",
+  "leadReviewRepair": "Lead source review repaired four original public-invoice CLI refusal JSON variants to include actual local fail() errors-only DTO and validated422 business core/domain codes alongside client errors. Human stderr differs and local publication may fail after successful server audit. No provider/effects replay. Accurately observed unsafe publicHEAD remains explicit blocker for separate diagnosed R59 handler fence before whole677 acceptance/publication."
 }

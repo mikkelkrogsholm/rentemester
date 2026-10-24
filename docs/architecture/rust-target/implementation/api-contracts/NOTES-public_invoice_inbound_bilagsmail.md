@@ -59,3 +59,6 @@ Imported schedule reads reverify accepted physical source/archive evidence and r
 `python3 /tmp/r58-677-oracle.py public_invoice_inbound_bilagsmail`: PASS, exact 61 selected identities, resolved sourcebound schemas; semantic review still required, whole #677 remains open. Two initial schema-format check failures (HEAD wrapper representation and required-only selector branches) were repaired in owned files; no test harness/setup expansion.
 
 `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`: completed, 34,009 nodes / 107,681 edges, generated observations confined to independent build output.
+
+## Lead source-review repair
+Lead source review repaired four original public-invoice CLI refusal JSON variants to include actual local fail() errors-only DTO and validated422 business core/domain codes alongside client errors. Human stderr differs and local publication may fail after successful server audit. No provider/effects replay. Accurately observed unsafe publicHEAD remains explicit blocker for separate diagnosed R59 handler fence before whole677 acceptance/publication.
