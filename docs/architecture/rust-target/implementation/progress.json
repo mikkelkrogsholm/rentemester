@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R81/R82 originalpartyCLI4commandflow accepted, whole716coverage still open",
-  "code_revision": "d2b1830a890845100b1cc7de38d4909ef8d6d475",
+  "current_increment": "R83/R84 originalCLI716 group/company/reg supportednativeprofiles accepted; whole716open",
+  "code_revision": "f2e10a9701984ef180a2d822bdb4fe64ee369727",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_party_cli_component_accepted_whole716_open",
+  "state": "original_cli_profiles_component_accepted_whole716_open",
   "issues_closed": 40,
   "next": [
-    "Complete remaining originalCLI compatibility in existing716, group/company/reg independentownedfamilies over existing common engine andSDK; no new backend/queue.",
-    "Preserve40of55closed15open/alloriginalscope; installedmanualdesktop remains LAST."
+    "Complete the concrete common-server company creation/profile fields already required by originalCLI/websetup; keep singleRustengine andcurrentauthority/backup/writer/fiscal/VAT/bank controls.",
+    "Thenremaining48originalCLIkeys/positiveoverview/path/bootstrap/full265compatibility;40of55closed15open/allfinalgates unchanged, installedmanualdesktopLAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "8original intercompany disposition MCPnativeprofile adapters overexisting SDK/server; exactplaninnerok/7event10linkprojection, business/confirmation/parse distinction, globalstatuscurrentcompanyadmission and nativeconditionalreplay/legacywitnesses.10actualcompiledstdiofixtures retained; current1556contracts/prior1548businessrows/417definitions unchanged. No new financial/provider effects or whole717claim.",
+  "previous_verified_increment": "R81/R82 originalpartyCLI4commandflow accepted, whole716coverage still open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -18762,6 +18762,24 @@
       "remaining": [
         "Original265keycomparison still82literalkeys afterparty4:80without originaldispatch/disposition and2regulatoryoriginaloutputmismatches; native renamed commands alone are not original compatibility.",
         "Whole716requiresallperoperation contracts andruntime/credential/file/confirmation/streams/0-1-2 evidence. Full71722originalnames/fullworkflow/reconnect and all55finalnative/release/cutover/retirement gates unchanged."
+      ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "f2e10a9701984ef180a2d822bdb4fe64ee369727",
+      "report": "/tmp/rentemester-rust-reports/r83-original-cli716-profiles-component-accepted.json",
+      "sha256": "ddff691453dd63a68ae5892061a1a92df1b829aab1ca2e61c359684319f3a96a",
+      "scope": "R83threeisolatedwriters integrated33supported namedCLIprofiles plus1explicitunavailablegroupoverview. Company5 nativeprofiles/group26 nativeprofiles/reg2sourceoffline reports; real source/nativecounterexamples corrected listwrapper/blank-ID/no-op-payment and ready-array/exactnumeric/blockedreport.17actualcombinedcompiledchecks passed; commonengine/SDK/server/backend unchanged. R84current1594source/schema/retry38partitionunion qualifiedinP, additiveexactroothelptruthful, prior1560businesssemantics preserved exceptsourcepin/whitespace-onlyanchor metadata.",
+      "native_profile_boundaries": [
+        "Group overview positive API absent; no manifest-only readiness/ledgeravailability fabricated.",
+        "Company creation address/postalCode/city/paymentTermsDays and profile name remain backend gaps; original firstworkspace/rootoperator bootstrap separate, no autostart/localwriter.",
+        "Company list retains originalwrapper but canonical filesystem root is unavailable: workspace:null explicit; archivedcreatedAt omitted onlywhen produceromits.",
+        "Other native money/calendar/body/currentcredential/endpointanchor profiles explicitlytyped; this is not everyhistoricalinputvalue or whole716acceptance."
+      ],
+      "remaining": [
+        "48original literalCLIkeys stillwithout currentcontractnames, pluspositivegroupoverviewAPI; companycreationaddress/postalCode/city/paymentTermsDays andprofile-name/backendfields, canonicalworkspace-root/archivedcreatedAt andfirstbootstrap/full265peroperationcriteria. Theseareexplicitfull716remainders, not scopecuts.",
+        "All55originalscope/J01-J07/commonmotor/sameReactwebTauri/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
       ]
     }
   ],

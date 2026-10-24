@@ -38852,7 +38852,7 @@
               "amount",
               "sourceHashes"
             ],
-            "additionalProperties": true
+            "additionalProperties": false
           }
         },
         "total": {
@@ -38867,7 +38867,7 @@
         "byCompany",
         "total"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "Group716ReportElimination": {
       "type": "object",
@@ -38900,7 +38900,7 @@
               "lineId",
               "amount"
             ],
-            "additionalProperties": true
+            "additionalProperties": false
           }
         }
       },
@@ -38909,7 +38909,7 @@
         "payloadHash",
         "adjustments"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "Group716ReportFigure": {
       "type": "object",
@@ -38958,7 +38958,7 @@
         "eliminationAdjustment",
         "consolidatedAmount"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "Group716ConsolidatedReport": {
       "oneOf": [
@@ -38994,7 +38994,11 @@
             },
             "blockers": {
               "type": "array",
-              "maxItems": 0
+              "maxItems": 0,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             },
             "profileId": {
               "type": "string",
@@ -39048,14 +39052,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "integrityScope": {
+                    "const": "native_period_sources_and_physical_originals"
                   }
                 },
                 "required": [
                   "companySlug",
                   "ledgerHeadHash",
-                  "entryCount"
+                  "entryCount",
+                  "integrityScope"
                 ],
-                "additionalProperties": true
+                "additionalProperties": false
               }
             },
             "consolidatedFigures": {
@@ -39081,7 +39089,7 @@
             "groupId",
             "currency"
           ],
-          "additionalProperties": true
+          "additionalProperties": false
         },
         {
           "type": "object",
@@ -39173,14 +39181,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "integrityScope": {
+                    "const": "native_period_sources_and_physical_originals"
                   }
                 },
                 "required": [
                   "companySlug",
                   "ledgerHeadHash",
-                  "entryCount"
+                  "entryCount",
+                  "integrityScope"
                 ],
-                "additionalProperties": true
+                "additionalProperties": false
               }
             },
             "consolidatedFigures": {
@@ -39198,7 +39210,7 @@
             "sourceSnapshots",
             "consolidatedFigures"
           ],
-          "additionalProperties": true
+          "additionalProperties": false
         }
       ]
     },

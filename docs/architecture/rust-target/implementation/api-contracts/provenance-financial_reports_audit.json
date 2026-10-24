@@ -346,7 +346,7 @@
       },
       {
         "path": "crates/rentemester-cli/src/original_discovery.rs",
-        "sha256": "76a92227b51bd5eb95baeb0ddb7bfc101b666501a5daac64f8c8724218f35230",
+        "sha256": "d8352b4656d904f6bce912813d0297e9a3cedc2df473cd4af8191b3dc1e357d3",
         "needle": "pub fn help"
       },
       {

@@ -5036,6 +5036,16 @@
       "const": {
         "commands": [
           {
+            "name": "group",
+            "scope": "26 supported native profiles for group evidence/mapping/elimination/consolidation through the common Rust server; overview explicitly unavailable until its read API exists; current authority, independent review and no company ledger mutation",
+            "usage": "group --help"
+          },
+          {
+            "name": "company add|list|sync-cvr|set-profile|profile",
+            "scope": "original connected company lifecycle through common Rust server, explicit private runtime or remote binding; first workspace initialization is a separate operator flow",
+            "usage": "company --help"
+          },
+          {
             "name": "workspace-inbox list|inspect|status|ingest|assign|complete",
             "scope": "original workspace evidence intake and reviewed company handoff through current Rust server; supported upload profile, no journal effects or automatic retry",
             "usage": "workspace-inbox --help"
