@@ -49,3 +49,40 @@ The profile PATCH serializes only supplied fields, including zero-day payment te
 Actual compiled integration target: `CARGO_BUILD_JOBS=2 python3 scripts/rust/cargo-guard.py cargo test -p rentemester-cli --test original_company716` using the independent absolute CARGO_TARGET_DIR. Five tests cover all five positive keys; real 642-route protocol; partial/full PATCH body and omitted defaults; flat/bare-array/profile projections; Danish human labels; payment warning stderr; 0/1/2; offline help/example; unsupported-field/no-effect refusal; current actor mismatch; server 403; one-POST malformed/mismatched unknown; verified private Unix owner/workspace equality and insecure descriptor refusal; passive protocol failure before write. Fixtures are synthetic native receipts, not live domain/server acceptance. No financial/provider/auth/browser setup was replayed. Shared source-pin/roothelp/union refresh remains lead-owned; retained prior business rows/defs are unchanged.
 
 Lead source review repaired list ABI to mandatory ok/message/workspace/count/companies, source blank-slug trimToNull/server allocation and empty-payment no-op metadata. Current API exposes no canonical filesystem root, so workspace:null is an explicit native profile boundary; archived createdAt is omitted when unavailable, never fabricated. Source-required creation address/postal/city/payment-terms and set-profile name still require a later common-server extension; whole716 stays open. Real compiled counterexample and corrected local-owner expectation receipts are retained; no new backend/provider effects.
+
+## 2026-10-24 — R85 optional company identity/terms and canonical rename
+
+The integrated common storage/SDK now accepts optional creation `address`,
+`postalCode`, `city`, `paymentTermsDays` and optional profile-update `name`.
+Original `company add` no longer refuses the four existing flags and
+`company set-profile --name` no longer refuses before dispatch. Creation success
+requires canonical profile readback matching **every supplied** field (trim,
+empty-to-null, normalized CVR, numeric fiscal month, exact strategy/terms, and
+nonblank payment values). Rename binds the canonical response without changing
+slug/path/actor. Unknown/missing/wrong receipts remain `outcome_unknown`, with
+one write, no automatic retry or compensating write. Output shapes, wrappers,
+workspace:null, blank server-allocated slug, bank/VAT/authority fences stay intact.
+
+Intentional existing definition extensions in `schemas-masterdata_cvr_contacts.json`:
+`CreationObject` and `CreationSdk` add only the four optional input properties;
+`ProfilePatch` adds only optional bounded string `name`. Existing required fields,
+old properties and additionalProperties controls remain unchanged. `CreationHttp`
+records the integrated Serde producer's actual eleven-position declaration-order
+sequence (four newly inserted Option fields); its object alternative remains the
+backward-compatible optional extension. **Compatibility qualification:** the
+integrated backend no longer accepts the previous seven-position direct-HTTP
+Serde sequence. This is a concrete remaining backend compatibility gap, not
+silently claimed old-request compatibility by this contract consumer.
+
+Only `cli:company add` and `cli:company set-profile` business grammar text is
+intentionally extended; other operation changes refresh exact affected source
+hashes only. All 1594 operation identities in 38 partitions remain, with unchanged
+outputs/control contracts and unrelated definitions. R83/R84 historical limits
+remain evidence, not current feature refusals. Eight actual compiled
+`original_company716` tests cover canonical creation/zero terms/shifted fiscal year,
+name edit/non-VAT/profile readback, wrong/missing receipts and no repeated writes.
+These synthetic HTTP producer fixtures do not prove a new authentication stack,
+MFA, restart, provider, browser or installed-desktop acceptance. Existing common
+pipeline evidence is reused, not replayed. Whole #716 still retains the other 48
+literal keys, positive overview, first-workspace/root bootstrap, path/full
+compatibility and final manual installed-desktop acceptance; this is not closure.

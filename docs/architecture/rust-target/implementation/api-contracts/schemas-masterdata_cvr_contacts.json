@@ -124,6 +124,35 @@
               "type": "null"
             }
           ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "postalCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "paymentTermsDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 365
         }
       },
       "required": [
@@ -233,6 +262,32 @@
               ]
             },
             {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
               "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
             },
             {
@@ -246,8 +301,8 @@
               ]
             }
           ],
-          "minItems": 7,
-          "maxItems": 7
+          "minItems": 11,
+          "maxItems": 11
         }
       ]
     },
@@ -464,6 +519,12 @@
           },
           "required": [],
           "additionalProperties": false
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Optional canonical label; server trims, requires nonblank at most 1024 UTF-8 bytes without controls. Immutable slug/path unchanged."
         }
       },
       "required": [],
@@ -2921,7 +2982,7 @@
                   "const": "dinero-contacts"
                 },
                 "label": {
-                  "const": "Dinero \u2014 Kontakter (kunder og leverand\u00f8rer)"
+                  "const": "Dinero — Kontakter (kunder og leverandører)"
                 },
                 "system": {
                   "const": "Dinero"
@@ -6500,6 +6561,35 @@
               "type": "null"
             }
           ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "postalCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        },
+        "paymentTermsDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 365
         }
       },
       "required": [
@@ -6552,7 +6642,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/company_creation.rs",
-            "sha256": "29fa9b0bca64197904c1ce914f5c28b6688dcac49a183f029413fad9ec42b53b",
+            "sha256": "2186d577cce0c0ae1f2a879028611b72ed0cadbcefa994614210c6d093a82dde",
             "needle": "pub vat_period_type: Value,"
           }
         ]
