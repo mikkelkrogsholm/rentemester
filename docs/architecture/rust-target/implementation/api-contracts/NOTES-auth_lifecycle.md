@@ -97,3 +97,7 @@ frozen selection, structural schema/reference completeness and provenance; it
 cannot prove semantic equality with Rust constructors. The lead must review that
 comparison and current optional-handler installation. No runtime acceptance was
 rerun and no global completion claim is made.
+
+## Lead review correction
+Actual no-effect GET/HEAD protocol probe `/tmp/rentemester-rust-reports/r05-677-head-wire-probe.json` observed GET409 with98 entity bytes versus HEAD409 with0 entity bytes and retained Content-Length98/application-json headers. Source transport unchanged from accepted compiled c351c1f6 through da30984a. Constructed schemas are retained separately from wire bodies; this is no authentication or business effect replay.
+Header schemas describe required application-owned headers as a projection, allowing typed transport additions rather than forbidding Content-Length/Date/outer protocol headers. Conditional Set-Cookie arrays preserve four clears (session revocation) or four clears plus new session (rotating password change), with current native cookie semantics above.
