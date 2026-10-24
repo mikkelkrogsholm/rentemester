@@ -1,0 +1,2044 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "SendInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "to": {
+              "type": "string"
+            },
+            "kind": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "to",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "ReconcileInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "messageId": {
+              "type": "string"
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "resolution": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "messageId",
+            "expectedStateHash",
+            "resolution",
+            "reason",
+            "evidence",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "RetryInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "messageId": {
+              "type": "string"
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "messageId",
+            "expectedStateHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "CreateInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "interval": {
+              "type": "string"
+            },
+            "intervalCount": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveryChannel": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "firstIssueDate": {
+              "type": "string"
+            },
+            "paymentTermsDays": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "deliveryPeriodMode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "notes": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatRatePercent": {
+              "type": "number"
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "customerId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "buyer": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_native_http.json#/$defs/LineInput"
+              }
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "interval",
+            "firstIssueDate",
+            "paymentTermsDays",
+            "vatRatePercent",
+            "lines",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "number"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_native_http.json#/$defs/LineInput"
+              }
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 14,
+          "maxItems": 14
+        }
+      ]
+    },
+    "GenerateInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "asOfDate": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "asOfDate",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "RetireInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "OriginalInvoiceValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_http.json#/$defs/OriginalInvoiceValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "x-arbitrary-json": {
+            "scope": "original Create.invoice parser Value only",
+            "rationale": "Native derived Create holds serde_json::Value; stripped requires object, removes six dated fields, then invoice_validation and invoice_lifecycle::validate enforce accepted IssuePayload. This is not a success producer. SDK is stricter.",
+            "sourceRefs": [
+              {
+                "path": "protocol/http-v1.json",
+                "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+                "needle": "/api/recurring-invoices/run-workspace"
+              },
+              {
+                "path": "crates/rentemester-server/src/main.rs",
+                "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+                "needle": "protocol::install(router, connected)"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http.rs",
+                "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+                "needle": "fn proof("
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http/documents.rs",
+                "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+                "needle": "pub(super) fn outcome<T>"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http/service_company.rs",
+                "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+                "needle": "pub(super) fn failure("
+              },
+              {
+                "path": "crates/rentemester-server/src/protocol.rs",
+                "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+                "needle": "fn admitted("
+              },
+              {
+                "path": "crates/rentemester-host/src/lib.rs",
+                "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+                "needle": "fn document_action<T>"
+              },
+              {
+                "path": "crates/rentemester-application/src/control_fence.rs",
+                "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+                "needle": "fn execute_resolved<T>"
+              },
+              {
+                "path": "crates/rentemester-application/src/service_company.rs",
+                "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+                "needle": "pub enum UsageStage"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http/recurring_original.rs",
+                "sha256": "b60dd0463b96632d89ffd88c787056059c3ffb669ee38d3fdf13146da5034679",
+                "needle": "pub(super) async fn handle("
+              },
+              {
+                "path": "crates/rentemester-host/src/service_sales.rs",
+                "sha256": "c0ac15d8be0cd29e9c245cc9b5fda5ba3b3481dde490e4f7db674446a6449635",
+                "needle": "pub fn recurring_invoices_service("
+              },
+              {
+                "path": "crates/rentemester-application/src/recurring_invoices.rs",
+                "sha256": "2d866dd5011f55249ec552267a82f9393a4760fdbd7db054fc4a0ecd2892ba7e",
+                "needle": "pub fn execute_service("
+              },
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+                "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+                "needle": "pub fn generation_result("
+              },
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+                "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+                "needle": "pub fn list("
+              },
+              {
+                "path": "crates/rentemester-client/src/recurring_original.rs",
+                "sha256": "3d8c79b8fa2a6ec4d602ca4bbd71c6ca644fc481b72c9a324240646fac2ad6bd",
+                "needle": "pub fn recurring_original_schema("
+              },
+              {
+                "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+                "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+                "needle": "pub fn validate("
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "OriginalCreateInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "interval": {
+              "type": "string"
+            },
+            "intervalCount": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveryChannel": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "firstIssueDate": {
+              "type": "string"
+            },
+            "invoice": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/OriginalInvoiceValue"
+            },
+            "paymentTermsDays": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveryPeriodMode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "notes": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "interval",
+            "firstIssueDate",
+            "invoice",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/OriginalInvoiceValue"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 10,
+          "maxItems": 10
+        }
+      ]
+    },
+    "OriginalGenerateInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "asOfDate": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "asOfDate",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "WorkspaceInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "type": "string"
+            },
+            "asOfDate": {
+              "type": "string"
+            },
+            "maxGenerations": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18446744073709551615
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspace",
+            "asOfDate",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18446744073709551615
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "Created": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryChannel": {
+          "const": "manual"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "templateId",
+        "name",
+        "interval",
+        "intervalCount",
+        "deliveryChannel",
+        "firstIssueDate"
+      ],
+      "additionalProperties": false
+    },
+    "Generation": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer"
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "deliveryPeriodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate",
+        "deliveryPeriodStart",
+        "deliveryPeriodEnd"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalGeneration": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer"
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "deliveryPeriodStart": {
+          "type": "string"
+        },
+        "deliveryPeriodEnd": {
+          "type": "string"
+        },
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate",
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Retired": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "retired": {
+          "const": true
+        }
+      },
+      "required": [
+        "id",
+        "retired"
+      ],
+      "additionalProperties": false
+    },
+    "TemplateRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryChannel": {
+          "type": "string"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "nextIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryPeriodMode": {
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "generations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "periodIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "documentId": {
+                "type": "integer"
+              },
+              "invoiceNumber": {
+                "type": "string"
+              },
+              "issueDate": {
+                "type": "string"
+              },
+              "deliveryPeriodStart": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "deliveryPeriodEnd": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "periodIndex",
+              "documentId",
+              "invoiceNumber",
+              "issueDate",
+              "deliveryPeriodStart",
+              "deliveryPeriodEnd"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "deliveryChannel",
+        "firstIssueDate",
+        "nextIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "notes",
+        "active",
+        "createdAt",
+        "generations"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalTemplateRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryChannel": {
+          "type": "string"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "nextIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryPeriodMode": {
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "deliveryChannel",
+        "firstIssueDate",
+        "nextIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "notes",
+        "active",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "List": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "nativeRecurring": {
+          "const": true
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_http.json#/$defs/TemplateRow"
+          }
+        }
+      },
+      "required": [
+        "slug",
+        "nativeRecurring",
+        "templates"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_http.json#/$defs/OriginalTemplateRow"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "templateId": {
+          "type": "integer"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-RECURRING-INVOICE-TEMPLATE-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "templateId",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessFalse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Delivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "refused",
+            "unknown"
+          ]
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "type": "string"
+              },
+              "attemptId": {
+                "type": "string"
+              },
+              "attemptIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "at": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "stateHash": {
+                "type": "string"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "resolution": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "jsonSha256": {
+                "type": "string"
+              },
+              "pdfSha256": {
+                "type": "string"
+              },
+              "bodySha256": {
+                "type": "string"
+              },
+              "senderIdentity": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "fromAddress": {
+                    "type": "string"
+                  },
+                  "fromName": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "host",
+                  "port",
+                  "fromAddress",
+                  "fromName"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "eventType",
+              "attemptId",
+              "attemptIndex",
+              "at",
+              "actor",
+              "stateHash",
+              "reason",
+              "evidence",
+              "resolution",
+              "jsonSha256",
+              "pdfSha256",
+              "bodySha256",
+              "senderIdentity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "null"
+        },
+        "state": {
+          "const": "accepted"
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "attemptId": {
+          "type": "null"
+        },
+        "humanResolution": {
+          "const": false
+        },
+        "history": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "eventType": {
+                  "const": "legacy_accepted"
+                },
+                "sendLogId": {
+                  "type": "integer"
+                },
+                "at": {
+                  "type": "string"
+                },
+                "transportReceiptAvailable": {
+                  "const": false
+                },
+                "historicalPdfHashAvailable": {
+                  "const": false
+                }
+              },
+              "required": [
+                "eventType",
+                "sendLogId",
+                "at",
+                "transportReceiptAvailable",
+                "historicalPdfHashAvailable"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "legacy": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "legacy"
+      ],
+      "additionalProperties": false
+    },
+    "AnyDelivery": {
+      "oneOf": [
+        {
+          "$ref": "schemas-delivery_recurring_http.json#/$defs/Delivery"
+        },
+        {
+          "$ref": "schemas-delivery_recurring_http.json#/$defs/LegacyDelivery"
+        }
+      ]
+    },
+    "EmailStatus": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoiceEmail": {
+              "type": "object",
+              "properties": {
+                "configured": {
+                  "type": "boolean"
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+                  }
+                }
+              },
+              "required": [
+                "configured",
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "invoiceEmail"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoiceEmail": {
+              "type": "object",
+              "properties": {
+                "configured": {
+                  "type": "boolean"
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+                  }
+                }
+              },
+              "required": [
+                "configured",
+                "rows"
+              ],
+              "additionalProperties": false
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "invoiceEmail",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "EmailResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            }
+          },
+          "required": [
+            "ok",
+            "delivery"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "EmailUnknown": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            },
+            "code": {
+              "const": "delivery_unknown"
+            },
+            "message": {
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            },
+            "code": {
+              "const": "delivery_unknown"
+            },
+            "message": {
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "code",
+            "message",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "EmailRefused": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            },
+            "code": {
+              "const": "delivery_refused"
+            },
+            "message": {
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+            },
+            "code": {
+              "const": "delivery_refused"
+            },
+            "message": {
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "code",
+            "message",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WorkspaceResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": [
+                      "processed",
+                      "failed"
+                    ]
+                  },
+                  "generated": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "attempted": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "hasMore": {
+                    "type": "boolean"
+                  },
+                  "remainingGenerations": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "const": "run failed"
+                  },
+                  "continuation": {
+                    "type": "object",
+                    "properties": {
+                      "remainingGenerations": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "remainingGenerations"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "generated",
+                  "attempted",
+                  "hasMore",
+                  "remainingGenerations"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "skipped"
+                  },
+                  "reason": {
+                    "enum": [
+                      "archived",
+                      "not initialized"
+                    ]
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "remainingGenerations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "continuation": {
+          "type": "object",
+          "properties": {
+            "remainingGenerations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "remainingGenerations": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "slug",
+                  "remainingGenerations"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "remainingGenerations",
+            "companies"
+          ],
+          "additionalProperties": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        }
+      },
+      "required": [
+        "ok",
+        "companies",
+        "errors",
+        "hasMore",
+        "remainingGenerations"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
