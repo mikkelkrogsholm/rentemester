@@ -31,7 +31,7 @@ fn snap(state: &str) -> Value {
     json!({"snapshotId":"source-token","source":"retained legal source","observedAt":"2026-06-01T00:00:00Z","snapshotHash":"a".repeat(64),"diffHash":"b".repeat(64),"diff":{"add":[],"endings":[],"conflicts":[]},"state":state,"actor":"user:synthetic","principal":{"kind":"user","id":"synthetic"},"history":[{"event_type":state,"actor":"user:synthetic","principal_kind":"user","principal_id":"synthetic","created_at":"2026-06-01T00:00:00Z"}]})
 }
 fn proposal() -> Value {
-    json!({"snapshotId":"source-token","source":"retained legal source","observedAt":"2026-06-01T00:00:00Z","facts":[{"owner":{"kind":"company","companySlug":"synthetic"},"ownedCompanySlug":"synthetic","validFrom":"2026-06-01","economicBasisPoints":10000,"controlType":"equity","jurisdiction":"DK","evidenceRefs":["retained-legal-evidence"]}]})
+    json!({"snapshotId":"source-token","source":"retained legal source","observedAt":"2026-06-01T00:00:00Z","facts":[{"owner":{"kind":"company","companySlug":"synthetic"},"ownedCompanySlug":"synthetic-child","validFrom":"2026-06-01","economicBasisPoints":10000,"controlType":"equity","jurisdiction":"DK","evidenceRefs":["retained-legal-evidence"]}]})
 }
 fn observe(
     command: &str,
