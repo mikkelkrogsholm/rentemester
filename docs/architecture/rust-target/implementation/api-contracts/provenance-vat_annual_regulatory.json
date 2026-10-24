@@ -1,0 +1,14 @@
+{
+  "partition": "vat_annual_regulatory",
+  "status": "specified",
+  "unresolved": [],
+  "evidenceScope": "Current actual source only; strict oracle is structural, not semantic acceptance or runtime replay.",
+  "graphQuery": "graphify query \"vat annual regulatory\"",
+  "accepted": false,
+  "selectedOperations": 60,
+  "sourcePolicy": "Per-operation focused current SHA-256 and literal constructor needles; references only own or previously accepted partitions.",
+  "retainedScope": "Prior 821 operations / 26 partitions and all55 / J01-J07 / finaldesktop / release / cutover / retirement unchanged; main owns integration and acceptance.",
+  "leadReviewRepair": {
+    "scope": "Actual tax bounds JSON, HEAD protocol409 body stripping, regulatory500 object errors, original EU CompanyExternalLookup, and exact original SAF-T dispatcher/materializer source refs. No accounting/provider effects replayed."
+  }
+}

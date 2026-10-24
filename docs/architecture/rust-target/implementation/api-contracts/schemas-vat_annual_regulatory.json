@@ -1,0 +1,8191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-vat_annual_regulatory.json",
+  "$defs": {
+    "Strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "EmptyStrings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 0
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Real Gregorian date; native ordered date range constraints are source-bound on the operation, not inferred from regex alone."
+    },
+    "Rubrics": {
+      "type": "object",
+      "properties": {
+        "salgsmoms": {
+          "type": "number"
+        },
+        "momsAfVarekobUdland": {
+          "type": "number"
+        },
+        "momsAfYdelseskobUdland": {
+          "type": "number"
+        },
+        "kobsmoms": {
+          "type": "number"
+        },
+        "momstilsvar": {
+          "type": "number"
+        },
+        "rubrikA": {
+          "type": "number"
+        },
+        "rubrikB": {
+          "type": "number"
+        },
+        "rubrikC": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "salgsmoms",
+        "momsAfVarekobUdland",
+        "momsAfYdelseskobUdland",
+        "kobsmoms",
+        "momstilsvar",
+        "rubrikA",
+        "rubrikB",
+        "rubrikC"
+      ],
+      "additionalProperties": false
+    },
+    "NativeVatRange": {
+      "type": "object",
+      "properties": {
+        "outputVat": {
+          "type": "number"
+        },
+        "outputVatAdjustment": {
+          "type": "number"
+        },
+        "inputVat": {
+          "type": "number"
+        },
+        "payable": {
+          "type": "number"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "outputVat",
+        "outputVatAdjustment",
+        "inputVat",
+        "payable",
+        "ossConsumerSalesBase",
+        "ossConsumerSalesEntryCount",
+        "rubrikker",
+        "errors",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalVatRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "$ref": "#/$defs/Strings"
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "vatPeriodType": {
+          "type": "string"
+        },
+        "filingDeadline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "outputVat": {
+          "type": "number"
+        },
+        "inputVat": {
+          "type": "number"
+        },
+        "netVatPayable": {
+          "type": "number"
+        },
+        "purchaseBase25": {
+          "type": "number"
+        },
+        "salesBase25": {
+          "type": "number"
+        },
+        "reverseChargeSalesBase": {
+          "type": "number"
+        },
+        "foreignReverseChargeSalesBase": {
+          "type": "number"
+        },
+        "domesticReverseChargeSalesBase": {
+          "type": "number"
+        },
+        "reverseChargePurchaseBase": {
+          "type": "number"
+        },
+        "euGoodsAcquisitionPurchaseBase": {
+          "type": "number"
+        },
+        "euGoodsAcquisitionOutputVat": {
+          "type": "number"
+        },
+        "nonEuServiceReverseChargePurchaseBase": {
+          "type": "number"
+        },
+        "reverseChargePurchaseOutputVat": {
+          "type": "number"
+        },
+        "representationPurchaseBase": {
+          "type": "number"
+        },
+        "badDebtReliefBase25": {
+          "type": "number"
+        },
+        "exemptSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversedJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversalJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "totalJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "linesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversedLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversalLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "totalLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "vatPeriodType",
+        "filingDeadline",
+        "warnings",
+        "errors",
+        "rubrikker",
+        "outputVat",
+        "inputVat",
+        "netVatPayable",
+        "purchaseBase25",
+        "salesBase25",
+        "reverseChargeSalesBase",
+        "foreignReverseChargeSalesBase",
+        "domesticReverseChargeSalesBase",
+        "reverseChargePurchaseBase",
+        "euGoodsAcquisitionPurchaseBase",
+        "euGoodsAcquisitionOutputVat",
+        "nonEuServiceReverseChargePurchaseBase",
+        "reverseChargePurchaseOutputVat",
+        "representationPurchaseBase",
+        "badDebtReliefBase25",
+        "exemptSalesBase",
+        "ossConsumerSalesBase",
+        "ossConsumerSalesEntryCount",
+        "journalEntryCount",
+        "reversedJournalEntryCount",
+        "reversalJournalEntryCount",
+        "totalJournalEntryCount",
+        "linesConsidered",
+        "reversedLinesConsidered",
+        "reversalLinesConsidered",
+        "totalLinesConsidered"
+      ],
+      "additionalProperties": false
+    },
+    "Nonregistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "selskabet er ikke momsregistreret"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalVat": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OriginalVatRegistered"
+        },
+        {
+          "$ref": "#/$defs/Nonregistered"
+        }
+      ]
+    },
+    "EuCustomer": {
+      "type": "object",
+      "properties": {
+        "vatNumber": {
+          "type": "string"
+        },
+        "countryCode": {
+          "type": "string"
+        },
+        "customerName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "creditNoteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "totalValue": {
+          "type": "number"
+        },
+        "invoiceNumbers": {
+          "$ref": "#/$defs/Strings"
+        },
+        "creditNoteNumbers": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "vatNumber",
+        "countryCode",
+        "customerName",
+        "invoiceCount",
+        "creditNoteCount",
+        "totalValue",
+        "invoiceNumbers",
+        "creditNoteNumbers"
+      ],
+      "additionalProperties": false
+    },
+    "EuSource": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "documentNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "vatNumber": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "netAmountDkk": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "documentId",
+        "documentType",
+        "documentNumber",
+        "issueDate",
+        "vatNumber",
+        "currency",
+        "netAmountDkk"
+      ],
+      "additionalProperties": false
+    },
+    "EuSales": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-VAT-EU-SALES-LIST-001"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "customers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EuCustomer"
+          }
+        },
+        "totalValue": {
+          "type": "number"
+        },
+        "invoiceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "creditNoteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EuSource"
+          }
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "customers",
+        "totalValue",
+        "invoiceCount",
+        "creditNoteCount",
+        "sources",
+        "warnings",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalEu": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EuSales"
+        },
+        {
+          "$ref": "#/$defs/Nonregistered"
+        }
+      ]
+    },
+    "NativeOssVat": {
+      "type": "object",
+      "properties": {
+        "outputVat": {
+          "type": "number"
+        },
+        "outputVatAdjustment": {
+          "type": "number"
+        },
+        "inputVat": {
+          "type": "number"
+        },
+        "payable": {
+          "type": "number"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "outputVat",
+        "outputVatAdjustment",
+        "inputVat",
+        "payable",
+        "ossConsumerSalesBase",
+        "ossConsumerSalesEntryCount",
+        "rubrikker",
+        "errors",
+        "warnings",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "NativeOss": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-VAT-OSS-001"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "submission": {
+          "const": false
+        },
+        "vatReport": {
+          "$ref": "#/$defs/NativeOssVat"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "ossConsumerSalesBase",
+        "entryCount",
+        "submission",
+        "vatReport",
+        "warnings",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOssRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-VAT-OSS-001"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "submission": {
+          "const": false
+        },
+        "vatReport": {
+          "$ref": "#/$defs/OriginalVatRegistered"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "ossConsumerSalesBase",
+        "entryCount",
+        "submission",
+        "vatReport",
+        "warnings",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOss": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OriginalOssRegistered"
+        },
+        {
+          "$ref": "#/$defs/Nonregistered"
+        }
+      ]
+    },
+    "FilingRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-VAT-FILING-001"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "vatPeriodType": {
+          "type": "string"
+        },
+        "periodStatus": {
+          "enum": [
+            "open",
+            "closed",
+            "reported"
+          ]
+        },
+        "periodReference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filingDeadline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "vatReport": {
+          "$ref": "#/$defs/OriginalVatRegistered"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "vatPeriodType",
+        "periodStatus",
+        "periodReference",
+        "filingDeadline",
+        "rubrikker",
+        "warnings",
+        "errors",
+        "vatReport"
+      ],
+      "additionalProperties": false
+    },
+    "Filing": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FilingRegistered"
+        },
+        {
+          "$ref": "#/$defs/Nonregistered"
+        }
+      ]
+    },
+    "NativeVatUnregistered": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/Company"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "years": {
+          "type": "null"
+        },
+        "vatRegistered": {
+          "const": false
+        },
+        "periodLabel": {
+          "const": "Ikke momsregistreret"
+        }
+      },
+      "required": [
+        "slug",
+        "fiscalYears",
+        "company",
+        "selectedYear",
+        "archived",
+        "years",
+        "vatRegistered",
+        "periodLabel"
+      ],
+      "additionalProperties": false
+    },
+    "NativeVatRegistered": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/Company"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "years": {
+          "type": "null"
+        },
+        "outputVat": {
+          "type": "number"
+        },
+        "outputVatAdjustment": {
+          "type": "number"
+        },
+        "inputVat": {
+          "type": "number"
+        },
+        "payable": {
+          "type": "number"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "errors": {
+          "type": "null"
+        },
+        "warnings": {
+          "type": "null"
+        },
+        "vatRegistered": {
+          "const": true
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "periodLabel": {
+          "type": "string"
+        },
+        "deadline": {
+          "type": "string"
+        },
+        "daysRemaining": {
+          "type": "integer"
+        },
+        "periodStatus": {
+          "enum": [
+            "open",
+            "closed",
+            "reported"
+          ]
+        },
+        "momsangivelseReady": {
+          "type": "boolean"
+        },
+        "periodActionsAvailable": {
+          "const": true
+        },
+        "vatReportErrors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "vatReportWarnings": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "slug",
+        "fiscalYears",
+        "company",
+        "selectedYear",
+        "archived",
+        "years",
+        "outputVat",
+        "outputVatAdjustment",
+        "inputVat",
+        "payable",
+        "ossConsumerSalesBase",
+        "ossConsumerSalesEntryCount",
+        "rubrikker",
+        "errors",
+        "warnings",
+        "vatRegistered",
+        "periodStart",
+        "periodEnd",
+        "periodLabel",
+        "deadline",
+        "daysRemaining",
+        "periodStatus",
+        "momsangivelseReady",
+        "periodActionsAvailable",
+        "vatReportErrors",
+        "vatReportWarnings"
+      ],
+      "additionalProperties": false
+    },
+    "NativeVat": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NativeVatUnregistered"
+        },
+        {
+          "$ref": "#/$defs/NativeVatRegistered"
+        }
+      ]
+    },
+    "VatEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "vat": {
+          "$ref": "#/$defs/NativeVat"
+        }
+      },
+      "required": [
+        "ok",
+        "vat"
+      ],
+      "additionalProperties": false
+    },
+    "Section": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "number"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "accountNo",
+              "name",
+              "amount"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "total",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualComparison": {
+      "type": "object",
+      "properties": {
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "totalIncome": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "totalExpense": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "aretsResultat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "totalAssets": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "totalLiabilitiesAndEquity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "equity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "const": "prior_range_precedes_explicit_cutover"
+        }
+      },
+      "required": [
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "available",
+        "totalIncome",
+        "totalExpense",
+        "aretsResultat",
+        "totalAssets",
+        "totalLiabilitiesAndEquity",
+        "equity"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualReport": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-ANNUAL-REPORT-CLASS-B-001"
+          ]
+        },
+        "regnskabsklasse": {
+          "const": "B"
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "profitAndLoss": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "income": {
+              "$ref": "#/$defs/Section"
+            },
+            "expense": {
+              "$ref": "#/$defs/Section"
+            },
+            "totalIncome": {
+              "type": "number"
+            },
+            "totalExpense": {
+              "type": "number"
+            },
+            "result": {
+              "type": "number"
+            },
+            "errors": {
+              "$ref": "#/$defs/EmptyStrings"
+            }
+          },
+          "required": [
+            "ok",
+            "income",
+            "expense",
+            "totalIncome",
+            "totalExpense",
+            "result",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "balanceSheet": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "assets": {
+              "$ref": "#/$defs/Section"
+            },
+            "liabilities": {
+              "$ref": "#/$defs/Section"
+            },
+            "equity": {
+              "$ref": "#/$defs/Section"
+            },
+            "periodResult": {
+              "type": "number"
+            },
+            "totalAssets": {
+              "type": "number"
+            },
+            "totalLiabilitiesAndEquity": {
+              "type": "number"
+            },
+            "balanced": {
+              "type": "boolean"
+            },
+            "errors": {
+              "$ref": "#/$defs/EmptyStrings"
+            }
+          },
+          "required": [
+            "ok",
+            "assets",
+            "liabilities",
+            "equity",
+            "periodResult",
+            "totalAssets",
+            "totalLiabilitiesAndEquity",
+            "balanced",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "aretsResultat": {
+          "type": "number"
+        },
+        "comparison": {
+          "$ref": "#/$defs/AnnualComparison"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "placeholder": {
+                "const": true
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "body",
+              "placeholder"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5
+        },
+        "ledelsespategning": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "placeholder": {
+              "const": true
+            }
+          },
+          "required": [
+            "text",
+            "placeholder"
+          ],
+          "additionalProperties": false
+        },
+        "preparedBy": {
+          "const": "Rentemester"
+        },
+        "disclaimer": {
+          "type": "string"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "regnskabsklasse",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "company",
+        "profitAndLoss",
+        "balanceSheet",
+        "aretsResultat",
+        "comparison",
+        "notes",
+        "ledelsespategning",
+        "preparedBy",
+        "disclaimer",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualData": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "report": {
+          "$ref": "#/$defs/AnnualReport"
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "report"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "annualReport": {
+          "$ref": "#/$defs/AnnualData"
+        }
+      },
+      "required": [
+        "ok",
+        "annualReport"
+      ],
+      "additionalProperties": false
+    },
+    "TaxReview": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "depreciation_difference"
+            },
+            "label": {
+              "type": "string"
+            },
+            "requiredAction": {
+              "type": "string"
+            },
+            "bookDepreciation": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "label",
+            "requiredAction",
+            "bookDepreciation"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "tax_loss_carry_forward",
+                "company_form_out_of_scope"
+              ]
+            },
+            "label": {
+              "type": "string"
+            },
+            "requiredAction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "label",
+            "requiredAction"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Tax": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-TAX-RETURN-CORP-001"
+          ]
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "companyForm": {
+          "type": "string"
+        },
+        "adjustments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "non_deductible_representation"
+              },
+              "label": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "explanation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "amount",
+              "explanation"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1
+        },
+        "totalAdjustments": {
+          "type": "number"
+        },
+        "taxableIncome": {
+          "type": "number"
+        },
+        "corporateTaxRate": {
+          "const": 0.22
+        },
+        "corporateTax": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "needsReview": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaxReview"
+          },
+          "maxItems": 3
+        },
+        "acontoTaxDeadlines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "installment": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "dueDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "installment",
+              "dueDate"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "preparedBy": {
+          "const": "Rentemester"
+        },
+        "disclaimer": {
+          "type": "string"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "bookkeptResult": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "companyForm",
+        "adjustments",
+        "totalAdjustments",
+        "taxableIncome",
+        "corporateTaxRate",
+        "corporateTax",
+        "needsReview",
+        "acontoTaxDeadlines",
+        "preparedBy",
+        "disclaimer",
+        "errors",
+        "bookkeptResult"
+      ],
+      "additionalProperties": false
+    },
+    "TaxonomyElement": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "section": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "label",
+        "section",
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "Taxonomy": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaxonomyElement"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "scope",
+        "prefix",
+        "namespace",
+        "elements"
+      ],
+      "additionalProperties": false
+    },
+    "Ixbrl": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-ANNUAL-REPORT-IXBRL-002"
+          ]
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "xhtml": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "element": {
+                "$ref": "#/$defs/TaxonomyElement"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "element",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "taxonomy": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "version"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "annualReport": {
+          "$ref": "#/$defs/AnnualReport"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "sha256",
+        "xhtml",
+        "facts",
+        "taxonomy",
+        "errors",
+        "annualReport"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualExportEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "annualExport": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tax"
+            },
+            {
+              "$ref": "#/$defs/Ixbrl"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "annualExport"
+      ],
+      "additionalProperties": false
+    },
+    "EuPurchase": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "paymentAccountNo": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "amountForeign": {
+          "type": "number"
+        },
+        "amountDkk": {
+          "type": "number"
+        },
+        "fxRateToDkk": {
+          "type": "number"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sourceBankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "netAmount",
+        "expenseAccountNo"
+      ],
+      "additionalProperties": false
+    },
+    "EuPurchaseHttp": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/EuPurchase"
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-maxUtf8Bytes": 160
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RepresentationPurchase": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "paymentAccountNo": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "amountForeign": {
+          "type": "number"
+        },
+        "amountDkk": {
+          "type": "number"
+        },
+        "fxRateToDkk": {
+          "type": "number"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sourceBankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "netAmount",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "RepresentationPurchaseHttp": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/RepresentationPurchase"
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-maxUtf8Bytes": 160
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PurchaseSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "$ref": "#/$defs/Strings"
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "PurchaseFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "MinimalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/Failure"
+    },
+    "CliFailure": {
+      "$ref": "schemas-budget_forecast.json#/$defs/CliFailure"
+    },
+    "UnknownPurchase": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "outcome": {
+          "const": "unknown"
+        },
+        "errors": {
+          "const": [
+            "Write outcome unknown; read canonical journal before another action"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "outcome",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SaftInput": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "generationMode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generatedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "HandoffInput": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "packageProfile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requestedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requester": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "SaftTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      ],
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "HandoffTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "BinaryDownload": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "export": {
+          "type": "object",
+          "properties": {
+            "contentType": {
+              "const": "application/x-tar"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "minItems": 1024,
+              "maxItems": 268435456
+            }
+          },
+          "required": [
+            "contentType",
+            "bytes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "export"
+      ],
+      "additionalProperties": false
+    },
+    "HandoffPublished": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "exportDir": {
+          "type": "string"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "deadlineAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bankTransactionCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "documentCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "ok",
+        "exportDir",
+        "manifestPath",
+        "periodStart",
+        "periodEnd",
+        "generatedAt",
+        "appliedRules",
+        "errors",
+        "journalEntryCount",
+        "deadlineAt",
+        "bankTransactionCount",
+        "documentCount"
+      ],
+      "additionalProperties": false
+    },
+    "SaftPublished": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "exportDir": {
+          "type": "string"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "$ref": "#/$defs/Strings"
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "saftXmlPath": {
+          "type": "string"
+        },
+        "salesInvoiceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "purchaseInvoiceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "customerCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "supplierCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "ok",
+        "exportDir",
+        "manifestPath",
+        "periodStart",
+        "periodEnd",
+        "generatedAt",
+        "appliedRules",
+        "errors",
+        "journalEntryCount",
+        "saftXmlPath",
+        "salesInvoiceCount",
+        "purchaseInvoiceCount",
+        "customerCount",
+        "supplierCount"
+      ],
+      "additionalProperties": false
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "AnnualQuery": {
+      "type": "object",
+      "properties": {
+        "fiscalYearStart": {
+          "$ref": "#/$defs/Date"
+        },
+        "fiscalYearEnd": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [
+        "fiscalYearStart",
+        "fiscalYearEnd"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualExportQuery": {
+      "type": "object",
+      "properties": {
+        "fiscalYearStart": {
+          "$ref": "#/$defs/Date"
+        },
+        "fiscalYearEnd": {
+          "$ref": "#/$defs/Date"
+        },
+        "kind": {
+          "enum": [
+            "tax",
+            "ixbrl"
+          ]
+        }
+      },
+      "required": [
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "DatesQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/Date"
+        },
+        "to": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDatesQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "to": {
+          "type": "string",
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "VatQuery": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "source": {
+          "enum": [
+            "live",
+            "archive"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "VatExportQuery": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "format": {
+          "const": "pdf"
+        },
+        "source": {
+          "enum": [
+            "live",
+            "archive"
+          ]
+        }
+      },
+      "required": [
+        "format"
+      ],
+      "additionalProperties": false
+    },
+    "ComplianceQuery": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "OriginalVatRegisteredData": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "vatPeriodType": {
+          "type": "string"
+        },
+        "filingDeadline": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        },
+        "rubrikker": {
+          "$ref": "#/$defs/Rubrics"
+        },
+        "outputVat": {
+          "type": "number"
+        },
+        "inputVat": {
+          "type": "number"
+        },
+        "netVatPayable": {
+          "type": "number"
+        },
+        "purchaseBase25": {
+          "type": "number"
+        },
+        "salesBase25": {
+          "type": "number"
+        },
+        "reverseChargeSalesBase": {
+          "type": "number"
+        },
+        "foreignReverseChargeSalesBase": {
+          "type": "number"
+        },
+        "domesticReverseChargeSalesBase": {
+          "type": "number"
+        },
+        "reverseChargePurchaseBase": {
+          "type": "number"
+        },
+        "euGoodsAcquisitionPurchaseBase": {
+          "type": "number"
+        },
+        "euGoodsAcquisitionOutputVat": {
+          "type": "number"
+        },
+        "nonEuServiceReverseChargePurchaseBase": {
+          "type": "number"
+        },
+        "reverseChargePurchaseOutputVat": {
+          "type": "number"
+        },
+        "representationPurchaseBase": {
+          "type": "number"
+        },
+        "badDebtReliefBase25": {
+          "type": "number"
+        },
+        "exemptSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "ossConsumerSalesEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversedJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversalJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "totalJournalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "linesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversedLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "reversalLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "totalLinesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "vatPeriodType",
+        "filingDeadline",
+        "warnings",
+        "rubrikker",
+        "outputVat",
+        "inputVat",
+        "netVatPayable",
+        "purchaseBase25",
+        "salesBase25",
+        "reverseChargeSalesBase",
+        "foreignReverseChargeSalesBase",
+        "domesticReverseChargeSalesBase",
+        "reverseChargePurchaseBase",
+        "euGoodsAcquisitionPurchaseBase",
+        "euGoodsAcquisitionOutputVat",
+        "nonEuServiceReverseChargePurchaseBase",
+        "reverseChargePurchaseOutputVat",
+        "representationPurchaseBase",
+        "badDebtReliefBase25",
+        "exemptSalesBase",
+        "ossConsumerSalesBase",
+        "ossConsumerSalesEntryCount",
+        "journalEntryCount",
+        "reversedJournalEntryCount",
+        "reversalJournalEntryCount",
+        "totalJournalEntryCount",
+        "linesConsidered",
+        "reversedLinesConsidered",
+        "reversalLinesConsidered",
+        "totalLinesConsidered"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalVatRegisteredWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/OriginalVatRegisteredData"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "EuSalesData": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "customers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EuCustomer"
+          }
+        },
+        "totalValue": {
+          "type": "number"
+        },
+        "invoiceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "creditNoteCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EuSource"
+          }
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "customers",
+        "totalValue",
+        "invoiceCount",
+        "creditNoteCount",
+        "sources",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "EuSalesWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/EuSalesData"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOssRegisteredData": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "ossConsumerSalesBase": {
+          "type": "number"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "submission": {
+          "const": false
+        },
+        "vatReport": {
+          "$ref": "#/$defs/OriginalVatRegistered"
+        },
+        "warnings": {
+          "$ref": "#/$defs/Strings"
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "ossConsumerSalesBase",
+        "entryCount",
+        "submission",
+        "vatReport",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOssRegisteredWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/OriginalOssRegisteredData"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "TaxData": {
+      "type": "object",
+      "properties": {
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "companyForm": {
+          "type": "string"
+        },
+        "adjustments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "non_deductible_representation"
+              },
+              "label": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "explanation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "amount",
+              "explanation"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1
+        },
+        "totalAdjustments": {
+          "type": "number"
+        },
+        "taxableIncome": {
+          "type": "number"
+        },
+        "corporateTaxRate": {
+          "const": 0.22
+        },
+        "corporateTax": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "needsReview": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaxReview"
+          },
+          "maxItems": 3
+        },
+        "acontoTaxDeadlines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "installment": {
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "dueDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "installment",
+              "dueDate"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "preparedBy": {
+          "const": "Rentemester"
+        },
+        "disclaimer": {
+          "type": "string"
+        },
+        "bookkeptResult": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "companyForm",
+        "adjustments",
+        "totalAdjustments",
+        "taxableIncome",
+        "corporateTaxRate",
+        "corporateTax",
+        "needsReview",
+        "acontoTaxDeadlines",
+        "preparedBy",
+        "disclaimer",
+        "bookkeptResult"
+      ],
+      "additionalProperties": false
+    },
+    "TaxWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/TaxData"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "HandoffPublishedData": {
+      "type": "object",
+      "properties": {
+        "exportDir": {
+          "type": "string"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "deadlineAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bankTransactionCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "documentCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "exportDir",
+        "manifestPath",
+        "periodStart",
+        "periodEnd",
+        "generatedAt",
+        "journalEntryCount",
+        "deadlineAt",
+        "bankTransactionCount",
+        "documentCount"
+      ],
+      "additionalProperties": false
+    },
+    "HandoffPublishedWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/HandoffPublishedData"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "PurchaseWrapped": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "entryId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "entryNo": {
+              "type": "string"
+            },
+            "entryHash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "entryId",
+            "entryNo",
+            "entryHash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "VatEnvelopeClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/VatEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualEnvelopeClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/AnnualEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "EuSalesClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/EuSales"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "NativeOssClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/NativeOss"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "BinaryDownloadClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/BinaryDownload"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalVatRegisteredWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/OriginalVatRegisteredWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/OriginalVatRegisteredWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "EuSalesWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/EuSalesWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/EuSalesWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOssRegisteredWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/OriginalOssRegisteredWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/OriginalOssRegisteredWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "TaxWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/TaxWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/TaxWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "HandoffPublishedWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/HandoffPublishedWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/HandoffPublishedWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "PurchaseWrappedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/PurchaseWrapped"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/PurchaseWrapped"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyFailureTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/LegacyFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/LegacyFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "VatEnvelopeClientTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/VatEnvelopeClient"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/VatEnvelopeClient"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualEnvelopeClientTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/AnnualEnvelopeClient"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/AnnualEnvelopeClient"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "EuSalesClientTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/EuSalesClient"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/EuSalesClient"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "BinaryDownloadClientTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "#/$defs/BinaryDownloadClient"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "#/$defs/BinaryDownloadClient"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpDates": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalDates": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "McpAnnual": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "fiscalYearStart",
+        "fiscalYearEnd"
+      ],
+      "additionalProperties": false
+    },
+    "McpVat": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSaft": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpAuthority": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "out": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestedAt": {
+          "type": "string"
+        },
+        "requester": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to",
+        "out"
+      ],
+      "additionalProperties": false
+    },
+    "EuPurchaseMcp": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/EuPurchase"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "RepresentationPurchaseMcp": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/RepresentationPurchase"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "LegalSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "authority": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "xmlUrl": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "authority",
+        "category",
+        "url",
+        "xmlUrl",
+        "notes"
+      ],
+      "additionalProperties": false
+    },
+    "IndexedSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "authority": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "xmlUrl": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "downloadedAt": {
+          "type": "string"
+        },
+        "localPath": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "authority",
+        "category",
+        "url",
+        "xmlUrl",
+        "notes",
+        "downloadedAt",
+        "localPath",
+        "bytes",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Provision": {
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kind": {
+          "enum": [
+            "operative",
+            "commencement",
+            "amendment"
+          ]
+        },
+        "textHash": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sourceId",
+        "ref",
+        "path",
+        "kind",
+        "textHash",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "Rule": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "bundle": {
+          "type": "string"
+        },
+        "sourceId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "provisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "textHash": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ref",
+              "textHash"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ruleId",
+        "bundle",
+        "sourceId",
+        "name",
+        "explanation",
+        "severity",
+        "category",
+        "provisions"
+      ],
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "rentemester-regulatory-coverage/1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errorCount": {
+          "type": "integer"
+        },
+        "scopeVersion": {
+          "type": "string"
+        },
+        "bundleVersions": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IndexedSource"
+          }
+        },
+        "legalSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LegalSource"
+          }
+        },
+        "provisions": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Provision"
+            }
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Rule"
+          }
+        },
+        "referenceAttribution": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "rentemester-legacy-reference-attribution/1"
+            },
+            "notice": {
+              "type": "string"
+            },
+            "files": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "type": "string"
+                  },
+                  "ruleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "ruleIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "format",
+            "notice",
+            "files"
+          ],
+          "additionalProperties": false
+        },
+        "notice": {
+          "type": "string"
+        },
+        "overall": {
+          "type": "object",
+          "properties": {
+            "operativeCount": {
+              "type": "integer"
+            },
+            "citedCount": {
+              "type": "integer"
+            },
+            "inScopeOperativeCount": {
+              "type": "integer"
+            },
+            "inScopeCitedCount": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "operativeCount",
+            "citedCount",
+            "inScopeOperativeCount",
+            "inScopeCitedCount"
+          ],
+          "additionalProperties": false
+        },
+        "perSource": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "type": "string"
+              },
+              "operativeCount": {
+                "type": "integer"
+              },
+              "citedCount": {
+                "type": "integer"
+              },
+              "inScopeOperativeCount": {
+                "type": "integer"
+              },
+              "inScopeCitedCount": {
+                "type": "integer"
+              },
+              "coveredRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "uncoveredRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "sourceId",
+              "operativeCount",
+              "citedCount",
+              "inScopeOperativeCount",
+              "inScopeCitedCount",
+              "coveredRefs",
+              "uncoveredRefs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "closureErrors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ruleId": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "resolvedSourceId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ruleId",
+              "sourceId",
+              "ref",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "driftErrors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ruleId": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "citedTextHash": {
+                "type": "string"
+              },
+              "currentTextHash": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ruleId",
+              "sourceId",
+              "ref",
+              "citedTextHash",
+              "currentTextHash"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "scopeErrors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "paragraf": {
+                "type": "string"
+              },
+              "ruleId": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "sourceId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "sourceErrors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "actualSha256": {
+                "type": "string"
+              },
+              "actualBytes": {
+                "type": "integer"
+              },
+              "ruleId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "sourceId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "uncitedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uncoveredProvisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "sourceId",
+              "ref"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "reverseMap": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "rules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ruleId": {
+                      "type": "string"
+                    },
+                    "codeFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "testFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "evidenceKind": {
+                      "const": "legacy-typescript-reference"
+                    },
+                    "nativeExecutionVerified": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "ruleId",
+                    "codeFiles",
+                    "testFiles",
+                    "evidenceKind",
+                    "nativeExecutionVerified"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "sourceId",
+              "ref",
+              "rules"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "format",
+        "ok",
+        "errorCount",
+        "scopeVersion",
+        "bundleVersions",
+        "sources",
+        "legalSources",
+        "provisions",
+        "rules",
+        "referenceAttribution",
+        "notice",
+        "overall",
+        "perSource",
+        "closureErrors",
+        "driftErrors",
+        "scopeErrors",
+        "sourceErrors",
+        "uncitedRules",
+        "uncoveredProvisions",
+        "reverseMap"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "regulatoryCoverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "ok",
+        "regulatoryCoverage"
+      ],
+      "additionalProperties": false
+    },
+    "CitationsEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "regulatoryCitations": {
+          "type": "object",
+          "properties": {
+            "report": {
+              "type": "string"
+            },
+            "coverage": {
+              "$ref": "#/$defs/Coverage"
+            }
+          },
+          "required": [
+            "report",
+            "coverage"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "regulatoryCitations"
+      ],
+      "additionalProperties": false
+    },
+    "CompanySummary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "cvr",
+        "country",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "rowStatus": {
+          "type": "string"
+        },
+        "effectiveStatus": {
+          "type": "string"
+        },
+        "closedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "closedBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "closePacketHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "periodStart",
+        "periodEnd",
+        "kind",
+        "rowStatus",
+        "effectiveStatus",
+        "closedAt",
+        "closedBy",
+        "reference",
+        "closePacketHash"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodList": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "#/$defs/CompanySummary"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PeriodRow"
+          }
+        },
+        "byStatus": {
+          "type": "object",
+          "properties": {
+            "open": {
+              "type": "integer"
+            },
+            "closed": {
+              "type": "integer"
+            },
+            "reported": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "open",
+            "closed",
+            "reported"
+          ],
+          "additionalProperties": false
+        },
+        "reportingAvailable": {
+          "const": true
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "periods",
+        "byStatus",
+        "reportingAvailable"
+      ],
+      "additionalProperties": false
+    },
+    "Retention": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-RETENTION-001"
+          ]
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "table": {
+                "enum": [
+                  "documents",
+                  "journal_entries",
+                  "bank_transactions"
+                ]
+              },
+              "total": {
+                "type": "integer"
+              },
+              "expired": {
+                "type": "integer"
+              },
+              "nextExpiry": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "oldestExpired": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "unknown": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "table",
+              "total",
+              "expired",
+              "nextExpiry",
+              "oldestExpired",
+              "unknown"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "errors": {
+          "$ref": "#/$defs/EmptyStrings"
+        }
+      },
+      "required": [
+        "ok",
+        "asOf",
+        "appliedRules",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ComplianceFiscalYear": {
+      "type": "object",
+      "properties": {
+        "startYear": {
+          "type": "integer"
+        },
+        "endYear": {
+          "type": "integer"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "displayLabel": {
+          "type": "string"
+        },
+        "identifierLabel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "startYear",
+        "endYear",
+        "start",
+        "end",
+        "displayLabel",
+        "identifierLabel"
+      ],
+      "additionalProperties": false
+    },
+    "AuditFinding": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "entryId": {
+          "type": "integer"
+        },
+        "receiptId": {
+          "type": "integer"
+        },
+        "auditId": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "family": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "AuditComponent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "checked": {
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "integer"
+            },
+            "receiptId": {
+              "type": "integer"
+            },
+            "checked": {
+              "type": "integer"
+            },
+            "available": {
+              "type": "integer"
+            },
+            "bankTransactionId": {
+              "type": "integer"
+            },
+            "replacementJournalEntryId": {
+              "type": "integer"
+            },
+            "deliveryDescription": {
+              "type": "integer"
+            },
+            "address": {
+              "type": "integer"
+            },
+            "family": {
+              "type": "integer"
+            },
+            "code": {
+              "type": "integer"
+            },
+            "grossAmount": {
+              "type": "integer"
+            },
+            "slug": {
+              "type": "integer"
+            },
+            "archivePostings": {
+              "type": "integer"
+            },
+            "sqliteIntegrity": {
+              "type": "integer"
+            },
+            "format": {
+              "type": "integer"
+            },
+            "vatOrCvr": {
+              "type": "integer"
+            },
+            "historicalEntries": {
+              "type": "integer"
+            },
+            "archiveYears": {
+              "type": "integer"
+            },
+            "auditId": {
+              "type": "integer"
+            },
+            "journalSequences": {
+              "type": "integer"
+            },
+            "bankAmountDkk": {
+              "type": "integer"
+            },
+            "sender": {
+              "type": "integer"
+            },
+            "fields": {
+              "type": "integer"
+            },
+            "currentJournalEntryId": {
+              "type": "integer"
+            },
+            "reconciliationId": {
+              "type": "integer"
+            },
+            "replacementJournalEntryNo": {
+              "type": "integer"
+            },
+            "amountIncVat": {
+              "type": "integer"
+            },
+            "bankAccountNo": {
+              "type": "integer"
+            },
+            "vatAmount": {
+              "type": "integer"
+            },
+            "reason": {
+              "type": "integer"
+            },
+            "openingBalances": {
+              "type": "integer"
+            },
+            "issueDate": {
+              "type": "integer"
+            },
+            "confirm": {
+              "type": "integer"
+            },
+            "ok": {
+              "type": "integer"
+            },
+            "auditRows": {
+              "type": "integer"
+            },
+            "reversals": {
+              "type": "integer"
+            },
+            "appendOnlyLinks": {
+              "type": "integer"
+            },
+            "schemaVersion": {
+              "type": "integer"
+            },
+            "lines": {
+              "type": "integer"
+            },
+            "directLinks": {
+              "type": "integer"
+            },
+            "transactionDate": {
+              "type": "integer"
+            },
+            "currentJournalEntryNo": {
+              "type": "integer"
+            },
+            "source": {
+              "type": "integer"
+            },
+            "journalReceipts": {
+              "type": "integer"
+            },
+            "bankRows": {
+              "type": "integer"
+            },
+            "corrections": {
+              "type": "integer"
+            },
+            "text": {
+              "type": "integer"
+            },
+            "schema": {
+              "type": "integer"
+            },
+            "recipient": {
+              "type": "integer"
+            },
+            "replacementJournalHash": {
+              "type": "integer"
+            },
+            "accountNo": {
+              "type": "integer"
+            },
+            "invoiceNo": {
+              "type": "integer"
+            },
+            "documentType": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "integer"
+            },
+            "replacementBankMovement": {
+              "type": "integer"
+            },
+            "audit": {
+              "type": "integer"
+            },
+            "entries": {
+              "type": "integer"
+            },
+            "entryId": {
+              "type": "integer"
+            },
+            "invoiceDocumentId": {
+              "type": "integer"
+            },
+            "errors": {
+              "type": "integer"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "creditAmount": {
+              "type": "integer"
+            },
+            "message": {
+              "type": "integer"
+            },
+            "debitAmount": {
+              "type": "integer"
+            },
+            "components": {
+              "type": "integer"
+            },
+            "directPurchasePayableCorrections": {
+              "type": "integer"
+            },
+            "currency": {
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditFinding"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "available",
+        "ok",
+        "checked",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Audit": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "rentemester-native-audit-verification/1"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "entries": {
+          "type": "integer"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditComponent"
+          }
+        }
+      },
+      "required": [
+        "format",
+        "slug",
+        "ok",
+        "available",
+        "entries",
+        "errors",
+        "components"
+      ],
+      "additionalProperties": false
+    },
+    "BackupEvidence": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "slug": {
+          "type": "string"
+        },
+        "backup": {
+          "type": "object",
+          "properties": {
+            "available": {
+              "const": true
+            },
+            "ok": {
+              "type": "boolean"
+            },
+            "latestBackupAt": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "latestBackupId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "hasActivitySinceBackup": {
+              "type": "boolean"
+            },
+            "daysSinceLatestBackup": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "backupsFound": {
+              "type": "integer"
+            },
+            "requiredBy": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "timestamps": {
+                  "type": "object",
+                  "properties": {
+                    "latestJournalEntryAt": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "latestDocumentAt": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "latestBankImportAt": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "latestJournalEntryAt",
+                    "latestDocumentAt",
+                    "latestBankImportAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "identityChangedSinceBackup": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "timestamps",
+                "identityChangedSinceBackup"
+              ],
+              "additionalProperties": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "scope": {
+              "const": "local-retained-snapshots"
+            },
+            "remoteSyncVerified": {
+              "const": false
+            }
+          },
+          "required": [
+            "available",
+            "ok",
+            "latestBackupAt",
+            "latestBackupId",
+            "backupDue",
+            "hasActivitySinceBackup",
+            "daysSinceLatestBackup",
+            "backupsFound",
+            "requiredBy",
+            "checkedAt",
+            "evidence",
+            "errors",
+            "scope",
+            "remoteSyncVerified"
+          ],
+          "additionalProperties": false
+        },
+        "lock": {
+          "type": "object",
+          "properties": {
+            "enforced": {
+              "type": "boolean"
+            },
+            "graceDays": {
+              "type": "integer"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "lockDeadline": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "updatedAt": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "updatedBy": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "enforced",
+            "graceDays",
+            "locked",
+            "lockDeadline",
+            "updatedAt",
+            "updatedBy"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "slug",
+        "backup",
+        "lock"
+      ],
+      "additionalProperties": false
+    },
+    "ComplianceBackup": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "available": {
+              "const": false
+            },
+            "detailsAvailable": {
+              "const": false
+            },
+            "reason": {
+              "type": "string"
+            },
+            "remoteSyncVerified": {
+              "const": false
+            },
+            "detailPermissionGranted": {
+              "const": false
+            }
+          },
+          "required": [
+            "available",
+            "detailsAvailable",
+            "reason",
+            "remoteSyncVerified",
+            "detailPermissionGranted"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "available": {
+              "const": false
+            },
+            "detailPermissionGranted": {
+              "const": true
+            },
+            "reason": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "available",
+            "detailPermissionGranted",
+            "reason",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "available": {
+              "const": true
+            },
+            "detailPermissionGranted": {
+              "const": true
+            },
+            "localRetainedEvidence": {
+              "$ref": "#/$defs/BackupEvidence"
+            },
+            "destinationGovernanceAvailable": {
+              "const": false
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "available",
+            "detailPermissionGranted",
+            "localRetainedEvidence",
+            "destinationGovernanceAvailable",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ComplianceData": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "rentemester-company-compliance/1"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "stateNotice": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "#/$defs/CompanySummary"
+        },
+        "fiscalYear": {
+          "$ref": "#/$defs/ComplianceFiscalYear"
+        },
+        "audit": {
+          "$ref": "#/$defs/Audit"
+        },
+        "periods": {
+          "$ref": "#/$defs/PeriodList"
+        },
+        "retention": {
+          "$ref": "#/$defs/Retention"
+        },
+        "gdpr": {
+          "type": "object",
+          "properties": {
+            "eventCount": {
+              "type": "integer"
+            },
+            "scope": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "eventCount",
+            "scope"
+          ],
+          "additionalProperties": false
+        },
+        "backup": {
+          "$ref": "#/$defs/ComplianceBackup"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "format",
+        "slug",
+        "asOf",
+        "stateNotice",
+        "company",
+        "fiscalYear",
+        "audit",
+        "periods",
+        "retention",
+        "gdpr",
+        "backup",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "ComplianceEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "complianceReport": {
+          "type": "object",
+          "properties": {
+            "contentType": {
+              "const": "text/html; charset=utf-8"
+            },
+            "html": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/$defs/ComplianceData"
+            }
+          },
+          "required": [
+            "contentType",
+            "html",
+            "sha256",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "complianceReport"
+      ],
+      "additionalProperties": false
+    },
+    "ComplianceEnvelopeClient": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/ComplianceEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+    },
+    "RpcErrors": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid or oversized newline-delimited message"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid JSON"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "expected one JSON-RPC object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "invalid JSON-RPC request"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "request id already used"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "already initialized"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "const": "session request limit reached; reconnect"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected params object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "initialize requires protocolVersion, capabilities and clientInfo"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "const": "initialize and notifications/initialized required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "task execution not supported"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tool name required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "const": "method not found"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected arguments object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "annual_report requires only company, fiscalYearStart and fiscalYearEnd"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "annual_report requires ascending real ISO fiscal dates"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tax_return_prepare requires only company/from/to"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tax_return_prepare requires nonempty company/from/to strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact nonempty company/from/to required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "only company/payload/confirm accepted; no actor or program"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "nonempty company required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "confirm must be boolean"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "payload required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid strict VAT purchase payload"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company/from/to required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "only VAT accepts string year"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid period read arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "saft_export requires only company/body/confirm"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "SAF-T body exceeds4096 bytes"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "unknown system_export_authority argument"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company/from/to/out must be nonempty strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "optional request context must be strings, not null"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "confirm must be boolean when present"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CliInput0": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--fiscal-year-start": {
+          "type": "string"
+        },
+        "--fiscal-year-end": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--fiscal-year-start",
+        "--fiscal-year-end"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput1": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput2": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput3": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput4": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput5": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput6": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--ixbrl-out": {
+          "type": "string"
+        },
+        "--ixbrl-taxonomy": {
+          "const": true
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliInput7": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput8": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--out": {
+          "type": "string"
+        },
+        "--requested-at": {
+          "type": "string"
+        },
+        "--requester": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to",
+        "--out"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput9": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--out": {
+          "type": "string"
+        },
+        "--requested-at": {
+          "type": "string"
+        },
+        "--requester": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to",
+        "--out"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput10": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--out": {
+          "type": "string"
+        },
+        "--generated-at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to",
+        "--out"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput11": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput12": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput13": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput14": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput15": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput16": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--input": {
+          "type": "string"
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--input"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput17": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--input": {
+          "type": "string"
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--input"
+      ],
+      "additionalProperties": false
+    },
+    "TaxonomyCli": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaxonomyElement"
+          }
+        },
+        "ok": {
+          "const": true
+        },
+        "elementCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "scope",
+        "prefix",
+        "namespace",
+        "elements",
+        "ok",
+        "elementCount"
+      ],
+      "additionalProperties": false
+    },
+    "AnnualCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-ANNUAL-REPORT-CLASS-B-001"
+          ]
+        },
+        "regnskabsklasse": {
+          "const": "B"
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "profitAndLoss": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "income": {
+              "$ref": "#/$defs/Section"
+            },
+            "expense": {
+              "$ref": "#/$defs/Section"
+            },
+            "totalIncome": {
+              "type": "number"
+            },
+            "totalExpense": {
+              "type": "number"
+            },
+            "result": {
+              "type": "number"
+            },
+            "errors": {
+              "$ref": "#/$defs/EmptyStrings"
+            }
+          },
+          "required": [
+            "ok",
+            "income",
+            "expense",
+            "totalIncome",
+            "totalExpense",
+            "result",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "balanceSheet": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "assets": {
+              "$ref": "#/$defs/Section"
+            },
+            "liabilities": {
+              "$ref": "#/$defs/Section"
+            },
+            "equity": {
+              "$ref": "#/$defs/Section"
+            },
+            "periodResult": {
+              "type": "number"
+            },
+            "totalAssets": {
+              "type": "number"
+            },
+            "totalLiabilitiesAndEquity": {
+              "type": "number"
+            },
+            "balanced": {
+              "type": "boolean"
+            },
+            "errors": {
+              "$ref": "#/$defs/EmptyStrings"
+            }
+          },
+          "required": [
+            "ok",
+            "assets",
+            "liabilities",
+            "equity",
+            "periodResult",
+            "totalAssets",
+            "totalLiabilitiesAndEquity",
+            "balanced",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "aretsResultat": {
+          "type": "number"
+        },
+        "comparison": {
+          "$ref": "#/$defs/AnnualComparison"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "placeholder": {
+                "const": true
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "body",
+              "placeholder"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5
+        },
+        "ledelsespategning": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "placeholder": {
+              "const": true
+            }
+          },
+          "required": [
+            "text",
+            "placeholder"
+          ],
+          "additionalProperties": false
+        },
+        "preparedBy": {
+          "const": "Rentemester"
+        },
+        "disclaimer": {
+          "type": "string"
+        },
+        "errors": {
+          "$ref": "#/$defs/Strings"
+        },
+        "ixbrl": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "path": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "taxonomy": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "version"
+                  ],
+                  "additionalProperties": false
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "path",
+                "sha256",
+                "taxonomy",
+                "appliedRules"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "path": {
+                  "const": null
+                },
+                "sha256": {
+                  "const": ""
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "path",
+                "sha256",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "regnskabsklasse",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "company",
+        "profitAndLoss",
+        "balanceSheet",
+        "aretsResultat",
+        "comparison",
+        "notes",
+        "ledelsespategning",
+        "preparedBy",
+        "disclaimer",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliBoundsFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "fiscalYearStart": {
+          "type": "string"
+        },
+        "fiscalYearEnd": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "StaticFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "Http_invalid_input": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_input"
+        },
+        "errors": {
+          "const": [
+            "invalid_input"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_invalid_query": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_query"
+        },
+        "errors": {
+          "const": [
+            "invalid_query"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_unauthorized": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "unauthorized"
+        },
+        "errors": {
+          "const": [
+            "unauthorized"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_invalid_credentials": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_credentials"
+        },
+        "errors": {
+          "const": [
+            "invalid_credentials"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_origin_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "origin_refused"
+        },
+        "errors": {
+          "const": [
+            "origin_refused"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_access_denied": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "access_denied"
+        },
+        "errors": {
+          "const": [
+            "access_denied"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_company_not_found": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "company_not_found"
+        },
+        "errors": {
+          "const": [
+            "company_not_found"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_busy": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "busy"
+        },
+        "errors": {
+          "const": [
+            "busy"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_clock_unavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "clock_unavailable"
+        },
+        "errors": {
+          "const": [
+            "clock_unavailable"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_outcome_unknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "errors": {
+          "const": [
+            "outcome_unknown"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_outcome_unconfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unconfirmed"
+        },
+        "errors": {
+          "const": [
+            "outcome_unconfirmed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_read_unconfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "read_unconfirmed"
+        },
+        "errors": {
+          "const": [
+            "read_unconfirmed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_owner_unavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "owner_unavailable"
+        },
+        "errors": {
+          "const": [
+            "owner_unavailable"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_operation_unconfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "operation_unconfirmed"
+        },
+        "errors": {
+          "const": [
+            "operation_unconfirmed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_vat_export_unavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "vat_export_unavailable"
+        },
+        "errors": {
+          "const": [
+            "vat_export_unavailable"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Http_regulatory_render_failed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "regulatory_render_failed"
+        },
+        "errors": {
+          "const": [
+            "regulatory_render_failed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
