@@ -35,7 +35,7 @@ fn same(a: &Metadata, b: &Metadata) -> bool {
         common && a.created().ok() == b.created().ok()
     }
 }
-fn stable_file(path: &Path, max: u64) -> Result<(Vec<u8>, Metadata), Error> {
+pub(crate) fn stable_file(path: &Path, max: u64) -> Result<(Vec<u8>, Metadata), Error> {
     let before = fs::symlink_metadata(path).map_err(|_| fail())?;
     if !before.is_file() || before.file_type().is_symlink() || before.len() > max {
         return Err(fail());
@@ -111,7 +111,7 @@ fn walk(
     snapshots.push((dir.to_owned(), before));
     Ok(())
 }
-pub(super) fn source(path: &Path) -> Result<(String, Vec<u8>), Error> {
+pub(crate) fn source(path: &Path) -> Result<(String, Vec<u8>), Error> {
     let metadata = fs::symlink_metadata(path).map_err(|_| fail())?;
     if metadata.file_type().is_symlink() {
         return Err(fail());

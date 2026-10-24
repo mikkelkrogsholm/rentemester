@@ -609,3 +609,6 @@ pub use digisense_received::{MAX_DIGISENSE_RECEIVED_BODY,digisense_received_sche
 
 mod archive_original;
 pub use archive_original::query_original_archive;
+
+mod import_original94;
+pub use import_original94::{original_import_body, MAX_ORIGINAL_IMPORT_BODY};
