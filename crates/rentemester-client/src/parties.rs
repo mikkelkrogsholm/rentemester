@@ -129,13 +129,17 @@ impl ApiClient {
             .map_err(|_| Error::InvalidInput("native party JSON object required"))?;
         if let PartyMutation::ProposeMerge(id) = &action {
             let bounded = |key: &str, max| {
-                rentemester_engine::parties::bounded(
-                    value[key]
-                        .as_str()
-                        .ok_or(Error::InvalidInput("merge text required"))?,
-                    max,
-                )
-                .map_err(|_| Error::InvalidInput("bounded merge text required"))
+                let text = value[key]
+                    .as_str()
+                    .ok_or(Error::InvalidInput("merge text required"))?
+                    .trim_matches(|c: char| {
+                        c != '\u{0085}' && (c.is_whitespace() || c == '\u{feff}')
+                    });
+                if text.is_empty() || text.encode_utf16().count() > max {
+                    Err(Error::InvalidInput("bounded merge text required"))
+                } else {
+                    Ok(text.to_owned())
+                }
             };
             let target = bounded("intoPartyId", 64)?;
             let review = bounded("reviewAssertion", 500)?;

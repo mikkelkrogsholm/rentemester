@@ -281,22 +281,25 @@ async fn no_retry_and_no_fabricated_receipt_or_protocol_bypass() {
 #[tokio::test]
 async fn canonical_server_trim_validates_receipt_without_rewriting_wire_bytes() {
     use sha2::{Digest, Sha256};
-    for (target, review) in [
+    for (target, review, retained_review) in [
         (
             " target ".to_owned(),
             "\u{feff}Reviewed\nsynthetic\u{feff}".to_owned(),
+            "Reviewed\nsynthetic".to_owned(),
         ),
         (
             "target".to_owned(),
+            "\u{0085}Reviewed\nsynthetic\u{0085}".to_owned(),
             "\u{0085}Reviewed\nsynthetic\u{0085}".to_owned(),
         ),
         (
             format!("{}target{}", " ".repeat(70), " ".repeat(70)),
             format!("{}{}{}", " ".repeat(10), "x".repeat(500), " ".repeat(10)),
+            "x".repeat(500),
         ),
     ] {
         let raw = json!({"intoPartyId":target,"reviewAssertion":review,"confirm":true});
-        let canonical = json!({"intoPartyId":rentemester_engine::parties::bounded(raw["intoPartyId"].as_str().unwrap(),64).unwrap(),"reviewAssertion":rentemester_engine::parties::bounded(raw["reviewAssertion"].as_str().unwrap(),500).unwrap()});
+        let canonical = json!({"intoPartyId":"target","reviewAssertion":retained_review});
         let hash = format!(
             "{:x}",
             Sha256::digest(serde_json::to_vec(&canonical).unwrap())
