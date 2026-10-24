@@ -50,3 +50,7 @@ Selected ordinary messages use the 1 MiB NDJSON frame limit. Session IDs accept 
 ## Review focus
 
 Definitions and rows are source declarations, not semantic test receipts. Main should independently review exact optional/correlated states, CLI stream variants, refusal status reachability and regulatory/audit component shapes against producers. The strict oracle intentionally does not prove these correlations or replace actual-source review. No other new parallel partition is referenced.
+
+
+## Lead source-review repair
+Source review repaired tax invalid-date JSON/exit1 using existing CliBoundsFailure; all HEAD protocol409 markers are explicitly bodyless; static regulatory500 constructors now bind exact coded/string or object-valued error DTOs; original EU-list authority is CompanyExternalLookup with no provider call; nested system export-saft references now follow original saft_artifact dispatcher/materializer. Normal VAT/annual/OSS schemas, full5/6 export tuples and all controls retained.
