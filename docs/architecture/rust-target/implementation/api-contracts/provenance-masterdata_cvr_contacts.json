@@ -1,0 +1,386 @@
+{
+  "partition": "masterdata_cvr_contacts",
+  "issue": 677,
+  "scope": "Exact selected operations only; retained runtime/userflow acceptance not replayed; independent semantic review required.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-storage/src/vendors.rs",
+      "sha256": "f6626bc2cfc00ec127a381d558c1c010b65b9c5f2475b839c37cd6589d1400a6",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-storage/src/contact_delete.rs",
+      "sha256": "7b96cc0e6f85e76f1421ea0cc2e4437d8d6ded06845cb9f37f8da70da00f8fcd",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/sales.rs",
+      "sha256": "903b4ab83aa881c7d8a10e019978edc920b0177a8814a54a9c59303dae6f50d8",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/sales.rs",
+      "sha256": "29160958dbb4c2e5537140c3c3128ebd1f94f1353457448829057afcb4b35146",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "pub enum FailureStage"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/vies/validate"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_setup.rs",
+      "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/company_setup.rs",
+      "sha256": "708764be073c7916ed700cf3838ea154de4f4957e5f931a3b45a86bf0fa82bd3",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/company_setup.rs",
+      "sha256": "6bd64495bfd4b6532b4324fe01ba932f6424ea327a7569df20a9192a3464c456",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/cvr.rs",
+      "sha256": "995dfb3841e362a9456ea580cfda1065c8b11bf0bbe98102c0e3f320adbe2990",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-storage/src/contact_import/cache.rs",
+      "sha256": "9b553185db61c0960c7b9a909da686a0350441ed1d15a040c40787476c70767f",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-engine/src/contact_import/cvr.rs",
+      "sha256": "a1e22686402d2b22c1f027fb471acc5834dacd855fe54f514098032efbe7d3f7",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/cvr.rs",
+      "sha256": "79e4424297b423cabcf0ed430e6fa16709a8749dbf14bf3d19046a831e9a1f64",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-host/src/cvr.rs",
+      "sha256": "d36e9eb07c1cb58459b34ab82f911bdfe2585354ef3e8cd4081d816db7990ca9",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/cvr.rs",
+      "sha256": "73c96b07dfa9883bb76b92ece3e2bdc54af079427719e6b9755c29d4eaa9a5f2",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/master_data_original.rs",
+      "sha256": "8e4203523bb13c1e3563770c3aeb8f586111d466de86477d971c88d09a971913",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/master_data_original.rs",
+      "sha256": "d3b9effdaf32a0535fa667488333292c2667b67d59166216683180fe78e04d79",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-host/src/master_data_original.rs",
+      "sha256": "253b007985c6be7947caece9bf38b8f5b6b171521d7fb6237f2e0b07154015ad",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-storage/src/vies.rs",
+      "sha256": "34bffd3b1016b86070b4b4a8a2e198f374e47c35d0d531e69991a7df4ccb2d51",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-engine/src/vies.rs",
+      "sha256": "7fa6bbcc362d5f434be3bb9fa08c9cb999c8c9554b841348dd83facfc3449159",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/master_data_original.rs",
+      "sha256": "0b691d615a2ee419b41130e5eb5962a5de4427dae0f982d26cd58357bb93f16a",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_creation.rs",
+      "sha256": "29fa9b0bca64197904c1ce914f5c28b6688dcac49a183f029413fad9ec42b53b",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/company_creation.rs",
+      "sha256": "09247cfa0848fd7f38c96813b6d727f1aab51ecd453550d8e9687320c5f90be0",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-host/src/company_catalog.rs",
+      "sha256": "128fc3d7979231c1611d4a5d6a61c485882fbf3fb433ac056f17bb2a931e6339",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/company_creation.rs",
+      "sha256": "37d19e2ac9658764a2bbc37868839262cb6df03e01caceff8403bfe1169c5cdf",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-engine/src/contact_import.rs",
+      "sha256": "94cb4d479e7f287d1a7718fe71dd941ec780b50d1aa803f8f2fdae0986b78209",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-storage/src/contact_import.rs",
+      "sha256": "1c2cee801c6769f7ab1524b895a3ea620e6e95b3bcf04753a93a539316281fa3",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-application/src/contact_import.rs",
+      "sha256": "b1fe2ac8cf2a3ccc0cd80040c6db6f307a7e46e8179c6b5420a2207fe96d2566",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-host/src/contact_import.rs",
+      "sha256": "9936c190716faf0ae61ee3516e92c290480a8541c5f74d01990ff99423f82cb1",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/contact_import.rs",
+      "sha256": "d52ef1f5b31d8cf05768cae9109533b80894aef51d2450546de725cbd52abd2f",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-application/src/eu_sales.rs",
+      "sha256": "8d98694a1e9b8299b187c6b60d136e7daca5c793e71e3e04f99b54a471230d67",
+      "needle": "pub "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/eu_sales.rs",
+      "sha256": "5c1d813af5b239f4c49c4a0fe1f8dc588e4e9df81cb44fb5caea111bfcb810da",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/master_data_original.rs",
+      "sha256": "76df10ecc0b6d2876fb97611127ed2da41a8063e2e8df76088ba61c767f83a97",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn prepare_with_output"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub fn run"
+    },
+    {
+      "path": "crates/rentemester-cli/src/master_data_original.rs",
+      "sha256": "37aa79a4df2e3a04bcd2196160c759abfa048f77d3ef0e3caa6a79665b369d39",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/company_setup.rs",
+      "sha256": "17ea42bc4b4bc3746c6f721179fe89036742a1896372d30471fcae8ae18f1bfb",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/company_setup.rs",
+      "sha256": "770b169f7608fc95cdffc197c922714caa18f761bd1a82dd383c8dec2da2f048",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/company_creation.rs",
+      "sha256": "6695de5cbec741838c76580477ca008b42122aae6f79cbeeba200b7f616d929d",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/company_creation.rs",
+      "sha256": "f3794192dcf7707f1e2bfec1fc7219d017c0b7cefc7449797732a201187b37e5",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/cvr.rs",
+      "sha256": "74fc574758be75015896112edc3c3c794a02dbdc446bf3a637803976e242ef41",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/cvr.rs",
+      "sha256": "778b6b00d416bde0efed16fb41fed3482be2d780a3df28b104fcd516dd1c8025",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/contact_import.rs",
+      "sha256": "cd821c3381ea262e625b3a5b2744a36ba09c5340e15aa2b9e702fcf3e15be844",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/contact_import.rs",
+      "sha256": "403ba4e3922cf450360ed79891b0a726dee123e715e6c3a2c8fa6867010e8a0d",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/eu_sales.rs",
+      "sha256": "e1c66fb5aed2c3ee78aa57539dc5f04d2826e6b1ce363d43b9072708abfb3aa5",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/eu_sales.rs",
+      "sha256": "80f8f1b14fd13bf9d595fbd41737108fa6706eb5d89e62d12d6d2cdbc653edac",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "expected arguments object"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/company_setup.rs",
+      "sha256": "c29d57b412ec43b5176ea45808f14a5c659e1afa2fe77efb62db1c6494698f32",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/cvr.rs",
+      "sha256": "5fb85bbc732bb7c3bcb89a604cccd348ebc7ff3c462d502139885bdc1c0bf81c",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/company_creation.rs",
+      "sha256": "1b4510c495c7d694483c6cbaa22faae6aff6ba8a993a5b07c3426fca195cdc8c",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/master_data_original.rs",
+      "sha256": "29958f672496340944581e69d6c383a820769677cd582eaf4453f4ec1f134349",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/contact_import.rs",
+      "sha256": "7866445f100aae9b1b0863e5b38ebef3669afd71be0d5dd0fcf33980a9111f06",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/eu_sales.rs",
+      "sha256": "2ba80b6841b9e17e6353309807d58501f99c7f8a8eaa8878635afdbfc42cdedf",
+      "needle": "use "
+    }
+  ],
+  "operations": [
+    "http:DELETE /api/companies/{slug}/customers/{id}",
+    "http:DELETE /api/companies/{slug}/vendors/{id}",
+    "http:GET /api/companies/{slug}/company",
+    "http:GET /api/companies/{slug}/cvr-lookup",
+    "http:GET /api/companies/{slug}/master-data/original/customers",
+    "http:GET /api/companies/{slug}/master-data/original/cvr-lookup",
+    "http:GET /api/companies/{slug}/master-data/original/vendors",
+    "http:GET /api/system/cvr-status",
+    "http:HEAD /api/companies/{slug}/company",
+    "http:HEAD /api/companies/{slug}/cvr-lookup",
+    "http:HEAD /api/companies/{slug}/master-data/original/customers",
+    "http:HEAD /api/companies/{slug}/master-data/original/cvr-lookup",
+    "http:HEAD /api/companies/{slug}/master-data/original/vendors",
+    "http:HEAD /api/system/cvr-status",
+    "http:PATCH /api/companies/{slug}/company",
+    "http:PATCH /api/companies/{slug}/customers/{id}",
+    "http:PATCH /api/companies/{slug}/vendors/{id}",
+    "http:POST /api/companies",
+    "http:POST /api/companies/{slug}/import",
+    "http:POST /api/companies/{slug}/master-data/original/customer-validate-vat",
+    "http:POST /api/companies/{slug}/master-data/original/customers",
+    "http:POST /api/companies/{slug}/master-data/original/vendors",
+    "http:POST /api/companies/{slug}/sync-cvr",
+    "http:POST /api/companies/{slug}/vendors",
+    "http:POST /api/companies/{slug}/vies/validate",
+    "cli:customer create",
+    "cli:customer cvr-lookup",
+    "cli:customer list",
+    "cli:customer validate-vat",
+    "cli:remote company-profile",
+    "cli:remote create-company",
+    "cli:remote create-vendor",
+    "cli:remote cvr-lookup",
+    "cli:remote cvr-status",
+    "cli:remote delete-customer",
+    "cli:remote delete-vendor",
+    "cli:remote import-contacts",
+    "cli:remote sync-company-cvr",
+    "cli:remote update-company-profile",
+    "cli:remote update-customer",
+    "cli:remote update-vendor",
+    "cli:remote vies-validate",
+    "cli:vendor create",
+    "cli:vendor list",
+    "mcp:company_profile",
+    "mcp:company_sync_cvr",
+    "mcp:create_company",
+    "mcp:create_vendor",
+    "mcp:customer_create",
+    "mcp:customer_list",
+    "mcp:customer_validate_vat",
+    "mcp:cvr_lookup",
+    "mcp:cvr_status",
+    "mcp:delete_customer",
+    "mcp:delete_vendor",
+    "mcp:import_contacts",
+    "mcp:update_company_profile",
+    "mcp:update_customer",
+    "mcp:update_vendor",
+    "mcp:vendor_create",
+    "mcp:vendor_list",
+    "mcp:vies_validate"
+  ],
+  "verification": {
+    "method": "Graphify query first, actual source tracing, existing strict Python oracle",
+    "providerApproval": false,
+    "runtimeEffectsReplayed": false
+  }
+}
