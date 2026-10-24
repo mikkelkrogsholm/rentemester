@@ -2145,14 +2145,7 @@
           "type": "string"
         },
         "payload": {
-          "anyOf": [
-            {
-              "$ref": "schemas-delivery_recurring_mcp.json#/$defs/NativeFrozenPayload"
-            },
-            {
-              "$ref": "schemas-delivery_recurring_mcp.json#/$defs/StoredOriginalInvoice"
-            }
-          ]
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/StoredTemplateValue"
         }
       },
       "required": [
@@ -3228,7 +3221,7 @@
               "const": "delivery_unknown"
             },
             "message": {
-              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg."
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
             },
             "usage": {
               "enum": [
@@ -3334,7 +3327,7 @@
               "const": "delivery_refused"
             },
             "message": {
-              "const": "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
             },
             "usage": {
               "enum": [
@@ -3771,7 +3764,7 @@
       }
     },
     "invoice_email_sendUpstream": {
-      "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailResult"
+      "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailAcceptedResult"
     },
     "invoice_email_sendSuccess": {
       "type": "object",
@@ -3941,7 +3934,14 @@
       }
     },
     "invoice_email_reconcileUpstream": {
-      "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailResult"
+      "oneOf": [
+        {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailAcceptedResult"
+        },
+        {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailReconciledRefusedResult"
+        }
+      ]
     },
     "invoice_email_reconcileSuccess": {
       "type": "object",
@@ -4111,7 +4111,7 @@
       }
     },
     "invoice_email_retryUpstream": {
-      "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailResult"
+      "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailAcceptedResult"
     },
     "invoice_email_retrySuccess": {
       "type": "object",
@@ -8626,6 +8626,252 @@
           }
         ]
       }
+    },
+    "StoredTemplateValue": {
+      "anyOf": [
+        {
+          "type": [
+            "null",
+            "boolean",
+            "number",
+            "string"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_mcp.json#/$defs/StoredTemplateValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-delivery_recurring_mcp.json#/$defs/StoredTemplateValue"
+          },
+          "x-arbitrary-json": {
+            "scope": "Specification.payload stored Value and recursive descendants only",
+            "rationale": "load deserializes historical payload_json into Value and scheduled_spec returns it unchanged; current constructors do not validate all historical read projections.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+                "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+                "needle": "pub fn scheduled_spec("
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "AcceptedDelivery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer"
+            },
+            "invoiceNumber": {
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "invoice",
+                "reminder"
+              ]
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "messageId": {
+              "type": "string"
+            },
+            "bodySha256": {
+              "type": "string"
+            },
+            "pdfSha256": {
+              "type": "string"
+            },
+            "state": {
+              "const": "accepted"
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "attemptId": {
+              "type": "string"
+            },
+            "humanResolution": {
+              "type": "boolean"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailEvent"
+              }
+            },
+            "duplicate": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "kind",
+            "recipient",
+            "subject",
+            "messageId",
+            "bodySha256",
+            "pdfSha256",
+            "state",
+            "stateHash",
+            "attemptId",
+            "humanResolution",
+            "history",
+            "duplicate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/LegacyDelivery"
+        }
+      ]
+    },
+    "ReconciledRefusedDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "state": {
+          "const": "refused"
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_mcp.json#/$defs/EmailEvent"
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "EmailAcceptedResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/AcceptedDelivery"
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "EmailReconciledRefusedResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/ReconciledRefusedDelivery"
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery"
+      ],
+      "additionalProperties": false
     }
   }
 }

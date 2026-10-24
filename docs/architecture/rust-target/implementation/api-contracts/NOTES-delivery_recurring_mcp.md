@@ -116,3 +116,5 @@ status change is performed by this worker.
 Artifact validation: `python3 /tmp/r49-677-oracle.py delivery_recurring_mcp`
 passed for exactly25 source-bound operation rows and resolved schema contracts.
 This is not a full #677 acceptance or live-provider/installed-desktop test.
+
+Lead source review: Specification.payload preserves source-bound historical stored Value rather than restricting old data to current constructors. Mail send/retry success binds accepted state only; reconciliation success binds accepted/refused. The already exact 409/422 refusal union and outer public object guard are retained. No runtime effects or new model attempt.
