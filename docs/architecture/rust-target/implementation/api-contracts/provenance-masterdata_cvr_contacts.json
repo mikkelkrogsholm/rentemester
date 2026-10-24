@@ -382,5 +382,6 @@
     "method": "Graphify query first, actual source tracing, existing strict Python oracle",
     "providerApproval": false,
     "runtimeEffectsReplayed": false
-  }
+  },
+  "leadReviewRepair": "Separated raw Value/Map parser grammar from named business and SDK contracts. Creation vatPeriodType arbitrary parser field remains current enum/null business control; raw PATCH unknown/types fail domain422. No authority/accounting/provider effects or controls changed."
 }

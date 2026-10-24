@@ -113,12 +113,7 @@
           ]
         },
         "vatPeriodType": {
-          "enum": [
-            "month",
-            "quarter",
-            "half-year",
-            null
-          ]
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
         },
         "payment": {
           "anyOf": [
@@ -238,12 +233,7 @@
               ]
             },
             {
-              "enum": [
-                "month",
-                "quarter",
-                "half-year",
-                null
-              ]
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
             },
             {
               "anyOf": [
@@ -2931,7 +2921,7 @@
                   "const": "dinero-contacts"
                 },
                 "label": {
-                  "const": "Dinero — Kontakter (kunder og leverandører)"
+                  "const": "Dinero \u2014 Kontakter (kunder og leverand\u00f8rer)"
                 },
                 "system": {
                   "const": "Dinero"
@@ -6541,6 +6531,40 @@
         "confirm"
       ],
       "additionalProperties": false
+    },
+    "RawJsonValue": {
+      "type": [
+        "object",
+        "array",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ],
+      "properties": {},
+      "additionalProperties": true,
+      "items": {
+        "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+      },
+      "x-arbitrary-json": {
+        "scope": "Only direct rawHTTP untyped Serde Value fields / Map PATCH member values before domain validation",
+        "rationale": "Creation Input vat_period_type is Value; raw profile Map and sales PATCH Value object are parsed first and domain validator rejects unknown keys/types as business refusal. This describes parsing only, not successful mutation or authorization.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/company_creation.rs",
+            "sha256": "29fa9b0bca64197904c1ce914f5c28b6688dcac49a183f029413fad9ec42b53b",
+            "needle": "pub vat_period_type: Value,"
+          }
+        ]
+      }
+    },
+    "RawPatchHttp": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+      },
+      "description": "Raw transport Map/object. Domain accepted keys/types remain named business schemas and their current fail-closed application controls; SDK preflight remains narrower."
     }
   }
 }

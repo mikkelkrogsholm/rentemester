@@ -16,3 +16,6 @@ Schemas distinguish native direct HTTP Serde sequences from outer-object-only SD
 ## Validation evidence
 
 `python3 /tmp/r58-677-oracle.py masterdata_cvr_contacts` passed exact62selected identities and current source hashes with strict referenced-schema checks. This is structural/source-bound validation, not independent semantic acceptance. Graphify extract completed in isolated SGD_BUILD_DIR/graphify (code-only, no clustering). No Cargo, network/provider, server, browser or mutation replay was run. Only the four owned flat files are delivered; prior1285operations/34partitions and all55/J01–J07/finaldesktop/release/cutover/retirement scope remain unchanged.
+
+## Lead parser-stage repair
+Separated raw Value/Map parser grammar from named business and SDK contracts. Creation vatPeriodType arbitrary parser field remains current enum/null business control; raw PATCH unknown/types fail domain422. No authority/accounting/provider effects or controls changed.
