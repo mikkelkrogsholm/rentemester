@@ -2,6 +2,42 @@
 
 ## Rust-klienten og agentopslag
 
+### Lokal original `system healthcheck` (Rust)
+
+`rentemester-rust system healthcheck --company PATH [--json | --format json|human]`
+er en endelig offline read-only diagnose. `--company` er obligatorisk; hverken
+miljøvariabler, aktuel profil eller en standardvirksomhed erstatter stien.
+Manglende virksomheder diagnosticeres uden at blive oprettet. Kommandoen tager
+ikke server-, cookie-, local-profile-, actor-, stdin-, repair- eller mutationsinput;
+ukendte flag, dubletter og ugyldige værdier afvises med exit 2 før datalæsning.
+Globale flag kan stå før eller mellem kommandoordene; company/format understøtter
+både `--flag værdi` og `--flag=værdi`. `--json` vinder over `--format human`.
+Remote health er kun aggregatstatus og kan ikke erstatte denne virksomhedsrapport.
+
+Rapporten er flad: `{ok,errors,checks:[{name,ok}],missing,schema_outdated,schema?}`.
+De fem checks står altid i rækkefølgen `company_root` (root), `data_dir`
+(root/data), `ledger` (root/data/ledger.sqlite), `documents`
+(root/documents/inbox), `config` (root/config). Forkerte filtyper og symlinks
+på disse komponenter (inklusive documents-mellemleddet) accepteres ikke.
+Uden ledger udelades `schema`, og `schema_outdated` er false. Schema indeholder
+`{status,currentVersion,requiredVersion,pending:[{id,name,checksum}],error?}`;
+requiredVersion kommer fra det indlejrede katalog. Kun et eksakt checksummet
+kanonisk historisk prefix med gyldigt fysisk schema og integritet giver pending.
+Current kræver eksisterende native current-validering, inklusive kendte extensions.
+Højere observeret numerisk version giver newer uden pending eller skriveautoritet.
+Altereret/ukendt fysisk schema eller historik er corrupt; utilgængelig/beskadiget
+snapshot eller ikke-kvalificeret ikke-Unix-platform er unavailable. Fejltekster er
+stabile, sanitiserede native beskrivelser, ikke rå SQLite-fejl eller lokale stier.
+
+SQLite åbner alene en beskyttet privat byte-snapshot; originalen og dens sidecars
+ændres ikke. Ingen migration, reparation, serverstart eller skriveautoritet.
+Kun eksplicit `--json` eller `--format json` vælger pretty-printed JSON på stdout
+uden wrapper (også ved exit 1). En pipe alene ændrer ikke denne kommandos output.
+Human-output er præcis `OK|FAIL name` pr. check og eventuelt
+`OK|FAIL schema_STATUS current=N required=N`, på stdout også ved fejl, uden footer.
+Exit 0 betyder alle checks og current schema; exit 1 er et diagnostisk fund;
+exit 2 er en brugsfejl på stderr.
+
 Resten af dette dokument beskriver TypeScript-CLI'en. For `rentemester-rust
 remote` gælder den [native serverkontrakt](rust-server.md). `remote --help`
 viser de faktiske kommandoer og inputkontrakter. Remote-writes tilskrives den
@@ -232,3 +268,5 @@ SQL locally. Full #716/launcher compatibility remains separate work; the Bun
 production launcher is unchanged. Native `remote audit-verify` and the SDK keep
 their existing successful-observation contract (exit 0 can contain failed audit
 findings under `data.audit`).
+
+The offline Rust healthcheck also refuses symlink ancestors of the explicit company path before inspecting company facts. Select the actual canonical directory (for example `/private/var/...` rather than the macOS `/var` alias). This does not canonicalize or follow an untrusted selector.

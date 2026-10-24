@@ -9,6 +9,7 @@ pub mod imported_receivables;
 pub mod invoice_interest;
 pub mod invoice_compensation;
 pub(crate) mod invoice_compensation_schema;
+pub mod healthcheck;
 pub mod audit_verify;
 pub mod audit_ledger;
 pub mod audit_bank;

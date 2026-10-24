@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::audit_verify_original::accepts(args)
+    crate::system_healthcheck_original::accepts(args)
+        || crate::audit_verify_original::accepts(args)
         || crate::bookkeeping_batch_original::accepts(args)
         || crate::accounting_draft_original::accepts(args)
         || crate::accounts_original::accepts(args)
@@ -203,6 +204,13 @@ fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<
         return Ok(args); // Native remote and experimental local dialects are opaque.
     }
     let command_indices: Vec<usize> = words.into_iter().take(2).collect();
+    // Healthcheck's machine dialect is explicit-only; preserve flags for its
+    // own strict duplicate/unknown/value validation before any filesystem reads.
+    if crate::system_healthcheck_original::accepts(&command) {
+        let mut output = command;
+        output.extend(args.iter().enumerate().filter(|(i, _)| !command_indices.contains(i)).map(|(_, s)| s.clone()));
+        return Ok(output);
+    }
     let period = command.first().is_some_and(|s| matches!(s.as_str(), "period" | "accounting-draft"));
     let mut seen = std::collections::BTreeSet::new();
     let mut output = command;
