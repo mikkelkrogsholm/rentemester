@@ -6954,6 +6954,33 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "NativeHeadRefused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "method_not_allowed"
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "method_not_allowed"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

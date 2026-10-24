@@ -155,7 +155,7 @@ async fn sales_head_requests_cannot_enter_mutation_dispatch() {
     let ledger = root.join("a/data/ledger.sqlite");
     let counts = || {
         let db = rusqlite::Connection::open_with_flags(&ledger, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
-        db.query_row("SELECT (SELECT COUNT(*) FROM documents), (SELECT COUNT(*) FROM journal_entries), (SELECT COUNT(*) FROM accounts), (SELECT name FROM companies WHERE id=1)", [], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?, row.get::<_, String>(3)?))).unwrap()
+        db.query_row("SELECT (SELECT COUNT(*) FROM documents), (SELECT COUNT(*) FROM journal_entries), (SELECT COUNT(*) FROM accounts), (SELECT name FROM companies WHERE id=1), (SELECT COUNT(*) FROM audit_log)", [], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?, row.get::<_, String>(3)?, row.get::<_, i64>(4)?))).unwrap()
     };
     fn artifacts(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
         fn visit(root: &Path, out: &mut Vec<(PathBuf, Vec<u8>)>) {
@@ -176,7 +176,7 @@ async fn sales_head_requests_cannot_enter_mutation_dispatch() {
     let originals = artifacts(&root.join("a"));
     let client = reqwest::Client::builder().no_proxy().build().unwrap();
     let invoice = r#"{"issueDate":"2026-01-01","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street"},"lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}"#;
-    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company"] {
+    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company", "accounting-drafts", "posting-rules", "reviewed-bank"] {
         for body in ["", invoice] {
             let response = client.request(reqwest::Method::HEAD, format!("{origin}/api/companies/a/{path}"))
                 .header("origin", &origin)
