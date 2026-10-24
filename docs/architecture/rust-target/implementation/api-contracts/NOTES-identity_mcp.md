@@ -15,7 +15,7 @@ all-advertised HTTP/CLI/MCP scope.
 
 `input.advertisedInputSchema` records tools/list arguments; `actualRequest`
 records JSON-RPC request parsing, and `parsedArguments` records Serde parsing.
-All selected argument structs deny unknown fields. Request/params objects instead
+All selected argument structs deny unknown map fields; actual Serde decoding also accepts positional sequences: Empty {} or [], Write {body,confirm} or exactly [bodyString,boolean]. Advertised tools/list schemas remain object-only. Request/params objects instead
 ignore unknown fields, except presence of `task` is explicitly refused. The write
 parser accepts a boolean false, while advertisement says true; false produces
 an **inner SDK invalid_input result**, not an outer invalid-params response.

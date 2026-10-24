@@ -344,5 +344,14 @@
     "sharedIdentityFlow": "#712 accepted; not replayed",
     "accountSecurityR44": "32a36073b8c1dc0567113cba86c0fd02de3191e14be483bc6edd615de077efdb"
   },
-  "scope": "Exactly seven selected native MCP tools. No #677 closure; full epic672/55originalissues/J01-J07 and every advertised HTTP/CLI/MCP remain. No production effects/builds performed."
+  "scope": "Exactly seven selected native MCP tools. No #677 closure; full epic672/55originalissues/J01-J07 and every advertised HTTP/CLI/MCP remain. No production effects/builds performed.",
+  "leadRepair": {
+    "diagnosis": "serde_json 1.0.154 value/de.rs deserialize_struct accepts Value::Array via visit_array, derived Empty zero and Write two fields; actual dispatch has no object guard. Advertisements remain object-only.",
+    "rejectedCommit": "886e518e04d6e0b98456664c4169554f3c989571",
+    "sourceAnchors": [
+      "crates/rentemester-mcp/src/tools.rs: serde_json::from_value::<Empty>(args)",
+      "crates/rentemester-mcp/src/service_principals.rs: serde_json::from_value(args)"
+    ],
+    "newModelAttempt": false
+  }
 }

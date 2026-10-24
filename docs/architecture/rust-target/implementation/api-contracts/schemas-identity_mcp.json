@@ -7,22 +7,6 @@
       "required": [],
       "additionalProperties": false
     },
-    "WriteParsed": {
-      "type": "object",
-      "properties": {
-        "body": {
-          "type": "string"
-        },
-        "confirm": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "body",
-        "confirm"
-      ],
-      "additionalProperties": false
-    },
     "Id": {
       "anyOf": [
         {
@@ -566,7 +550,7 @@
               "const": "me"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
             }
           },
           "required": [
@@ -667,7 +651,7 @@
               "const": "companies"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
             }
           },
           "required": [
@@ -775,7 +759,7 @@
               "const": "service_principals"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
             }
           },
           "required": [
@@ -1453,6 +1437,59 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "EmptyParsed": {
+      "oneOf": [
+        {
+          "$ref": "schemas-identity_mcp.json#/$defs/Empty"
+        },
+        {
+          "type": "array",
+          "items": {
+            "not": {}
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      ],
+      "description": "Actual serde derived Empty accepts map or exact zero-field sequence; advertised tools/list remains object only."
+    },
+    "WriteObjectParsed": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "WriteParsed": {
+      "oneOf": [
+        {
+          "$ref": "schemas-identity_mcp.json#/$defs/WriteObjectParsed"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Actual serde derived Write accepts object or exactly [bodyString,boolean]; false reaches SDK invalid_input."
     }
   }
 }
