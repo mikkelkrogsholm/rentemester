@@ -51,6 +51,10 @@ fn wire<S: Read + Write>(s: &mut S, expected: &str, status: u16, result: &Value)
     write!(s,"HTTP/1.1 {status} Test\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection:close\r\n\r\n{body}",body.len()).unwrap();
     b[end.unwrap()..].to_vec()
 }
+fn bounded_accept(l: &TcpListener) -> Option<std::net::TcpStream> {
+    let at=std::time::Instant::now();
+    loop {match l.accept(){Ok((s,_))=>{s.set_nonblocking(false).unwrap();return Some(s)},Err(e) if e.kind()==std::io::ErrorKind::WouldBlock=>{if at.elapsed()>std::time::Duration::from_secs(5){return None;}thread::sleep(std::time::Duration::from_millis(5));},Err(e)=>panic!("{e}")}}
+}
 fn run_fixture(
     args: &[&str],
     steps: Vec<(&'static str, u16, Value)>,
@@ -72,17 +76,18 @@ fn run_fixture(
         .unwrap();
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
+    l.set_nonblocking(true).unwrap();
     let task = thread::spawn(move || {
         let manifest: Value =
             serde_json::from_str(include_str!("../../../protocol/http-v1.json")).unwrap();
         assert_eq!(manifest["operations"].as_array().unwrap().len(), 642);
         let mut bodies = vec![];
         for (path, status, v) in steps {
-            let (mut s, _) = l.accept().unwrap();
+            let Some(mut s) = bounded_accept(&l) else { return bodies; };
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             wire(&mut s, "GET /api/protocol HTTP/1.1", 200, &manifest);
-            let (mut s, _) = l.accept().unwrap();
+            let Some(mut s) = bounded_accept(&l) else { return bodies; };
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             bodies.push(wire(&mut s, path, status, &v));
@@ -111,13 +116,13 @@ fn five_original_keys_body_projection_and_streams() {
         vec![(
             "GET /api/companies HTTP/1.1",
             200,
-            json!({"ok":true,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","role":"owner","archived":false,"createdAt":"2026-01-01"}]}),
+            json!({"ok":true,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","role":"owner","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]}),
         )],
     );
     assert!(out.status.success(), "{:?}", out);
     assert_eq!(
         serde_json::from_slice::<Value>(&out.stdout).unwrap(),
-        json!([{"slug":"synthetic","name":"Synthetic Company","archived":false,"createdAt":"2026-01-01"}])
+        json!({"ok":true,"message":"1 company: synthetic","workspace":null,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]})
     );
     let (out, bodies) = run_fixture(
         &[
@@ -391,7 +396,7 @@ fn verified_unix_owner_workspace_and_passive_protocol_failure() {
     assert!(o.status.success(), "{:?}", o);
     assert_eq!(
         serde_json::from_slice::<Value>(&o.stdout).unwrap(),
-        json!([])
+        json!({"ok":true,"message":"Workspace has no companies yet","workspace":null,"count":0,"companies":[]})
     );
     let o = call(&["add", "--name", "Synthetic"]);
     assert_eq!(o.status.code(), Some(1));
@@ -488,4 +493,23 @@ fn full_partial_patch_and_mismatched_receipt_are_not_silently_accepted() {
     assert_eq!(out.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&out.stdout).contains("outcome_unknown"));
     assert_eq!(b.len(), 2);
+}
+
+#[test]
+fn source_list_wrapper_blank_slug_and_empty_payment_are_truthful() {
+    let (out,_) = run_fixture(&["list","--json"], vec![("GET /api/companies HTTP/1.1",200,json!({"ok":true,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","role":"owner","archived":true}]}))]);
+    assert!(out.status.success());
+    assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(),json!({"ok":true,"message":"1 company: archived","workspace":null,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","archived":true}]}));
+    for slug in ["", "   ", " synthetic-company "] {
+        let (out,bodies)=run_fixture(&["add","--name","Synthetic Company","--slug",slug,"--json"],vec![("POST /api/companies HTTP/1.1",201,json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}})),("GET /api/companies/synthetic-company/company HTTP/1.1",200,json!({"ok":true,"company":profile()}))]);
+        assert!(out.status.success(),"slug={slug:?} {out:?}");assert_eq!(bodies.len(),2);
+        let body:Value=serde_json::from_slice(&bodies[0]).unwrap();
+        if slug.trim().is_empty(){assert!(body.get("slug").is_none());}else{assert_eq!(body["slug"],"synthetic-company");}
+        assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap()["slug"],"synthetic-company");
+    }
+    let (out,bodies)=run_fixture(&["set-profile","--company","synthetic","--bank-name","","--json"],vec![("GET /api/companies/synthetic/company HTTP/1.1",200,json!({"ok":true,"company":profile()})),("PATCH /api/companies/synthetic/company HTTP/1.1",200,json!({"ok":true,"company":profile()}))]);
+    assert!(out.status.success(),"{out:?}");assert_eq!(bodies.len(),2);
+    assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap()["updatedFields"],json!([]));
+    let (out,_)=run_fixture(&["list","--format","human"],vec![("GET /api/companies HTTP/1.1",200,json!({"ok":true,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","role":"owner","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]}))]);
+    assert!(out.status.success());assert!(String::from_utf8_lossy(&out.stdout).contains("  Antal: 1\n"));
 }

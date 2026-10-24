@@ -277,12 +277,12 @@
     "sourceRefs": [
       {
         "path": "crates/rentemester-cli/src/company_original.rs",
-        "sha256": "0f9ce2cdbf251bf526470b5ecc1ae4e31f59eeced36e80ce5c2441f0a89b22c1",
+        "sha256": "6d5a01d4f06e9c3bc03019873ab73bb6b1492ce001daa19dd8e06ff5ec2ec3e6",
         "needle": "pub fn execute"
       },
       {
         "path": "crates/rentemester-cli/tests/original_company716.rs",
-        "sha256": "9fd6a93dbd2e3f40498dd9bb4db37d2af82be1d1ab1e23d2dd368212ecf58a74",
+        "sha256": "14904c5386b17095bed398c2db0177b95fd45456c5f397dff9199306010e7560",
         "needle": "fn five_original_keys_body_projection_and_streams"
       },
       {

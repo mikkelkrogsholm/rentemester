@@ -4660,7 +4660,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Åbn et gyldigt installationslink fra serverens terminal."
+            "const": "\u00c5bn et gyldigt installationslink fra serverens terminal."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4685,7 +4685,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Prøv igen om lidt."
+            "const": "Pr\u00f8v igen om lidt."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4710,7 +4710,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Opsætningen kunne ikke bekræftes. Prøv samme e-mail igen, eller kontrollér login."
+            "const": "Ops\u00e6tningen kunne ikke bekr\u00e6ftes. Pr\u00f8v samme e-mail igen, eller kontroll\u00e9r login."
           },
           "minItems": 1,
           "maxItems": 1
@@ -5227,7 +5227,7 @@
           },
           {
             "name": "rehearse-company-migration",
-            "scope": "experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration",
+            "scope": "experimental full canonical company prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration",
             "usage": "rehearse-company-migration --company PATH"
           },
           {
@@ -6512,7 +6512,7 @@
         "ok": true,
         "usage": "rentemester-rust rehearse-company-migration --company PATH",
         "format": "rentemester-company-migration-rehearsal/1",
-        "scope": "private-copy full canonical prefixes0–36 and bounded minimal suffix32–36; no source migration or writer authority"
+        "scope": "private-copy full canonical prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration or writer authority"
       }
     },
     "rehearse-control-migrationHelp": {
@@ -7899,9 +7899,9 @@
             },
             "vatPeriodLabel": {
               "enum": [
-                "måned",
+                "m\u00e5ned",
                 "kvartal",
-                "halvår",
+                "halv\u00e5r",
                 "ikke momsregistreret"
               ]
             },
@@ -7930,33 +7930,56 @@
       "additionalProperties": false
     },
     "OriginalCompanyList": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
         },
-        "required": [
-          "slug",
-          "name",
-          "archived"
-        ],
-        "additionalProperties": false
-      }
+        "message": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "null"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "archived": {
+                "type": "boolean"
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "archived"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "message",
+        "workspace",
+        "count",
+        "companies"
+      ],
+      "additionalProperties": false
     },
     "OriginalCompanyAdd": {
       "type": "object",
