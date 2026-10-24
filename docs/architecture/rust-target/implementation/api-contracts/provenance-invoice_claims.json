@@ -277,5 +277,10 @@
       "needle": "pub async fn call("
     }
   ],
-  "acceptance": "Strict Python oracle is structural/sourcehash evidence only. Main owns actual semantic review/integration; whole677/all55/J01-J07/finaldesktop/release/cutover/retirement remain open at prior scope."
+  "acceptance": "Strict Python oracle is structural/sourcehash evidence only. Main owns actual semantic review/integration; whole677/all55/J01-J07/finaldesktop/release/cutover/retirement remain open at prior scope.",
+  "leadSourceRepair": {
+    "reviewedSuggestion": "/tmp/r53-claims-sdk-repair.json",
+    "sha256": "9068eac966b737995faf2011c9b69780eb1ffffaa36d07b2b184b9d9338f04e7",
+    "scope": "12effective SDK schemas,24exactnativeCLI/MCPrefs,3numericfieldsin4correctionoutputs; HTTP/originalforms unchanged"
+  }
 }

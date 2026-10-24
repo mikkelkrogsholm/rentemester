@@ -915,6 +915,15 @@
           "items": {
             "$ref": "#/$defs/CorrectionLine"
           }
+        },
+        "outstandingClaimBalance": {
+          "type": "number"
+        },
+        "possibleOutstandingInterestReceivable": {
+          "type": "number"
+        },
+        "ambiguousInterestReceivable": {
+          "type": "number"
         }
       },
       "required": [
@@ -932,7 +941,10 @@
         "invoiceNumber",
         "principalCurrency",
         "reason",
-        "proposedLines"
+        "proposedLines",
+        "outstandingClaimBalance",
+        "possibleOutstandingInterestReceivable",
+        "ambiguousInterestReceivable"
       ],
       "additionalProperties": false
     },
@@ -1018,6 +1030,15 @@
         },
         "journalEntryNo": {
           "type": "string"
+        },
+        "outstandingClaimBalance": {
+          "type": "number"
+        },
+        "possibleOutstandingInterestReceivable": {
+          "type": "number"
+        },
+        "ambiguousInterestReceivable": {
+          "type": "number"
         }
       },
       "required": [
@@ -1038,7 +1059,10 @@
         "proposedLines",
         "correctionId",
         "journalEntryId",
-        "journalEntryNo"
+        "journalEntryNo",
+        "outstandingClaimBalance",
+        "possibleOutstandingInterestReceivable",
+        "ambiguousInterestReceivable"
       ],
       "additionalProperties": false
     },
@@ -7333,6 +7357,15 @@
           "items": {
             "$ref": "#/$defs/CorrectionLine"
           }
+        },
+        "outstandingClaimBalance": {
+          "type": "number"
+        },
+        "possibleOutstandingInterestReceivable": {
+          "type": "number"
+        },
+        "ambiguousInterestReceivable": {
+          "type": "number"
         }
       },
       "required": [
@@ -7349,7 +7382,10 @@
         "invoiceNumber",
         "principalCurrency",
         "reason",
-        "proposedLines"
+        "proposedLines",
+        "outstandingClaimBalance",
+        "possibleOutstandingInterestReceivable",
+        "ambiguousInterestReceivable"
       ],
       "additionalProperties": false
     },
@@ -7603,6 +7639,15 @@
         },
         "entryNo": {
           "type": "string"
+        },
+        "outstandingClaimBalance": {
+          "type": "number"
+        },
+        "possibleOutstandingInterestReceivable": {
+          "type": "number"
+        },
+        "ambiguousInterestReceivable": {
+          "type": "number"
         }
       },
       "required": [
@@ -7629,7 +7674,10 @@
         "totalReminderFees",
         "correctedAmount",
         "entryId",
-        "entryNo"
+        "entryNo",
+        "outstandingClaimBalance",
+        "possibleOutstandingInterestReceivable",
+        "ambiguousInterestReceivable"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -11969,7 +12017,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/CompCalculateBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/CompCalculateSdkBody"
           }
         }
       },
@@ -11991,7 +12039,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/CompRegisterBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/CompRegisterSdkBody"
           }
         },
         "confirm": {
@@ -12017,7 +12065,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/CompPostBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/CompPostSdkBody"
           }
         },
         "confirm": {
@@ -12043,7 +12091,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/InterestCalculateBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/InterestCalculateSdkBody"
           }
         }
       },
@@ -12065,7 +12113,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/InterestRegisterBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/InterestRegisterSdkBody"
           }
         },
         "confirm": {
@@ -12091,7 +12139,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/InterestPostBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/InterestPostSdkBody"
           }
         },
         "confirm": {
@@ -12117,7 +12165,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/InterestCorrectionBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/InterestCorrectionSdkBody"
           }
         }
       },
@@ -12139,7 +12187,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/InterestPostCorrectionBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/InterestPostCorrectionSdkBody"
           }
         },
         "confirm": {
@@ -12165,7 +12213,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/BadDebtBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/BadDebtSdkBody"
           }
         },
         "confirm": {
@@ -12191,7 +12239,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/ReminderRegisterBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/ReminderRegisterSdkBody"
           }
         },
         "confirm": {
@@ -12217,7 +12265,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/ReminderPostBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/ReminderPostSdkBody"
           }
         },
         "confirm": {
@@ -12243,7 +12291,7 @@
           "x-maxUtf8Bytes": 16384,
           "contentMediaType": "application/json",
           "contentSchema": {
-            "$ref": "schemas-invoice_claims.json#/$defs/SettleBodyObject"
+            "$ref": "schemas-invoice_claims.json#/$defs/SettleSdkBody"
           }
         },
         "confirm": {
@@ -13677,6 +13725,526 @@
         "appliedRules"
       ],
       "additionalProperties": false
+    },
+    "CompCalculateSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "asOfDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+        },
+        "compensationAmountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "asOfDate"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "CompRegisterSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "asOfDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+        },
+        "compensationAmountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "asOfDate",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "CompPostSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+              "format": "date",
+              "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivableAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 128,
+          "x-validation": "Rust !str.trim().is_empty() and !chars().any(char::is_control); Rust Unicode trim/control semantics."
+        },
+        "compensationIncomeAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 128,
+          "x-validation": "Rust !str.trim().is_empty() and !chars().any(char::is_control); Rust Unicode trim/control semantics."
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "receivableAccountNo",
+        "compensationIncomeAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "InterestCalculateSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "asOfDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+        },
+        "referenceRatePercent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "asOfDate"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "InterestRegisterSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "asOfDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+        },
+        "referenceRatePercent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "asOfDate",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "InterestPostSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+              "format": "date",
+              "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivableAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 128,
+          "x-validation": "Rust !str.trim().is_empty() and !chars().any(char::is_control); Rust Unicode trim/control semantics."
+        },
+        "interestIncomeAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 128,
+          "x-validation": "Rust !str.trim().is_empty() and !chars().any(char::is_control); Rust Unicode trim/control semantics."
+        },
+        "confirm": {
+          "const": true
+        },
+        "claimId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "receivableAccountNo",
+        "interestIncomeAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "InterestCorrectionSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "invoiceDocumentId"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "InterestPostCorrectionSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+              "format": "date",
+              "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 4096,
+          "x-validation": "Rust !str.trim().is_empty(); no char::is_control prohibition is imposed here."
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "BadDebtSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "writeOffDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "x-validation": "Actual Rust time::Date from_calendar_date, four decimal year digits with year >=1; Gregorian-valid date, including leap-day checks."
+        },
+        "grossAmount": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "x-validation": "serde_json::Number.as_f64 must produce finite positive f64; no other SDK amount/rate arithmetic."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1,
+          "x-maxUtf8Bytes": 128,
+          "x-validation": "Rust !str.trim().is_empty() and !chars().any(char::is_control); Rust Unicode trim/control semantics."
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "writeOffDate",
+        "expenseAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Duplicate known fields rejected by second serde typed struct deserialization; do not normalize bytes before validation.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "ReminderRegisterSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reminderDate": {
+          "type": "string"
+        },
+        "feeAmount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "reminderDate",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Last wins in serde_json::Value during SDK domain validation; no duplicate-key rejection in reminder SDK.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "ReminderPostSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reminderId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "receivableAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1
+        },
+        "reminderIncomeAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "reminderId",
+        "receivableAccountNo",
+        "reminderIncomeAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Last wins in serde_json::Value during SDK domain validation; no duplicate-key rejection in reminder SDK.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
+    },
+    "SettleSdkBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "paymentDate": {
+          "type": "string"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivableAccountNo": {
+          "type": "string",
+          "x-minUtf8Bytes": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "bankTransactionId",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-maxRawUtf8Bytes": 16384,
+      "x-duplicateMembers": "Last wins in serde_json::Value during SDK domain validation; no duplicate-key rejection in reminder SDK.",
+      "x-boundary": "SDK body preflight only; server current authority, domain/date/amount/source/account/period controls still apply. SDK writes additionally require outer confirmation true."
     }
   }
 }
