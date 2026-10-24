@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R85/R86 commonRustcompany create -> rename -> inspect accepted; originalfivefieldgap resolved, legacyHTTPinputs retained; whole716open",
-  "code_revision": "8d298d9e4f5de2e9dcc6de24f61ecd035aa9c8af",
+  "current_increment": "R87/R88 originalcontactCSV flow andofflineimportsystems accepted; samecommonRustbackend, whole716open",
+  "code_revision": "8351965da3744ca109a77748bda6b39724c87e8a",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "company_profile_flow_component_accepted_whole716_open",
+  "state": "original_contact_import_component_accepted_whole716_open",
   "issues_closed": 40,
   "next": [
-    "48other original literalCLIkeys; positivegroupoverview; firstworkspace/rootbootstrap/canonicalpath and full265peroperation runtime/files/confirmation/streams/0-1-2 acceptance.",
-    "40of55originalissuesclosed15open; full717workflows/reconnect andall55J01-J07/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
+    "46otheroriginalCLI literalkeys, positivegroupoverview, firstworkspace/rootbootstrap/canonicalpaths andcomplete265per-operation runtime/files/credential/confirmation/streams/0-1-2 acceptance remain in716.",
+    "40of55originalissuesclosed15open; full717/reconnect/browser/native/release/cutover/retirement andJ01-J07 remain; manualinstalleddesktopLAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R83/R84 originalCLI716 group/company/reg supportednativeprofiles accepted; whole716open",
+  "previous_verified_increment": "R85/R86 commonRustcompany create -> rename -> inspect accepted; originalfivefieldgap resolved, legacyHTTPinputs retained; whole716open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16604,6 +16604,10 @@
     "r86_company_profile_flow": {
       "path": "/private/tmp/rentemester-rust-reports/r86-company716-create-edit-inspect-qualified.json",
       "sha256": "8544a480f8ca8a406a3bb9988c76a78031c7687eec9a051fc0f0a2083ee4a3c4"
+    },
+    "r88_original_contact_import": {
+      "path": "/private/tmp/rentemester-rust-reports/r88-original-contact716-current-contracts-qualified.json",
+      "sha256": "9871ea583c6bc65107496f4451cb4f7880661e63d438fdf1f75338b377716660"
     }
   },
   "verified_history": [
@@ -18796,6 +18800,18 @@
       "remaining": [
         "48other original literalCLIkeys; positivegroupoverview; firstworkspace/rootbootstrap/canonicalpath and full265peroperation runtime/files/confirmation/streams/0-1-2 acceptance.",
         "40of55originalissuesclosed15open; full717workflows/reconnect andall55J01-J07/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
+      ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "8351965da3744ca109a77748bda6b39724c87e8a",
+      "report": "/tmp/rentemester-rust-reports/r88-original-contact716-current-contracts-qualified.json",
+      "sha256": "9871ea583c6bc65107496f4451cb4f7880661e63d438fdf1f75338b377716660",
+      "scope": "Original2importCLI profiles/current1596contracts; explicitsourcefallback/headerpolicy throughsameRustengine/server,25actualcompiledcases/425MCPcatalogue; retainednativebounds/controls/no financial/provider/MFA/desktopreplay.",
+      "remaining": [
+        "46otheroriginalCLI literalkeys, positivegroupoverview, firstworkspace/rootbootstrap/canonicalpaths andcomplete265per-operation runtime/files/credential/confirmation/streams/0-1-2 acceptance remain in716.",
+        "40of55originalissuesclosed15open; full717/reconnect/browser/native/release/cutover/retirement andJ01-J07 remain; manualinstalleddesktopLAST."
       ]
     }
   ],
