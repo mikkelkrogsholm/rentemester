@@ -240,7 +240,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let origin = canonical_origin(&origin)?;
     // SQLite/password initialization runs outside Tokio's asynchronous worker threads.
     let setup_origin = origin.clone();
-    let mut native = tokio::task::spawn_blocking(move || {
+    let (mut native, storage_failure) = tokio::task::spawn_blocking(move || {
         config
             .map(|path| {
                 (if restore.is_some() {
@@ -254,9 +254,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } else {
                     backend::Backend::load(&path, &setup_origin, create, listen.ip().is_loopback())
                 })
-                .map_err(|e| e.to_string())
+                .map(|backend| (Some(backend), None))
+                .or_else(|e| {
+                    if !create && restore.is_none() && !scheduled_worker && !mail_worker {
+                        if let Some(rentemester_host::OwnerError::StorageUnusable(readiness)) = e.downcast_ref::<rentemester_host::OwnerError>() {
+                            return Ok((None, Some(*readiness)));
+                        }
+                    }
+                    Err(e.to_string())
+                })
             })
-            .transpose()
+            .transpose().map(|result| result.unwrap_or((None, None)))
     })
     .await?
     .map_err(|e| format!("workspace startup refused: {e}"))?;
@@ -279,7 +287,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .transpose()
         .map_err(|_| "invalid identity HTTP configuration")?;
-    let app = cockpit_router(web, identity, native.clone());
+    let app = cockpit_router(web, identity, native.clone(), storage_failure);
     let mut shutdown = shutdown::Shutdown::new()?;
     let mut local = if let Some(profile) = &local_runtime_dir {
         Some(
@@ -388,6 +396,7 @@ fn cockpit_router(
     web: PathBuf,
     identity: Option<Router>,
     native: Option<std::sync::Arc<backend::Backend>>,
+    storage_failure: Option<rentemester_storage::readiness::Readiness>,
 ) -> Router {
     // API misses must never return index.html with a successful status.
     let connected = identity.is_some();
@@ -395,12 +404,10 @@ fn cockpit_router(
         .route("/health", get(move || {
             let native = native.clone();
             async move {
-            let body = if connected {
-                serde_json::json!({"ok":true,"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":true,"setupRequired":native.as_ref().is_some_and(|b|b.setup_pending.load(std::sync::atomic::Ordering::Acquire))}).to_string()
-            } else {
-                r#"{"ok":true,"backend":"rust","workspaceReady":false}"#.to_owned()
-            };
-            ([ ("content-type", "application/json") ], body)
+            let readiness = native.as_ref().map(|b| b.readiness()).or(storage_failure)
+                .unwrap_or_else(|| rentemester_storage::readiness::Readiness::new(rentemester_storage::readiness::Code::NotConfigured));
+            let (status, body) = health_response(connected, readiness);
+            (status, [("content-type", "application/json")], body.to_string())
         }}))
         .fallback(move || async move {
             let body = if connected {
@@ -432,8 +439,43 @@ fn cockpit_router(
         ))
 }
 
+fn health_response(connected: bool, readiness: rentemester_storage::readiness::Readiness) -> (StatusCode, serde_json::Value) {
+    use rentemester_storage::readiness::Code;
+    let status = if readiness.unusable() { StatusCode::SERVICE_UNAVAILABLE } else { StatusCode::OK };
+    let mut body = if connected || readiness.unusable() {
+        serde_json::json!({"ok":!readiness.unusable(),"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":readiness.code == Code::Current,"setupRequired":readiness.code == Code::SetupRequired})
+    } else {
+        serde_json::json!({"ok":true,"backend":"rust","workspaceReady":false})
+    };
+    body["readiness"] = serde_json::to_value(readiness).expect("static readiness");
+    (status, body)
+}
+
 #[cfg(test)]
 mod origin_tests {
+    #[test]
+    fn readiness_public_response_is_exact_and_sanitized() {
+        use rentemester_storage::readiness::{Code, Readiness};
+        use super::health_response;
+        use axum::http::StatusCode;
+        let (status, body) = health_response(false, Readiness::new(Code::NotConfigured));
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body, serde_json::json!({"ok":true,"backend":"rust","workspaceReady":false,"readiness":{"status":"not_ready","code":"not_configured"}}));
+        for (code, name, state, ready, setup, status) in [
+            (Code::Current,"current","ready",true,false,StatusCode::OK),
+            (Code::SetupRequired,"setup_required","not_ready",false,true,StatusCode::OK),
+            (Code::MigrationRequired,"migration_required","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
+            (Code::UnsupportedSchema,"unsupported_schema","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
+            (Code::StorageUnavailable,"storage_unavailable","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
+        ] {
+            let (actual_status, body) = health_response(true, Readiness::new(code));
+            assert_eq!(actual_status, status);
+            assert_eq!(body, serde_json::json!({"ok":status==StatusCode::OK,"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":ready,"setupRequired":setup,"readiness":{"status":state,"code":name}}));
+            if code != Code::Current && code != Code::SetupRequired {
+                assert_eq!(health_response(false, Readiness::new(code)), (actual_status, body));
+            }
+        }
+    }
     #[test]
     fn public_origin_is_validated_before_shared_canonicalization() {
         assert_eq!(super::canonical_origin("HTTPS://ACCOUNTING.example.invalid:443").unwrap(),"https://accounting.example.invalid");

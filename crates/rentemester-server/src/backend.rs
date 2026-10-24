@@ -304,7 +304,7 @@ impl Backend {
                 config.runtime_profile,
             )?
         } else {
-            Owner::open_with_profile(
+            Owner::open_ready_with_profile(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
@@ -312,15 +312,6 @@ impl Backend {
                 config.runtime_profile,
             )?
         };
-        // Schema admission is a startup phase, never a disposal preview/apply side effect.
-        let startup_companies = owner.catalog()?.companies;
-        for company in startup_companies.into_iter().filter(|c| !c.archived) {
-            if owner.recurring_company_initialized_for_schema(&company.slug)? {
-                owner.select_company(&company.slug)?;
-                owner.upgrade_asset_disposal_schema()?;
-            }
-        }
-        owner.select_company(&config.company_slug)?;
         if let Some(first) = &config.first_owner {
             let key = rentemester_runtime::bootstrap::ReservationKey::new(
                 &config.workspace,
@@ -438,6 +429,14 @@ impl Backend {
                 &config.cookie_key,
             )?,
         }))
+    }
+    pub(crate) fn readiness(&self) -> rentemester_storage::readiness::Readiness {
+        use rentemester_storage::readiness::{Code, Readiness};
+        let Ok(mut owner) = self.owner.lock() else { return Readiness::new(Code::StorageUnavailable); };
+        let result = owner.readiness();
+        if !result.unusable() && self.setup_pending.load(std::sync::atomic::Ordering::Acquire) {
+            Readiness::new(Code::SetupRequired)
+        } else { result }
     }
     pub(crate) fn install_owner(
         &self,
