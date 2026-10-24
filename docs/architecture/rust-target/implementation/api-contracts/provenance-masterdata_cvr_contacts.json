@@ -140,12 +140,12 @@
     },
     {
       "path": "crates/rentemester-engine/src/contact_import.rs",
-      "sha256": "94cb4d479e7f287d1a7718fe71dd941ec780b50d1aa803f8f2fdae0986b78209",
+      "sha256": "65d7a8e85c1b2e4200edef2d2e243a83c6b97233d27d2e26b4986b755fb442eb",
       "needle": "pub "
     },
     {
       "path": "crates/rentemester-storage/src/contact_import.rs",
-      "sha256": "1c2cee801c6769f7ab1524b895a3ea620e6e95b3bcf04753a93a539316281fa3",
+      "sha256": "5d47ee6452481c38e07437f0f0ab5d59f256af45654c41f33a66615f26f81358",
       "needle": "pub "
     },
     {
@@ -195,7 +195,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "5c9e470a43e86c5b88ebe796647982ad0c0bc38998d4d7c664ff748a7fa8e81a",
+      "sha256": "5302ca3300e5a14111457a1af56bf4d14e7bb90d7ed9a63acca0feee81c7672a",
       "needle": "fn main()"
     },
     {
@@ -205,7 +205,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "27b2eaf9fb367e9ec36f53717f9ce5a618d7d19d4a823db6fe5084479bc0fa3a",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe",
       "needle": "pub fn prepare_with_output"
     },
     {
@@ -255,7 +255,7 @@
     },
     {
       "path": "crates/rentemester-client/src/contact_import.rs",
-      "sha256": "cd821c3381ea262e625b3a5b2744a36ba09c5340e15aa2b9e702fcf3e15be844",
+      "sha256": "755b6c16bc58f326e79ec3dfddfc8cb3a0d8848332233d41a8e9fad9a3696563",
       "needle": "use "
     },
     {
@@ -383,5 +383,12 @@
     "providerApproval": false,
     "runtimeEffectsReplayed": false
   },
-  "leadReviewRepair": "Separated raw Value/Map parser grammar from named business and SDK contracts. Creation vatPeriodType arbitrary parser field remains current enum/null business control; raw PATCH unknown/types fail domain422. No authority/accounting/provider effects or controls changed."
+  "leadReviewRepair": "Separated raw Value/Map parser grammar from named business and SDK contracts. Creation vatPeriodType arbitrary parser field remains current enum/null business control; raw PATCH unknown/types fail domain422. No authority/accounting/provider effects or controls changed.",
+  "r87OriginalContacts716": {
+    "date": "2026-10-24",
+    "operationsAdded": [],
+    "extension": "Optional defaultRole only for existing native body; explicit original header policy, strict omitted-field behavior retained. Exactly two original CLI keys, not import run/archive.",
+    "evidence": "Independent cargo test -p rentemester-cli --test original_import_contacts716: 5 passed; compiled HTTP and private Unix fixtures, no live providers. Combined catalogue qualification remains lead-owned.",
+    "remaining": "Whole #716 remains open; 46 other literal keys plus overview/rootbootstrap/path/full265 and all epic final gates remain. Historical snapshot catalogue counts are unchanged."
+  }
 }

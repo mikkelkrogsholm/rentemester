@@ -2928,6 +2928,14 @@
         },
         "confirm": {
           "const": true
+        },
+        "defaultRole": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "vendor"
+          ],
+          "description": "Omission preserves strict native headers and vendor fallback. Explicit value selects original CSV policy: only Kontaktnavn required. Sales/purchases independently select roles; fallback only without nonzero history."
         }
       },
       "required": [
@@ -6610,6 +6618,14 @@
         },
         "confirm": {
           "const": true
+        },
+        "defaultRole": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "vendor"
+          ],
+          "description": "Omission preserves strict native headers and vendor fallback. Explicit value selects original CSV policy: only Kontaktnavn required. Sales/purchases independently select roles; fallback only without nonzero history."
         }
       },
       "required": [

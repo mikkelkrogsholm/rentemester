@@ -65,3 +65,21 @@ Lead source review repaired four original public-invoice CLI refusal JSON varian
 
 ## R59 bounded correction
 Two public HEAD contracts now specify early405AllowGET and bodyless409 protocol refusal. Other GET/POST contracts retain behavior; current source hashes refreshed here and in delivery_recurring_http only. Historical R58 reviews and failed receipts are preserved.
+
+## 2026-10-24 — R87 original contact-import appendix (Work-Issue: #716)
+
+Exactly two CLI operation identities added in discovery/setup: `import systems`
+and `import contacts`. Current contract union is 1596 = 642 HTTP + 529 CLI +
+425 MCP across the existing 38 partitions; historical measured source/catalogue
+snapshots above remain historical, not new measurements. Existing native contact
+body definitions gain only optional `defaultRole`; omission retains strict native
+headers/vendor fallback. Explicit role enables original CSV headers (only
+Kontaktnavn required); classification and prepare/execution/GDPR stay server-owned.
+Root help adds the existing integrated import descriptor. Closed result/help
+schemas preserve real summary values and successful warning errors.
+
+Independent compiled `original_import_contacts716` test target: 5 passed, including
+HTTP exact bodies and private Unix/workspace binding; no real CVR/provider/auth
+setup. Malformed receipts are outcome_unknown, no automatic retry. Full catalogue
+and combined acceptance remain lead-owned. No import-run accounting/archive,
+opening balance, new parser/provider, rootbootstrap or whole-#716 closure claimed.
