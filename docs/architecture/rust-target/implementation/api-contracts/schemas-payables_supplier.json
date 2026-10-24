@@ -3743,6 +3743,7 @@
         },
         "usage": {
           "enum": [
+            "not_committed",
             "committed"
           ]
         },
