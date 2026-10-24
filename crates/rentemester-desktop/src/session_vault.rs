@@ -94,10 +94,14 @@ impl Session {
         }
         Ok(())
     }
-    pub async fn verify(&self) -> Result<(), String> {
-        self.validate(&self.binding())?;
-        let current = current(&self.origin, self.header()).await?;
+    pub async fn verify(&self) -> Result<(), VerificationFailure> {
+        self.validate(&self.binding())
+            .map_err(|_| VerificationFailure::Invalid)?;
+        let current = current_checked(&self.origin, self.header()).await?;
+        // A malformed successful response is uncertainty, not proof of revocation.
+        identity(&current).map_err(|_| VerificationFailure::Unconfirmed)?;
         self.matches_current(&current)
+            .map_err(|_| VerificationFailure::Invalid)
     }
     fn matches_current(&self, current: &Value) -> Result<(), String> {
         let (id, email) = identity(current)?;
@@ -125,12 +129,59 @@ fn identity(current: &Value) -> Result<(String, String), String> {
         .to_lowercase();
     Ok((id.into(), email))
 }
-pub async fn current(origin: &str, header: String) -> Result<Value, String> {
+/// Unknown transport/protocol outcomes never establish revocation and never erase a saved login.
+#[derive(Debug, PartialEq, Eq)]
+pub enum VerificationFailure {
+    Invalid,
+    Unconfirmed,
+}
+impl VerificationFailure {
+    pub fn message(&self) -> String {
+        REFUSED.into()
+    }
+    pub fn should_delete(&self) -> bool {
+        matches!(self, Self::Invalid)
+    }
+}
+fn classify(error: rentemester_client::Error) -> VerificationFailure {
+    match error {
+        rentemester_client::Error::Refused { status: 401 | 403 } => VerificationFailure::Invalid,
+        _ => VerificationFailure::Unconfirmed,
+    }
+}
+async fn current_checked(origin: &str, header: String) -> Result<Value, VerificationFailure> {
     rentemester_client::ApiClient::new(origin, false, Some(header))
-        .map_err(|_| REFUSED.to_owned())?
+        .map_err(classify)?
         .me()
         .await
-        .map_err(|_| REFUSED.into())
+        .map_err(classify)
+}
+pub async fn current(origin: &str, header: String) -> Result<Value, String> {
+    current_checked(origin, header)
+        .await
+        .map_err(|e| e.message())
+}
+
+/// One window generation. A commit holds this lock only for synchronous, noninteractive
+/// native work; it never holds it across network I/O or async WebKit cookie readback.
+#[derive(Default)]
+pub struct Generation(std::sync::Mutex<u64>);
+impl Generation {
+    pub fn advance(&self) -> Result<u64, String> {
+        let mut current = self.0.lock().map_err(|_| REFUSED.to_owned())?;
+        *current = current.checked_add(1).ok_or(REFUSED)?;
+        Ok(*current)
+    }
+    pub fn current(&self) -> Result<u64, String> {
+        self.0.lock().map(|v| *v).map_err(|_| REFUSED.to_owned())
+    }
+    pub fn guard(&self, expected: u64) -> Result<std::sync::MutexGuard<'_, u64>, String> {
+        let current = self.0.lock().map_err(|_| REFUSED.to_owned())?;
+        if *current != expected {
+            return Err("Forbindelsen er annulleret. Prøv igen.".into());
+        }
+        Ok(current)
+    }
 }
 pub fn allowed_cookie(origin: &Url, cookie: &Cookie<'_>) -> bool {
     origin.scheme() == "https"
@@ -307,6 +358,79 @@ mod tests {
             cookie,
             serde_json::json!({"ok":true,"user":{"id":"stable-user-1","email":" Person@Example.invalid ","emailVerified":true,"twoFactorEnabled":true}}),
         )
+    }
+    #[cfg(target_os = "macos")]
+    #[test]
+    #[ignore = "explicit noninteractive synthetic OS Keychain acceptance; no GUI or unlock prompt"]
+    fn actual_os_keychain_roundtrip() {
+        let (origin, cookie, mut current) = fixture();
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        current["user"]["email"] =
+            Value::String(format!("vault-acceptance-{nonce}@example.invalid"));
+        let session = Session::from_cookie(&origin, &cookie, &current).unwrap();
+        let binding = session.binding();
+        let result = (|| -> Result<(), String> {
+            save(&OsVault, &session)?;
+            let restored = load(&OsVault, &binding)?;
+            if restored.user_id != session.user_id || restored.header() != session.header() {
+                return Err(REFUSED.into());
+            }
+            OsVault.delete(&binding)?;
+            if OsVault.load(&binding).is_ok() {
+                return Err(REFUSED.into());
+            }
+            Ok(())
+        })();
+        let cleanup = OsVault.delete(&binding); // exact unique synthetic entry, including failure path
+        assert!(cleanup.is_ok(), "Synthetic Keychain cleanup unavailable");
+        assert!(
+            result.is_ok(),
+            "Noninteractive OS Keychain roundtrip unavailable"
+        );
+    }
+    #[test]
+    fn uncertain_server_result_preserves_saved_login() {
+        use rentemester_client::Error;
+        for e in [
+            Error::Transport,
+            Error::Protocol,
+            Error::Refused { status: 429 },
+            Error::Refused { status: 503 },
+        ] {
+            assert!(!classify(e).should_delete());
+        }
+        for status in [401, 403] {
+            assert!(classify(Error::Refused { status }).should_delete());
+        }
+    }
+    #[test]
+    fn cancelled_generation_cannot_commit_queued_vault_write_or_restore() {
+        use std::sync::{
+            Arc,
+            atomic::{AtomicBool, Ordering},
+            mpsc,
+        };
+        let generation = Arc::new(Generation::default());
+        let old = generation.advance().unwrap();
+        let (send, receive) = mpsc::channel();
+        let written = Arc::new(AtomicBool::new(false));
+        let g = generation.clone();
+        let effect = written.clone();
+        let job = std::thread::spawn(move || {
+            receive.recv().unwrap();
+            if let Ok(_guard) = g.guard(old) {
+                effect.store(true, Ordering::SeqCst);
+            }
+        });
+        let next = generation.advance().unwrap();
+        send.send(()).unwrap();
+        job.join().unwrap();
+        assert!(!written.load(Ordering::SeqCst));
+        assert!(generation.guard(old).is_err()); // same guard precedes cookie installation/navigation
+        assert!(generation.guard(next).is_ok());
     }
     #[test]
     fn binding_selection_and_native_cookie_constructor() {

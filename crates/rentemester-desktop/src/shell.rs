@@ -69,6 +69,7 @@ struct ShellState {
     managed: Mutex<Option<Managed>>,
     connecting: AtomicBool,
     vault_busy: AtomicBool,
+    generation: session_vault::Generation,
     remembered: Mutex<Option<session_vault::Binding>>,
     selected_origin: Mutex<Option<Url>>,
 }
@@ -161,7 +162,11 @@ async fn connect(
     if state.connecting.swap(true, Ordering::AcqRel) {
         return Err("En forbindelse er allerede ved at blive åbnet".into());
     }
-    let result = connect_inner(&app, &state, mode, profile, server, name, account).await;
+    let generation = state.generation.advance()?;
+    let result = connect_inner(
+        &app, &state, mode, profile, server, name, account, generation,
+    )
+    .await;
     state.connecting.store(false, Ordering::Release);
     result
 }
@@ -173,6 +178,7 @@ async fn connect_inner(
     server: String,
     name: String,
     account: String,
+    generation: u64,
 ) -> Result<(), String> {
     if app.get_webview_window("workspace").is_some() {
         return Err("Regnskabsvinduet er allerede åbent".into());
@@ -206,6 +212,7 @@ async fn connect_inner(
             .map_err(|_| "Den lokale server kunne ikke startes")??;
         let url =
             Url::parse(&managed.browser_url()).map_err(|_| "Lokal serveradresse er ugyldig")?;
+        let _generation = state.generation.guard(generation)?;
         *state
             .managed
             .lock()
@@ -217,21 +224,32 @@ async fn connect_inner(
     let restored = if mode == "remote" && !account.trim().is_empty() {
         let binding = session_vault::Binding::new(&url, &account)?;
         let lookup = binding.clone();
+        let current = state.clone();
         let session = tauri::async_runtime::spawn_blocking(move || {
+            // load also removes malformed local records: that effect belongs to this generation.
+            let _generation = current.generation.guard(generation)?;
             session_vault::load(&session_vault::OsVault, &lookup)
         })
         .await
         .map_err(|_| "OS-nøgleringen kunne ikke læses")??;
         if let Err(error) = session.verify().await {
-            tauri::async_runtime::spawn_blocking(move || session_vault::OsVault.delete(&binding))
+            if error.should_delete() {
+                let current = state.clone();
+                tauri::async_runtime::spawn_blocking(move || {
+                    let _generation = current.generation.guard(generation)?;
+                    session_vault::OsVault.delete(&binding)
+                })
                 .await
                 .map_err(|_| "OS-nøgleringen kunne ikke ryddes")??;
-            return Err(error);
+            }
+            return Err(error.message());
         }
+        drop(state.generation.guard(generation)?);
         Some(session)
     } else {
         None
     };
+    drop(state.generation.guard(generation)?);
     let origin = url.clone();
     let popup_origin = origin.clone();
     let download_origin = origin.clone();
@@ -317,15 +335,19 @@ async fn connect_inner(
     // UI thread) before allowing any authenticated document to navigate/show.
     let prepared: Result<(), String> = async {
         if let Some(session) = &restored {
-            window
-                .set_cookie(session.cookie()?)
-                .map_err(|_| "Login kunne ikke indlæses")?;
+            {
+                let _generation = state.generation.guard(generation)?;
+                window
+                    .set_cookie(session.cookie()?)
+                    .map_err(|_| "Login kunne ikke indlæses")?;
+            }
             let cookies = workspace_cookies(window.clone(), url.clone()).await?;
             let selected = session_vault::select_cookie(&url, cookies)?;
             if format!("{}={}", selected.name(), selected.value()) != session.header() {
                 return Err("Login kunne ikke bekræftes i det private vindue".into());
             }
         }
+        let _generation = state.generation.guard(generation)?;
         *state
             .selected_origin
             .lock()
@@ -365,6 +387,14 @@ async fn workspace_cookies(
         .map_err(|_| "Login kunne ikke læses".into())
 }
 fn session_menu(app: &AppHandle, id: &str) {
+    if id == "session-cancel" {
+        let state = app.state::<Arc<ShellState>>();
+        let _ = state.generation.advance();
+        if let Some(window) = app.get_webview_window("workspace") {
+            let _ = window.close();
+        }
+        return;
+    }
     if !matches!(id, "session-save" | "session-forget") {
         return;
     }
@@ -392,6 +422,7 @@ async fn session_action(
     let window = app
         .get_webview_window("workspace")
         .ok_or("Åbn først en ekstern server")?;
+    let generation = state.generation.current()?;
     let origin = state
         .selected_origin
         .lock()
@@ -406,9 +437,14 @@ async fn session_action(
             .map_err(|_| "Login er utilgængeligt")?
             .clone();
         if let Some(binding) = remembered {
-            tauri::async_runtime::spawn_blocking(move || session_vault::OsVault.delete(&binding))
-                .await
-                .map_err(|_| "OS-nøgleringen kunne ikke ryddes")??;
+            let current = state.clone();
+            tauri::async_runtime::spawn_blocking(move || {
+                let _generation = current.generation.guard(generation)?;
+                session_vault::OsVault.delete(&binding)
+            })
+            .await
+            .map_err(|_| "OS-nøgleringen kunne ikke ryddes")??;
+            let _generation = state.generation.guard(generation)?;
             *state
                 .remembered
                 .lock()
@@ -441,7 +477,9 @@ async fn session_action(
     }
     let binding = session.binding();
     let bound = binding.clone();
+    let current = state.clone();
     tauri::async_runtime::spawn_blocking(move || {
+        let _generation = current.generation.guard(generation)?;
         if forget {
             session_vault::OsVault.delete(&bound)
         } else {
@@ -450,6 +488,7 @@ async fn session_action(
     })
     .await
     .map_err(|_| "OS-nøgleringen er utilgængelig")??;
+    let _generation = state.generation.guard(generation)?;
     *state
         .remembered
         .lock()
@@ -548,6 +587,7 @@ fn main() {
         managed: Mutex::new(None),
         connecting: AtomicBool::new(false),
         vault_busy: AtomicBool::new(false),
+        generation: session_vault::Generation::default(),
         remembered: Mutex::new(None),
         selected_origin: Mutex::new(None),
     });
@@ -608,7 +648,14 @@ fn main() {
                 true,
                 None::<&str>,
             )?;
-            let login = Submenu::with_items(handle, "Login", true, &[&save, &forget])?;
+            let cancel = MenuItem::with_id(
+                handle,
+                "session-cancel",
+                "Annullér login og luk forbindelsen",
+                true,
+                None::<&str>,
+            )?;
+            let login = Submenu::with_items(handle, "Login", true, &[&save, &forget, &cancel])?;
             app.set_menu(Menu::with_items(
                 handle,
                 &[&application, &edit, &local, &login],
@@ -657,6 +704,15 @@ fn main() {
             session_menu(app, event.id().as_ref());
         })
         .on_window_event(|window, event| {
+            if window.label() == "workspace"
+                && matches!(
+                    event,
+                    tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed
+                )
+            {
+                let state = window.app_handle().state::<Arc<ShellState>>();
+                let _ = state.generation.advance();
+            }
             if window.label() == "workspace" && matches!(event, tauri::WindowEvent::Destroyed) {
                 let app = window.app_handle();
                 let state = app.state::<Arc<ShellState>>();
@@ -679,6 +735,7 @@ fn main() {
     app.run(|app, event| {
         if matches!(event, tauri::RunEvent::Exit) {
             let state = app.state::<Arc<ShellState>>();
+            let _ = state.generation.advance();
             if let Ok(mut guard) = state.managed.lock() {
                 guard.take();
             }
