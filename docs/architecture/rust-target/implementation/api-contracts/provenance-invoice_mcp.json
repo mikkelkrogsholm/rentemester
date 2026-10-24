@@ -414,5 +414,10 @@
     }
   ],
   "method": "Current native advertisement, MCP global dispatch guard and per-tool parser, SDK shape builders and response readers, server transport, application authority/source fence, storage producers. No effect execution or accepted proof replay.",
-  "scope": "21 selected MCP identities only; full issue677 advertised operations/all55/J01-J07/final desktop gates retained."
+  "scope": "21 selected MCP identities only; full issue677 advertised operations/all55/J01-J07/final desktop gates retained.",
+  "leadRepair": {
+    "rejectedCommit": "3c20fcfd2119b84d286faf46744079470ee44027",
+    "diagnosis": "Partition-localRPCclosedmessageunion nowcoversactualselectedinvoiceparseerrors/globalobjectguard; originalrender mediaTypeapplication/json receipt.",
+    "newModelAttempt": false
+  }
 }

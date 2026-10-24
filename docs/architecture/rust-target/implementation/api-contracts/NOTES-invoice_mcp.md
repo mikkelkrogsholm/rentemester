@@ -64,3 +64,5 @@ No commit, push, merge or issue-status action is performed by this worker.
 Artifact check: `python3 /tmp/r46-677-oracle.py invoice_mcp` passed for all21
 resolved source-bound schema contracts; semantic producer review remains with main.
 Required independent code-only Graphify extraction completed in SGD_BUILD_DIR.
+
+Lead source-review correction: Partition-localRPCclosedmessageunion nowcoversactualselectedinvoiceparseerrors/globalobjectguard; originalrender mediaTypeapplication/json receipt.
