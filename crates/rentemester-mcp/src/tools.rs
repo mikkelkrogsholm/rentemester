@@ -226,6 +226,9 @@ pub fn list() -> Value {
     tools.extend(crate::master_data_original::tools());
     crate::invoice_claims_original::register(&mut tools);
     tools.extend(crate::registry_original717::tools());
+    tools.extend(crate::profile_original89::tools());
+    tools.extend(crate::archives_original89::tools());
+    tools.extend(crate::cfo_original89::tools());
     tools.extend(crate::knowledge_ownership_original717::tools());
     tools.extend(crate::inbox_original717::tools());
     tools.extend(crate::intercompany_original717::tools());
@@ -289,6 +292,9 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::profile_original89::accepts(name) { return crate::profile_original89::call(api,name,args).await; }
+    if crate::archives_original89::accepts(name) { return crate::archives_original89::call(api,name,args).await; }
+    if crate::cfo_original89::accepts(name) { return crate::cfo_original89::call(api,name,args).await; }
     if crate::registry_original717::accepts(name) { return crate::registry_original717::call(api,name,args).await; }
     if crate::knowledge_ownership_original717::accepts(name) { return crate::knowledge_ownership_original717::call(api,name,args).await; }
     if crate::intercompany_original717::accepts(name) { return crate::intercompany_original717::call(api,name,args).await; }
