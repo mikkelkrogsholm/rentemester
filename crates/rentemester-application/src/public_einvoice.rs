@@ -23,6 +23,7 @@ pub enum Intent {
     Setup,
     Send(i64),
     OriginalSend(Value),
+    OriginalStatus(Value),
     Status(i64),
 }
 pub enum Next {
@@ -319,6 +320,33 @@ pub fn start(
                         Ok(step) => step,
                         Err(value) => return Ok(Next::Complete(value)),
                     }
+                }
+                Intent::OriginalStatus(body) => {
+                    let id = body["documentId"]
+                        .as_i64()
+                        .filter(|id| (1..=9_007_199_254_740_991).contains(id))
+                        .ok_or_else(refused)?;
+                    if body["confirm"] != true {
+                        return Err(refused());
+                    }
+                    let key = store::load_bound(tx, environment)?.ok_or_else(refused)?;
+                    if let Some(assertion) = body.get("companyKey") {
+                        let assertion = assertion.as_str().ok_or_else(refused)?.trim();
+                        if !assertion.is_empty() && assertion != key {
+                            return Err(refused());
+                        }
+                    }
+                    let row = store::get(tx, id)?.ok_or_else(refused)?;
+                    let (row_id, source, document_id) =
+                        store::accepted(tx, id)?.ok_or_else(blocked)?;
+                    if source.environment != environment || source.company_key != key {
+                        return Err(refused());
+                    }
+                    physical(tx, guard, &source)?;
+                    if row["status"] == "acknowledged" || row["status"] == "failed" {
+                        return Ok(Next::Complete(json!({"ok":true,"submission":row})));
+                    }
+                    Step::Observe(source, row_id, document_id)
                 }
                 Intent::Status(id) => {
                     let (row_id, source, document_id) =

@@ -112,6 +112,7 @@ fn fixture(
                 Err(e) => panic!("{e}"),
             };
             idle = Instant::now();
+            s.set_nonblocking(false).unwrap();
             s.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
             let mut bytes = vec![];
             while !bytes.ends_with(b"\r\n\r\n") {
@@ -179,7 +180,7 @@ fn catalogue_original_grammar_annotations_and_native_coexistence() {
     assert!(out.status.success());
     let v: Value = serde_json::from_slice(&out.stdout).unwrap();
     let tools = v["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 431);
+    assert_eq!(tools.len(), 432);
     let rows = run(
         "http://127.0.0.1:9",
         session(vec![json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]),
@@ -437,5 +438,87 @@ fn authoritative_refusals_and_unknown_receipts_never_retry_or_readback() {
             if code=="EXACT_SERVER_CODE" { assert_eq!(e["errors"],json!(["does not exist is not a code heuristic"]));assert_eq!(e["appliedRules"],json!(["refusal-rule"])); }
             let req=t.join().unwrap();assert_eq!(req.len(),2,"one discovery + one POST only");
         }
+    }
+}
+
+#[test]
+fn original_status_one_post_envelope_mapping_and_uncertainty() {
+    for key in [None, Some(" \t "), Some(" raw assertion ")] {
+        for (status, mut value) in [
+            (200, receipt("acknowledged", true)),
+            (200, receipt("failed", true)),
+            (200, receipt("prepared", true)),
+            (
+                422,
+                json!({"ok":false,"code":"exact_code","errors":["Denied"]}),
+            ),
+            (503, json!({})),
+        ] {
+            if value["status"] == "prepared" {
+                value["ok"] = json!(false);
+                value["errors"] = json!(["Still queued"]);
+            }
+            let (origin, t) = fixture(status, value.to_string(), false);
+            let mut a = json!({"company":"synthetic","documentId":7.0,"confirm":true});
+            if let Some(key) = key {
+                a["digisenseCompanyKey"] = json!(key);
+            }
+            let rows = run(&origin, session(vec![call(2, "efaktura_status", a)]));
+            let e = envelope(&rows[1]);
+            assert_eq!(e["ok"], value["ok"] == true);
+            if status == 422 {
+                assert_eq!(e["code"], "exact_code");
+            }
+            if status == 503 {
+                assert_eq!(e["code"], "outcome_unknown");
+            }
+            if e["ok"] == false {
+                assert!(e.get("data").is_none());
+                assert!(!e["errors"].as_array().unwrap().is_empty());
+            }
+            let req = t.join().unwrap();
+            assert_eq!(req.len(), 2);
+            assert_eq!(
+                req[1].0,
+                "POST /api/companies/synthetic/invoices/original/status-digisense HTTP/1.1"
+            );
+            let mut expected = json!({"documentId":7,"confirm":true});
+            if let Some(key) = key {
+                expected["companyKey"] = json!(key);
+            }
+            assert_eq!(req[1].1, expected);
+        }
+    }
+}
+#[test]
+fn original_status_grammar_before_confirmation() {
+    for bad in [
+        json!({"company":"synthetic"}),
+        json!({"company":"synthetic","documentId":null}),
+        json!({"company":"synthetic","documentId":1,"invoiceNumber":"n"}),
+        json!({"company":"synthetic","documentId":1,"digisenseCompanyKey":null}),
+        json!({"company":"synthetic","documentId":1,"confirm":null}),
+    ] {
+        let rows = run(
+            "http://127.0.0.1:9",
+            session(vec![call(2, "efaktura_status", bad)]),
+        );
+        assert_eq!(rows[1]["error"]["code"], -32602);
+    }
+    for confirm in [None, Some(false)] {
+        let mut a = json!({"company":"synthetic","documentId":1});
+        if let Some(c) = confirm {
+            a["confirm"] = json!(c);
+        }
+        let rows = run(
+            "http://127.0.0.1:9",
+            session(vec![call(2, "efaktura_status", a)]),
+        );
+        let e = envelope(&rows[1]);
+        assert_eq!(e["code"], "CONFIRM_REQUIRED");
+        assert_eq!(
+            e["errors"],
+            json!(["confirm: true required for write tool efaktura_status"])
+        );
     }
 }

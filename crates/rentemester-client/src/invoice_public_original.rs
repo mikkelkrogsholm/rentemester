@@ -74,6 +74,13 @@ pub fn validate_invoice_public_original(
     }
     Ok(())
 }
+/// Status has no invoice-number fallback or caller-controlled provider identity.
+pub fn invoice_public_original_status_schema() -> Value {
+    crate::domain::object(
+        json!({"documentId":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"confirm":{"const":true},"companyKey":{"type":"string","minLength":1,"maxLength":512}}),
+        &["documentId", "confirm"],
+    )
+}
 fn matches_hash(value: &Value, text: &str, hash: &str) -> bool {
     value[text]
         .as_str()
@@ -104,6 +111,42 @@ impl ApiClient {
         body: Vec<u8>,
     ) -> Result<Value, Error> {
         validate_invoice_public_original(kind, &body)?;
+        self.original_request(company, kind, kind.suffix(), body)
+            .await
+    }
+    pub async fn invoice_public_original_status(
+        &self,
+        company: &str,
+        body: Vec<u8>,
+    ) -> Result<Value, Error> {
+        if body.len() > 16 * 1024 {
+            return Err(Error::InvalidInput("public invoice body exceeds16KiB"));
+        }
+        crate::domain::body(&body, &invoice_public_original_status_schema())?;
+        let value: Value = serde_json::from_slice(&body)
+            .map_err(|_| Error::InvalidInput("expected public invoice JSON"))?;
+        if value
+            .get("companyKey")
+            .and_then(Value::as_str)
+            .is_some_and(|s| s.len() > 512)
+        {
+            return Err(Error::InvalidInput("companyKey exceeds native bound"));
+        }
+        self.original_request(
+            company,
+            OriginalPublicInvoiceKind::TransmitDigisense,
+            "status-digisense",
+            body,
+        )
+        .await
+    }
+    async fn original_request(
+        &self,
+        company: &str,
+        kind: OriginalPublicInvoiceKind,
+        suffix: &str,
+        body: Vec<u8>,
+    ) -> Result<Value, Error> {
         let preview = kind == OriginalPublicInvoiceKind::ExportPublic;
         let unknown = || {
             if preview {
@@ -112,7 +155,7 @@ impl ApiClient {
                 Error::OutcomeUnknown
             }
         };
-        let path = company_path(company, &format!("invoices/original/{}", kind.suffix()))?;
+        let path = company_path(company, &format!("invoices/original/{suffix}"))?;
         let mut response = self
             .send(
                 Method::POST,

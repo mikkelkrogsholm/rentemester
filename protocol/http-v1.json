@@ -1623,6 +1623,11 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/status-digisense",
+      "capability": "POST /api/companies/{slug}/invoices/original/status-digisense"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/invoices/original/submit-public-peppol",
       "capability": "POST /api/companies/{slug}/invoices/original/submit-public-peppol"
     },
@@ -3232,5 +3237,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "cd5ce1794c6063ecd79e03106339c5a80e9022a99b7a9fc33e92b3e97188a62f"
+  "manifestId": "70871a97bc5f88dd111b21cc60c3d0adacc7977820a22055ac6cb47407b813d9"
 }

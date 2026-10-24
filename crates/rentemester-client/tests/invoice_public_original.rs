@@ -1,5 +1,43 @@
 mod common;
-use common::TcpListener;
+// Same one-request fixture, with discovery bound to the actual additive manifest.
+struct TcpListener(std::net::TcpListener);
+impl TcpListener {
+    fn bind(addr: &str) -> std::io::Result<Self> {
+        std::net::TcpListener::bind(addr).map(Self)
+    }
+    fn local_addr(&self) -> std::io::Result<std::net::SocketAddr> {
+        self.0.local_addr()
+    }
+    fn set_nonblocking(&self, value: bool) -> std::io::Result<()> {
+        self.0.set_nonblocking(value)
+    }
+    fn accept(&self) -> std::io::Result<(std::net::TcpStream, std::net::SocketAddr)> {
+        loop {
+            let (mut stream, addr) = self.0.accept()?;
+            stream.set_nonblocking(false)?;
+            stream.set_read_timeout(Some(std::time::Duration::from_secs(5)))?;
+            let mut peek = [0; 64];
+            let n = stream.peek(&mut peek)?;
+            if !peek[..n].starts_with(b"GET /api/protocol ") {
+                return Ok((stream, addr));
+            }
+            let mut bytes = vec![];
+            while !bytes.ends_with(b"\r\n\r\n") {
+                let mut b = [0];
+                stream.read_exact(&mut b)?;
+                bytes.push(b[0]);
+            }
+            let header = String::from_utf8_lossy(&bytes).to_lowercase();
+            assert!(!header.contains("cookie:") && !header.contains("authorization:"));
+            let body = include_str!("../../../protocol/http-v1.json");
+            write!(
+                stream,
+                "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{body}",
+                body.len()
+            )?;
+        }
+    }
+}
 use rentemester_client::{
     ApiClient, Error, OriginalPublicInvoiceKind as Kind, public_invoice_artifact,
     validate_invoice_public_original,
@@ -412,5 +450,80 @@ async fn incomplete_oversized_and_unknown_responses_never_retry_or_relabel_write
             );
             t.join().unwrap();
         }
+    }
+}
+
+#[tokio::test]
+async fn original_status_distinct_route_assertion_and_response_policy() {
+    let body = json!({"documentId":7,"confirm":true,"companyKey":" \t "});
+    for (status, value, expected_error) in [
+        (200, result(Kind::TransmitDigisense), None),
+        (
+            200,
+            json!({"ok":false,"errors":["Still pending"],"status":"prepared"}),
+            None,
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"exact_denial","errors":["Denied"]}),
+            None,
+        ),
+        (
+            422,
+            json!({"ok":false,"errors":[]}),
+            Some(Error::Refused { status: 422 }),
+        ),
+        (200, json!({"ok":true}), Some(Error::OutcomeUnknown)),
+        (503, json!({}), Some(Error::OutcomeUnknown)),
+    ] {
+        let (origin, t) = server(status, value.clone());
+        let actual = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_public_original_status("synthetic", body.to_string().into_bytes())
+            .await;
+        if let Some(e) = expected_error {
+            assert_eq!(actual, Err(e));
+        } else {
+            assert_eq!(actual.unwrap(), value);
+        }
+        let (header, sent) = t.join().unwrap();
+        assert!(
+            header.starts_with("POST /api/companies/synthetic/invoices/original/status-digisense ")
+        );
+        assert_eq!(sent, body);
+    }
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for bad in [
+        json!({"confirm":true}),
+        json!({"documentId":7,"confirm":true,"invoiceNumber":"n"}),
+        json!({"documentId":7,"confirm":true,"companyKey":null}),
+        json!({"documentId":7,"confirm":false}),
+    ] {
+        assert!(matches!(
+            api.invoice_public_original_status("synthetic", bad.to_string().into_bytes())
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+    for (status, bytes, extra, expected) in [
+        (200, b"not json".to_vec(), 0, Error::OutcomeUnknown),
+        (
+            200,
+            result(Kind::TransmitDigisense).to_string().into_bytes(),
+            20,
+            Error::OutcomeUnknown,
+        ),
+        (503, vec![], 0, Error::OutcomeUnknown),
+        (422, b"bad".to_vec(), 0, Error::Refused { status: 422 }),
+    ] {
+        let (origin, t) = raw_server(status, bytes, extra);
+        assert_eq!(
+            ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_public_original_status("synthetic", body.to_string().into_bytes())
+                .await,
+            Err(expected)
+        );
+        t.join().unwrap();
     }
 }
