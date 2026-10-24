@@ -1,0 +1,61 @@
+# Public invoice, inbound receive, mailbox and imported receivables contracts
+
+Scope: the 61 exact selected HTTP/CLI/MCP identities in this partition. These are additions to existing #677 work, not issue closure, provider acceptance, or a replacement for the parent's source/diff review. Prior accepted 1,285 operations/34 partitions, full 55 scope, J01–J07, final desktop, release, cutover and retirement remain unchanged.
+
+## Source-first method and evidence boundary
+
+Ran `graphify query 'public_einvoice bilagsmail'` before reading actual Rust sources. The graph surfaced historical TypeScript context; Rust handler/adaptor/application/storage/runtime bytes govern these contracts. Provenance records current SHA256 plus source needles. Only these four flat partition files are owned. No production, dependency, inventory, gap, workflow, protocol, or other partition changes; no Cargo, server, browser, provider, IMAP, SMTP, authentication, posting, scanner or upload replay.
+
+The existing strict Python oracle checks identity coverage, source hashes and resolvable explicit schema shapes. It does not certify producer semantics or live provider approval. The parent owns independent review/integration/acceptance.
+
+## Important transport distinctions
+
+* MCP `tools::call` rejects non-object arguments before all selected native/original dispatch. Direct HTTP Pair/Send/receive/configuration Serde sequence grammar is not public MCP tuple grammar. MCP outer confirmation parses a boolean; false becomes an SDK error, while discovery advertises true. The exact JSON body string is independently preflighted as an object by the SDK.
+* CLI `original_args::prepare_with_output`, discovery, then `local_binding` run before leaf execution. The global split/attached `--local-profile` is consumed and joins a private Unix socket at an exact logical origin, with no TCP fallback. Public argv is not the normalized leaf flag map. Native remote recognized flags can be rejected by earlier source/report/service/audit/budget guards. Original stdout/human/JSON and parse streams differ from native compact JSON.
+* Native generic SDK `request` accepts any bounded JSON on HTTP success, without validating its domain producer shape. These contracts constrain the actual selected native producer, not a promise that the SDK validates all fields. Native MCP returns `{ok,data}` or `{ok:false,error}`; a returned business false can retain nested data. Original pure validation uses errors/appliedRules/data and isError. Original public transport validates artifacts and retains only complete validated 422 business receipts; generic public/mail/receive transport discards 422 bodies. Dinero read transport preserves returned `ok:false`/nonempty code receipts.
+* No universal replay promise or caller retry key. Natural submission/dedup identities are not permission to retry under changed authority. Reconciliation is not replay, a missing result is not rollback, and changed credentials or permission do not erase prior effects.
+
+## HEAD: preserve actual handlers, not a generalized fence
+
+R54's accepted 11 handlers/18 routes remain unchanged. The four selected GET-backed routes here use other handlers without that early fence:
+
+| HEAD route | Actual leaf behavior after outer negotiation |
+|---|---|
+| bilagsmail | Mutation origin/cookie proof, selected/query/encoding checks, unmatched method returns 404 not_found before worker/Owner. |
+| imported-receivables | Non-applying cookie proof, selected/query/encoding/idempotency checks, method falls through to 405 invalid_input; this constructor does not add Allow. |
+| public-config | Mutation proof, non-read JSON parse; falls through Send input, not configuration read. Typical bodyless request is 400. A valid confirmed invoice body can enter current external-send phases. |
+| public-submissions | Same non-read dispatch as public-config; not a submissions GET alias. |
+
+Axum suppresses all wire response body bytes for HEAD while preserving status/headers. No probes were run. HEAD declarations are intentionally not normalized to GET or to R54's early 405/Allow:GET behavior.
+
+## Family controls and recovery
+
+### Public invoices
+
+Registration and onboarding use fixed operator credentials and canonical local DK CVR identity; onboarding authorization is checked before registration. Pair registers outbound and inbound on one named network, retaining partial phases. `technicalReady` means the two technical directions, never external candidate approval; `externallyApproved` remains false. Separate deliberate calls discover existing registration before additional provider mutations.
+
+Immutable issued JSON/PDF physical proof, ledger/source hashes, current authority, environment and credential generation are checked around provider phases. No Owner guard/SQL transaction spans provider I/O. Send reserves durable evidence before delivery. A queued `prepared`, accepted terminal `failed`, reserved no-ID `uncertain`, and delivered `acknowledged` can all be outer HTTP200/ok:true. Preserve transmissionId, providerStatus, stateHash/history and redeliveryBlocked. Any blocking earlier invoice handoff, including historical/legacy or changed credentials, prevents blind redelivery. Only a verified harmless metadata preparation with no attestation/events may be bypassed.
+
+Original export-public is a local XML artifact projection; OIOUBL export additionally audits. Metadata Peppol handoff is not a provider URL fetch. Original Digisense transmission uses current native admitted dispatch and original projection. Original CLI validates SHA256 before `std::fs::write`; server commit/provider outcome is not undone if local publication fails. Inspect canonical submissions before another explicit action.
+
+### Mailbox
+
+IMAP password is write-only request data; status exposes only safe host/port/TLS/username/mailbox, not password. Omitted secure defaults true, omitted/blank mailbox normalizes INBOX; explicit false is plaintext IMAP, not invented STARTTLS. Deletion has no body. Alias requires an explicit nullable field: null or raw empty string clears; trimmed/lowercased nonempty aliases must meet source ASCII 3–64 grammar (whitespace-only is refused).
+
+Config file write/remove precedes SQL audit commit: no combined file/SQL atomic rollback claim. Poll captures current grant/config epoch/cursor and authority, releases Owner during IMAP, then rechecks before retaining original EML/attachments/quarantine/dedup. Poll provider error may commit an error audit and return 422; generic SDK discards that response body. Retention and scanner controls remain. No extraction, inferred metadata, posting or sending.
+
+### Digisense receive
+
+Receive-only explicit polls use current CompanyDocumentsUpload, fixed bound company/environment/credential generation and per-record consumed admissions. Workspace preflights all active initialized companies for authority/backup before any provider work. Stable internal IDs and durable quarantine preserve dedup; download errors do not poison terminal dedup. Good siblings and partial company outcomes remain. Individual quarantined/error documents may coexist with batch ok:true and errors; a top-level phase error sets batch ok:false. Workspace remains outer ok:true with per-company failed/skipped states. Read authoritative documents/dedup after uncertainty; never automatically repeat a provider pass.
+
+### Imported receivables and validation
+
+Imported schedule reads reverify accepted physical source/archive evidence and remain distinct from native issue/post/settle. Exact raw optional `asOf=YYYY-MM-DD` uses trusted UTC today when absent. Payments are included by effective date; settled rows remain. Amounts are JSON numbers produced from exact Money, not decimal strings or native invoice operations.
+
+`invoice_validate` is a pure local advisory Value reader, not the stricter issuance constructor. CLI accepts any parsed JSON; MCP requires an object payload. Extra/malformed evidence fields reach the validator to produce its verdict. Field-specific recursive arbitrary evidence schema is confined to that offline payload and copied invoiceType, not a generic remote data escape hatch. No company, number allocation, credentials, provider or ledger authority is conferred.
+
+## Checks performed
+
+`python3 /tmp/r58-677-oracle.py public_invoice_inbound_bilagsmail`: PASS, exact 61 selected identities, resolved sourcebound schemas; semantic review still required, whole #677 remains open. Two initial schema-format check failures (HEAD wrapper representation and required-only selector branches) were repaired in owned files; no test harness/setup expansion.
+
+`graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`: completed, 34,009 nodes / 107,681 edges, generated observations confined to independent build output.
