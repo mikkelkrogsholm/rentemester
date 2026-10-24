@@ -8,7 +8,7 @@ Previously accepted protocol and #712 actual HTTPS/OSKeychain evidence remains r
 
 ## Reading the declarations
 
-`success`, `refusal`, and `parseProtocol` identify exact status/media/body variants. JSON schemas describe the producer body, not the shared React cleanup envelope. `producerSchema` on HEAD refusal identifies the underlying handler constructor, **not a wire payload**. Source-backed `representation:none` describes actual endpoint bodylessness. The outer negotiation middleware can return its own 409 JSON before the endpoint HEAD response stripping; it is deliberately separate from endpoint refusals. Tuple schemas use one prefix item with min/max length one; this keeps arrays closed without boolean schemas unsupported by the existing structural oracle.
+`success`, `refusal`, and `parseProtocol` identify exact status/media/body variants. JSON schemas describe the producer body, not the shared React cleanup envelope. `producerSchema` on HEAD refusal identifies the underlying handler constructor, **not a wire payload**. Source-backed `representation:none` describes actual endpoint bodylessness. The outer negotiation middleware can construct its own 409 JSON; Axum suppresses that body on top-level HEAD too. Status and headers remain distinct from endpoint refusals. Tuple schemas use one prefix item with min/max length one; this keeps arrays closed without boolean schemas unsupported by the existing structural oracle.
 
 The forwarded control-failure schema preserves the adapter's actual dynamic error-code string and single `errors=[code]` relationship rather than inventing a finite exhaustive enum or replacing every error with `request_refused`. Cross-field equality and UTF-8-byte/UTF-16-unit limits are stated explicitly where JSON Schema alone cannot encode them. No arbitrary JSON escape hatch is needed: these producers project fixed fields, not user-provided arbitrary objects.
 
@@ -40,3 +40,7 @@ Access disable durably invalidates/deletes target sessions on an actual state ch
 ## Validation
 
 The supplied oracle is run after all four files exist. AST extraction uses the isolated `$SGD_BUILD_DIR/graphify` output, not tracked graph files. Neither check replaces main's source-constructor and recovery review or prior runtime acceptance.
+
+## Lead review correction
+Actual no-effect GET/HEAD protocol probe `/tmp/rentemester-rust-reports/r05-677-head-wire-probe.json` observed GET409 with98 entity bytes versus HEAD409 with0 entity bytes and retained Content-Length98/application-json headers. Source transport unchanged from accepted compiled c351c1f6 through da30984a. Constructed schemas are retained separately from wire bodies; this is no authentication or business effect replay.
+The adapter uses Serde struct decoders without an object-prefix guard for Issue, Cancel, Claim and Change. Inputs therefore accept positional sequences in declared Rust field order as well as objects. Change order is userId, action, workspaceRole, companySlug, role; absent trailing Option fields default to None, and intermediate unused fields must be null. Closed tuple alternatives preserve exact action-specific roles and lengths; no extra positional fields are accepted.

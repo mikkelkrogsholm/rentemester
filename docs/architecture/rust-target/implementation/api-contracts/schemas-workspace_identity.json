@@ -404,74 +404,145 @@
       "additionalProperties": false
     },
     "IssueInput": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "workspaceRole": {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            "companySlug": {
+              "type": "string"
+            },
+            "companyRole": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          },
+          "required": [
+            "email",
+            "workspaceRole",
+            "companySlug",
+            "companyRole"
+          ],
+          "additionalProperties": false
         },
-        "workspaceRole": {
-          "type": "string",
-          "enum": [
-            "workspace_owner",
-            "member"
-          ]
-        },
-        "companySlug": {
-          "type": "string"
-        },
-        "companyRole": {
-          "type": "string",
-          "enum": [
-            "owner",
-            "bookkeeper",
-            "reviewer",
-            "reader"
-          ]
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
         }
-      },
-      "required": [
-        "email",
-        "workspaceRole",
-        "companySlug",
-        "companyRole"
-      ],
-      "additionalProperties": false
+      ]
     },
     "CancelInput": {
-      "type": "object",
-      "properties": {
-        "invitationId": {
-          "type": "string"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invitationId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "invitationId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
         }
-      },
-      "required": [
-        "invitationId"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ClaimInput": {
-      "type": "object",
-      "properties": {
-        "token": {
-          "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{43}$"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "name": {
+              "type": "string",
+              "description": "For a new identity: trim nonempty, <=4096 UTF-8 bytes, no control characters; existing identity retains its name and credentials and bypasses this name check."
+            },
+            "password": {
+              "type": "string",
+              "writeOnly": true,
+              "description": "12..128 UTF-16 code units on original input; KDF uses shared NFKC policy. Never returned. Existing identity password is not changed."
+            }
+          },
+          "required": [
+            "token",
+            "name",
+            "password"
+          ],
+          "additionalProperties": false
         },
-        "name": {
-          "type": "string",
-          "description": "For a new identity: trim nonempty, <=4096 UTF-8 bytes, no control characters; existing identity retains its name and credentials and bypasses this name check."
-        },
-        "password": {
-          "type": "string",
-          "writeOnly": true,
-          "description": "12..128 UTF-16 code units on original input; KDF uses shared NFKC policy. Never returned. Existing identity password is not changed."
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            {
+              "type": "string",
+              "description": "For a new identity: trim nonempty, <=4096 UTF-8 bytes, no control characters; existing identity retains its name and credentials and bypasses this name check."
+            },
+            {
+              "type": "string",
+              "writeOnly": true,
+              "description": "12..128 UTF-16 code units on original input; KDF uses shared NFKC policy. Never returned. Existing identity password is not changed."
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
         }
-      },
-      "required": [
-        "token",
-        "name",
-        "password"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ClaimResult": {
       "oneOf": [
@@ -677,6 +748,54 @@
             "action"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "set-role"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 5
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "disable"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 5
         }
       ]
     },
@@ -740,6 +859,56 @@
             "companySlug"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "grant"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "revoke"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 5
         }
       ]
     },
