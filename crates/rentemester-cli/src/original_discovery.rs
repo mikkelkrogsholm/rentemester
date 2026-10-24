@@ -5,6 +5,7 @@ pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
         {"name":"workspace-inbox list|inspect|status|ingest|assign|complete","usage":"workspace-inbox --help","scope":"original workspace evidence intake and reviewed company handoff through current Rust server; supported upload profile, no journal effects or automatic retry"},
         {"name":"party propose-merge|approve-merge","usage":"party --help","scope":"explicit reviewed merge and exact hash approval; human cookie, both writable party scopes, no retries or identity rewrite"},
+        {"name":"party create|search|inspect|link-role","usage":"party --help","scope":"explicit identity-only creation and current scoped role lifecycle; human cookie authority, bounded JSON files, no inferred role or retry"},
         {"name":"corporate-record ingest|list|inspect|download|link|enrich|supersede","usage":"corporate-record --help","scope":"original legal evidence lifecycle through current credential authority, explicit company anchor and local/remote binding; no retry"},
         {"name":"ownership query|propose|review|apply|history|projection","usage":"ownership --help","scope":"original reviewed effective-dated ownership; current principal assertions, independent review and exact hashes; no partial graph promoted to complete projection"},
         {"name":"system healthcheck","usage":"system healthcheck --company PATH [--json | --format json|human]","scope":"offline read-only five filesystem checks and protected snapshot schema diagnostic; remote health is aggregate-only and cannot substitute this report"},
@@ -161,7 +162,19 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "workspace-inbox" | "party" | "corporate-record" | "ownership" | "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
+        "workspace-inbox"
+            | "party"
+            | "corporate-record"
+            | "ownership"
+            | "audit"
+            | "bookkeeping-batch"
+            | "accounting-draft"
+            | "accounts"
+            | "posting-rules"
+            | "dimensions"
+            | "supplier-commitment"
+            | "vat"
+            | "asset"
             | "accrual"
             | "mileage"
             | "budget"
