@@ -1,0 +1,157 @@
+{
+  "partition": "invoice_native_http",
+  "issue": 677,
+  "scope": "13 selected native HTTP identities only; full #677 every advertised operation/all55/J01-J07/final desktop gates retained; main owns acceptance",
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/invoices/preview"
+    },
+    {
+      "path": "crates/rentemester-server/src/main.rs",
+      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "needle": "protocol::install(router, connected)"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": ".route(\"/api/companies/{slug}/contacts\", get(sales::handle))"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn query(request:"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/sales.rs",
+      "sha256": "32058f2e43911f07e078d6b658d4cdfdf59fc4eda74fdd97dc973937e905ac5b",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "pub fn invoice_body_schema()"
+    },
+    {
+      "path": "crates/rentemester-client/src/receivables.rs",
+      "sha256": "bf6493106f1958b08e9d5a11415816329e2b2e0557c661d4b6e758c4d4cb666c",
+      "needle": "pub fn receivables_body_schema("
+    },
+    {
+      "path": "crates/rentemester-application/src/sales.rs",
+      "sha256": "903b4ab83aa881c7d8a10e019978edc920b0177a8814a54a9c59303dae6f50d8",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-application/src/sales.rs",
+      "sha256": "903b4ab83aa881c7d8a10e019978edc920b0177a8814a54a9c59303dae6f50d8",
+      "needle": "pub(crate) fn issue_payload_with_principal("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn register_with_principal("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn post_with_principal("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/cockpit.rs",
+      "sha256": "4ee3fd1a730918f406da1dc27d5ac9648ea53bd3a78fb1dc3a59d2c390b4874f",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_settlement.rs",
+      "sha256": "8d38b71f78101ee1c7569fbb0d3724578f136213bf8f10c0b70b4ba9fc409dfe",
+      "needle": "fn transfer("
+    },
+    {
+      "path": "crates/rentemester-storage/src/credit_note.rs",
+      "sha256": "6be253440958109a1db29ce3976f9b3280cd4275fe0dd450ccd3d452b9277645",
+      "needle": "pub fn register_and_post("
+    },
+    {
+      "path": "crates/rentemester-storage/src/journal_post.rs",
+      "sha256": "88bf4e4ebf8e8181394913ccd1568655f81cebf76f03baaff8cda367e5ef7465",
+      "needle": "let mut value = json!({\"ok\":true"
+    },
+    {
+      "path": "crates/rentemester-storage/src/gdpr.rs",
+      "sha256": "ef27c1b1b8fe1f2ee094b13e596389e723b5599bc430192e38c64e97907846d6",
+      "needle": "pub fn overlay_contact("
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice.rs",
+      "sha256": "1d7e20177f6d05916a5257b6672fbe0fb3d1e6cf2831d000b5a012b2ec78861a",
+      "needle": "pub fn get("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_bad_debt.rs",
+      "sha256": "1385258198fa633091db0de97b0866c0e2e1ce4ecb90b2e974268f054b5a20a9",
+      "needle": "pub(crate) fn history("
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_invoice.rs",
+      "sha256": "60ee6af1eed8c0b2f63fe9e17d08d01b10991c62ca98206b323d9096ef6d1e23",
+      "needle": "pub struct Input"
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_fx.rs",
+      "sha256": "9a6d40401a0ad75a10c2ba15a553938d63a55b738c278660af358d8e1304f4b0",
+      "needle": "pub fn freeze("
+    },
+    {
+      "path": "crates/rentemester-engine/src/invoice_pdf.rs",
+      "sha256": "75344b2a342b8637d42027c924893377df02a426a579f264bcb1e3fe13e04902",
+      "needle": "pub fn build("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_original.rs",
+      "sha256": "d258b8883e16679adb656be818aeec250f31ee02777379801dd3aba4014e46cd",
+      "needle": "pub fn read("
+    }
+  ],
+  "producerTrace": {
+    "advertisement": "protocol/http-v1.json + router; client schema is input SDK advertisement only",
+    "parser": "sales handler from_slice direct derived structs (map and full positional sequence)",
+    "dispatch": "sales::Command -> application sales::Action under human/service current authority",
+    "success": "storage sales contacts/register_with_principal/post_with_principal/list; invoice_settlement transfer; credit_note register_and_post; application publication/Pdf branches",
+    "failure": "documents::outcome human stage mapping vs service_company::failure usage/business mapping",
+    "recovery": "No native idempotency receipts; original invoice/journal/evidence and cash reconciliation authoritative; source-bound original readbacks, never speculative replay",
+    "HEAD": "Axum GET route fallback retains HEAD method: sales mutation != GET, requires Origin/InvoiceInput, falls through to Issue for all selected HEAD paths. Wire entity bytes stripped including middleware failures; not a safe probe."
+  },
+  "validation": "Source documentation only. Existing strict Python oracle is structural/sourcehash validation, not semantic acceptance or replay evidence. No Cargo/server/browser/network/effect replays."
+}
