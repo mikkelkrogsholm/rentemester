@@ -1,5 +1,6 @@
 //! Fixed DigiSense REST transport. No SQL, retries, implicit validation, registration, or posting.
 mod recovery;
+pub mod receive;
 use reqwest::{
     blocking::Client as HttpClient,
     header::{ACCEPT, AUTHORIZATION, CONTENT_ENCODING, CONTENT_TYPE, HeaderValue},
@@ -127,6 +128,8 @@ pub struct Client {
     authorization: HeaderValue,
     secret: Zeroizing<String>,
     environment: Environment,
+    credential_generation: [u8; 32],
+    allow_local_download: bool,
 }
 fn text(s: &str, max: usize) -> bool {
     !s.is_empty() && s.len() <= max && s.trim() == s && !s.chars().any(char::is_control)
@@ -151,6 +154,8 @@ impl Client {
         {
             return Err(Error::Configuration);
         }
+        let credential_generation = receive::generation(&config)?;
+        let allow_local_download = config.trusted_ca_pem.is_some();
         let default = match config.environment {
             Environment::Test => "https://test-api.digisense.dk/ap/api/rest",
             Environment::Production => "https://api.digisense.dk/ap/api/rest",
@@ -232,6 +237,8 @@ impl Client {
             authorization,
             secret: config.api_license_key,
             environment: config.environment,
+            credential_generation,
+            allow_local_download,
         })
     }
     pub fn environment(&self) -> Environment {
