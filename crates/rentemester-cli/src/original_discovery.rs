@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"import systems|contacts","usage":"import --help","scope":"offline parser discovery and explicit contact CSV import through common Rust server; current authority and original fallback role, no ledger posting or retry"},
         {"name":"group","usage":"group --help","scope":"26 supported native profiles for group evidence/mapping/elimination/consolidation through the common Rust server; overview explicitly unavailable until its read API exists; current authority, independent review and no company ledger mutation"},
         {"name":"company add|list|sync-cvr|set-profile|profile","usage":"company --help","scope":"original connected company lifecycle through common Rust server, explicit private runtime or remote binding; first workspace initialization is a separate operator flow"},
         {"name":"workspace-inbox list|inspect|status|ingest|assign|complete","usage":"workspace-inbox --help","scope":"original workspace evidence intake and reviewed company handoff through current Rust server; supported upload profile, no journal effects or automatic retry"},
@@ -164,7 +165,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "group"
+        "import" | "group"
             | "company"
             | "workspace-inbox"
             | "party"

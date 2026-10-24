@@ -1,3 +1,4 @@
+mod import_original;
 mod group_original;
 mod company_original;
 mod workspace_inbox_original;
@@ -586,6 +587,13 @@ fn main() -> ExitCode {
             Err(o) => { print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
         }
     }
+    if import_original::accepts(&args) {
+        match import_original::preflight(&args) {
+            Ok(true) => { println!("{}",import_original::help()); return ExitCode::SUCCESS; }
+            Ok(false) => {}
+            Err(o) => { print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
+        }
+    }
     if company_original::accepts(&args) {
         match company_original::preflight(&args) {
             Ok(true) => { println!("{}",company_original::help()); return ExitCode::SUCCESS; }
@@ -593,13 +601,13 @@ fn main() -> ExitCode {
             Err(o) => { print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
         }
     }
-    let registry_args = (group_original::accepts(&args) || company_original::accepts(&args) || workspace_inbox_original::accepts(&args) || party_original::accepts(&args) || corporate_records_original::accepts(&args) || ownership_original::accepts(&args)).then(|| args.clone());
+    let registry_args = (import_original::accepts(&args) || group_original::accepts(&args) || company_original::accepts(&args) || workspace_inbox_original::accepts(&args) || party_original::accepts(&args) || corporate_records_original::accepts(&args) || ownership_original::accepts(&args)).then(|| args.clone());
     let audit_args = audit_verify_original::accepts(&args).then(|| args.clone());
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
             if let Some(args) = &registry_args {
-                let o = if group_original::accepts(args) { group_original::binding_refusal(args) } else if company_original::accepts(args) { company_original::binding_refusal(args) } else if workspace_inbox_original::accepts(args) { workspace_inbox_original::binding_refusal(args) } else if party_original::accepts(args) { party_original::binding_refusal(args) } else if corporate_records_original::accepts(args) { corporate_records_original::binding_refusal(args) } else { ownership_original::binding_refusal(args) };
+                let o = if import_original::accepts(args) { import_original::binding_refusal(args) } else if group_original::accepts(args) { group_original::binding_refusal(args) } else if company_original::accepts(args) { company_original::binding_refusal(args) } else if workspace_inbox_original::accepts(args) { workspace_inbox_original::binding_refusal(args) } else if party_original::accepts(args) { party_original::binding_refusal(args) } else if corporate_records_original::accepts(args) { corporate_records_original::binding_refusal(args) } else { ownership_original::binding_refusal(args) };
                 print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
             }
             if let Some(args) = &audit_args {
@@ -619,6 +627,10 @@ fn main() -> ExitCode {
     };
     if group_original::accepts(&args) {
         let o = group_original::execute(&args);
+        print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
+    if import_original::accepts(&args) {
+        let o = import_original::execute(&args);
         print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
     }
     if company_original::accepts(&args) {
