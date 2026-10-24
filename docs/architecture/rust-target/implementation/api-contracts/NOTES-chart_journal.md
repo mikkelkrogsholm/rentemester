@@ -84,3 +84,5 @@ The existing strict source/hash/selection oracle is the bounded check for this
 partition. Semantic integration and acceptance belong to main. Graphify AST
 extraction is written only to the independent build directory, outside these
 four owned flat files.
+
+Lead review corrections: native keyed known-business refusals retain `{ok:false,data:{ok:false,code,errors}}` and `isError:true`, distinct from SDK errors. Original MCP post/dry-run calendar strings are nonempty parser input and become server business validation. Original CLI global preprocessing emits empty stdout and text stderr exit2. RPC code/message pairs enumerate actual Session/framing and selected leaf errors; argv diagnostics are not RPC. No runtime effects or negative probes were executed.

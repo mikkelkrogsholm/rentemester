@@ -379,91 +379,6 @@
   ],
   "partitionLocalRpcParseMessageSources": [
     {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "duplicate loopback flag"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "unknown flag; see --help"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "flag requires value"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "duplicate flag"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "--local-profile excludes --server and --allow-loopback-http"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "local runtime profile unavailable or invalid; require matching canonical private owned descriptor and socket"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "explicit --server or --local-profile required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "choose one of --cookie-file or --service-key-file"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "explicit --server origin required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "service key file unavailable or invalid; require private regular file (chmod 600)"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "explicit --server origin required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "--cookie-file or --service-key-file required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "could not start HTTP runtime"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "stdin read failed"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "stdout write failed"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "stdout write failed"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
-      "needle": "message limit exceeded"
-    },
-    {
       "path": "crates/rentemester-mcp/src/tools.rs",
       "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
       "needle": "expected arguments object"
@@ -472,76 +387,6 @@
       "path": "crates/rentemester-mcp/src/tools.rs",
       "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
       "needle": "report selectors must be strings"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "unexpected about arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "unexpected discovery arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "query must be a string"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid cursor"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid cursor"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid limit"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid limit"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid discovery pagination/query"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "expected only workflow id"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "workflow id required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "expected empty arguments object"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid export arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "unknown report"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "account allowed only on journal"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
@@ -556,11 +401,6 @@
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
       "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "account allowed only on journal"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
       "needle": "year allowed only on invoices"
     },
     {
@@ -571,32 +411,7 @@
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
       "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "year selector too long"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid preview arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "invalid domain mutation arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "explicit confirmation and reviewed invoice preview required"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
       "needle": "invalid journal arguments"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
-      "needle": "unknown tool"
     },
     {
       "path": "crates/rentemester-mcp/src/journal_original.rs",
@@ -607,11 +422,6 @@
       "path": "crates/rentemester-mcp/src/journal_original.rs",
       "sha256": "072eb9af34092ce8a8416eb94caf5203d2d436e6dc38b97c0b265a669c2a9c04",
       "needle": "invalid company slug"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/journal_original.rs",
-      "sha256": "072eb9af34092ce8a8416eb94caf5203d2d436e6dc38b97c0b265a669c2a9c04",
-      "needle": "journal serialization failed"
     },
     {
       "path": "crates/rentemester-mcp/src/journal_original.rs",
@@ -627,16 +437,6 @@
       "path": "crates/rentemester-mcp/src/journal_history.rs",
       "sha256": "d4af8da2ad442fe6761808a7955b3a402229ce55a418329e3c6cf157913a38a6",
       "needle": "invalid journal_list dates/status/page selectors"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/accounts_original.rs",
-      "sha256": "04659e992602a9da3f1a21392ad75186d09e7762b85b3ba936525a08e3ccc3f4",
-      "needle": "unknown accounts tool"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/accounts_original.rs",
-      "sha256": "04659e992602a9da3f1a21392ad75186d09e7762b85b3ba936525a08e3ccc3f4",
-      "needle": "accounts object required"
     },
     {
       "path": "crates/rentemester-mcp/src/accounts_original.rs",
@@ -666,11 +466,6 @@
     {
       "path": "crates/rentemester-mcp/src/company_setup.rs",
       "sha256": "c29d57b412ec43b5176ea45808f14a5c659e1afa2fe77efb62db1c6494698f32",
-      "needle": "company_profile requires only company"
-    },
-    {
-      "path": "crates/rentemester-mcp/src/company_setup.rs",
-      "sha256": "c29d57b412ec43b5176ea45808f14a5c659e1afa2fe77efb62db1c6494698f32",
       "needle": "setup requires only company/body/confirm"
     },
     {
@@ -684,5 +479,11 @@
     "Permissive SDK Value readers not mistaken for current native producers. Historical recovery outcome_json remains field-specific arbitrary JSON.",
     "Remote post/reverse disallow outer --confirm but accept inner confirmed/keyed stdin: source generic guard is not an unreachable leaf.",
     "Public MCP args object only despite direct HTTP nested/full Serde sequences."
+  ],
+  "leadReviewCorrections": [
+    "RPC code/message pairs are source-bound; startup argv diagnostics are stderr, not RPC.",
+    "Native keyed known-business refusal is preserved independently of SDK error wrappers.",
+    "Original MCP transactionDate parser accepts nonempty string; server validates calendar.",
+    "Original journal global preprocessing errors exit2, stdout empty and text stderr."
   ]
 }
