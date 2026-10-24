@@ -7,6 +7,20 @@ use std::{fs, path::Path};
 fn directory(path: &Path) -> bool {
     fs::symlink_metadata(path).is_ok_and(|m| m.is_dir() && !m.file_type().is_symlink())
 }
+// Check every existing ancestor before any company fact or protected capture.
+// Canonicalizing the selector would silently follow the very links we refuse.
+fn directory_chain(path: &Path) -> bool {
+    let absolute = if path.is_absolute() { path.to_path_buf() } else {
+        let Ok(cwd) = std::env::current_dir() else { return false; };
+        cwd.join(path)
+    };
+    let mut current = std::path::PathBuf::new();
+    for component in absolute.components() {
+        current.push(component);
+        if !directory(&current) { return false; }
+    }
+    true
+}
 fn regular(path: &Path) -> bool {
     fs::symlink_metadata(path).is_ok_and(|m| m.is_file() && !m.file_type().is_symlink())
 }
@@ -73,7 +87,7 @@ fn inspection(status: &str, current: i64, required: i64, error: Option<&str>) ->
 /// No default company, source SQL opens, migration, repair, network or write authority.
 pub fn inspect_company(root: &Path) -> Value {
     let root: std::path::PathBuf = root.components().collect();
-    let root_ok = directory(&root);
+    let root_ok = directory_chain(&root);
     let data_ok = root_ok && directory(&root.join("data"));
     let ledger_path = root.join("data/ledger.sqlite");
     let ledger_ok = data_ok && regular(&ledger_path);
@@ -140,7 +154,7 @@ pub fn inspect_company(root: &Path) -> Value {
 mod tests {
     use super::*;
     fn layout() -> tempfile::TempDir {
-        let dir = tempfile::tempdir().unwrap();
+        let dir = tempfile::tempdir_in(fs::canonicalize(std::env::temp_dir()).unwrap()).unwrap();
         for path in ["data", "documents/inbox", "config"] {
             fs::create_dir_all(dir.path().join(path)).unwrap();
         }

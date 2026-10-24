@@ -268,3 +268,5 @@ SQL locally. Full #716/launcher compatibility remains separate work; the Bun
 production launcher is unchanged. Native `remote audit-verify` and the SDK keep
 their existing successful-observation contract (exit 0 can contain failed audit
 findings under `data.audit`).
+
+The offline Rust healthcheck also refuses symlink ancestors of the explicit company path before inspecting company facts. Select the actual canonical directory (for example `/private/var/...` rather than the macOS `/var` alias). This does not canonicalize or follow an untrusted selector.

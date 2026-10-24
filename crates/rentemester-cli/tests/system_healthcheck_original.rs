@@ -12,7 +12,7 @@ static NEXT: AtomicUsize = AtomicUsize::new(0);
 struct Fixture(PathBuf);
 impl Fixture {
     fn new() -> Self {
-        let root = std::env::temp_dir().join(format!(
+        let root = fs::canonicalize(std::env::temp_dir()).unwrap().join(format!(
             "rm-healthcheck716-{}-{}",
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
@@ -281,4 +281,24 @@ fn help_globals_and_rejected_authority_inputs_remain_offline() {
         assert!(!out.stderr.is_empty());
         assert!(!String::from_utf8_lossy(&out.stderr).contains("secret"));
     }
+}
+
+#[cfg(unix)]
+#[test]
+fn intermediate_company_symlink_is_refused_before_target_facts() {
+    let outer = Fixture::new();
+    let target = Fixture::new();
+    target.build(true);
+    let before = inventory(&target.0);
+    let link = outer.0.join("linked-parent");
+    std::os::unix::fs::symlink(target.0.parent().unwrap(), &link).unwrap();
+    let selected = link.join(target.0.file_name().unwrap());
+    let out = call(&["system", "healthcheck", "--company", selected.to_str().unwrap(), "--json"]);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(out.stderr.is_empty());
+    let report: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(report["missing"], json!(["company_root","data_dir","ledger","documents","config"]));
+    assert!(report.get("schema").is_none());
+    assert_eq!(inventory(&target.0), before);
+    fs::remove_file(link).unwrap();
 }
