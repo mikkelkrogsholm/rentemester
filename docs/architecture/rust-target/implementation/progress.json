@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R18 #692 invoice crash/concurrency and R36 #709 explicit email/recurrence are fully accepted and actually closed. Next necessary original issue is selected by current whole-scope triage; no duplicate accepted financial/provider work.",
-  "code_revision": "f313f2171cfe2c429d60208b16843db30477c033",
+  "current_increment": "R39 #711 full configured DigiSense/onboarding/send/receive/status and CVR/VIES/EAN scope accepted and actually closed at c351c1f6. Next original issue selected by whole-scope triage; no replay of accepted financial/provider work.",
+  "code_revision": "c351c1f60f8ba1b003cab9f9a0719caf04f0ab02",
   "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
-  "state": "36 of55 original issues actually CLOSED;19 OPEN. #692 has whole real issuance JSON/PDF/DB crash/concurrency proof and corrected semantic pair assertions. #709 reuses valid accepted lifecycle, explicit delivery, unknown-outcome and source-free restore evidence; no unchanged journey replay. All original scope and final gates retained. Physical OS sleep/final installed J07 remain final epic acceptance; #611 remains OPEN.",
-  "issues_closed": 36,
+  "state": "37 of55 original issues actually CLOSED;18 OPEN. #711 includes explicit same-network fullpair onboarding, paginated immutable inbound XML intake/quarantine/dedup, native clients, normal-MFA restart and independently signed source-free new-owner restore. Existing send/status/CVR/VIES evidence reused. All original55/J01-J07/release/cutover/retirement remain; manual installed desktop acceptance last.",
+  "issues_closed": 37,
   "next": [
-    "Select smallest necessary whole original issue after current #711 source/evidence triage; close accepted scope promptly without extra perfection.",
+    "Select smallest necessary complete original issue after accepted/closed711; reuse genuine current evidence, close complete scope immediately, no perfection rounds or accepted-effect replay.",
     "Complete #677 exact advertised HTTP/MCP/CLI operation schemas and retry/readback/provider contracts; accepted handshake component alone is not whole completion.",
     "One common Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance remains last."
   ],
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R38#691 fullyaccepted/published/closed. NextnecessaryR18#692 whole concurrent/interrupted invoice issuance proof on freshsyntheticworkspaces; no completed690profile effects replay.",
+  "previous_verified_increment": "R18 #692 invoice crash/concurrency and R36 #709 explicit email/recurrence are fully accepted and actually closed. Next necessary original issue is selected by current whole-scope triage; no duplicate accepted financial/provider work.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -15959,6 +15959,78 @@
         "All55originalscope/J01-J07/hosted/platformdistribution/cutover/retirement/manualdesktoplast gates preserved; fullmissionnotaccepted."
       ],
       "not_reexecuted": "Accepted #690/50/102/155 exact original scope; current domain source unchanged.4SDKtest fixture imports separately exact-diff qualified and accepted SDK protocol component bound; no provider/financial/GUI replay."
+    },
+    "r39_digisense711": {
+      "issue": 711,
+      "status": "COMPLETE whole original R39 scope accepted and actually closed",
+      "whole_issue_accepted": true,
+      "source_revision": "c351c1f60f8ba1b003cab9f9a0719caf04f0ab02",
+      "report": "/tmp/rentemester-rust-reports/r39-inbound711-accepted.json",
+      "sha256": "eb9c41e64dbd27218e37c75806160b25c48e4c8dc024c333a21c8be417b5d9d4",
+      "sgd_run": "rust-r39-inbound711-complete-20261024T010917.888442000",
+      "model_revision": "sha256:7abcc1383185c8e82364d2a05621beb9eef194b60b5ec09bc4400508f8c18285",
+      "actual_public_inbound": {
+        "path": "/tmp/rentemester-rust-reports/r39-inbound711-public-c351c1f6.json",
+        "sha256": "23290f3305243a4d0a19e6a923b94fca0e2046feb4de7cb35ab633214f5bf76f",
+        "runner": "/tmp/run-inbound711.py",
+        "runner_sha256": "50d1377de3e77a9c78ce140ed5128c5f192d210fd85134125c2d591a6b259a8c",
+        "browser_helper_sha256": "0dad2b02579d6469c12baae8d4dc31f0a8b510d514a3153f301f944900147002",
+        "first_actual_attempt_passed": true,
+        "no_offline_auth_seeds": true,
+        "normal_mfa_distinct_users": true,
+        "confirmed_fullpair_and_repeat_discovery": true,
+        "paginated_two_originals_one_quarantine_repeated_id": true,
+        "signed_get_authorization_absent": true,
+        "http_cli_mcp_workspace_repeat_zero_downloads": true,
+        "ordinary_source_restart_dedup": true,
+        "four_independent_signed_archives": true,
+        "source_free_new_owner_restore_and_target_reopen": true,
+        "original_xml_and_hash_metadata_dedup_and_audit_preserved": true,
+        "no_posting_send_or_provider_calls_on_restore": true,
+        "credentials_excluded_old_cookie_denied": true
+      },
+      "retained_scope_not_reexecuted": {
+        "public-einvoice-integrated74-run7.json": {
+          "path": "/tmp/rentemester-rust-reports/public-einvoice-integrated74-run7.json",
+          "sha256": "d4f166bccc53d3507528fe21678c85bd8d1f61dacc492727fbcec5631dd1a660",
+          "status": "passed",
+          "source_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "public-original153-fixed.json": {
+          "path": "/tmp/rentemester-rust-reports/public-original153-fixed.json",
+          "sha256": "73ae5c4f9377b8b613f61cb1c406e67cf2dc19e6b4c6833dd4a680fafc61425e",
+          "status": "passed",
+          "source_revision": "c30cc267afdf5b22f6c2eb337f2e6b5bd467499a",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "cvr-sync-integrated85-run3.json": {
+          "path": "/tmp/rentemester-rust-reports/cvr-sync-integrated85-run3.json",
+          "sha256": "23f6369036d795ed23eb42ad62cba27ed77ff7dd0937651f10927ed364d88f2e",
+          "status": "passed",
+          "source_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "r17-vat689-accepted.json": {
+          "path": "/tmp/rentemester-rust-reports/r17-vat689-accepted.json",
+          "sha256": "95e658affe47ab9617ab31ad539d1bb65319d7a823abbbf1f9bb8842e0d35270",
+          "status": "accepted",
+          "source_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        }
+      },
+      "limits": [
+        "Only synthetic localTLS provider qualification, not live DigiSense/provider approval or external permission",
+        "EAN is source normalized13digit validation; no invented external EANlookup service",
+        "Signed download URLs do not imply XMLDSig validation",
+        "Admission generation is enforced by reviewed public driver; injected Host unit outcomes alone do not prove it",
+        "All other original issues/J01-J07/release/cutover/retirement remain; installed manual desktop/physical OS sleep qualification last",
+        "No original accepted outbound/CVR/VIES/financial effects replayed"
+      ]
     }
   },
   "verified_history": [
@@ -17966,6 +18038,78 @@
         "Allotheroriginalissues/J01-J07/release/distribution/cutover/retirement/manualdesktoplast remain binding"
       ],
       "no_financial_provider_or_gui_replay": true
+    },
+    {
+      "issue": 711,
+      "status": "COMPLETE whole original R39 scope accepted and actually closed",
+      "whole_issue_accepted": true,
+      "source_revision": "c351c1f60f8ba1b003cab9f9a0719caf04f0ab02",
+      "report": "/tmp/rentemester-rust-reports/r39-inbound711-accepted.json",
+      "sha256": "eb9c41e64dbd27218e37c75806160b25c48e4c8dc024c333a21c8be417b5d9d4",
+      "sgd_run": "rust-r39-inbound711-complete-20261024T010917.888442000",
+      "model_revision": "sha256:7abcc1383185c8e82364d2a05621beb9eef194b60b5ec09bc4400508f8c18285",
+      "actual_public_inbound": {
+        "path": "/tmp/rentemester-rust-reports/r39-inbound711-public-c351c1f6.json",
+        "sha256": "23290f3305243a4d0a19e6a923b94fca0e2046feb4de7cb35ab633214f5bf76f",
+        "runner": "/tmp/run-inbound711.py",
+        "runner_sha256": "50d1377de3e77a9c78ce140ed5128c5f192d210fd85134125c2d591a6b259a8c",
+        "browser_helper_sha256": "0dad2b02579d6469c12baae8d4dc31f0a8b510d514a3153f301f944900147002",
+        "first_actual_attempt_passed": true,
+        "no_offline_auth_seeds": true,
+        "normal_mfa_distinct_users": true,
+        "confirmed_fullpair_and_repeat_discovery": true,
+        "paginated_two_originals_one_quarantine_repeated_id": true,
+        "signed_get_authorization_absent": true,
+        "http_cli_mcp_workspace_repeat_zero_downloads": true,
+        "ordinary_source_restart_dedup": true,
+        "four_independent_signed_archives": true,
+        "source_free_new_owner_restore_and_target_reopen": true,
+        "original_xml_and_hash_metadata_dedup_and_audit_preserved": true,
+        "no_posting_send_or_provider_calls_on_restore": true,
+        "credentials_excluded_old_cookie_denied": true
+      },
+      "retained_scope_not_reexecuted": {
+        "public-einvoice-integrated74-run7.json": {
+          "path": "/tmp/rentemester-rust-reports/public-einvoice-integrated74-run7.json",
+          "sha256": "d4f166bccc53d3507528fe21678c85bd8d1f61dacc492727fbcec5631dd1a660",
+          "status": "passed",
+          "source_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "public-original153-fixed.json": {
+          "path": "/tmp/rentemester-rust-reports/public-original153-fixed.json",
+          "sha256": "73ae5c4f9377b8b613f61cb1c406e67cf2dc19e6b4c6833dd4a680fafc61425e",
+          "status": "passed",
+          "source_revision": "c30cc267afdf5b22f6c2eb337f2e6b5bd467499a",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "cvr-sync-integrated85-run3.json": {
+          "path": "/tmp/rentemester-rust-reports/cvr-sync-integrated85-run3.json",
+          "sha256": "23f6369036d795ed23eb42ad62cba27ed77ff7dd0937651f10927ed364d88f2e",
+          "status": "passed",
+          "source_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        },
+        "r17-vat689-accepted.json": {
+          "path": "/tmp/rentemester-rust-reports/r17-vat689-accepted.json",
+          "sha256": "95e658affe47ab9617ab31ad539d1bb65319d7a823abbbf1f9bb8842e0d35270",
+          "status": "accepted",
+          "source_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
+          "re_read_hash_verified": true,
+          "retained_not_reexecuted": true
+        }
+      },
+      "limits": [
+        "Only synthetic localTLS provider qualification, not live DigiSense/provider approval or external permission",
+        "EAN is source normalized13digit validation; no invented external EANlookup service",
+        "Signed download URLs do not imply XMLDSig validation",
+        "Admission generation is enforced by reviewed public driver; injected Host unit outcomes alone do not prove it",
+        "All other original issues/J01-J07/release/cutover/retirement remain; installed manual desktop/physical OS sleep qualification last",
+        "No original accepted outbound/CVR/VIES/financial effects replayed"
+      ]
     }
   ],
   "scope_clarifications": [
@@ -18007,6 +18151,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 690
+    "last_closed_issue": 711
   }
 }
