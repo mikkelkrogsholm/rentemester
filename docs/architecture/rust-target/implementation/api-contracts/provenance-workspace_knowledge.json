@@ -80,17 +80,17 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "d6d6b762f3efb973de8f41bfc35472a059f9847e40684055c1c4976b52f43b2a",
+      "sha256": "e117c4373bd721513254c9f5550a67629859a8a7e75454b482e145e4d3c7a0c7",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "5a8de05d759c6823679e479b24ef5372111d4305e0034890c4d2bfd8f10e38cd",
+      "sha256": "e70c16a3acf1fecef07b333fc95a4f75496434a6f4e11bdd05b4ec7d029ce904",
       "needle": "pub fn prepare("
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "5f74c48dbc40e2ef7a12d241e4af0206e5fba97cf218766a6455c0b772f4f548",
+      "sha256": "4859bec7a4de984028b4945c3180d59c3abe425615447c51030e7df32f2c8196",
       "needle": "pub fn option("
     },
     {
@@ -322,5 +322,42 @@
       "connection": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json"
     },
     "review": "Wholeoriginal688explicitproposal/exacthashapproval gap filled; no identity/ledgerrewrite, unionauthbackup/atomic2events, sameactorallowed. ActualcanonicaltrimRED/GREENrepair andcombined18compiledchecks. Full716/717andwholeepic/manualdesktoplast retained."
+  },
+  "r71OriginalInbox716": {
+    "new_ids": [
+      "cli:workspace-inbox list",
+      "cli:workspace-inbox inspect",
+      "cli:workspace-inbox status",
+      "cli:workspace-inbox ingest",
+      "cli:workspace-inbox assign",
+      "cli:workspace-inbox complete"
+    ],
+    "proof": {
+      "path": "/tmp/rentemester-rust-reports/r71-original-inbox716-component-accepted.json",
+      "sha256": "f04ab8450621da531f128b5927c3d4fa7aba36b99d0a21cabd1571e6cc94e9a5"
+    },
+    "actual_passive_help": {
+      "authority": "Human cookie only; service-key profiles and --service-key-file unsupported. Optional write --actor user:ID asserts current api.me user equality; never forwarded authority. No stdin, environment authority, generated keys or retries.",
+      "boundaries": "Native upload only: original mail/connector are unsupported, never relabelled. Native filename maximum255 UTF16 plus Prepared rules (original512), no rename/truncation. Strict canonical cursor>=0, limit1..100, not legacy clamping. Replay requires full intent/current principal equality, not merely legacy byte SHA. Empty staged metadata is legal; completion still requires document facts and server policy. No journal posting or provider effects. Unknown writes require canonical source/history readback before retry.",
+      "commands": [
+        "workspace-inbox list [--cursor 0 --limit 25]",
+        "workspace-inbox inspect --source-id ID",
+        "workspace-inbox status --source-id ID",
+        "workspace-inbox ingest --input JSONFILE --file BYTES --idempotency-key TEXT --confirm yes",
+        "workspace-inbox assign --source-id ID --target-company SLUG --confirm yes",
+        "workspace-inbox complete --source-id ID --target-company SLUG --confirm yes"
+      ],
+      "connection": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json. Optional --workspace ABS_PATH asserts local-profile workspace equality only.",
+      "input": "Exact native ingest JSON fields excluding confirm/bytesBase64/idempotencyKey and authority; filename,mimeType,transport=upload,receivedAt,metadata required; optional sourceId,transportIdentity,candidates. Exact original bytes1..25MiB; metadata64KiB/depth32; body35MiB. Server owns all visibility, assignment, sensitivity, backup, transfer and handoff policy."
+    },
+    "discovery_correction": "Sixactuallegacydispatchhandlers atsrc/cli/workspace-registry.ts55-60 lackedindividualcli-meta specs/advertised265CLI inventory. Humanlabels fallbackliteralcommand. Newpassivefamilyhelp is explicitcorrection; frozenR01inventory/history notrewritten.",
+    "native_boundaries": [
+      "Publicingestuploadonly; mail/connector notrelabeled orclaimed",
+      "Nativefilename255UTF16 andPrepared255UTF8/path/filetypechecks vslegacy512; no truncation/rename",
+      "Strictnativepagination, strongerfullintent/currentprincipal replaychecks preserved",
+      "Empty/arbitrarymetadata stagesbutdoesnotestablishcompletioneligibility",
+      "Privatehumanprofile; fulloriginal716/launcher/sourcecases andknowledgealiasversionedcompatibility stillopen"
+    ],
+    "review": "Actualsource/sharedwiring andnativeproducer reviewed. Fourcompiledbeforeprobes reproduced validfilename/selector falsefailures andmismatchedtime/transportidentity falsesuccess; smallleadrepair+9compiledfixtures+allfourafterprobesPASS. Exactwirebytes/privatecookie/actor/localUnix/explicitdestination/originalflatJSON/literalhuman0/1/2/noautoretry. Repairedoldimpossiblepositivefixtures tovalidnativefiletype/cashreceiptmetadata/canonicaleventproofs; arbitraryfacts positiveonlyatstaging. No backend/SDK/MCP/newengine orlivefinancial/provider/auth effects. Existingcompanyknowledge4aliasnativecontracts unchanged."
   }
 }

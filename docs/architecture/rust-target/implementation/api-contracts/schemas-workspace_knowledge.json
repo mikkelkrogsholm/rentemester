@@ -6768,6 +6768,1180 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OriginalInboxFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalInboxHelp": {
+      "const": {
+        "authority": "Human cookie only; service-key profiles and --service-key-file unsupported. Optional write --actor user:ID asserts current api.me user equality; never forwarded authority. No stdin, environment authority, generated keys or retries.",
+        "boundaries": "Native upload only: original mail/connector are unsupported, never relabelled. Native filename maximum255 UTF16 plus Prepared rules (original512), no rename/truncation. Strict canonical cursor>=0, limit1..100, not legacy clamping. Replay requires full intent/current principal equality, not merely legacy byte SHA. Empty staged metadata is legal; completion still requires document facts and server policy. No journal posting or provider effects. Unknown writes require canonical source/history readback before retry.",
+        "commands": [
+          "workspace-inbox list [--cursor 0 --limit 25]",
+          "workspace-inbox inspect --source-id ID",
+          "workspace-inbox status --source-id ID",
+          "workspace-inbox ingest --input JSONFILE --file BYTES --idempotency-key TEXT --confirm yes",
+          "workspace-inbox assign --source-id ID --target-company SLUG --confirm yes",
+          "workspace-inbox complete --source-id ID --target-company SLUG --confirm yes"
+        ],
+        "connection": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json. Optional --workspace ABS_PATH asserts local-profile workspace equality only.",
+        "input": "Exact native ingest JSON fields excluding confirm/bytesBase64/idempotencyKey and authority; filename,mimeType,transport=upload,receivedAt,metadata required; optional sourceId,transportIdentity,candidates. Exact original bytes1..25MiB; metadata64KiB/depth32; body35MiB. Server owns all visibility, assignment, sensitivity, backup, transfer and handoff policy."
+      }
+    },
+    "OriginalInboxMetadata": {
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 400
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "mimeType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transport": {
+          "const": "upload"
+        },
+        "transportIdentity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "receivedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "$ref": "#/$defs/Json_InboxMetadata"
+        },
+        "candidates": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "properties": {
+              "companySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidenceKind": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "companySlug",
+              "evidenceKind",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "filename",
+        "mimeType",
+        "transport",
+        "receivedAt",
+        "metadata"
+      ],
+      "additionalProperties": false,
+      "x-validationCopyBound": "SDK removes metadata/base64 before reencoding shared domain::body (262144 bytes); remainder must fit262144 even though full input is35MiB. metadata must be object; base64 original UTF8 bytes <=34952536. SourceId relaxed UTF8 <=400. Native metadata canonical bytes64KiB/depth32."
+    },
+    "OriginalInboxListInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalInboxInspectInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "sourceId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "sourceId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalInboxStatusInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox status"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "sourceId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox status"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "sourceId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox status"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalInboxIngestInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "idempotencyKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "file",
+            "idempotencyKey",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "idempotencyKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "file",
+            "idempotencyKey",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "idempotencyKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalInboxAssignInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox assign"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "sourceId",
+            "targetCompany",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox assign"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "sourceId",
+            "targetCompany",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox assign"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalInboxCompleteInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox complete"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "sourceId",
+            "targetCompany",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox complete"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "sourceId",
+            "targetCompany",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "workspace-inbox complete"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "targetCompany": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

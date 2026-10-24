@@ -5036,6 +5036,11 @@
       "const": {
         "commands": [
           {
+            "name": "workspace-inbox list|inspect|status|ingest|assign|complete",
+            "scope": "original workspace evidence intake and reviewed company handoff through current Rust server; supported upload profile, no journal effects or automatic retry",
+            "usage": "workspace-inbox --help"
+          },
+          {
             "name": "party propose-merge|approve-merge",
             "scope": "explicit reviewed merge and exact hash approval; human cookie, both writable party scopes, no retries or identity rewrite",
             "usage": "party --help"

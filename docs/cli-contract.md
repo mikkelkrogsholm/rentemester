@@ -306,3 +306,22 @@ propose and approve. Flat original JSON/human output and0/1/2 exits are retained
 unknown writes require explicit history reconciliation and are never retried
 automatically. Native remote CLI/MCP expose the same two operations with their
 existing wrappers. Whole716/717 and the default launcher transition remain open.
+
+## Rust original workspace inbox profile
+
+`workspace-inbox list|inspect|status|ingest|assign|complete` uses explicit company,
+private human cookie and server or verified local Unix profile. Ingest takes
+`--input JSONFILE --file BYTES --idempotency-key TEXT --confirm yes`; assign and
+complete take an explicit source ID and target company. Actor/workspace values
+only assert the current credential/runtime. Flat JSON, literal command human
+labels and0/1/2 exits are retained; status is an inspect alias. Unknown or
+mismatched write receipts require canonical readback and are never retried.
+
+This native profile supports upload, bounded native filenames, strict native
+pagination and full-intent/principal replay checks. It never relabels mail or
+connector traffic, truncates a filename or weakens controls. Arbitrary staged
+metadata does not establish document-completion eligibility; completion uses
+existing server validation/handoff and creates no journal posting. New leaf
+help corrects the old handlers' missing individual discovery metadata. The
+remaining source cases and whole #716/launcher transition remain open. Existing
+company-knowledge aliases retain their native wrappers/stdin contracts.

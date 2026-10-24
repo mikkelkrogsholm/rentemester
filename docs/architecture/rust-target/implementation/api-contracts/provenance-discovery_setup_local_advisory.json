@@ -51,22 +51,22 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_discovery.rs",
-      "sha256": "b0dd85549b62c49b4ade0101b5a98b3cc97b96f8bd3974a0d9bb4232ac53999e",
+      "sha256": "cbdab7860c65d1d9fd5200f17503bea330d1c27d4ff673e318f7e2f9e1b7587e",
       "needle": "pub fn execute"
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "5f74c48dbc40e2ef7a12d241e4af0206e5fba97cf218766a6455c0b772f4f548",
+      "sha256": "4859bec7a4de984028b4945c3180d59c3abe425615447c51030e7df32f2c8196",
       "needle": "pub fn prepare_with_output"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "d6d6b762f3efb973de8f41bfc35472a059f9847e40684055c1c4976b52f43b2a",
+      "sha256": "e117c4373bd721513254c9f5550a67629859a8a7e75454b482e145e4d3c7a0c7",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "5a8de05d759c6823679e479b24ef5372111d4305e0034890c4d2bfd8f10e38cd",
+      "sha256": "e70c16a3acf1fecef07b333fc95a4f75496434a6f4e11bdd05b4ec7d029ce904",
       "needle": "pub fn prepare"
     },
     {
@@ -215,17 +215,17 @@
       },
       {
         "path": "crates/rentemester-cli/src/main.rs",
-        "sha256": "d6d6b762f3efb973de8f41bfc35472a059f9847e40684055c1c4976b52f43b2a",
+        "sha256": "e117c4373bd721513254c9f5550a67629859a8a7e75454b482e145e4d3c7a0c7",
         "needle": "system_healthcheck_original::execute"
       },
       {
         "path": "crates/rentemester-cli/src/original_args.rs",
-        "sha256": "5f74c48dbc40e2ef7a12d241e4af0206e5fba97cf218766a6455c0b772f4f548",
+        "sha256": "4859bec7a4de984028b4945c3180d59c3abe425615447c51030e7df32f2c8196",
         "needle": "Healthcheck's machine dialect"
       },
       {
         "path": "crates/rentemester-cli/src/original_discovery.rs",
-        "sha256": "b0dd85549b62c49b4ade0101b5a98b3cc97b96f8bd3974a0d9bb4232ac53999e",
+        "sha256": "cbdab7860c65d1d9fd5200f17503bea330d1c27d4ff673e318f7e2f9e1b7587e",
         "needle": "pub fn help"
       },
       {
@@ -256,5 +256,14 @@
       "path": "/private/tmp/rentemester-r34-708-clean/.sgd/builds/r69-qualified/rentemester-rust",
       "sha256": "d2c19413cc338bc3b84494491a252e16b6e81e578afb34f6f14a170e2d993d52"
     }
+  },
+  "r72OriginalInboxDiscovery": {
+    "added_descriptor": "workspace-inbox list|inspect|status|ingest|assign|complete",
+    "other_root_help_exactly_equal": true,
+    "qualified_binary": {
+      "path": "/private/tmp/rentemester-r34-708-clean/.sgd/builds/r71-qualified/rentemester-rust",
+      "sha256": "ce56668da295d297cdb732eb3226fe5f60432d3bd82c9f9273bf4a7898868e0d"
+    },
+    "legacy_discovery_correction": "Sixactuallegacydispatchhandlers atsrc/cli/workspace-registry.ts55-60 lackedindividualcli-meta specs/advertised265CLI inventory. Humanlabels fallbackliteralcommand. Newpassivefamilyhelp is explicitcorrection; frozenR01inventory/history notrewritten."
   }
 }
