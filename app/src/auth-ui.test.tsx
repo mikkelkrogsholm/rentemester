@@ -615,6 +615,9 @@ describe("hosted cockpit auth shell", () => {
   });
 
   test("native positive own-user password receipt refreshes without replay", async () => {
+    let resolveSession!: (value: unknown) => void;
+    const pendingSession = new Promise((resolve) => { resolveSession = resolve; });
+
     authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
     authMocks.changePassword.mockResolvedValue({ data: { status: true, token: null, user: { id: "u1" } } });
     hostedFetch(); renderApp(); const user = userEvent.setup(); await screen.findByText("owner@example.test");
@@ -622,7 +625,11 @@ describe("hosted cockpit auth shell", () => {
     await user.type(screen.getByLabelText("Nuværende adgangskode"), "old-private-password");
     await user.type(screen.getByLabelText("Ny adgangskode"), "replacement-private-password");
     await user.type(screen.getByLabelText("Gentag ny adgangskode"), "replacement-private-password");
+    authMocks.getSession.mockImplementationOnce(() => pendingSession);
     await user.click(within(screen.getByRole("dialog", { name: "Skift adgangskode" })).getByRole("button", { name: "Skift adgangskode" }));
+    expect(await screen.findByText("Kontrollerer din session…")).toBeInTheDocument();
+    await act(async () => { resolveSession({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true }, session: { id: "rotated-session" } } }); });
+
     expect(await screen.findByText("Adgangskoden er ændret, og alle tidligere sessioner er afsluttet.")).toBeInTheDocument();
     expect(authMocks.changePassword).toHaveBeenCalledTimes(1);
     expect(authMocks.changePassword.mock.calls[0]![0].fetchOptions).toEqual({ retry: 0 });

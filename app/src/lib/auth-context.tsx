@@ -25,7 +25,8 @@ export type AuthState = {
   currentSessionId: string | null;
   context: SessionContext | null;
   bootstrapError?: string | null;
-  refresh: () => Promise<void>;
+  notice?: string | null;
+  refresh: (options?: { successNotice?: string; expectedUserId?: string }) => Promise<void>;
   clear: () => void;
 };
 
@@ -50,6 +51,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [context, setContext] = useState<SessionContext | null>(null);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const generation = useRef(0);
   const contextRead = useRef<AbortController | null>(null);
 
@@ -61,10 +63,11 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
     setCurrentSessionId(null);
     setContext(null);
     setBootstrapError(null);
+    setNotice(null);
     setLoading(false);
   }, []);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { successNotice?: string; expectedUserId?: string }) => {
     const currentGeneration = ++generation.current;
     contextRead.current?.abort();
     const controller = new AbortController();
@@ -75,6 +78,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
     }
     if (loginAttempts.snapshot() !== "active") setLoading(true);
     setBootstrapError(null);
+    setNotice(null);
     if (["cleaning", "blocked"].includes(loginAttempts.snapshot())) { clear(); return; }
     try {
       const attemptEpoch = loginAttempts.epoch;
@@ -84,6 +88,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       catch { await loginAttempts.cancel(); throw new Error("Account not confirmed"); }
       if (generation.current !== currentGeneration) return;
       const user = current?.user ?? null;
+      if (options?.expectedUserId && user?.id !== options.expectedUserId) throw new ApiError("auth_unavailable", "Din konto kunne ikke bekræftes efter ændringen.", 0);
       if (loginAttempts.snapshot() !== "active") setSession(user);
       setCurrentSessionId(current?.sessionId ?? null);
       if (!user || !user.emailVerified || !user.twoFactorEnabled) {
@@ -97,6 +102,8 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       loginAttempts.completeAdoption();
       setSession(user);
       setContext({ user: value.user, workspaceRole: value.workspaceRole, companies: value.companies });
+      // This provider survives AuthGate loading; the changing AccountMenu does not.
+      if (options?.expectedUserId === user.id) setNotice(options.successNotice ?? null);
     } catch (error) {
       if (generation.current !== currentGeneration) return;
       if (loginAttempts.snapshot() === "active") await loginAttempts.cancel();
@@ -125,7 +132,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
     return () => window.removeEventListener("rentemester:auth-expired", onExpired);
   }, [clear]);
 
-  return <AuthContext.Provider value={{ loading, hosted, backend, session, currentSessionId, context, bootstrapError, refresh, clear }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ loading, hosted, backend, session, currentSessionId, context, bootstrapError, notice, refresh, clear }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {

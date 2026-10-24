@@ -33,7 +33,7 @@ function createdLabel(value: string | Date): string {
 }
 
 export function AccountMenu() {
-  const { session, currentSessionId, context, clear, refresh } = useAuth();
+  const { session, currentSessionId, context, clear, refresh, notice } = useAuth();
   const pendingChanges = usePendingChanges();
   const [confirmation, setConfirmation] = useState<"sign-out" | "all" | ListedSession | null>(null);
   const [busy, setBusy] = useState(false);
@@ -122,8 +122,7 @@ export function AccountMenu() {
       if (result.error || result.data?.user?.id !== session.id || "status" in result.data && result.data.status !== true) throw new Error("password change unconfirmed");
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
       setShowPassword(false);
-      await refresh();
-      setMessage("Adgangskoden er ændret, og alle tidligere sessioner er afsluttet.");
+      await refresh({ expectedUserId: session.id, successNotice: "Adgangskoden er ændret, og alle tidligere sessioner er afsluttet." });
     } catch {
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
       setError("Adgangskodeskiftet kunne ikke bekræftes. Log ind igen. Prøv den nye adgangskode først og derefter den tidligere.");
@@ -160,7 +159,7 @@ export function AccountMenu() {
       </form>
     </Dialog>}
     {confirmation && <ConfirmDialog title={confirmation === "sign-out" ? "Log ud?" : confirmation === "all" ? "Log ud på alle enheder?" : "Afslut session?"} body={<p>{confirmation === "all" ? "Alle enheder skal logge ind igen." : confirmation === "sign-out" ? "Du bliver logget ud." : "Denne enhed skal logge ind igen."}{pendingChanges ? " Du har ændringer, som ikke er gemt, og de bliver kasseret." : ""}</p>} confirmLabel={typeof confirmation === "object" ? "Afslut session" : "Log ud"} confirmKind="danger" onClose={() => setConfirmation(null)} onConfirm={async () => { if (confirmation === "all") await revokeAll(); else if (confirmation === "sign-out") await signOut(true); else await revokeOne(confirmation); }} />}
-    {message && <span role="status" className="account-message">{message}</span>}
+    {(notice ?? message) && <span role="status" className="account-message">{notice ?? message}</span>}
     {error && !showPassword && <span role="alert" className="account-error">{error}</span>}
   </div>;
 }
