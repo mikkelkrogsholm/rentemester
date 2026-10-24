@@ -345,13 +345,14 @@
     "accountSecurityR44": "32a36073b8c1dc0567113cba86c0fd02de3191e14be483bc6edd615de077efdb"
   },
   "scope": "Exactly seven selected native MCP tools. No #677 closure; full epic672/55originalissues/J01-J07 and every advertised HTTP/CLI/MCP remain. No production effects/builds performed.",
-  "leadRepair": {
-    "diagnosis": "serde_json 1.0.154 value/de.rs deserialize_struct accepts Value::Array via visit_array, derived Empty zero and Write two fields; actual dispatch has no object guard. Advertisements remain object-only.",
-    "rejectedCommit": "886e518e04d6e0b98456664c4169554f3c989571",
-    "sourceAnchors": [
-      "crates/rentemester-mcp/src/tools.rs: serde_json::from_value::<Empty>(args)",
-      "crates/rentemester-mcp/src/service_principals.rs: serde_json::from_value(args)"
-    ],
-    "newModelAttempt": false
+  "leadReviewCorrection": {
+    "incorrectRepair": "8a0d97702d15b8ec26a8d9eaeae1ef5958b43bb2",
+    "historicalComponentReportSha256": "b55c5d2ef13543f2b2dc2585696f0c7886c3c53da1b11fd5e393f743b2c4c2ea",
+    "diagnosis": "LeafSerdearraybehavior incorrectly treated as publicargumentcontract; actualglobalobjectguard precedes all dispatch. Retracted that acceptance claim and restored object-onlypublicschemas, explicitguard sourcepin andexactoutererrormessage. Otheracceptedidentityscope retained; no runtimeproductbehaviorchanged.",
+    "sourceRef": {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    }
   }
 }

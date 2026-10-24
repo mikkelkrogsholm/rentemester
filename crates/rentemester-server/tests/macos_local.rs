@@ -129,3 +129,70 @@ async fn explicit_native_profile_creates_owned_workspace_excludes_second_owner_a
     stop_cleanly(&mut reopened, "-INT").await;
     drop(reopened);
 }
+
+#[tokio::test]
+async fn sales_head_requests_cannot_enter_mutation_dispatch() {
+    let token = rentemester_runtime::auth::new_token().unwrap();
+    let appdata = PathBuf::from(std::env::var_os("HOME").unwrap())
+        .join("Library/Application Support")
+        .canonicalize()
+        .unwrap();
+    let base = appdata.join(format!("Rentemester-Synthetic-Head-{}", token.as_str()));
+    std::fs::DirBuilder::new().mode(0o700).create(&base).unwrap();
+    let base = Synthetic(base);
+    let web = base.0.join("web");
+    std::fs::create_dir(&web).unwrap();
+    std::fs::write(web.join("index.html"), "<!doctype html><title>Synthetic</title>").unwrap();
+    let uid = std::fs::metadata(&base.0).unwrap().uid();
+    assert_ne!(uid, 0);
+    let root = base.0.join("workspace");
+    let config = base.0.join("server.json");
+    let key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    std::fs::write(&config, json!({"root":root,"brokerUid":uid,"runtimeProfile":"local-user-macos","workspace":"synthetic","companySlug":"a","companyName":"Synthetic HEAD","cookieKey":key,"mfaKey":key,"accounts":[]}).to_string()).unwrap();
+    std::fs::set_permissions(&config, std::fs::Permissions::from_mode(0o600)).unwrap();
+    let (mut server, origin) = spawn(&config, &web, true, "077");
+    healthy(&mut server, &origin).await;
+    let ledger = root.join("a/data/ledger.sqlite");
+    let counts = || {
+        let db = rusqlite::Connection::open_with_flags(&ledger, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+        db.query_row("SELECT (SELECT COUNT(*) FROM documents), (SELECT COUNT(*) FROM journal_entries)", [], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))).unwrap()
+    };
+    fn artifacts(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
+        fn visit(root: &Path, out: &mut Vec<(PathBuf, Vec<u8>)>) {
+            for entry in std::fs::read_dir(root).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() { visit(&path, out); }
+                else if !path.file_name().unwrap().to_string_lossy().contains(".sqlite") {
+                    out.push((path.clone(), std::fs::read(&path).unwrap()));
+                }
+            }
+        }
+        let mut out = Vec::new();
+        visit(root, &mut out);
+        out.sort_by(|a, b| a.0.cmp(&b.0));
+        out
+    }
+    let before = counts();
+    let originals = artifacts(&root.join("a"));
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    let invoice = r#"{"issueDate":"2026-01-01","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street"},"lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}"#;
+    for path in ["contacts", "invoices", "invoices/1/pdf"] {
+        for body in ["", invoice] {
+            let response = client.request(reqwest::Method::HEAD, format!("{origin}/api/companies/a/{path}"))
+                .header("origin", &origin)
+                .header("content-type", "application/json")
+                .header("cookie", "better-auth.session_token=synthetic-invalid")
+                .body(body.to_owned()).send().await.unwrap();
+            assert_eq!(response.status(), 405, "HEAD {path} must refuse before authentication or invoice dispatch");
+            assert_eq!(response.headers()["allow"], "GET");
+            assert!(response.bytes().await.unwrap().is_empty());
+        }
+        assert_eq!(client.get(format!("{origin}/api/companies/a/{path}")).send().await.unwrap().status(), 401);
+    }
+    assert_eq!(client.post(format!("{origin}/api/companies/a/invoices/issue"))
+        .header("origin", &origin).header("content-type", "application/json")
+        .body(invoice).send().await.unwrap().status(), 401);
+    assert_eq!(counts(), before);
+    assert_eq!(artifacts(&root.join("a")), originals);
+    stop_cleanly(&mut server, "-TERM").await;
+}

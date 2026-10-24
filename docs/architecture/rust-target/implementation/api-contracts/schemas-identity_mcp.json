@@ -7,6 +7,22 @@
       "required": [],
       "additionalProperties": false
     },
+    "WriteParsed": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
     "Id": {
       "anyOf": [
         {
@@ -433,15 +449,16 @@
                 },
                 "message": {
                   "enum": [
+                    "expected arguments object",
+                    "expected empty arguments object",
                     "expected params object",
                     "initialize requires protocolVersion, capabilities and clientInfo",
+                    "service lifecycle exceeds native8192 bytes",
+                    "service lifecycle requires only body/confirm",
+                    "service_principals accepts no arguments",
                     "task execution not supported",
                     "tool name required",
-                    "unknown tool",
-                    "expected empty arguments object",
-                    "service_principals accepts no arguments",
-                    "service lifecycle requires only body/confirm",
-                    "service lifecycle exceeds native8192 bytes"
+                    "unknown tool"
                   ]
                 }
               },
@@ -550,7 +567,7 @@
               "const": "me"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
             }
           },
           "required": [
@@ -651,7 +668,7 @@
               "const": "companies"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
             }
           },
           "required": [
@@ -759,7 +776,7 @@
               "const": "service_principals"
             },
             "arguments": {
-              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+              "$ref": "schemas-identity_mcp.json#/$defs/Empty"
             }
           },
           "required": [
@@ -1437,59 +1454,6 @@
         "result"
       ],
       "additionalProperties": false
-    },
-    "EmptyParsed": {
-      "oneOf": [
-        {
-          "$ref": "schemas-identity_mcp.json#/$defs/Empty"
-        },
-        {
-          "type": "array",
-          "items": {
-            "not": {}
-          },
-          "minItems": 0,
-          "maxItems": 0
-        }
-      ],
-      "description": "Actual serde derived Empty accepts map or exact zero-field sequence; advertised tools/list remains object only."
-    },
-    "WriteObjectParsed": {
-      "type": "object",
-      "properties": {
-        "body": {
-          "type": "string"
-        },
-        "confirm": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "body",
-        "confirm"
-      ],
-      "additionalProperties": false
-    },
-    "WriteParsed": {
-      "oneOf": [
-        {
-          "$ref": "schemas-identity_mcp.json#/$defs/WriteObjectParsed"
-        },
-        {
-          "type": "array",
-          "prefixItems": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ],
-          "minItems": 2,
-          "maxItems": 2
-        }
-      ],
-      "description": "Actual serde derived Write accepts object or exactly [bodyString,boolean]; false reaches SDK invalid_input."
     }
   }
 }

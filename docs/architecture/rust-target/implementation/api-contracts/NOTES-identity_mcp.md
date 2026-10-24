@@ -15,7 +15,7 @@ all-advertised HTTP/CLI/MCP scope.
 
 `input.advertisedInputSchema` records tools/list arguments; `actualRequest`
 records JSON-RPC request parsing, and `parsedArguments` records Serde parsing.
-All selected argument structs deny unknown map fields; actual Serde decoding also accepts positional sequences: Empty {} or [], Write {body,confirm} or exactly [bodyString,boolean]. Advertised tools/list schemas remain object-only. Request/params objects instead
+Public tools::call first refuses nonobject arguments with -32602 expected arguments object, before every leaf dispatch. All selected argument structs then deny unknown object fields. Request/params objects instead
 ignore unknown fields, except presence of `task` is explicitly refused. The write
 parser accepts a boolean false, while advertisement says true; false produces
 an **inner SDK invalid_input result**, not an outer invalid-params response.
@@ -89,3 +89,7 @@ selection, hashes, resolved schema refs and eight contract fields, not semantic
 truth or runtime acceptance. Graphify AST extraction is directed to the independent
 worker build output. No new harness is introduced and no commit is made by this
 worker, following the final runner instruction.
+
+## Lead review correction
+
+The later 8a0 positional-array declaration was incorrect: leaf Serde sequence decoding is unreachable because the shared public object guard runs first. That review claim in component report b55c5d2 is retracted; object-only public argument schemas are restored with an explicit entry-guard source pin and error message. Historical receipts and commits remain, with no runtime behavior change.

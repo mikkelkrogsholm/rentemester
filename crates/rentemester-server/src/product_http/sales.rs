@@ -24,6 +24,13 @@ enum Command {
     Pdf(i64),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // Axum dispatches GET-backed HEAD with its original method. Refuse before
+    // credential/body parsing so it can never fall through to invoice issuance.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let company_slug = request
         .uri()
         .path()

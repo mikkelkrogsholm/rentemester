@@ -121,7 +121,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/sales.rs",
-      "sha256": "32058f2e43911f07e078d6b658d4cdfdf59fc4eda74fdd97dc973937e905ac5b",
+      "sha256": "29160958dbb4c2e5537140c3c3128ebd1f94f1353457448829057afcb4b35146",
       "needle": "pub(super) async fn handle("
     },
     {
