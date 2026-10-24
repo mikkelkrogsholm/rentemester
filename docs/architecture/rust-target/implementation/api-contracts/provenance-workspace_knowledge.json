@@ -1,0 +1,148 @@
+{
+  "partition": "workspace_knowledge",
+  "workIssue": 677,
+  "method": "Graphify query followed by actual source constructor and transport inspection; no effects replayed.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http/company_knowledge.rs",
+      "sha256": "3921f8e9b0a28058ce8bb62d10ea5d925528941f7d072a0ef94a41df0f042f2e",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/company_knowledge.rs",
+      "sha256": "40c67f7069e11b036fffe18ef6f3fa07ea84e9789bac2eedeca81096a250adbb",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_knowledge.rs",
+      "sha256": "55e6180b836ff9aac973eaf0a35619209eb1fc897bcdb94fa412562693dfca84",
+      "needle": "pub fn inspect("
+    },
+    {
+      "path": "crates/rentemester-client/src/company_knowledge.rs",
+      "sha256": "13a9f87d598a2cd46c8a89d19792cfa8f9792ee30f646337cb4684889b44bd9c",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/workspace_inbox.rs",
+      "sha256": "ff324e3aa9c5fc4d45b10a14f864c6975182d58bd00de249c94c52151695a01a",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/workspace_inbox.rs",
+      "sha256": "0ddcf10d0407c0fd3884d1a61efff94261ddade51edc502918883af05e7f1ae2",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/workspace_inbox.rs",
+      "sha256": "c31719e2a153f26b257d357b0f82a4393e9217a08599cb4b4e62b572b6d596f5",
+      "needle": "pub fn inspect("
+    },
+    {
+      "path": "crates/rentemester-client/src/workspace_inbox.rs",
+      "sha256": "af25b5c850082ec70f85e82bfdbfe25464722682ba721625683ff744f819385a",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-host/src/workspace_inbox.rs",
+      "sha256": "ad21352748005c03a0a0b2dcb4d9ecd206402a159704b3fedcf1b4c457705d0f",
+      "needle": "pub fn workspace_inbox("
+    },
+    {
+      "path": "crates/rentemester-storage/src/mail_intake.rs",
+      "sha256": "3dfee112e1d4e02ef9d5812d5c3b81069804bc3a6fcafc4116227c37b036f586",
+      "needle": "pub fn projection("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/parties.rs",
+      "sha256": "d5b025b850bb1b8059cfa8740394d5340254f58eaefa93d2ad4e54bc18b7cb83",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/parties.rs",
+      "sha256": "b0e7725efa48d47170ec4ec8566c6ce47244d4bc630ef44814e13d66310e50ba",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/parties.rs",
+      "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+      "needle": "pub fn inspect("
+    },
+    {
+      "path": "crates/rentemester-client/src/parties.rs",
+      "sha256": "5b8faf1d365977ec7b72cfd0563ba95590cd9bb3f0bd7cb867695eff2b26cf35",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-cli/src/company_knowledge.rs",
+      "sha256": "a110afadc7e175d0eaf6d5e19e23ea98618ceb570bf6da23a04f8cf8e1fe5e4f",
+      "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn option("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error("
+    },
+    {
+      "path": "crates/rentemester-cli/src/parties.rs",
+      "sha256": "f083898be861e2cd7cc670bdc80e27542957b5b1449cb1b4090f64b2b29b8237",
+      "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-cli/src/workspace_inbox.rs",
+      "sha256": "fc3fd669c9b79104009496e58ac55430b50e2fd02bbe54889d07e40c8e825b59",
+      "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/parties.rs",
+      "sha256": "61389aaba1fbada2c35efd98170610cc9cfc76cd361155be4825ee4cf9058033",
+      "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/workspace_inbox.rs",
+      "sha256": "a9a00e00eb724056966c82bc2277496ebfa1ad840af30d68d7db49ddad077005",
+      "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/company_knowledge.rs",
+      "sha256": "598e6b4e7c4ff92932d2a6fb08ac5da7e347b7ae54cbfa0239b94afc2b34651f",
+      "needle": "pub fn accepts("
+    }
+  ],
+  "operationCount": 61,
+  "validation": {
+    "command": "python3 /tmp/r55-677-oracle.py workspace_knowledge",
+    "result": "PASS exactselected workspace_knowledge 61 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "scope": "Existing structural/sourcehash oracle only, not runtime or provider proof."
+  },
+  "graphify": {
+    "queryFirst": true,
+    "extraction": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\"",
+    "result": "completed; generated observations outside owned code"
+  }
+}
