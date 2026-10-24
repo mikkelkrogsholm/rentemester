@@ -40,7 +40,10 @@ pub fn execute(
     context: Context<'_>,
     action: Action<'_>,
 ) -> Result<Committed<Value>, Failure> {
-    let readonly = !matches!(action, Action::Apply(_) | Action::SyntheticApply(_) | Action::OriginalRun(..));
+    let readonly = !matches!(
+        action,
+        Action::Apply(_) | Action::SyntheticApply(_) | Action::OriginalRun(..)
+    );
     let cookie = context.cookie;
     let clock = context.clock;
     let selection = context.selection;
@@ -191,22 +194,47 @@ pub fn execute(
                     Ok(result)
                 }
                 Action::OriginalRun(input, dry_run) => {
-                    tx.execute_batch("SAVEPOINT original_import94").map_err(|_| unavailable())?;
+                    tx.execute_batch("SAVEPOINT original_import94")
+                        .map_err(|_| unavailable())?;
                     let actor = format!("user:{subject}");
                     let result = rentemester_storage::synthetic_import::run_original(
-                        tx, input, &verified, latest,
-                        rentemester_storage::journal_post::Actor { subject: &actor, program: store::PROGRAM }, now,
+                        tx,
+                        input,
+                        &verified,
+                        latest,
+                        rentemester_storage::journal_post::Actor {
+                            subject: &actor,
+                            program: store::PROGRAM,
+                        },
+                        now,
                     );
                     // Both business refusals and dry runs remove all business effects.
                     if dry_run || result.is_err() {
-                        tx.execute_batch("ROLLBACK TO original_import94").map_err(|_| unavailable())?;
+                        tx.execute_batch("ROLLBACK TO original_import94")
+                            .map_err(|_| unavailable())?;
                     }
-                    tx.execute_batch("RELEASE original_import94").map_err(|_| unavailable())?;
+                    tx.execute_batch("RELEASE original_import94")
+                        .map_err(|_| unavailable())?;
                     match result {
-                        Ok(mut value) => { if dry_run { value["dryRun"] = json!(true); } Ok(value) }
-                        Err(error) if matches!(error.code, "synthetic_import_refused" | "opening_balance_refused" | "company_setup_refused") =>
-                            Ok(json!({"ok":false,"sourceSystem":"synthetic-csv","openingBalanceLineCount":0,"historicalEntriesSkipped":0,
-                                "auditTrail":["Import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]})),
+                        Ok(mut value) => {
+                            if dry_run {
+                                value["dryRun"] = json!(true);
+                            }
+                            Ok(value)
+                        }
+                        Err(error)
+                            if matches!(
+                                error.code,
+                                "synthetic_import_refused"
+                                    | "opening_balance_refused"
+                                    | "company_setup_refused"
+                            ) =>
+                        {
+                            Ok(
+                                json!({"ok":false,"sourceSystem":"synthetic-csv","openingBalanceLineCount":rentemester_engine::synthetic_import::parse(input.content.as_bytes()).map_or(0, |s| s.opening_balances.len()),"historicalEntriesSkipped":0,
+                                "auditTrail":["Import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}),
+                            )
+                        }
                         Err(error) => Err(error),
                     }
                 }

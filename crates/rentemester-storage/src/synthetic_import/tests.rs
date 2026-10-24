@@ -180,21 +180,71 @@ fn failed_posting_rolls_back_source_chart_and_all_opening_effects() {
 #[test]
 fn original_import94_complete_unkeyed_source_history_rollback_and_refusal() {
     let mut db = fixture();
-    let before: i64 = db.query_row("SELECT count(*) FROM audit_log", [], |r| r.get(0)).unwrap();
+    let before: i64 = db
+        .query_row("SELECT count(*) FROM audit_log", [], |r| r.get(0))
+        .unwrap();
     {
-        let tx = db.transaction().unwrap();
-        let result = run_original(&tx, &source(), &[], latest(), Actor { subject: "user:synthetic", program: opening_balance::PROGRAM }, 1792573200000).unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let result = run_original(
+            &tx,
+            &source(),
+            &[],
+            latest(),
+            Actor {
+                subject: "user:synthetic",
+                program: opening_balance::PROGRAM,
+            },
+            1792573200000,
+        )
+        .unwrap();
         assert_eq!(result["sourceSystem"], "synthetic-csv");
         assert_eq!(result["openingBalanceLineCount"], 2);
         assert!(result["entryId"].as_i64().unwrap() > 0);
         assert!(opening_balance::validate_history(&tx).unwrap().is_some());
-        assert!(run_original(&tx, &source(), &[], latest(), Actor { subject: "user:synthetic", program: opening_balance::PROGRAM }, 1792573200000).is_err());
+        assert!(
+            run_original(
+                &tx,
+                &source(),
+                &[],
+                latest(),
+                Actor {
+                    subject: "user:synthetic",
+                    program: opening_balance::PROGRAM
+                },
+                1792573200000
+            )
+            .is_err()
+        );
         tx.rollback().unwrap();
     }
-    assert_eq!(db.query_row("SELECT count(*) FROM journal_entries", [], |r| r.get::<_,i64>(0)).unwrap(), 0);
-    assert_eq!(db.query_row("SELECT count(*) FROM audit_log", [], |r| r.get::<_,i64>(0)).unwrap(), before);
-    let tx = db.transaction().unwrap();
-    run_original(&tx, &source(), &[], latest(), Actor { subject: "user:synthetic", program: opening_balance::PROGRAM }, 1792573200000).unwrap();
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM audit_log", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        before
+    );
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    run_original(
+        &tx,
+        &source(),
+        &[],
+        latest(),
+        Actor {
+            subject: "user:synthetic",
+            program: opening_balance::PROGRAM,
+        },
+        1792573200000,
+    )
+    .unwrap();
     tx.commit().unwrap();
     assert!(opening_balance::validate_history(&db).unwrap().is_some());
 }

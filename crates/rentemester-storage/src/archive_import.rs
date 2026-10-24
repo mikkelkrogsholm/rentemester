@@ -224,20 +224,24 @@ pub fn apply(
     subject: &str,
     now_ms: i64,
 ) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
     crate::idempotency::validate_key(&input.idempotency_key)?;
     if !input.confirm || input.plan_hash != prepared.hash {
-        return Err(policy::refused("current explicit reviewed archive confirmation required"));
+        return Err(policy::refused(
+            "current explicit reviewed archive confirmation required",
+        ));
     }
     apply_original(tx, prepared, subject, now_ms)
 }
 /// Internal original-source admission; no keyed receipt is fabricated.
 pub(crate) fn apply_original(
-    tx: &Transaction<'_>, prepared: &Prepared, subject: &str, now_ms: i64,
+    tx: &Transaction<'_>,
+    prepared: &Prepared,
+    subject: &str,
+    now_ms: i64,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
-    if subject.is_empty()
-        || subject.chars().any(char::is_control)
-    {
+    if subject.is_empty() || subject.chars().any(char::is_control) {
         return Err(policy::refused(
             "current explicit reviewed archive confirmation required",
         ));

@@ -407,26 +407,55 @@ fn source_accounts(parsed: &ParsedImport) -> Vec<source_chart::SourceAccount> {
         })
         .collect()
 }
-fn install_chart(tx: &Transaction<'_>, parsed: &ParsedImport, _subject: &str) -> Result<(), Error> {
+fn install_chart(
+    tx: &Transaction<'_>,
+    parsed: &ParsedImport,
+    _subject: &str,
+) -> Result<Value, Error> {
     for p in &parsed.role_proposals {
         tx.execute("INSERT INTO account_role_proposals(role,account_no,source) SELECT ?1,?2,?3 WHERE NOT EXISTS(SELECT 1 FROM account_role_proposals WHERE role=?1 AND account_no=?2 AND source=?3)",params![p.role,p.account_no,p.source]).map_err(invalid)?;
     }
     let master = &parsed.company_master;
+    let mut updated = vec![];
+    let mut notes = vec![];
     if let Some(name) = master["name"].as_str().filter(|s| !s.trim().is_empty()) {
-        tx.execute("UPDATE companies SET name=?1 WHERE id=1 AND (trim(name)='' OR name='Rentemester company')",[name.trim()]).map_err(invalid)?;
-    }
-    if let Some(cvr) = master["cvr"].as_str() {
-        let cvr = cvr.trim().trim_start_matches("DK");
-        if cvr.len() == 8 && cvr.bytes().all(|b| b.is_ascii_digit()) {
-            tx.execute(
-                "UPDATE companies SET cvr=?1 WHERE id=1 AND (cvr IS NULL OR trim(cvr)='')",
-                [cvr],
-            )
-            .map_err(invalid)?;
+        let changed = tx.execute("UPDATE companies SET name=?1 WHERE id=1 AND (trim(name)='' OR name='Rentemester company')",[name.trim()]).map_err(invalid)?;
+        if changed == 1 {
+            updated.push("name");
+        } else {
+            let current: String = tx
+                .query_row("SELECT name FROM companies WHERE id=1", [], |r| r.get(0))
+                .map_err(invalid)?;
+            notes.push(format!(
+                "name kept ('{current}') — source value '{}' not applied",
+                name.trim()
+            ));
         }
     }
-    Ok(())
+    if let Some(raw) = master["cvr"].as_str().filter(|s| !s.is_empty()) {
+        let cvr = raw.trim().trim_start_matches("DK");
+        if cvr.len() == 8 && cvr.bytes().all(|b| b.is_ascii_digit()) {
+            let changed = tx
+                .execute(
+                    "UPDATE companies SET cvr=?1 WHERE id=1 AND (cvr IS NULL OR trim(cvr)='')",
+                    [cvr],
+                )
+                .map_err(invalid)?;
+            if changed == 1 {
+                updated.push("cvr");
+            } else {
+                let current: String = tx
+                    .query_row("SELECT cvr FROM companies WHERE id=1", [], |r| r.get(0))
+                    .map_err(invalid)?;
+                notes.push(format!("cvr kept ('{current}') — source value not applied"));
+            }
+        } else {
+            notes.push(format!("cvr '{raw}' is not a valid Danish CVR — skipped"));
+        }
+    }
+    Ok(json!({"updatedFields":updated,"notes":notes}))
 }
+
 fn voucher_request(
     parsed: &ParsedImport,
     v: &policy::Voucher,
@@ -534,21 +563,37 @@ pub fn apply_with_archives(
     now_ms: i64,
     verified: &[crate::archive_import::VerifiedArchive],
 ) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
     crate::idempotency::validate_key(&input.idempotency_key)?;
     if !input.confirm || input.plan_hash != p.plan_hash {
-        return Err(refused("explicit current reviewed import confirmation required"));
+        return Err(refused(
+            "explicit current reviewed import confirmation required",
+        ));
     }
     apply_original(tx, p, latest, subject, now_ms, verified)
 }
 /// Complete canonical import without a client key or a fabricated durable keyed receipt.
 pub fn apply_original(
-    tx: &Transaction<'_>, p: &Prepared, latest: Date, subject: &str, now_ms: i64,
+    tx: &Transaction<'_>,
+    p: &Prepared,
+    latest: Date,
+    subject: &str,
+    now_ms: i64,
     verified: &[crate::archive_import::VerifiedArchive],
 ) -> Result<Value, Error> {
+    apply_original_with_company(tx, p, latest, subject, now_ms, verified)
+        .map(|(receipt, _)| receipt)
+}
+fn apply_original_with_company(
+    tx: &Transaction<'_>,
+    p: &Prepared,
+    latest: Date,
+    subject: &str,
+    now_ms: i64,
+    verified: &[crate::archive_import::VerifiedArchive],
+) -> Result<(Value, Value), Error> {
     journal_post::require_current(tx)?;
-    if subject.is_empty()
-        || subject.chars().any(char::is_control)
-    {
+    if subject.is_empty() || subject.chars().any(char::is_control) {
         return Err(refused(
             "explicit current reviewed import confirmation required",
         ));
@@ -592,7 +637,7 @@ pub fn apply_original(
         subject,
         &at,
     )?;
-    install_chart(tx, parsed, subject)?;
+    let company = install_chart(tx, parsed, subject)?;
     let opening = if let Some(date) = parsed.cut_over_date {
         let input_open = opening_balance::Input {
             cut_over_date: date,
@@ -614,9 +659,17 @@ pub fn apply_original(
             source_archive_import_ids: archive_import_ids.clone(),
         };
         let result = opening_balance::apply_original(
-            tx, &input_open, &archived, latest,
-            journal_post::Actor { subject: &actor, program: opening_balance::PROGRAM },
-            now_ms, Some(&token), None,
+            tx,
+            &input_open,
+            &archived,
+            latest,
+            journal_post::Actor {
+                subject: &actor,
+                program: opening_balance::PROGRAM,
+            },
+            now_ms,
+            Some(&token),
+            None,
         )?;
         Some(result["openingBalance"].clone())
     } else {
@@ -707,44 +760,116 @@ pub fn apply_original(
     };
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES(?1,'dinero_import',?2,?3,?4,?5)",params![EVENT,attempt_id.to_string(),serde_json::to_string(&event).map_err(invalid)?,actor,at]).map_err(invalid)?;
     validate_history(tx)?;
-    Ok(receipt)
+    Ok((receipt, company))
 }
 
-/// Flat original result, derived from the actual accepted journals and source.
-pub fn original_result(db: &Connection, decoded: &Decoded, receipt: &Value) -> Result<Value, Error> {
-    let parsed = &decoded.parsed;
-    let mut posted = vec![];
-    if let Some(first) = receipt["firstHistoricalEntryId"].as_i64() {
-        let mut q = db.prepare("SELECT id,entry_no,transaction_date FROM journal_entries WHERE id>=?1 ORDER BY id").map_err(invalid)?;
-        let rows = q.query_map([first], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?))).map_err(invalid)?;
-        for (row, voucher) in rows.zip(&parsed.vouchers) {
-            let (id, no, date) = row.map_err(invalid)?;
-            posted.push(json!({"voucherRef":voucher.voucher_ref,"entryId":id,"entryNo":no,"transactionDate":date}));
-        }
+/// Original source result built from the same accepted core and exact journal proofs.
+pub fn run_original(
+    tx: &Transaction<'_>,
+    p: &Prepared,
+    latest: Date,
+    subject: &str,
+    now_ms: i64,
+    verified: &[crate::archive_import::VerifiedArchive],
+) -> Result<Value, Error> {
+    let (receipt, company) = apply_original_with_company(tx, p, latest, subject, now_ms, verified)?;
+    let parsed = &p.decoded.parsed;
+    let attempt = receipt["attemptId"]
+        .as_i64()
+        .ok_or_else(|| refused("accepted attempt unavailable"))?;
+    let message: String = tx
+        .query_row(
+            "SELECT message FROM audit_log WHERE event_type=?1 AND entity_id=?2",
+            params![EVENT, attempt.to_string()],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    let proof: Attestation = serde_json::from_str(&message).map_err(invalid)?;
+    if proof.receipt != receipt
+        || proof.binding.source != p.binding.source
+        || proof.journals.len() != parsed.vouchers.len()
+    {
+        return Err(refused("accepted source result proof differs"));
     }
-    let mut chart = json!({"created":[],"existing":[],"updated":[],"differences":[],"conflicts":[],"unmappedVatCodes":[]});
-    if let Some(changes) = receipt["chartReconciliation"].as_array() {
-        for change in changes {
-            let key = match change["action"].as_str() { Some("create") => "created", Some("update") => "updated", _ => "existing" };
-            chart[key].as_array_mut().unwrap().push(change["accountNo"].clone());
+    let mut posted = vec![];
+    for (journal, voucher) in proof.journals.iter().zip(&parsed.vouchers) {
+        if journal.voucher_ref != voucher.voucher_ref {
+            return Err(refused("historical voucher proof differs"));
         }
+        let (no, date, hash): (String, String, String) = tx
+            .query_row(
+                "SELECT entry_no,transaction_date,entry_hash FROM journal_entries WHERE id=?1",
+                [journal.id],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .map_err(invalid)?;
+        if hash != journal.hash || date != voucher.transaction_date.to_string() {
+            return Err(refused("historical journal result differs"));
+        }
+        posted.push(json!({"voucherRef":journal.voucher_ref,"entryId":journal.id,"entryNo":no,"transactionDate":date}));
+    }
+    let chart = crate::synthetic_import::original_chart(
+        p.binding
+            .chart_plan
+            .as_deref()
+            .ok_or_else(|| refused("source chart proof unavailable"))?,
+        &parsed.unmapped_vat_codes,
+    )?;
+    let mut rules = vec!["DK-BOOKKEEPING-BALANCED-001"];
+    if receipt["openingBalance"].is_object() || !posted.is_empty() {
+        rules.extend([
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+        ]);
+    }
+    if !posted.is_empty() {
+        rules.push("DK-IMPORT-POSTINGS-001");
     }
     let mut value = json!({"ok":true,"sourceSystem":"dinero","openingBalanceLineCount":parsed.opening_lines.len(),
-        "historicalEntriesSkipped":0,"historicalEntriesPosted":posted,"chart":chart,
-        "accountRoleProposals":parsed.role_proposals,
+        "historicalEntriesSkipped":0,"chart":chart,"company":company,
         "auditTrail":["Import started from source system 'dinero'","Source chart reconciled","Canonical opening, historical journals, archive and source provenance accepted"],
-        "appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[]});
-    if let Some(date) = parsed.cut_over_date { value["cutOverDate"] = json!(date); }
+        "appliedRules":rules,"errors":[]});
+    if !posted.is_empty() {
+        value["historicalEntriesPosted"] = json!(posted);
+    }
+    if !parsed.role_proposals.is_empty() {
+        value["accountRoleProposals"] = json!(parsed.role_proposals);
+    }
+    if let Some(date) = parsed.cut_over_date {
+        value["cutOverDate"] = json!(date);
+    }
     let opening = &receipt["openingBalance"];
     if opening.is_object() {
         value["entryId"] = opening["journalEntryId"].clone();
         value["entryNo"] = opening["journalEntryNo"].clone();
         value["entryHash"] = opening["journalEntryHash"].clone();
     }
+    if receipt["supportingDocuments"].is_object() {
+        let docs = &receipt["supportingDocuments"];
+        value["bilag"] = json!({"linkedCount":docs["linked"],"duplicateCount":docs["duplicates"],"unbookedCount":docs["unbooked"],"unmatchedCount":0});
+    }
     if !parsed.controls.is_empty() {
-        let mut receivable = Money::default(); let mut payable = Money::default();
-        for c in &parsed.controls { if c.kind == "receivable" { receivable.add(&c.amount); } else { payable.add(&c.amount); } }
+        let mut receivable = Money::default();
+        let mut payable = Money::default();
+        for c in &parsed.controls {
+            match c.kind.as_str() {
+                "receivable" => receivable.add(&c.amount),
+                "payable" => payable.add(&c.amount),
+                _ => return Err(refused("unknown open item control kind")),
+            }
+        }
         value["migrationOpenItems"] = json!({"batchCount":parsed.controls.len(),"receivableAmount":receivable.decimal().parse::<f64>().map_err(invalid)?,"payableAmount":payable.decimal().parse::<f64>().map_err(invalid)?});
+    }
+    if p.binding.source_kind.as_deref() == Some("zip") {
+        let entries = &p.binding.source.entries;
+        let mut listing: Vec<_> = entries.iter().map(|e| e.path.as_str()).collect();
+        listing.sort();
+        let mut manifest: Vec<_> = entries
+            .iter()
+            .map(|e| format!("{}:{}", e.path, e.sha256))
+            .collect();
+        manifest.sort();
+        value["archiveIntegrity"] = json!({"archiveSha256":p.binding.source.sha256,"archiveEntryCount":entries.len(),"extractedEntryCount":entries.len(),"importedEntryCount":entries.len(),"archiveListingSha256":sha(listing.join("\n")),"extractedManifestSha256":sha(manifest.join("\n"))});
     }
     Ok(value)
 }

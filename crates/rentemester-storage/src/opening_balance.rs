@@ -222,15 +222,6 @@ fn prepare_mode(
         credit: validation.total_credit,
     })
 }
-pub(crate) fn prepare_import(
-    tx: &Transaction<'_>,
-    input: &Input,
-    verified: &[VerifiedArchive],
-    latest: Date,
-    _admitted: &crate::dinero_import::AdmittedVoucher,
-) -> Result<Prepared, Error> {
-    prepare_mode(tx, input, verified, latest, true, None)
-}
 /// Fresh-key domain callback only. The authorized adapter owns durable keyed receipts and commit.
 pub fn apply(
     tx: &Transaction<'_>,
@@ -240,17 +231,6 @@ pub fn apply(
     actor: Actor<'_>,
     now_ms: i64,
 ) -> Result<Value, Error> {
-    apply_mode(tx, &input.input, Some(input), verified, latest, actor, now_ms, None, None)
-}
-pub(crate) fn apply_import(
-    tx: &Transaction<'_>,
-    input: &Apply,
-    verified: &[VerifiedArchive],
-    latest: Date,
-    actor: Actor<'_>,
-    now_ms: i64,
-    admitted: &crate::dinero_import::AdmittedVoucher,
-) -> Result<Value, Error> {
     apply_mode(
         tx,
         &input.input,
@@ -259,7 +239,7 @@ pub(crate) fn apply_import(
         latest,
         actor,
         now_ms,
-        Some(admitted),
+        None,
         None,
     )
 }
@@ -302,8 +282,7 @@ fn apply_mode(
     if !prepared.blockers.is_empty() {
         return Err(refused(prepared.blockers.join("; ")));
     }
-    let request = input
-        .request(&prepared.binding.source_basis.currency)?;
+    let request = input.request(&prepared.binding.source_basis.currency)?;
     let posted = if let Some(admitted) = admitted {
         journal_post::post_import_opening(tx, &request, latest, actor.subject, admitted)?
     } else {
@@ -608,10 +587,16 @@ pub(crate) fn apply_synthetic(
 /// Server-owned original admission: the plan is derived under the caller's transaction.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn apply_original(
-    tx: &Transaction<'_>, input: &Input, verified: &[VerifiedArchive], latest: Date,
-    actor: Actor<'_>, now_ms: i64,
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
     admitted: Option<&crate::dinero_import::AdmittedVoucher>,
     source: Option<&crate::synthetic_import::Input>,
 ) -> Result<Value, Error> {
-    apply_mode(tx, input, None, verified, latest, actor, now_ms, admitted, source)
+    apply_mode(
+        tx, input, None, verified, latest, actor, now_ms, admitted, source,
+    )
 }

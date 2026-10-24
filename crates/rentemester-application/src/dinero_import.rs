@@ -149,7 +149,19 @@ pub fn execute(
                             "Dinero source must be an original JSON package or ZIP archive",
                         ));
                     }
-                    let decoded = store::decode_source(file.bytes())?;
+                    let decoded = match store::decode_source(file.bytes()) {
+                        Ok(decoded) => decoded,
+                        Err(error)
+                            if matches!(action, Action::OriginalRun(..))
+                                && error.code == "dinero_import_refused" =>
+                        {
+                            return Ok(Output::Json(
+                                json!({"ok":false,"sourceSystem":"dinero","openingBalanceLineCount":0,"historicalEntriesSkipped":0,
+                                "auditTrail":["Import started from source system 'dinero'"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}),
+                            ));
+                        }
+                        Err(error) => return Err(error),
+                    };
                     if decoded.source.path != file.relative_path()
                         || decoded.source.sha256 != file.hash()
                         || decoded.source.size_bytes != file.bytes().len() as u64
@@ -172,35 +184,65 @@ pub fn execute(
                             Ok(Output::Json(store::prepare(tx, &decoded, latest)?.review()))
                         }
                         Action::OriginalRun(_, dry_run) => {
-                            tx.execute_batch("SAVEPOINT original_import94").map_err(|_| unavailable())?;
+                            tx.execute_batch("SAVEPOINT original_import94")
+                                .map_err(|_| unavailable())?;
                             let business = (|| {
                                 let prepared = store::prepare(tx, &decoded, latest)?;
                                 let receipts = store::receipt_publications(tx, &decoded)?;
                                 publish(guard, file, &decoded.source.path, &mut owned)?;
                                 for receipt in receipts {
-                                    let doc = Prepared::new(receipt.path, receipt.bytes).map_err(|_| unavailable())?;
+                                    let doc = Prepared::new(receipt.path, receipt.bytes)
+                                        .map_err(|_| unavailable())?;
                                     publish(guard, &doc, &doc.relative_path(), &mut owned)?;
                                 }
                                 if let Some(archive) = &decoded.archive {
-                                    let doc = Prepared::new("dinero-closed-history.json".into(), archive.bytes.clone()).map_err(|_| unavailable())?;
+                                    let doc = Prepared::new(
+                                        "dinero-closed-history.json".into(),
+                                        archive.bytes.clone(),
+                                    )
+                                    .map_err(|_| unavailable())?;
                                     publish(guard, &doc, &archive.source.path, &mut owned)?;
                                 }
-                                let receipt = store::apply_original(tx, &prepared, latest, subject, now, &verified_archives)?;
-                                store::original_result(tx, &decoded, &receipt)
+                                store::run_original(
+                                    tx,
+                                    &prepared,
+                                    latest,
+                                    subject,
+                                    now,
+                                    &verified_archives,
+                                )
                             })();
                             if dry_run || business.is_err() {
-                                tx.execute_batch("ROLLBACK TO original_import94").map_err(|_| unavailable())?;
+                                tx.execute_batch("ROLLBACK TO original_import94")
+                                    .map_err(|_| unavailable())?;
                                 for token in owned.drain(..).rev() {
                                     guard.rollback_document(token).map_err(|_| unavailable())?;
                                 }
                             }
-                            tx.execute_batch("RELEASE original_import94").map_err(|_| unavailable())?;
+                            tx.execute_batch("RELEASE original_import94")
+                                .map_err(|_| unavailable())?;
                             match business {
-                                Ok(mut value) => { if dry_run { value["dryRun"] = json!(true); } Ok(Output::Json(value)) }
-                                Err(error) if matches!(error.code, "dinero_import_refused" | "opening_balance_refused" | "company_setup_refused") =>
-                                    Ok(Output::Json(json!({"ok":false,"sourceSystem":"dinero","cutOverDate":decoded.parsed.cut_over_date,
+                                Ok(mut value) => {
+                                    if dry_run {
+                                        value["dryRun"] = json!(true);
+                                        value.as_object_mut().unwrap().remove("bilag");
+                                    }
+                                    Ok(Output::Json(value))
+                                }
+                                Err(error)
+                                    if matches!(
+                                        error.code,
+                                        "dinero_import_refused"
+                                            | "opening_balance_refused"
+                                            | "company_setup_refused"
+                                    ) =>
+                                {
+                                    Ok(Output::Json(
+                                        json!({"ok":false,"sourceSystem":"dinero","cutOverDate":decoded.parsed.cut_over_date,
                                         "openingBalanceLineCount":decoded.parsed.opening_lines.len(),"historicalEntriesSkipped":decoded.parsed.vouchers.len(),
-                                        "auditTrail":["Dinero import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}))),
+                                        "auditTrail":["Dinero import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}),
+                                    ))
+                                }
                                 Err(error) => Err(error),
                             }
                         }
