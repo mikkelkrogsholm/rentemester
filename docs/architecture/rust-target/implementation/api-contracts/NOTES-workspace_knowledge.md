@@ -16,3 +16,5 @@ Graphify query preceded actual source inspection. Parties and inbox HEAD are ear
 ## Evidence scope
 
 Only source inspection and the existing strict Python oracle were used. No Cargo, server/browser/network, authentication, provider, upload, scanner, job or financial effects were executed. Structural oracle success does not replace main-agent actual-source semantic review, and does not close #677 or expand accepted runtime proof scope.
+
+Lead source correction: seven inbox HTTP refusal rows retain f.error.message for authority/missing-source and normal OutcomeUnknown; outer generic errors still represented. Ingest additionally models Prepared::new422 invalid_document_file. Original raw-byte route keeps its separate422 mapping. No effects or sourcecode changes.
