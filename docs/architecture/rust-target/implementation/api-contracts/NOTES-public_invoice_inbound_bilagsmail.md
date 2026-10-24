@@ -87,3 +87,34 @@ opening balance, new parser/provider, rootbootstrap or whole-#716 closure claime
 Lead review corrected direct-HTTP ImportObject/ImportHttp for actual Option<Role>: null/omitted retains strict policy, original four-position prefix remains and optional fifth customer/vendor/null is accepted. SDK remains optional string enum only. Existing engine wire tests already prove the four/five-position producer; no new financial/provider/auth effects or runtime changes.
 
 R88 qualification retains explicit max100001 contact CSV records and provider4MiB-per-result/64MiB-aggregate controls in all three native surface contracts; only the documented optional fallback/header selection changes. Existing runtime bounds, duplicate columns and partial-row failures remain unchanged.
+
+## 2026-10-25 — Original public-invoice MCP adapters
+
+The original `peppol_submit_public_invoice` and `efaktura_send` flat tools now
+use the accepted shared Rust public-invoice SDK/server routes. Source grammar,
+confirmation before business checks, selector precedence and omitted fields are
+preserved. A present Digisense `accessPoint`, including null, is a business
+refusal; it cannot inject provider configuration. Current native slug, body,
+XML-safe metadata and human-cookie/fresh-MFA/CompanyExternalSend gates remain.
+
+Results preserve the original ok/errors/data/appliedRules/code envelope and
+exact structuredContent/text agreement. Canonical native artifact, submission,
+deduplication, status and history evidence is retained. Prepared or uncertain
+is never presented as confirmed delivery. PEPPOL endpoint URL is metadata only;
+caller acknowledgement is an attestation. Digisense uses operator configuration
+and current registration. No automatic resend, status loop or readback is added.
+
+Eleven distinct compiled cases passed: five stdio workflow cases, two catalogue
+cases and four existing SDK cases. The stdio fixture performs bare protocol
+negotiation against the actual committed manifest, then at most one authenticated
+POST; bounded observation checks no retry/readback after success or ambiguity.
+These are transport fixtures and retained SDK tests, not a fresh human-MFA,
+live provider, installed desktop or HTTP end-to-end acceptance run.
+
+Current coverage is1607 operations:645HTTP,531CLI,431MCP. All1605 preceding
+business contracts and all429 preceding actual MCP definitions are preserved,
+with current source hashes. Two original names are added; sixteen original MCP
+names,31 original workflow descriptions and full per-operation/discovery/service
+revocation/isolation/protocol/reconnect acceptance remain under717. Every original
+issue/J01-J07/release/cutover obligation remains; manual installed desktop is last.
+No live data, default launcher or installed application was switched.

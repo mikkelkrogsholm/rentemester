@@ -8164,6 +8164,995 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "OriginalPublicJson98": {
+      "type": [
+        "null",
+        "boolean",
+        "number",
+        "string",
+        "array",
+        "object"
+      ],
+      "properties": {},
+      "required": [],
+      "additionalProperties": true,
+      "items": {
+        "$ref": "#/$defs/OriginalPublicJson98"
+      },
+      "x-arbitrary-json": {
+        "scope": "Original efaktura_send accessPoint grammar and opaque extra native SDK evidence values",
+        "rationale": "Original z.unknown accessPoint accepts every JSON value before confirmed business refusal. Existing SDK validates named receipt fields then preserves native evidence extension Values; these values never supply credentials or delivery authority.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-mcp/src/invoice_public_original717.rs",
+            "sha256": "1a5ef3e0874a28d773d9ebfed40d13b344efc013437d6445d346e89b29cb0e88",
+            "needle": "pub async fn call("
+          },
+          {
+            "path": "crates/rentemester-client/src/invoice_public_original.rs",
+            "sha256": "743581651a63ab5d8bc399fb00a4117f9477fa72af2217c718a60f1010731a93",
+            "needle": "pub async fn invoice_public_original("
+          }
+        ]
+      }
+    },
+    "OriginalPublicData98": {
+      "type": "object",
+      "properties": {
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "envelope": {
+          "type": "string"
+        },
+        "envelopeSha256": {
+          "type": "string"
+        },
+        "oioublSha256": {
+          "type": "string"
+        },
+        "submissionReference": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "acknowledged",
+            "uncertain",
+            "failed"
+          ]
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceNumber",
+        "envelope",
+        "envelopeSha256",
+        "oioublSha256",
+        "submissionReference",
+        "idempotencyKey",
+        "status",
+        "duplicate"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/OriginalPublicJson98"
+      },
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "ok"
+            ]
+          },
+          {
+            "required": [
+              "errors"
+            ]
+          },
+          {
+            "required": [
+              "appliedRules"
+            ]
+          }
+        ]
+      }
+    },
+    "OriginalPublicEnvelope98": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "$ref": "#/$defs/OriginalPublicData98"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "code": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalPublicSuccess98": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 0
+                },
+                "data": {
+                  "$ref": "#/$defs/OriginalPublicData98"
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPublicFailure98": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "code": {
+                  "type": "string"
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPublicSdkSuccess98": {
+      "type": "object",
+      "properties": {
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "envelope": {
+          "type": "string"
+        },
+        "envelopeSha256": {
+          "type": "string"
+        },
+        "oioublSha256": {
+          "type": "string"
+        },
+        "submissionReference": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "acknowledged",
+            "uncertain",
+            "failed"
+          ]
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "invoiceNumber",
+        "envelope",
+        "envelopeSha256",
+        "oioublSha256",
+        "submissionReference",
+        "idempotencyKey",
+        "status",
+        "duplicate",
+        "ok",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": {
+        "$ref": "#/$defs/OriginalPublicJson98"
+      }
+    },
+    "OriginalPublicRpc98": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "unknown public invoice field",
+                    "company required",
+                    "documentId must be a positive safe integer",
+                    "invoiceNumber must be a string",
+                    "confirm must be boolean",
+                    "accessPoint must contain exactly three nonempty strings",
+                    "acknowledgement must contain exactly two nonempty strings",
+                    "digisenseCompanyKey must be nonempty string"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalPublic98PeppolAdvertised": {
+      "const": {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Original flat write; confirm:true required. Limits: 1MiB MCP frame, 16KiB native body, 16MiB response. Explicit company slug only: no filesystem selectors/local DB fallback or automatic actor. Authority comes only from current human cookie, fresh MFA and CompanyExternalSend; Bearer/service credentials refused. Both selectors preserved, documentId takes precedence without fallback. ok:true with status prepared or uncertain does not necessarily mean delivered. No automatic retry, status loop or readback; after unknown reconcile existing public_invoice_submissions before another deliberate action. Canonical native evidence is retained, not claimed byte-identical legacy output. PEPPOL endpointUrl is metadata only: NO FETCH, credential transport or automatic delivery. Caller acknowledgement is an attestation, not a provider receipt. Natural dedup excludes URL/acknowledgement; replay returns the original submission.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "accessPoint": {
+              "additionalProperties": false,
+              "properties": {
+                "accessPointId": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "endpointUrl": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "senderEndpointId": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "accessPointId",
+                "endpointUrl",
+                "senderEndpointId"
+              ],
+              "type": "object"
+            },
+            "acknowledgement": {
+              "additionalProperties": false,
+              "properties": {
+                "acknowledgedAt": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "transmissionId": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "transmissionId",
+                "acknowledgedAt"
+              ],
+              "type": "object"
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "documentId": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "invoiceNumber": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "accessPoint"
+          ],
+          "type": "object"
+        },
+        "name": "peppol_submit_public_invoice",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object"
+            },
+            "errors": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    "OriginalPublic98PeppolArguments": {
+      "additionalProperties": false,
+      "properties": {
+        "accessPoint": {
+          "additionalProperties": false,
+          "properties": {
+            "accessPointId": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "endpointUrl": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "senderEndpointId": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessPointId",
+            "endpointUrl",
+            "senderEndpointId"
+          ],
+          "type": "object"
+        },
+        "acknowledgement": {
+          "additionalProperties": false,
+          "properties": {
+            "acknowledgedAt": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "transmissionId": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "transmissionId",
+            "acknowledgedAt"
+          ],
+          "type": "object"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "documentId": {
+          "maximum": 9007199254740991,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "accessPoint"
+      ],
+      "type": "object"
+    },
+    "OriginalPublic98PeppolRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "peppol_submit_public_invoice"
+            },
+            "arguments": {
+              "$ref": "#/$defs/OriginalPublic98PeppolArguments"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPublic98DigisenseAdvertised": {
+      "const": {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Original flat write; confirm:true required. Limits: 1MiB MCP frame, 16KiB native body, 16MiB response. Explicit company slug only: no filesystem selectors/local DB fallback or automatic actor. Authority comes only from current human cookie, fresh MFA and CompanyExternalSend; Bearer/service credentials refused. Both selectors preserved, documentId takes precedence without fallback. ok:true with status prepared or uncertain does not necessarily mean delivered. No automatic retry, status loop or readback; after unknown reconcile existing public_invoice_submissions before another deliberate action. Canonical native evidence is retained, not claimed byte-identical legacy output. Digisense uses existing operator configuration/registration only; supplied digisenseCompanyKey is an equality assertion, never configuration. accessPoint is forbidden. Queued submission may make one status observation; terminal/uncertain/history NEVER cause redelivery. efaktura_status and secret configuration are outside this package and remain issue717 scope.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "accessPoint": {
+              "description": "Any present value is business-forbidden, including null.",
+              "type": [
+                "null",
+                "boolean",
+                "object",
+                "array",
+                "number",
+                "string"
+              ]
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "digisenseCompanyKey": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "documentId": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "invoiceNumber": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company"
+          ],
+          "type": "object"
+        },
+        "name": "efaktura_send",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object"
+            },
+            "errors": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    "OriginalPublic98DigisenseArguments": {
+      "additionalProperties": false,
+      "properties": {
+        "accessPoint": {
+          "$ref": "#/$defs/OriginalPublicJson98"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "digisenseCompanyKey": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "documentId": {
+          "maximum": 9007199254740991,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "OriginalPublic98DigisenseRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_send"
+            },
+            "arguments": {
+              "$ref": "#/$defs/OriginalPublic98DigisenseArguments"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
     }
   }
 }

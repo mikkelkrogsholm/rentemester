@@ -78,7 +78,7 @@
               },
               {
                 "path": "crates/rentemester-mcp/src/tools.rs",
-                "sha256": "5ca93ccba22dc81a768738c6fd31a4498d2fb5e4314fa1b6d6568a008393b5f2",
+                "sha256": "9405858308d79ecd12d239aebf7ae62f92648a96b085339021a03af2a97ef96f",
                 "needle": "Ok(data) =>"
               }
             ]

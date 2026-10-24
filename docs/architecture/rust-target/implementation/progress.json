@@ -1,15 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R96/R97ownerindependentexportedbackupverificationinstandardTauri/sharedReactaccepted;14actualcases/current1605unchangedcontracts;whole721open",
-  "code_revision": "038eba2dba71a0ddba6ab180344523caa93d61dd",
+  "current_increment": "R98/R99 original public-invoice MCP flow accepted: source-flat PEPPOL/Digisense through common Rust server;11actualcases/current1607;whole717open",
+  "code_revision": "acf4fd95ce0ca531937b244201c605c52e03e795",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "owner_backup_verification_component_accepted_whole721_open",
+  "state": "original_public_invoice_mcp_component_accepted_whole717_open",
   "issues_closed": 41,
   "next": [
-    "Whole721allwrite/adminentrypoints/J01-J02-J04-J05/installedfaultsandrealrestoreacceptance remain.",
-    "Full678Taurikeyboard/VoiceOver/IME/largetable/qualifiedplatformmatrix;other55originalissue/release/cutover/manualinstalleddesktopLASTgates remain.41actuallyclosed14open.",
-    "Nextnecessaryexisting717flow:originalpublic-invoiceMCP adapters using accepted sharedRust producers; do not rebuild engines/providers or deferfull717remaining scope."
+    "717:16 original names and31 workflow descriptions/full per-operation/error/discovery/revocation/isolation/protocol/reconnect acceptance remain. efaktura_status and original operator setup remain exact existing scope.",
+    "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R94/R95originalimport run syntheticCSV/Dinero completecanonicalacceptance/dryrunrollback/sourceflatreceipts/current1605contracts; whole716open",
+  "previous_verified_increment": "R96/R97ownerindependentexportedbackupverificationinstandardTauri/sharedReactaccepted;14actualcases/current1605unchangedcontracts;whole721open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16629,6 +16628,10 @@
     "r97_owner_backup_verification": {
       "path": "/private/tmp/rentemester-rust-reports/r97-owner-backup721-current-contracts-qualified.json",
       "sha256": "5927e87d3a6b38eaa8c4157cd812fa071646f7f46ccf5da639087187f038cf28"
+    },
+    "r99_original_public_invoice_mcp": {
+      "path": "/private/tmp/rentemester-rust-reports/r99-original-public-invoice-mcp717-current-contracts-qualified.json",
+      "sha256": "74f9b6eb9c46ca1ca4c69d04b3d72116216a410f252041821868cb3d45bce2ed"
     }
   },
   "verified_history": [
@@ -18899,6 +18902,18 @@
         "Whole721allwrite/adminentrypoints/J01-J02-J04-J05/installedfaultsandrealrestoreacceptance remain.",
         "Full678Taurikeyboard/VoiceOver/IME/largetable/qualifiedplatformmatrix;other55originalissue/release/cutover/manualinstalleddesktopLASTgates remain.41actuallyclosed14open.",
         "Nextnecessaryexisting717flow:originalpublic-invoiceMCP adapters using accepted sharedRust producers; do not rebuild engines/providers or deferfull717remaining scope."
+      ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "acf4fd95ce0ca531937b244201c605c52e03e795",
+      "report": "/tmp/rentemester-rust-reports/r99-original-public-invoice-mcp717-current-contracts-qualified.json",
+      "sha256": "74f9b6eb9c46ca1ca4c69d04b3d72116216a410f252041821868cb3d45bce2ed",
+      "scope": "OriginalPEPPOL/DigisenseMCPadapter,sourcegrammar/envelope/confirmation/currentauthority/artifacts/no-retry;11compiledcases/current1607contracts. No provider/MFA/HTTPendtoend/installed/live-data claim.",
+      "remaining": [
+        "717:16 original names and31 workflow descriptions/full per-operation/error/discovery/revocation/isolation/protocol/reconnect acceptance remain. efaktura_status and original operator setup remain exact existing scope.",
+        "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
       ]
     }
   ],
