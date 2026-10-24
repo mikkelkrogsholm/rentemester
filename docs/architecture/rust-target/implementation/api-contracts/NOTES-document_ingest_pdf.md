@@ -1,0 +1,29 @@
+# Document ingestion and PDF exact contracts — #677
+
+46 frozen identities, four owned flat files. Source-only specification; not runtime/provider approval or global #677 closure. Main owns semantic integration and acceptance. Previously accepted contracts and runtime proofs remain untouched and were not replayed. Full55/J01–J07, installed-desktop final manual acceptance, release, cutover and retirement remain.
+
+## Trace and wire distinctions
+
+Graphify query `document ingestion PDF parsing` ran first. Actual Rust dispatch was then read: main → original_args/discovery/preflight → local_binding → original documents or generic remote guard/leaf → client negotiation/send/family parser → server protocol/origin/credential → selected route → Owner admission → current control/service fences → storage and engine producer. MCP Session → tools::call **outer object guard** → original/native dispatch → same SDK/backend; no public arguments tuples.
+
+Direct HTTP uses derived Serde structs without an outer object guard. Named maps and complete positional sequences are separate schemas. Metadata and nested party/VAT structs retain their own positional grammar. Source validation and byte-based constraints follow parsing; a syntactically accepted value may refuse. MCP original schema validator rejects explicit null except where explicitly allowed; native Option fields often treat null as omission. Native SDK metadata reader is broader than its advertised schema: server remains final whitelist/validation authority.
+
+All advertised document HEADs route through GET fallback and strip the body after handler execution. They are **not** the separate seven early-405 guarded routes. No HEAD/effect probes performed. Original list checks empty body; human native list/file do not introduce an invented body-read guard. PDF writes acquire a shared PDF slot before credential checks. Protocol mismatch is globally rejected before leaf authorization.
+
+Native HTTP documents envelope is `{ok,documents:{slug,company,documents,linkedCount,unlinkedCount}}`, with service usage/business stages when applicable. Native CLI/MCP add `{ok,data:...}`. Native file SDK represents exact bytes as integer arrays, not base64 or filesystem output. Original CLI list is a bare snake_case array; original MCP is `{ok,errors,data}` plus locally sliced pagination. Original HTTP original list is `{ok,documents,errors}` and has no server pagination.
+
+Historical `purchaseVatLines` is read directly from arbitrary persisted JSON, not reconstructed from current creation metadata. That one field has a recursive field-specific arbitrary-JSON annotation. Original SDK applies a narrower current VAT-array reader and can reject such historical values; producer schema and consumer projection are deliberately distinct. No arbitrary top-level response data schema.
+
+## Effects, failure and recovery
+
+Registration publishes an immutable content-addressed file before SQL commit; uncertain response is not rollback. Current authorization, workspace/ledger/principal, scanner clean source hash and vendor observation are rechecked after external scanner work. Human known committed eligible uploads may run configured invoice extraction afterward; failures cannot erase their receipt. Services do not inherit human extraction authority. No scanner/provider approval has been exercised.
+
+No caller request-key promise or automatic retry exists. Original force skips logical supplier-invoice duplicate only, not content duplicate. Original blocked intake can commit deduplicated review exceptions and return HTTP200 businessfalse. Identical enrich/context has hash-bound no-op behavior, but does not authorize blind retry or bypass current authority/history gates.
+
+PDF worker is pinned operator configuration, offline, no caller executable or OCR. Input10MiB; stdout16MiB, stderr64KiB, deadline15s, RSS512MiB; at most four globally shared children, released owner/SQL while processing. Valid retained results correlate status/error; pages<=200, per-page items<=25000, total<=200000, text<=5Mi UTF16 units. Cache identity includes company document/source hash/parser id/version/contract. Operational failure persists an attempt and returns HTTP200 `{ok:false,errors:["PDF_PARSE_FAILED"],errorCode}`. Cached parses also append attempts. Batch counts failed business results, drains all lanes and keeps plan order; subsequent refusal can follow earlier successful effects.
+
+Native generic ingestion transport discards422 response details and treats write5xx as unknown. Original mutations preserve strict422 with nonblank code. PDF preserves curated409 integrity conflict and422 plus businessfalse200. Native MCP keeps full failure data; original MCP wrap drops errorCode on false because it only preserves errors/code/appliedRules. Do not normalize these families. File reads commit access evidence before returning bytes; service usage/authorization stages remain separate from business stages.
+
+## Evidence boundary
+
+Only existing Python structural/source oracle is permitted; no Cargo/server/browser/network/provider/upload/auth effects or new harness. Graphify extraction is generated exclusively in the worker build directory. Source refs use current exact file bytes and constructor needles. Schema references are partition-local. Validation: `python3 /tmp/r51-677-oracle.py document_ingest_pdf` returned `PASS exactselected document_ingest_pdf 46 resolved sourcebound schema contracts; semanticreview required; whole677 remains open`. `git diff --check` returned successfully. Required `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed with 34,009 nodes and 107,681 edges in independent build output. These results prove selected coverage, resolved schema shape and source hashes only; independent semantic review remains required.
