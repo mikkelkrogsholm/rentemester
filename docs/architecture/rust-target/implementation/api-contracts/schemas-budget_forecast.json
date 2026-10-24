@@ -1,0 +1,5429 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-budget_forecast.json",
+  "$defs": {
+    "NativeSetObject": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "accountNo",
+        "period",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "NativeSetTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      ],
+      "minItems": 3,
+      "maxItems": 4,
+      "description": "Serde declaration order account_no,period,amount,notes; Option tail can be omitted."
+    },
+    "NativeSet": {
+      "anyOf": [
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/NativeSetObject"
+        },
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/NativeSetTuple"
+        }
+      ]
+    },
+    "OriginalWriteObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalWriteTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      ],
+      "minItems": 1,
+      "maxItems": 5,
+      "description": "Default string/number tail may be omitted; explicit null amount is rejected by number_present; notes nullable."
+    },
+    "OriginalWrite": {
+      "anyOf": [
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/OriginalWriteObject"
+        },
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/OriginalWriteTuple"
+        }
+      ]
+    },
+    "SdkNativeBody": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "accountNo",
+        "period",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "SdkOriginalBody": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountNo",
+        "period"
+      ],
+      "additionalProperties": false
+    },
+    "Revision": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "accountNo",
+        "period",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetLine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "accountNo",
+        "accountName",
+        "period",
+        "amount",
+        "notes",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalComparisonLine": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "type": "string"
+        },
+        "budget": {
+          "type": "number"
+        },
+        "actual": {
+          "type": "number"
+        },
+        "variance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "accountNo",
+        "accountName",
+        "accountType",
+        "period",
+        "budget",
+        "actual",
+        "variance"
+      ],
+      "additionalProperties": false
+    },
+    "NativeComparisonLine": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "type": "string"
+        },
+        "budget": {
+          "type": "number"
+        },
+        "actual": {
+          "type": "number"
+        },
+        "variance": {
+          "type": "number"
+        },
+        "variancePercent": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "accountNo",
+        "accountName",
+        "accountType",
+        "period",
+        "budget",
+        "actual",
+        "variance",
+        "variancePercent"
+      ],
+      "additionalProperties": false
+    },
+    "Budget": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "dimensionActualsAvailable": {
+          "const": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-budget_forecast.json#/$defs/BudgetLine"
+          }
+        },
+        "totalBudget": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "slug",
+        "selectedYear",
+        "archived",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "periods",
+        "dimensionActualsAvailable",
+        "lines",
+        "totalBudget"
+      ],
+      "additionalProperties": false
+    },
+    "Comparison": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "dimensionActualsAvailable": {
+          "const": true
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-budget_forecast.json#/$defs/NativeComparisonLine"
+          }
+        },
+        "totalBudget": {
+          "type": "number"
+        },
+        "totalActual": {
+          "type": "number"
+        },
+        "totalVariance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "slug",
+        "selectedYear",
+        "archived",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "periods",
+        "dimensionActualsAvailable",
+        "lines",
+        "totalBudget",
+        "totalActual",
+        "totalVariance"
+      ],
+      "additionalProperties": false
+    },
+    "DimensionActuals": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "dimensionActualsAvailable": {
+          "const": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string"
+              },
+              "memberId": {
+                "type": "string"
+              },
+              "accountNo": {
+                "type": "string"
+              },
+              "period": {
+                "type": "string"
+              },
+              "actual": {
+                "type": "number"
+              },
+              "journalLineId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "accountNo",
+              "period",
+              "actual",
+              "journalLineId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "comparison": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "period": {
+                "type": "string"
+              },
+              "actual": {
+                "type": "number"
+              },
+              "accountActual": {
+                "type": "number"
+              },
+              "accountBudget": {
+                "type": "number"
+              },
+              "unallocatedActual": {
+                "type": "number"
+              },
+              "otherMembersActual": {
+                "type": "number"
+              },
+              "budget": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "variance": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "journalLineIds": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "accountNo",
+              "period",
+              "actual",
+              "accountActual",
+              "accountBudget",
+              "unallocatedActual",
+              "otherMembersActual",
+              "budget",
+              "variance",
+              "journalLineIds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accountTotals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "period": {
+                "type": "string"
+              },
+              "actual": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "accountNo",
+              "period",
+              "actual"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "dimensionBudgets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string"
+              },
+              "memberId": {
+                "type": "string"
+              },
+              "accountNo": {
+                "type": "string"
+              },
+              "period": {
+                "type": "string"
+              },
+              "budget": {
+                "type": "number"
+              },
+              "sourceRef": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "accountNo",
+              "period",
+              "budget",
+              "sourceRef",
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "dimensionOptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "dimensionId": {
+                "type": "string"
+              },
+              "memberId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "label",
+              "dimensionId",
+              "memberId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "budgetScope": {
+          "const": "account"
+        },
+        "selection": {
+          "type": "object",
+          "properties": {
+            "dimensionId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "memberId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "dimensionId",
+            "memberId"
+          ],
+          "additionalProperties": false
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "serverCalculated": {
+          "const": true
+        }
+      },
+      "required": [
+        "slug",
+        "selectedYear",
+        "archived",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "periods",
+        "dimensionActualsAvailable",
+        "rows",
+        "comparison",
+        "accountTotals",
+        "dimensionBudgets",
+        "dimensionOptions",
+        "budgetScope",
+        "selection",
+        "notes",
+        "serverCalculated"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "budget": {
+          "$ref": "schemas-budget_forecast.json#/$defs/Budget"
+        }
+      },
+      "required": [
+        "ok",
+        "budget"
+      ],
+      "additionalProperties": false
+    },
+    "ComparisonEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "budgetVsActual": {
+          "$ref": "schemas-budget_forecast.json#/$defs/Comparison"
+        }
+      },
+      "required": [
+        "ok",
+        "budgetVsActual"
+      ],
+      "additionalProperties": false
+    },
+    "DimensionEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "budgetDimensionActuals": {
+          "$ref": "schemas-budget_forecast.json#/$defs/DimensionActuals"
+        }
+      },
+      "required": [
+        "ok",
+        "budgetDimensionActuals"
+      ],
+      "additionalProperties": false
+    },
+    "RevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "budget": {
+          "$ref": "schemas-budget_forecast.json#/$defs/Revision"
+        }
+      },
+      "required": [
+        "ok",
+        "budget"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalSetSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "const": [
+            "budget:set"
+          ]
+        },
+        "errors": {
+          "const": []
+        },
+        "budgetLineId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "budgetLineId",
+        "accountNo",
+        "period",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-budget_forecast.json#/$defs/BudgetLine"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalComparisonSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "const": [
+            "budget:vs-actual"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-budget_forecast.json#/$defs/OriginalComparisonLine"
+          }
+        },
+        "totalBudget": {
+          "type": "number"
+        },
+        "totalActual": {
+          "type": "number"
+        },
+        "totalVariance": {
+          "type": "number"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "lines",
+        "totalBudget",
+        "totalActual",
+        "totalVariance",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ForecastSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "const": [
+            "liquidity-forecast"
+          ]
+        },
+        "openingBalance": {
+          "type": "number"
+        },
+        "closingBalance": {
+          "type": "number"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "period": {
+                "type": "string"
+              },
+              "openingBalance": {
+                "type": "number"
+              },
+              "invoiceInflow": {
+                "type": "number"
+              },
+              "recurringInflow": {
+                "type": "number"
+              },
+              "budgetedCostOutflow": {
+                "type": "number"
+              },
+              "netChange": {
+                "type": "number"
+              },
+              "closingBalance": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "period",
+              "openingBalance",
+              "invoiceInflow",
+              "recurringInflow",
+              "budgetedCostOutflow",
+              "netChange",
+              "closingBalance"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 18
+        },
+        "errors": {
+          "const": []
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "months": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "openingBalance",
+        "closingBalance",
+        "periods",
+        "errors",
+        "startDate",
+        "months"
+      ],
+      "additionalProperties": false
+    },
+    "WeeklySuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "openingCash": {
+          "type": "number"
+        },
+        "lowestPoint": {
+          "type": "number"
+        },
+        "completeness": {
+          "type": "object",
+          "properties": {
+            "included": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "included",
+            "excluded"
+          ],
+          "additionalProperties": false
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "weekStart": {
+                "type": "string"
+              },
+              "openingCash": {
+                "type": "number"
+              },
+              "receivables": {
+                "type": "number"
+              },
+              "payables": {
+                "type": "number"
+              },
+              "commitments": {
+                "type": "number"
+              },
+              "undatedBudgetAssumptions": {
+                "type": "number"
+              },
+              "scenarios": {
+                "type": "number"
+              },
+              "obligations": {
+                "type": "number"
+              },
+              "intercompany": {
+                "type": "number"
+              },
+              "closingCash": {
+                "type": "number"
+              },
+              "scenarioClosingCash": {
+                "type": "number"
+              },
+              "budgets": {
+                "const": 0
+              },
+              "excluded": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "const": "dated_fx_required"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "amount",
+                    "currency",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "issued_receivables"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "registered_payables"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "approved_commitment"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "estimated_vat_assumption"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "settlementStatus": {
+                          "const": "unknown"
+                        },
+                        "assumption": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference",
+                        "settlementStatus",
+                        "assumption"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "canonical_vat_obligation"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "settlementStatus": {
+                          "const": "unknown"
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference",
+                        "settlementStatus"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "effective_budget_assumption"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "assumption": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference",
+                        "assumption"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "const": "approved_intercompany_disposition"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "reference": {
+                          "type": "string"
+                        },
+                        "assumption": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "amount",
+                        "reference",
+                        "assumption"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "weekStart",
+              "openingCash",
+              "receivables",
+              "payables",
+              "commitments",
+              "undatedBudgetAssumptions",
+              "scenarios",
+              "obligations",
+              "intercompany",
+              "closingCash",
+              "scenarioClosingCash",
+              "budgets",
+              "excluded",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 13
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "const": [
+            "liquidity-forecast-13-week-v3"
+          ]
+        },
+        "startDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "openingCash",
+        "lowestPoint",
+        "completeness",
+        "periods",
+        "errors",
+        "appliedRules",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalSetFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "budget:set"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "count": {
+          "const": 0
+        },
+        "rows": {
+          "const": []
+        },
+        "errors": {
+          "const": [
+            "period filter must be a YYYY-MM calendar month"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalComparisonFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "budget:vs-actual"
+          ]
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "lines": {
+          "const": []
+        },
+        "totalBudget": {
+          "const": 0
+        },
+        "totalActual": {
+          "const": 0
+        },
+        "totalVariance": {
+          "const": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "lines",
+        "totalBudget",
+        "totalActual",
+        "totalVariance",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ForecastFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "liquidity-forecast"
+          ]
+        },
+        "openingBalance": {
+          "const": 0
+        },
+        "closingBalance": {
+          "const": 0
+        },
+        "periods": {
+          "const": []
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "openingBalance",
+        "closingBalance",
+        "periods",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "WeeklyFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "openingCash": {
+          "const": 0
+        },
+        "lowestPoint": {
+          "const": 0
+        },
+        "completeness": {
+          "type": "object",
+          "properties": {
+            "included": {
+              "const": []
+            },
+            "excluded": {
+              "const": []
+            }
+          },
+          "required": [
+            "included",
+            "excluded"
+          ],
+          "additionalProperties": false
+        },
+        "periods": {
+          "const": []
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "enum": [
+            [
+              "liquidity-forecast-13-week-v1"
+            ],
+            [
+              "liquidity-forecast-13-week-v3"
+            ]
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "openingCash",
+        "lowestPoint",
+        "completeness",
+        "periods",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalTransportFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "transport",
+            "server_refused",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "NativeQuery": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "DimensionsQuery": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 128
+        },
+        "dimension": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 128
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "OriginalListQuery": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "accountNo": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "OriginalComparisonQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "to": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ForecastQuery": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "months": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "WeeklyQuery": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "weeks": {
+          "type": "string",
+          "x-maxUtf8Bytes": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "McpBudget": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "year"
+      ],
+      "additionalProperties": false
+    },
+    "McpDimension": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "member": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "company",
+        "year"
+      ],
+      "additionalProperties": false
+    },
+    "McpWrite": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "x-maxUtf8Bytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalSet": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "period": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "accountNo",
+        "period",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalList": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "period": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalComparison": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "McpForecast": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "months": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18
+        }
+      },
+      "required": [
+        "company",
+        "startDate",
+        "months"
+      ],
+      "additionalProperties": false
+    },
+    "McpWeekly": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weeks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 13
+        }
+      },
+      "required": [
+        "company",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
+    "McpComparisonOverload": {
+      "oneOf": [
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/McpBudget"
+        },
+        {
+          "$ref": "schemas-budget_forecast.json#/$defs/McpOriginalComparison"
+        }
+      ],
+      "description": "from OR to presence selects original BEFORE native parsing; no public positional sequence."
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "set_budget requires only company/body/confirm",
+                    "native budget body exceeds16KiB",
+                    "dimension comparison requires company/year/dimension?/member? only",
+                    "budget reads require only company/year",
+                    "invalid original budget arguments"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-budget_forecast.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ToolClientFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalToolClientFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "transport",
+            "server_refused",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ConfirmFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "CONFIRM_REQUIRED"
+        },
+        "errors": {
+          "const": [
+            "confirm: true required for budget set"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliBudgetEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-budget_forecast.json#/$defs/BudgetEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolBudgetEnvelope": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "schemas-budget_forecast.json#/$defs/BudgetEnvelope"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-budget_forecast.json#/$defs/BudgetEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "CliComparisonEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-budget_forecast.json#/$defs/ComparisonEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolComparisonEnvelope": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "schemas-budget_forecast.json#/$defs/ComparisonEnvelope"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-budget_forecast.json#/$defs/ComparisonEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "CliDimensionEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-budget_forecast.json#/$defs/DimensionEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolDimensionEnvelope": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "schemas-budget_forecast.json#/$defs/DimensionEnvelope"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-budget_forecast.json#/$defs/DimensionEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "CliRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-budget_forecast.json#/$defs/RevisionEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "schemas-budget_forecast.json#/$defs/RevisionEnvelope"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-budget_forecast.json#/$defs/RevisionEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-budget_forecast.json#/$defs/ToolClientFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-budget_forecast.json#/$defs/ToolClientFailure"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalToolFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-budget_forecast.json#/$defs/OriginalToolClientFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-budget_forecast.json#/$defs/OriginalToolClientFailure"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolConfirmFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-budget_forecast.json#/$defs/ConfirmFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-budget_forecast.json#/$defs/ConfirmFailure"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalSetSuccess": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "errors": {
+                      "const": []
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "budget:set"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "budgetLineId": {
+                          "type": "integer",
+                          "minimum": -9223372036854775808,
+                          "maximum": 9223372036854775807
+                        },
+                        "accountNo": {
+                          "type": "string"
+                        },
+                        "period": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "budgetLineId",
+                        "accountNo",
+                        "period",
+                        "amount"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "budget:set"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "budgetLineId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "accountNo": {
+                  "type": "string"
+                },
+                "period": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "budgetLineId",
+                "accountNo",
+                "period",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalSetFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "budget:set"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "appliedRules": {
+              "const": [
+                "budget:set"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalListSuccess": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "errors": {
+                      "const": []
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "rows": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "schemas-budget_forecast.json#/$defs/BudgetLine"
+                          }
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "rows"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-budget_forecast.json#/$defs/BudgetLine"
+                  }
+                }
+              },
+              "required": [
+                "count",
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalListFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "errors": {
+                      "const": [
+                        "period filter must be a YYYY-MM calendar month"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "const": 0
+                        },
+                        "rows": {
+                          "const": []
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "rows"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "const": [
+                "period filter must be a YYYY-MM calendar month"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "const": 0
+                },
+                "rows": {
+                  "const": []
+                }
+              },
+              "required": [
+                "count",
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalComparisonSuccess": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "errors": {
+                      "const": []
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "budget:vs-actual"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "periodStart": {
+                          "type": "string"
+                        },
+                        "periodEnd": {
+                          "type": "string"
+                        },
+                        "lines": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "schemas-budget_forecast.json#/$defs/OriginalComparisonLine"
+                          }
+                        },
+                        "totalBudget": {
+                          "type": "number"
+                        },
+                        "totalActual": {
+                          "type": "number"
+                        },
+                        "totalVariance": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "periodStart",
+                        "periodEnd",
+                        "lines",
+                        "totalBudget",
+                        "totalActual",
+                        "totalVariance"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "budget:vs-actual"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "periodStart": {
+                  "type": "string"
+                },
+                "periodEnd": {
+                  "type": "string"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-budget_forecast.json#/$defs/OriginalComparisonLine"
+                  }
+                },
+                "totalBudget": {
+                  "type": "number"
+                },
+                "totalActual": {
+                  "type": "number"
+                },
+                "totalVariance": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "periodStart",
+                "periodEnd",
+                "lines",
+                "totalBudget",
+                "totalActual",
+                "totalVariance"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolOriginalComparisonFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "budget:vs-actual"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "periodStart": {
+                          "type": "string"
+                        },
+                        "periodEnd": {
+                          "type": "string"
+                        },
+                        "lines": {
+                          "const": []
+                        },
+                        "totalBudget": {
+                          "const": 0
+                        },
+                        "totalActual": {
+                          "const": 0
+                        },
+                        "totalVariance": {
+                          "const": 0
+                        }
+                      },
+                      "required": [
+                        "periodStart",
+                        "periodEnd",
+                        "lines",
+                        "totalBudget",
+                        "totalActual",
+                        "totalVariance"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "appliedRules": {
+              "const": [
+                "budget:vs-actual"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "periodStart": {
+                  "type": "string"
+                },
+                "periodEnd": {
+                  "type": "string"
+                },
+                "lines": {
+                  "const": []
+                },
+                "totalBudget": {
+                  "const": 0
+                },
+                "totalActual": {
+                  "const": 0
+                },
+                "totalVariance": {
+                  "const": 0
+                }
+              },
+              "required": [
+                "periodStart",
+                "periodEnd",
+                "lines",
+                "totalBudget",
+                "totalActual",
+                "totalVariance"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolForecastSuccess": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "errors": {
+                      "const": []
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "liquidity-forecast"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "openingBalance": {
+                          "type": "number"
+                        },
+                        "closingBalance": {
+                          "type": "number"
+                        },
+                        "periods": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "period": {
+                                "type": "string"
+                              },
+                              "openingBalance": {
+                                "type": "number"
+                              },
+                              "invoiceInflow": {
+                                "type": "number"
+                              },
+                              "recurringInflow": {
+                                "type": "number"
+                              },
+                              "budgetedCostOutflow": {
+                                "type": "number"
+                              },
+                              "netChange": {
+                                "type": "number"
+                              },
+                              "closingBalance": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "period",
+                              "openingBalance",
+                              "invoiceInflow",
+                              "recurringInflow",
+                              "budgetedCostOutflow",
+                              "netChange",
+                              "closingBalance"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 18
+                        },
+                        "startDate": {
+                          "type": "string"
+                        },
+                        "months": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 18
+                        }
+                      },
+                      "required": [
+                        "openingBalance",
+                        "closingBalance",
+                        "periods",
+                        "startDate",
+                        "months"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "liquidity-forecast"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "openingBalance": {
+                  "type": "number"
+                },
+                "closingBalance": {
+                  "type": "number"
+                },
+                "periods": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "period": {
+                        "type": "string"
+                      },
+                      "openingBalance": {
+                        "type": "number"
+                      },
+                      "invoiceInflow": {
+                        "type": "number"
+                      },
+                      "recurringInflow": {
+                        "type": "number"
+                      },
+                      "budgetedCostOutflow": {
+                        "type": "number"
+                      },
+                      "netChange": {
+                        "type": "number"
+                      },
+                      "closingBalance": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "period",
+                      "openingBalance",
+                      "invoiceInflow",
+                      "recurringInflow",
+                      "budgetedCostOutflow",
+                      "netChange",
+                      "closingBalance"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 18
+                },
+                "startDate": {
+                  "type": "string"
+                },
+                "months": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 18
+                }
+              },
+              "required": [
+                "openingBalance",
+                "closingBalance",
+                "periods",
+                "startDate",
+                "months"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolForecastFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "liquidity-forecast"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "openingBalance": {
+                          "const": 0
+                        },
+                        "closingBalance": {
+                          "const": 0
+                        },
+                        "periods": {
+                          "const": []
+                        }
+                      },
+                      "required": [
+                        "openingBalance",
+                        "closingBalance",
+                        "periods"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "appliedRules": {
+              "const": [
+                "liquidity-forecast"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "openingBalance": {
+                  "const": 0
+                },
+                "closingBalance": {
+                  "const": 0
+                },
+                "periods": {
+                  "const": []
+                }
+              },
+              "required": [
+                "openingBalance",
+                "closingBalance",
+                "periods"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolWeeklySuccess": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "errors": {
+                      "const": []
+                    },
+                    "appliedRules": {
+                      "const": [
+                        "liquidity-forecast-13-week-v3"
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "openingCash": {
+                          "type": "number"
+                        },
+                        "lowestPoint": {
+                          "type": "number"
+                        },
+                        "completeness": {
+                          "type": "object",
+                          "properties": {
+                            "included": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "excluded": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "included",
+                            "excluded"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "periods": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "weekStart": {
+                                "type": "string"
+                              },
+                              "openingCash": {
+                                "type": "number"
+                              },
+                              "receivables": {
+                                "type": "number"
+                              },
+                              "payables": {
+                                "type": "number"
+                              },
+                              "commitments": {
+                                "type": "number"
+                              },
+                              "undatedBudgetAssumptions": {
+                                "type": "number"
+                              },
+                              "scenarios": {
+                                "type": "number"
+                              },
+                              "obligations": {
+                                "type": "number"
+                              },
+                              "intercompany": {
+                                "type": "number"
+                              },
+                              "closingCash": {
+                                "type": "number"
+                              },
+                              "scenarioClosingCash": {
+                                "type": "number"
+                              },
+                              "budgets": {
+                                "const": 0
+                              },
+                              "excluded": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "source": {
+                                      "type": "string"
+                                    },
+                                    "amount": {
+                                      "type": "number"
+                                    },
+                                    "currency": {
+                                      "type": "string"
+                                    },
+                                    "reason": {
+                                      "const": "dated_fx_required"
+                                    }
+                                  },
+                                  "required": [
+                                    "source",
+                                    "amount",
+                                    "currency",
+                                    "reason"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "sources": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "issued_receivables"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "registered_payables"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "approved_commitment"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "estimated_vat_assumption"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        },
+                                        "settlementStatus": {
+                                          "const": "unknown"
+                                        },
+                                        "assumption": {
+                                          "const": true
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference",
+                                        "settlementStatus",
+                                        "assumption"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "canonical_vat_obligation"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        },
+                                        "settlementStatus": {
+                                          "const": "unknown"
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference",
+                                        "settlementStatus"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "effective_budget_assumption"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        },
+                                        "assumption": {
+                                          "const": true
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference",
+                                        "assumption"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "source": {
+                                          "const": "approved_intercompany_disposition"
+                                        },
+                                        "amount": {
+                                          "type": "number"
+                                        },
+                                        "reference": {
+                                          "type": "string"
+                                        },
+                                        "assumption": {
+                                          "const": true
+                                        }
+                                      },
+                                      "required": [
+                                        "source",
+                                        "amount",
+                                        "reference",
+                                        "assumption"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "weekStart",
+                              "openingCash",
+                              "receivables",
+                              "payables",
+                              "commitments",
+                              "undatedBudgetAssumptions",
+                              "scenarios",
+                              "obligations",
+                              "intercompany",
+                              "closingCash",
+                              "scenarioClosingCash",
+                              "budgets",
+                              "excluded",
+                              "sources"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 13
+                        },
+                        "startDate": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "openingCash",
+                        "lowestPoint",
+                        "completeness",
+                        "periods",
+                        "startDate"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "liquidity-forecast-13-week-v3"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "openingCash": {
+                  "type": "number"
+                },
+                "lowestPoint": {
+                  "type": "number"
+                },
+                "completeness": {
+                  "type": "object",
+                  "properties": {
+                    "included": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "excluded": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "included",
+                    "excluded"
+                  ],
+                  "additionalProperties": false
+                },
+                "periods": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "weekStart": {
+                        "type": "string"
+                      },
+                      "openingCash": {
+                        "type": "number"
+                      },
+                      "receivables": {
+                        "type": "number"
+                      },
+                      "payables": {
+                        "type": "number"
+                      },
+                      "commitments": {
+                        "type": "number"
+                      },
+                      "undatedBudgetAssumptions": {
+                        "type": "number"
+                      },
+                      "scenarios": {
+                        "type": "number"
+                      },
+                      "obligations": {
+                        "type": "number"
+                      },
+                      "intercompany": {
+                        "type": "number"
+                      },
+                      "closingCash": {
+                        "type": "number"
+                      },
+                      "scenarioClosingCash": {
+                        "type": "number"
+                      },
+                      "budgets": {
+                        "const": 0
+                      },
+                      "excluded": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "source": {
+                              "type": "string"
+                            },
+                            "amount": {
+                              "type": "number"
+                            },
+                            "currency": {
+                              "type": "string"
+                            },
+                            "reason": {
+                              "const": "dated_fx_required"
+                            }
+                          },
+                          "required": [
+                            "source",
+                            "amount",
+                            "currency",
+                            "reason"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "sources": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "issued_receivables"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "registered_payables"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "approved_commitment"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "estimated_vat_assumption"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                },
+                                "settlementStatus": {
+                                  "const": "unknown"
+                                },
+                                "assumption": {
+                                  "const": true
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference",
+                                "settlementStatus",
+                                "assumption"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "canonical_vat_obligation"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                },
+                                "settlementStatus": {
+                                  "const": "unknown"
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference",
+                                "settlementStatus"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "effective_budget_assumption"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                },
+                                "assumption": {
+                                  "const": true
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference",
+                                "assumption"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "const": "approved_intercompany_disposition"
+                                },
+                                "amount": {
+                                  "type": "number"
+                                },
+                                "reference": {
+                                  "type": "string"
+                                },
+                                "assumption": {
+                                  "const": true
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "amount",
+                                "reference",
+                                "assumption"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "weekStart",
+                      "openingCash",
+                      "receivables",
+                      "payables",
+                      "commitments",
+                      "undatedBudgetAssumptions",
+                      "scenarios",
+                      "obligations",
+                      "intercompany",
+                      "closingCash",
+                      "scenarioClosingCash",
+                      "budgets",
+                      "excluded",
+                      "sources"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 13
+                },
+                "startDate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "openingCash",
+                "lowestPoint",
+                "completeness",
+                "periods",
+                "startDate"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolWeeklyFailure": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 1
+                    },
+                    "appliedRules": {
+                      "enum": [
+                        [
+                          "liquidity-forecast-13-week-v1"
+                        ],
+                        [
+                          "liquidity-forecast-13-week-v3"
+                        ]
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "openingCash": {
+                          "const": 0
+                        },
+                        "lowestPoint": {
+                          "const": 0
+                        },
+                        "completeness": {
+                          "type": "object",
+                          "properties": {
+                            "included": {
+                              "const": []
+                            },
+                            "excluded": {
+                              "const": []
+                            }
+                          },
+                          "required": [
+                            "included",
+                            "excluded"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "periods": {
+                          "const": []
+                        }
+                      },
+                      "required": [
+                        "openingCash",
+                        "lowestPoint",
+                        "completeness",
+                        "periods"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "errors",
+                    "appliedRules",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "appliedRules": {
+              "enum": [
+                [
+                  "liquidity-forecast-13-week-v1"
+                ],
+                [
+                  "liquidity-forecast-13-week-v3"
+                ]
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "openingCash": {
+                  "const": 0
+                },
+                "lowestPoint": {
+                  "const": 0
+                },
+                "completeness": {
+                  "type": "object",
+                  "properties": {
+                    "included": {
+                      "const": []
+                    },
+                    "excluded": {
+                      "const": []
+                    }
+                  },
+                  "required": [
+                    "included",
+                    "excluded"
+                  ],
+                  "additionalProperties": false
+                },
+                "periods": {
+                  "const": []
+                }
+              },
+              "required": [
+                "openingCash",
+                "lowestPoint",
+                "completeness",
+                "periods"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "CliOriginalset": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "const": true
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--period": {
+          "type": "string"
+        },
+        "--amount": {
+          "type": "string"
+        },
+        "--notes": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginallist": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "const": true
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--period": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalvs-actual": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "const": true
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalforecast": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "const": true
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--start": {
+          "type": "string"
+        },
+        "--months": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalforecast-13-week": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "const": true
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--start": {
+          "type": "string"
+        },
+        "--weeks": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliRemotebudget": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [
+        "--company",
+        "--year"
+      ],
+      "additionalProperties": false
+    },
+    "CliRemotebudget-vs-actual": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [
+        "--company",
+        "--year"
+      ],
+      "additionalProperties": false
+    },
+    "CliRemotebudget-dimension-actuals": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "--dimension": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-maxUtf8Bytes": 64
+        },
+        "--member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-maxUtf8Bytes": 64
+        }
+      },
+      "required": [
+        "--company",
+        "--year"
+      ],
+      "additionalProperties": false
+    },
+    "CliRemoteset-budget": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure400_invalid_input": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_input"
+        },
+        "errors": {
+          "const": [
+            "invalid_input"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure400_invalid_query": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_query"
+        },
+        "errors": {
+          "const": [
+            "invalid_query"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure401_unauthorized": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "unauthorized"
+        },
+        "errors": {
+          "const": [
+            "unauthorized"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure403_origin_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "origin_refused"
+        },
+        "errors": {
+          "const": [
+            "origin_refused"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure403_access_denied": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "access_denied"
+        },
+        "errors": {
+          "const": [
+            "access_denied"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure404_company_not_found": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "company_not_found"
+        },
+        "errors": {
+          "const": [
+            "company_not_found"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure503_busy": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "busy"
+        },
+        "errors": {
+          "const": [
+            "busy"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure503_clock_unavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "clock_unavailable"
+        },
+        "errors": {
+          "const": [
+            "clock_unavailable"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure503_outcome_unknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "errors": {
+          "const": [
+            "outcome_unknown"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure503_outcome_unconfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unconfirmed"
+        },
+        "errors": {
+          "const": [
+            "outcome_unconfirmed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure400_invalid_inputOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "invalid_input"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure401_unauthorizedOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "unauthorized"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure403_access_deniedOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "access_denied"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure503_outcome_unknownOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "outcome_unknown"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
