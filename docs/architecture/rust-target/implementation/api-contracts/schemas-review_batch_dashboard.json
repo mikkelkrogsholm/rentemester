@@ -859,33 +859,77 @@
       "additionalProperties": false
     },
     "FiscalYearsHttp": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
-        },
-        "fiscalYears": {
+      "oneOf": [
+        {
           "type": "object",
           "properties": {
-            "slug": {
-              "$ref": "#/$defs/Text"
+            "ok": {
+              "const": true
             },
-            "years": {
-              "$ref": "schemas-chart_journal.json#/$defs/FiscalYears"
+            "fiscalYears": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "$ref": "#/$defs/Text"
+                },
+                "years": {
+                  "$ref": "schemas-chart_journal.json#/$defs/FiscalYears"
+                }
+              },
+              "required": [
+                "slug",
+                "years"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
-            "slug",
-            "years"
+            "ok",
+            "fiscalYears"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "fiscalYears": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "$ref": "#/$defs/Text"
+                },
+                "years": {
+                  "$ref": "schemas-chart_journal.json#/$defs/FiscalYears"
+                }
+              },
+              "required": [
+                "slug",
+                "years"
+              ],
+              "additionalProperties": false
+            },
+            "usage": {
+              "enum": [
+                "committed",
+                "not_committed"
+              ]
+            },
+            "business": {
+              "const": "committed"
+            }
+          },
+          "required": [
+            "ok",
+            "fiscalYears",
+            "usage",
+            "business"
           ],
           "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "fiscalYears"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Portfolio": {
       "$ref": "schemas-financial_reports_audit.json#/$defs/Portfolio"
@@ -11298,6 +11342,77 @@
         "duplicate",
         "plan",
         "state"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPersistCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "runId": {
+          "$ref": "#/$defs/I64"
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "plan": {
+          "$ref": "#/$defs/Plan"
+        },
+        "state": {
+          "$ref": "#/$defs/State"
+        }
+      },
+      "required": [
+        "ok",
+        "runId",
+        "duplicate",
+        "plan",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "const": "unknown"
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
       ],
       "additionalProperties": false
     }

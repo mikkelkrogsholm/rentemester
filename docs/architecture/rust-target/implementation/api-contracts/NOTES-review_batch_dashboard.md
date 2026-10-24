@@ -52,3 +52,6 @@ Integrity reports only journal hash-chain scope; backup/destination completeness
 ## Integration
 
 Only the four owned flat files are changed. The strict oracle validates exact identity coverage, source hashes and schema shape/reference closure; independent semantic source/diff acceptance remains necessary. No issue closure, commit, push, merge, production/dependency/framework/inventory/gap-row or other-partition change is made.
+
+## Lead source-review repair
+Lead source review repaired five native batch CLI success wrappers; original persist CLI now excludes SDK-removed dryRun without changing HTTP/native/dry-run. Fiscal-years retains human/service success branches and fiscal/original-exception failures include exact required service stages, while original normal success/business422 stay flat.
