@@ -9,6 +9,7 @@ mod service_company;
 mod eu_sales;
 mod oss_report;
 mod public_einvoice;
+mod digisense_received;
 mod archive_import;
 mod dinero_import;
 mod opening_balance;
@@ -542,6 +543,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/public-submissions", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-config", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-register", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/public-register-pair", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/public-onboard", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/efaktura/modtag", post(digisense_received::handle))
+        .route("/api/workspace/efaktura/modtag", post(digisense_received::handle))
         .route("/api/companies/{slug}/invoices/send-public", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/send-public/status", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/email-deliveries", get(invoice_email::handle))

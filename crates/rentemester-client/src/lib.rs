@@ -603,3 +603,6 @@ pub use asset_disposal::{asset_disposal_schema, validate_asset_disposal};
 #[cfg(test)]
 #[path = "../tests/common/mod.rs"]
 mod test_transport;
+
+mod digisense_received;
+pub use digisense_received::{MAX_DIGISENSE_RECEIVED_BODY,digisense_received_schema,validate_digisense_received};

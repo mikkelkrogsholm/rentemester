@@ -313,3 +313,72 @@ fn before_download_current_authority_and_generation_are_required() {
         assert_eq!(count(&o, "journal_entries"), 0);
     }
 }
+
+#[test]
+fn workspace_receive_preflight_is_configuration_independent_readonly_and_current() {
+    for mode in ["allowed", "revoked", "backup"] {
+        let (_dir, mut o, _cookies, p, _uid) = setup();
+        // Host preflight takes no operator client, generation, or registration input.
+        if mode == "revoked" {
+            o.held.0.as_ref().unwrap().control.as_ref().unwrap().execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')",[]).unwrap();
+        }
+        if mode == "backup" {
+            o.backup_status(
+                &p,
+                &Fixed(NOW),
+                rentemester_application::backup_status::Action::Configure {
+                    enforced: true,
+                    grace_days: 0,
+                },
+            )
+            .unwrap()
+            .outcome
+            .unwrap();
+        }
+        let company_changes = o
+            .held
+            .0
+            .as_ref()
+            .unwrap()
+            .company
+            .as_ref()
+            .unwrap()
+            .total_changes();
+        let control_changes = o
+            .held
+            .0
+            .as_ref()
+            .unwrap()
+            .control
+            .as_ref()
+            .unwrap()
+            .total_changes();
+        let a = o.preflight_digisense_received(&p, &Fixed(NOW)).unwrap();
+        assert!(!a.retired);
+        assert_eq!(a.outcome.is_ok(), mode == "allowed", "{mode}");
+        assert_eq!(
+            o.held
+                .0
+                .as_ref()
+                .unwrap()
+                .company
+                .as_ref()
+                .unwrap()
+                .total_changes(),
+            company_changes
+        );
+        assert_eq!(
+            o.held
+                .0
+                .as_ref()
+                .unwrap()
+                .control
+                .as_ref()
+                .unwrap()
+                .total_changes(),
+            control_changes
+        );
+        assert_eq!(count(&o, "documents"), 0);
+        assert_eq!(count(&o, "journal_entries"), 0);
+    }
+}

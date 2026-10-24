@@ -81,6 +81,7 @@ mod portable_backup;
 mod privacy;
 mod regulatory;
 mod public_einvoice;
+mod digisense_received;
 mod receivables;
 mod recurring_invoices;
 mod reminder_claims;
