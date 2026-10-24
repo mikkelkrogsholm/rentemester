@@ -1,0 +1,233 @@
+{
+  "partition": "group_reconciliation_consolidation",
+  "status": "specified",
+  "unresolved": [],
+  "operationIds": [
+    "http:GET /api/companies/{slug}/consolidation",
+    "http:GET /api/companies/{slug}/eliminations",
+    "http:GET /api/companies/{slug}/intercompany",
+    "http:GET /api/group-consolidated-report",
+    "http:GET /api/group-eliminations",
+    "http:GET /api/group-reconciliation",
+    "http:GET /api/group-report-profiles",
+    "http:HEAD /api/companies/{slug}/consolidation",
+    "http:HEAD /api/companies/{slug}/eliminations",
+    "http:HEAD /api/companies/{slug}/intercompany",
+    "http:HEAD /api/group-consolidated-report",
+    "http:HEAD /api/group-eliminations",
+    "http:HEAD /api/group-reconciliation",
+    "http:HEAD /api/group-report-profiles",
+    "http:POST /api/companies/{slug}/consolidation/{action}",
+    "http:POST /api/companies/{slug}/eliminations/{action}",
+    "http:POST /api/companies/{slug}/intercompany/{action}",
+    "cli:remote apply-elimination",
+    "cli:remote apply-group-manifest",
+    "cli:remote approve-consolidation-profile",
+    "cli:remote approve-elimination",
+    "cli:remote approve-intercompany-mapping",
+    "cli:remote consolidation",
+    "cli:remote eliminations",
+    "cli:remote group-consolidated-report",
+    "cli:remote group-eliminations",
+    "cli:remote group-reconciliation",
+    "cli:remote group-report-profiles",
+    "cli:remote intercompany",
+    "cli:remote plan-elimination",
+    "cli:remote propose-consolidation-profile",
+    "cli:remote propose-elimination",
+    "cli:remote propose-intercompany-mapping",
+    "cli:remote reject-elimination",
+    "cli:remote reverse-elimination",
+    "cli:remote revoke-consolidation-profile",
+    "cli:remote revoke-intercompany-mapping",
+    "mcp:apply_elimination",
+    "mcp:apply_group_manifest",
+    "mcp:approve_consolidation_profile",
+    "mcp:approve_elimination",
+    "mcp:approve_intercompany_mapping",
+    "mcp:consolidation",
+    "mcp:eliminations",
+    "mcp:group_consolidated_report",
+    "mcp:group_eliminations",
+    "mcp:group_reconciliation",
+    "mcp:group_report_profiles",
+    "mcp:intercompany",
+    "mcp:plan_elimination",
+    "mcp:propose_consolidation_profile",
+    "mcp:propose_elimination",
+    "mcp:propose_intercompany_mapping",
+    "mcp:reject_elimination",
+    "mcp:reverse_elimination",
+    "mcp:revoke_consolidation_profile",
+    "mcp:revoke_intercompany_mapping"
+  ],
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http/consolidation.rs",
+      "sha256": "37fbc137340a353b546a48223d384c07d69a3736ee699f2b1dd868091128dec0",
+      "needle": "async fn dispatch("
+    },
+    {
+      "path": "crates/rentemester-application/src/consolidation.rs",
+      "sha256": "bc11930a5598b11878ec5a3774a15adb2849b65862efc26584628375ab5688bd",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-host/src/consolidation.rs",
+      "sha256": "81d1b9197848dee9bc69e56984e82b6c7917999a7a73e5c0fe04d4e1f2c03b13",
+      "needle": "impl Owner"
+    },
+    {
+      "path": "crates/rentemester-storage/src/consolidation.rs",
+      "sha256": "3f4f39fe772264549d3b4b025ef68eb587727287b3ca3daec22928330e2c9e80",
+      "needle": "pub fn states("
+    },
+    {
+      "path": "crates/rentemester-engine/src/consolidation.rs",
+      "sha256": "2f512ca54f1a2c56212746036661662f13422fc3e364af89e27be4b656faf1f9",
+      "needle": "pub fn refused()"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn incompatible()"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/eliminations.rs",
+      "sha256": "1d96d4d98bb1a0f225e97ec4b176af64df9d3528adce189e579389e91258d979",
+      "needle": "async fn dispatch("
+    },
+    {
+      "path": "crates/rentemester-application/src/eliminations.rs",
+      "sha256": "cf27b2a9e621fd88b846afe3b5ad893312f430b53d6e78e522467203bd7d242e",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-host/src/eliminations.rs",
+      "sha256": "4bbafc02dbafe1a45cde7a78846c60e5a3154f2219f1afeee249775a254a6457",
+      "needle": "impl Owner"
+    },
+    {
+      "path": "crates/rentemester-storage/src/eliminations.rs",
+      "sha256": "1ec79870aae0074393795a79cb90929177d12c4c20465c0ba65c479f51cf8ca2",
+      "needle": "pub fn states("
+    },
+    {
+      "path": "crates/rentemester-engine/src/eliminations.rs",
+      "sha256": "259ed961ec08d2e207b36684401cefa2b1f84346a422c942d6ae0eb14ded26fb",
+      "needle": "pub fn refused()"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/intercompany.rs",
+      "sha256": "34ba8824d877e910b4a24a12e17b324619728940061a909146ff05ddd90faf2d",
+      "needle": "async fn dispatch("
+    },
+    {
+      "path": "crates/rentemester-application/src/intercompany.rs",
+      "sha256": "46dc7c07230def1b4d451ce8361501c623b71d4baa10d629c8eb544ca2cfb5bb",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-host/src/intercompany.rs",
+      "sha256": "1cbd60a163466d502a7b3867e332c6882446d0a93c66967bf81876823d26cb51",
+      "needle": "impl Owner"
+    },
+    {
+      "path": "crates/rentemester-storage/src/intercompany.rs",
+      "sha256": "b0d6acaaa9ee4689cf9cafd3d8aa72dbf591144c1041cbcbd6a80c6cf9202371",
+      "needle": "pub fn states("
+    },
+    {
+      "path": "crates/rentemester-engine/src/intercompany.rs",
+      "sha256": "07a819be5635492113fb385ccd90db3a276db936463712ed827763f13c81d784",
+      "needle": "pub fn refused()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/elimination.rs",
+      "sha256": "0c3aea74c5dcfc63ef081c9c2f27eb526ff941dc696924b3f044769f0a111faf",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-client/src/elimination.rs",
+      "sha256": "f0fb51e3b458d48514e60c9726dbe45d5780ba1236f1faf0b8862a83a5ace2f5",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "fn validate("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "match run(args)"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error("
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/intercompany.rs",
+      "sha256": "7eda30c13c5a56c8240c4fc0c753fcbc5fa2d315577b10f339065e7be765ba8c",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-client/src/intercompany.rs",
+      "sha256": "d692d50720a2d9d7da1db2d9e3c21e125e9cd557f8af14d0ea710412369e046b",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-cli/src/consolidation.rs",
+      "sha256": "0d17b4c862dd982cd5359faf3eae3027ea420285bc4c4da9951b0e190700df2c",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-client/src/consolidation.rs",
+      "sha256": "1473f4c12f969be41ccac4a90683df85b66c01c69ed57ab34456304e8de84b15",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/elimination.rs",
+      "sha256": "fbb18517bf9e6c9aea03b2197970f87af9cdcb929d5eb629271f048b4abf9d7a",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/intercompany.rs",
+      "sha256": "17b65e7d293815f2d13561c9d1652a3efe9e6e5c439baae42dee9187710499c9",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/consolidation.rs",
+      "sha256": "df7932d313c98421bcfa108fe2c466d56f23dfe40d9f27e5a5a2ff38c8d6addf",
+      "needle": "pub async fn call("
+    }
+  ],
+  "scope": "Source-only selected contracts; main owns semantic review/integration/acceptance; whole677 remains open.",
+  "leadReviewRepair": "Lead source review: added reachable global report-selector RPC pair; rawHTTP manifest nested Group and consolidation reportingLine now use existing input tuple/object variants while output and SDK forms stay distinct. Removed duplicate exact-action oneOf refs that rejected legitimate lifecycle bodies; per-action rules/authority and all partial-report evidence retained."
+}
