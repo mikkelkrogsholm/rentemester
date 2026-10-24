@@ -24,3 +24,5 @@ Physical document hashes and retained extraction consistency, current canonical 
 ## Verification boundary
 
 `python3 /tmp/r55-677-oracle.py mileage` passed with 43 exact selected source-bound operations after correcting HEAD's bodyless protocol representation. This is structural/source-hash evidence only; independent main actual-diff/source review and whole-#677 acceptance remain required. No Cargo, server, browser, network, provider, financial, upload, consent, job or authentication effects were run. Existing runtime/userflow acceptance remains at its prior actual scope without replay.
+
+Lead source correction: native calls reach tools.rs report-selector -32602 before mileage leaf; originaltools bypass earlier. Original successful SDK/tool core errors must be[] per producer and receiptvalidator. Warnings/refusals remain unchanged.

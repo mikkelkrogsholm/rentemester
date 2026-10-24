@@ -3319,6 +3319,46 @@
             "error"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -3860,11 +3900,7 @@
               "const": true
             },
             "errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 128
+              "const": []
             },
             "appliedRules": {
               "const": [
@@ -4046,11 +4082,7 @@
               "const": true
             },
             "errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 128
+              "const": []
             },
             "appliedRules": {
               "const": [
@@ -4128,11 +4160,7 @@
               "const": true
             },
             "errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 128
+              "const": []
             },
             "appliedRules": {
               "const": [
@@ -4348,11 +4376,7 @@
               "const": true
             },
             "errors": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "maxItems": 128
+              "const": []
             },
             "appliedRules": {
               "const": [
@@ -5047,11 +5071,7 @@
           ]
         },
         "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 128
+          "const": []
         }
       },
       "required": [
@@ -5133,11 +5153,7 @@
           ]
         },
         "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 128
+          "const": []
         }
       },
       "required": [
@@ -5192,11 +5208,7 @@
           ]
         },
         "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 128
+          "const": []
         }
       },
       "required": [
@@ -5318,11 +5330,7 @@
           ]
         },
         "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 128
+          "const": []
         },
         "jsonPath": {
           "type": "string"
