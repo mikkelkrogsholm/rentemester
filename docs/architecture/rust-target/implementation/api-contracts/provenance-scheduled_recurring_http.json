@@ -1,0 +1,158 @@
+{
+  "partition": "scheduled_recurring_http",
+  "issue": 677,
+  "scope": "Exactly16 HTTP identities in selected81; no full677 closure",
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/scheduled-recurring"
+    },
+    {
+      "path": "crates/rentemester-server/src/main.rs",
+      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "needle": "protocol::install(router, connected)"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": ".route(\"/api/companies/{slug}/scheduled-recurring\", get(scheduled_recurring::handle))"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/scheduled_recurring.rs",
+      "sha256": "16bf79ce598c73011bc44ee1942caa91e9fee8dceea54e947234e85040f62028",
+      "needle": "let write = request.method() != axum::http::Method::GET;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/hosted_recurring.rs",
+      "sha256": "4a47741788c39e7ac48d50c263aa4517f9494762a345880228b000e41e5c7181",
+      "needle": "StatusCode::METHOD_NOT_ALLOWED"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-client/src/scheduled_recurring.rs",
+      "sha256": "e78cc55e0a8fd4ad469ab7ffd2023e68d703de7a3015e513e4c3bceca77c9f83",
+      "needle": "pub fn scheduled_recurring_body_schema("
+    },
+    {
+      "path": "crates/rentemester-client/src/hosted_recurring.rs",
+      "sha256": "7a3d06a52f2cf26820d6369a56bd4a6fd2630fbe7cf945e57f268dc0f05b4bc8",
+      "needle": "pub fn hosted_recurring_body_schema("
+    },
+    {
+      "path": "crates/rentemester-engine/src/scheduled_recurring.rs",
+      "sha256": "a7d8aa13475645867538b86e12022746da51777b7b20456c23a8ead1d9ad2247",
+      "needle": "pub struct Enable"
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "fn document_action<T>"
+    },
+    {
+      "path": "crates/rentemester-host/src/scheduled_recurring.rs",
+      "sha256": "58dd3906d9a482d60dc92f8f4c7a9ad07f8f961d602829fe39208614419a62ae",
+      "needle": "pub fn scheduled_recurring("
+    },
+    {
+      "path": "crates/rentemester-host/src/hosted_recurring.rs",
+      "sha256": "de9504260887bf3bcea5e48449c4c9f3b7e05e3075ca8586fe15a3e95205eb4d",
+      "needle": "pub fn hosted_recurring("
+    },
+    {
+      "path": "crates/rentemester-application/src/scheduled_recurring.rs",
+      "sha256": "ed284865901bc115607839a453a5b18c2375e7cb30a1a1dda72f56014ecaa6a9",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-application/src/hosted_recurring.rs",
+      "sha256": "95127e70610802e6ccbb3ce92dc0af13f141fc8bca05316c104893fdd6d7dedd",
+      "needle": "fn binding("
+    },
+    {
+      "path": "crates/rentemester-application/src/hosted_recurring.rs",
+      "sha256": "95127e70610802e6ccbb3ce92dc0af13f141fc8bca05316c104893fdd6d7dedd",
+      "needle": "pub fn dispatch("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring.rs",
+      "sha256": "37c407ec4e657b7209637e6a5f8d1f14024021dd734e48f965dd79cd6cb65514",
+      "needle": "fn plan_from("
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring.rs",
+      "sha256": "37c407ec4e657b7209637e6a5f8d1f14024021dd734e48f965dd79cd6cb65514",
+      "needle": "pub fn finish("
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring/hosted.rs",
+      "sha256": "92dd3000974c0036b971f2b18a46c7a6a1b3238e2c3174d46be06ddb77515628",
+      "needle": "pub fn consent("
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring/recovery.rs",
+      "sha256": "49062ca8dc46a3317c725a624a5e471618cc569c67b4c1c6a07e2b4b638c8cbf",
+      "needle": "pub(super) fn overlay("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+      "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+      "needle": "pub fn scheduled_spec("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+      "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+      "needle": "fn stripped("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-server/src/hosted_worker.rs",
+      "sha256": "9fd17bd45eb3a119998ecc1ca6b3208c64d8ffc2c25a24e9fbe64ae0df9261c0",
+      "needle": "fn pass("
+    },
+    {
+      "path": "crates/rentemester-server/src/backend.rs",
+      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "needle": "scheduled_executor: None"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/posting_time.rs",
+      "sha256": "3d1527c90b8c10f6f22a5adc55be0d08deea3fb236bcfa1bbeac7693019b8457",
+      "needle": "pub fn latest_date("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+      "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+      "needle": "fn load("
+    }
+  ],
+  "chain": [
+    "protocol installation/admission -> product router -> proof/catalog/body parser -> worker permit -> Backend lock_company -> Owner document_action/admit -> application current control/company fence -> storage producer -> documents outcome -> HTTP response",
+    "hosted consent -> stored V3 historical intent -> explicit process-owned worker candidates -> service usage charge -> fresh control/company/backup/credential/authority binding -> generation-only issue -> append-only audit"
+  ],
+  "verification": "Source reading and strict source/schema oracle only. No Cargo, server, provider, SMTP or live ledger actions. Accepted17765f15/169606f1 safety guards and existing692/709/711/R44 evidence retained at their original scope; no fixture replay.",
+  "unresolved": []
+}
