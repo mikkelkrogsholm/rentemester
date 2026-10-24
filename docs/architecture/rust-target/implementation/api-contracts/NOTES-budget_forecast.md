@@ -83,3 +83,5 @@ semanticreview required; whole677 remains open.
 Only existing strict Python/source checks are used. No Cargo/server/browser/network,
 authentication, financial, upload, scanner, job or external-provider effects run.
 Independent AST extraction is written to `$SGD_BUILD_DIR/graphify`, outside owned code.
+
+Lead source correction: non-default Option notes requires complete native4/original5 declaration-order tuple even though earlier original fields have defaults. SDK body schema models effective domain::body: no period pattern validation, notes bound4096 UTF8bytes. Server semantic calendar/nonnegative/account checks remain binding; no production change or effects.

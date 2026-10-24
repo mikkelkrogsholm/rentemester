@@ -47,9 +47,9 @@
           ]
         }
       ],
-      "minItems": 3,
+      "minItems": 4,
       "maxItems": 4,
-      "description": "Serde declaration order account_no,period,amount,notes; Option tail can be omitted."
+      "description": "Complete Serde declaration tuple account_no,period,amount,notes. Option notes is nullable, not defaulted for missing sequence slot."
     },
     "NativeSet": {
       "anyOf": [
@@ -110,9 +110,9 @@
           ]
         }
       ],
-      "minItems": 1,
+      "minItems": 5,
       "maxItems": 5,
-      "description": "Default string/number tail may be omitted; explicit null amount is rejected by number_present; notes nullable."
+      "description": "Complete Serde declaration tuple confirm,account_no,period,amount,notes. Defaulted middle fields do not permit omission past non-default Option notes tail. Explicit amount null refused by number_present."
     },
     "OriginalWrite": {
       "anyOf": [
@@ -132,7 +132,7 @@
         },
         "period": {
           "type": "string",
-          "pattern": "^[0-9]{4}-[0-9]{2}$"
+          "description": "Effective domain::body accepts any string; advertised period pattern ignored, server validates calendar month."
         },
         "amount": {
           "type": "number"
@@ -142,7 +142,8 @@
             "string",
             "null"
           ],
-          "maxLength": 4096
+          "x-maxUtf8Bytes": 4096,
+          "description": "domain::body enforces4096 UTF8bytes, not Unicodecodepoints."
         }
       },
       "required": [
