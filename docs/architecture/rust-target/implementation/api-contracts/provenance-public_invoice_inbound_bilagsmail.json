@@ -1,0 +1,348 @@
+{
+  "partition": "public_invoice_inbound_bilagsmail",
+  "status": "specified",
+  "unresolved": [],
+  "method": "Graphify query first, actual source reading of global admission/parser before family leaf, host/application/storage/runtime producers; no live operation replay.",
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/invoices/public-config"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bilagsmail.rs",
+      "sha256": "ecdaea522755433df8e16fcd7d43701e0e42744ffc854e0a2ec28563121eb19c",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/mail_intake.rs",
+      "sha256": "a748037a537c10b3dc79e1ffd58dfa51a4620de019158a1aed1a04d9189b0152",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/mail_intake.rs",
+      "sha256": "3dfee112e1d4e02ef9d5812d5c3b81069804bc3a6fcafc4116227c37b036f586",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-runtime/src/imap.rs",
+      "sha256": "427738da420165f98bf716d8c7e3f2ea4ddfb55b61f1db08286de309785f0e0f",
+      "needle": "impl Config"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_setup.rs",
+      "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+      "needle": "pub fn profile("
+    },
+    {
+      "path": "crates/rentemester-engine/src/mail_intake.rs",
+      "sha256": "53767c9519b810cb73c451cba64fe723cafbee4bd0db137f091dfea4a12e0ae4",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/bilagsmail.rs",
+      "sha256": "78b46dee09ddd801ae665204c545a10dd495d6a38affe5ad82b77af70457bca9",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/dinero_import.rs",
+      "sha256": "967d85354a22a4a6b316846bb1b183e1a5be8633f7da60218b355fd01dd4c1c3",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/dinero_import.rs",
+      "sha256": "9b291743dd8221e10d25a96e0fc546c12a57a7c139889ce7c6d6f9ae3d93b9b7",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/imported_receivables.rs",
+      "sha256": "9cf90bdb7d907e166009102e52607d545226d08f6a3a325069a024790bb47b53",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-host/src/dinero_import.rs",
+      "sha256": "5d3c0fdde767ee6ceefa5773ce1e6d1909fbba42a09c908127ae26135c5a1a8b",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/dinero_import.rs",
+      "sha256": "a0ee3fa1ac0f236e5d7cfcce646c90d294c31a92335148fb90056381903dc878",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-engine/src/dinero_import.rs",
+      "sha256": "ba8bdef00b85b04d44c821553c7e4ad67df8abc6461b3386ee42356ac0721e2c",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/dinero_import.rs",
+      "sha256": "f70c4610a95bec3d45939a762ff301c3b1a19c26e46d2969dd88903b0f0d00a9",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
+      "sha256": "6c4937ba60b7c93ca86880d8dbf332d8fcf4429db649f03f4aab88b277a4d363",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/public_einvoice.rs",
+      "sha256": "6440851e2a629d349dcca5bea837828a7efeb5533dd6daea4d0f0b8a2e3a7151",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice.rs",
+      "sha256": "1d7e20177f6d05916a5257b6672fbe0fb3d1e6cf2831d000b5a012b2ec78861a",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-host/src/public_einvoice.rs",
+      "sha256": "7116439920f1950bf596f97ce0ee5ba9985488ad74cce480ebddc351e4cd18f3",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice/registration.rs",
+      "sha256": "5aac5417298b609ce5fd7ea7e85240b57b8699d8cd8ec044b847559a192cede1",
+      "needle": "pub fn identity("
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice/onboarding.rs",
+      "sha256": "f32d6c44f7d3d426a5bc112fcade0b3a6425b8e3ab681d8cbe6b0a91c5609332",
+      "needle": "pub fn onboarding_status("
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice/handoff.rs",
+      "sha256": "625619c30eac67190dce9d53802084a2a19313e115303294f8e671afab1dec75",
+      "needle": "pub fn prepare_original("
+    },
+    {
+      "path": "crates/rentemester-engine/src/public_einvoice.rs",
+      "sha256": "d22d627e55cc6e43f239533ee8c960c24c5c4b6f7fd24dd74c415904da3dcbf5",
+      "needle": "pub fn export("
+    },
+    {
+      "path": "crates/rentemester-engine/src/peppol_handoff.rs",
+      "sha256": "e4951f118229e50f4d508c4d19fb3383eeeb04003a746ea543ee102c5d42cdb5",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-client/src/public_einvoice.rs",
+      "sha256": "882ff9a906f03693964129cae5167df0423dfb415d7d2296cd757fb17b37d4b9",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/digisense_received.rs",
+      "sha256": "85187776381efbc12cdd8808ce6bdce194c54adf15c517428a36727a55427bbb",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/digisense_received.rs",
+      "sha256": "295778f9b7d7f9c3e6fa838cb4f3a0c1fddff7d70dfd40b70a535bd26e475edc",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-storage/src/digisense_received.rs",
+      "sha256": "b52b17edb8e0c79ac93999f2de0a855bb225ecc2ba7545e08047fa4f759532dd",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-host/src/digisense_received.rs",
+      "sha256": "3772cb95039f2c7535c69b420d06d5751497888cd5ed21b43281f302dbb44fe1",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-engine/src/digisense_received.rs",
+      "sha256": "dc68e6628734005804cec644dc29c20175f96510cae1f7bdb19371f1b6acf833",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/digisense_received.rs",
+      "sha256": "826a1e56069ca0c8b313127eb36544ea8903d69d364c6a64673f2ea8ecccbd90",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-client/src/invoice_public_original.rs",
+      "sha256": "743581651a63ab5d8bc399fb00a4117f9477fa72af2217c718a60f1010731a93",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn prepare_with_output"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "9f53986d854b08be50b439ee9ed7cd666249966a1a11b5dbb21308f325ced2f3",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-cli/src/invoice_public_original.rs",
+      "sha256": "cabde88a9f2b65f5618ed80a3104554b46174610a3c0c86473a0aa6bf01f6d0d",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/invoice_financial_original.rs",
+      "sha256": "07af8128d2d9ddacf5892d7282c3792db9803690686615325064c0bde4f00e46",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-engine/src/invoice_validation.rs",
+      "sha256": "c6b4983406542d83ede085f43132fa9bb9072a740141672600548ecb23ebe8c2",
+      "needle": "pub fn validate("
+    },
+    {
+      "path": "crates/rentemester-cli/src/bilagsmail.rs",
+      "sha256": "76d40310039a24f492bc95d7d9440fffda70c47319a93b5ce6bf56eaba6bb17e",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-cli/src/digisense_received.rs",
+      "sha256": "136c383a818a82a9129706989fb5e782d8d49e81d64ba8c3757257552785e93d",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/dinero_import.rs",
+      "sha256": "906a69e97a106c21e7f197e1c3b577579a157f73b53f4ae34a23a60205e14240",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-cli/src/public_einvoice.rs",
+      "sha256": "14a7e00f33856ecf5fed9a510d4cb1d6b90e99bc57b5f258fa922b0c8e210d4b",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bilagsmail.rs",
+      "sha256": "6e0154eebba788750a22cfbf4e777b97fc1ec24e3ece273c3cd22625a180f4ba",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/digisense_received.rs",
+      "sha256": "19242c7ed3c3fd78f698bc8f1acdf1bc967e400dae72db327748c6ec647412f3",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/public_einvoice.rs",
+      "sha256": "da914832fa86d205d2232ea1b7c36eba344e129d1bbf0710ca7e240ac4e07d0b",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/dinero_import.rs",
+      "sha256": "7967154756651a9beed045c9ab6cd0abffd19121346821a64a1d0cda39f07147",
+      "needle": "use "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/invoice_validation.rs",
+      "sha256": "43cb69d9e634684e2b111631e233afb42fd2028a23f9b6d410285b3d53ffd2f0",
+      "needle": "use "
+    }
+  ],
+  "selectedIds": [
+    "http:DELETE /api/companies/{slug}/bilagsmail/imap-config",
+    "http:GET /api/companies/{slug}/bilagsmail",
+    "http:GET /api/companies/{slug}/invoices/imported-receivables",
+    "http:GET /api/companies/{slug}/invoices/public-config",
+    "http:GET /api/companies/{slug}/invoices/public-submissions",
+    "http:HEAD /api/companies/{slug}/bilagsmail",
+    "http:HEAD /api/companies/{slug}/invoices/imported-receivables",
+    "http:HEAD /api/companies/{slug}/invoices/public-config",
+    "http:HEAD /api/companies/{slug}/invoices/public-submissions",
+    "http:PATCH /api/companies/{slug}/bilagsmail/alias",
+    "http:POST /api/companies/{slug}/bilagsmail/imap-config",
+    "http:POST /api/companies/{slug}/bilagsmail/poll",
+    "http:POST /api/companies/{slug}/efaktura/modtag",
+    "http:POST /api/companies/{slug}/invoices/original/export-public",
+    "http:POST /api/companies/{slug}/invoices/original/export-public-oioubl",
+    "http:POST /api/companies/{slug}/invoices/original/submit-public-peppol",
+    "http:POST /api/companies/{slug}/invoices/original/transmit-digisense",
+    "http:POST /api/companies/{slug}/invoices/public-onboard",
+    "http:POST /api/companies/{slug}/invoices/public-register",
+    "http:POST /api/companies/{slug}/invoices/public-register-pair",
+    "http:POST /api/companies/{slug}/invoices/send-public",
+    "http:POST /api/companies/{slug}/invoices/send-public/status",
+    "http:POST /api/workspace/efaktura/modtag",
+    "cli:invoice export-public",
+    "cli:invoice export-public-oioubl",
+    "cli:invoice imported-receivables",
+    "cli:invoice submit-public-peppol",
+    "cli:invoice transmit-digisense",
+    "cli:invoice validate",
+    "cli:remote bilagsmail",
+    "cli:remote configure-bilagsmail",
+    "cli:remote delete-bilagsmail-config",
+    "cli:remote efaktura-modtag",
+    "cli:remote efaktura-modtag-workspace",
+    "cli:remote imported-receivables",
+    "cli:remote onboard-public-invoice",
+    "cli:remote poll-bilagsmail",
+    "cli:remote public-invoice-config",
+    "cli:remote public-invoice-submissions",
+    "cli:remote refresh-public-invoice-status",
+    "cli:remote register-public-invoice",
+    "cli:remote register-public-invoice-pair",
+    "cli:remote send-public-invoice",
+    "cli:remote set-bilagsmail-alias",
+    "mcp:bilagsmail",
+    "mcp:configure_bilagsmail",
+    "mcp:delete_bilagsmail_config",
+    "mcp:efaktura_modtag",
+    "mcp:efaktura_modtag_workspace",
+    "mcp:efaktura_onboard",
+    "mcp:efaktura_onboarding_status",
+    "mcp:efaktura_registrer",
+    "mcp:invoice_imported_receivables",
+    "mcp:invoice_validate",
+    "mcp:poll_bilagsmail",
+    "mcp:public_invoice_config",
+    "mcp:public_invoice_submissions",
+    "mcp:refresh_public_invoice_status",
+    "mcp:register_public_invoice",
+    "mcp:send_public_invoice",
+    "mcp:set_bilagsmail_alias"
+  ],
+  "acceptance": "Strict existing Python oracle is structural only; main retains independent actual-source semantic review and integration acceptance. No whole #677 closure; prior1285/34partitions and55scope/J01-J07/finaldesktop/release/cutover/retirement unchanged.",
+  "leadReviewRepair": "Lead source review repaired four original public-invoice CLI refusal JSON variants to include actual local fail() errors-only DTO and validated422 business core/domain codes alongside client errors. Human stderr differs and local publication may fail after successful server audit. No provider/effects replay. Accurately observed unsafe publicHEAD remains explicit blocker for separate diagnosed R59 handler fence before whole677 acceptance/publication."
+}

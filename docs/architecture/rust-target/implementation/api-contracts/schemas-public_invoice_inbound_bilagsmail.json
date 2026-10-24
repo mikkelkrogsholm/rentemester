@@ -1,0 +1,8169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-public_invoice_inbound_bilagsmail.json",
+  "$defs": {
+    "Text": {
+      "type": "string"
+    },
+    "I64": {
+      "type": "integer",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807
+    },
+    "SafeId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "Strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "ErrorId": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "Confirm": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Pair": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "const": true
+            },
+            "network": {
+              "enum": [
+                "nemhandel",
+                "peppol"
+              ]
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": true
+            },
+            {
+              "enum": [
+                "nemhandel",
+                "peppol"
+              ]
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 2
+        }
+      ]
+    },
+    "Send": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "Alias": {
+      "type": "object",
+      "properties": {
+        "alias": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "alias"
+      ],
+      "additionalProperties": false
+    },
+    "Config": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string",
+              "writeOnly": true,
+              "x-maxUtf8Bytes": 8192
+            },
+            "secure": {
+              "type": "boolean"
+            },
+            "mailbox": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "host",
+            "port",
+            "username",
+            "password"
+          ],
+          "additionalProperties": false,
+          "description": "Value is reserialized before Config::parse; object required by runtime WireConfig after reserialization. Host/username trimmed, mailbox trimmed or INBOX; secure defaults true. DNS rustls ServerName; host <=253 bytes no whitespace/control; username<=4096; nonblank password<=8192; mailbox<=1024, all reject control. Unknown fields refused, null not defaults. No STARTTLS invention."
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "writeOnly": true,
+              "x-maxUtf8Bytes": 8192
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 6
+        }
+      ],
+      "description": "Value is reserialized before Config::parse; object required by runtime WireConfig after reserialization. Host/username trimmed, mailbox trimmed or INBOX; secure defaults true. DNS rustls ServerName; host <=253 bytes no whitespace/control; username<=4096; nonblank password<=8192; mailbox<=1024, all reject control. Unknown fields refused, null not defaults. No STARTTLS invention. Direct HTTP Configure passes Value through to reserialized WireConfig: positional array admitted; SDK body preflight accepts object only."
+    },
+    "SdkConfig": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1
+        },
+        "password": {
+          "type": "string",
+          "writeOnly": true,
+          "x-maxUtf8Bytes": 8192,
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "secure": {
+          "type": "boolean"
+        },
+        "mailbox": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "username",
+        "password"
+      ],
+      "additionalProperties": false,
+      "description": "Value is reserialized before Config::parse; object required by runtime WireConfig after reserialization. Host/username trimmed, mailbox trimmed or INBOX; secure defaults true. DNS rustls ServerName; host <=253 bytes no whitespace/control; username<=4096; nonblank password<=8192; mailbox<=1024, all reject control. Unknown fields refused, null not defaults. No STARTTLS invention."
+    },
+    "ImapStatus": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "secure": {
+          "type": "boolean"
+        },
+        "username": {
+          "type": "string"
+        },
+        "mailbox": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "secure",
+        "username",
+        "mailbox"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyProfile": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "postalCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companyForm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industryCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industryText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvrStatus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvrSyncedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatPeriodType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "auditWaived": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "bankName": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "registrationNo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "accountNo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "iban": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "bankName",
+                "registrationNo",
+                "accountNo",
+                "iban"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "country",
+        "currency",
+        "fiscalYearLabelStrategy",
+        "createdAt",
+        "cvr",
+        "address",
+        "postalCode",
+        "city",
+        "companyForm",
+        "industryCode",
+        "industryText",
+        "cvrStatus",
+        "cvrSyncedAt",
+        "vatPeriodType",
+        "id",
+        "fiscalYearStartMonth",
+        "paymentTermsDays",
+        "auditWaived",
+        "payment"
+      ],
+      "additionalProperties": false
+    },
+    "InboxRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "uploadDatetime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "senderName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountIncVat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retainUntil": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "documentNo",
+        "source",
+        "uploadDatetime",
+        "senderName",
+        "invoiceDate",
+        "amountIncVat",
+        "retainUntil"
+      ],
+      "additionalProperties": false
+    },
+    "Polling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "state": {
+          "type": "string"
+        },
+        "lastError": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "Bilagsmail": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bilagsmail": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "company": {
+              "$ref": "#/$defs/CompanyProfile"
+            },
+            "mailAlias": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "imapConfigured": {
+              "type": "boolean"
+            },
+            "imapStatus": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ImapStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "inbox": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/InboxRow"
+              },
+              "maxItems": 50
+            },
+            "polling": {
+              "$ref": "#/$defs/Polling"
+            }
+          },
+          "required": [
+            "slug",
+            "company",
+            "mailAlias",
+            "imapConfigured",
+            "imapStatus",
+            "inbox",
+            "polling"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "bilagsmail"
+      ],
+      "additionalProperties": false
+    },
+    "MailPoll": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "poll": {
+          "type": "object",
+          "properties": {
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "duplicates": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "hasMore": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "sourceIds",
+            "duplicates",
+            "hasMore"
+          ],
+          "additionalProperties": false
+        },
+        "polling": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "state": {
+              "const": "idle"
+            }
+          },
+          "required": [
+            "enabled",
+            "state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "poll",
+        "polling"
+      ],
+      "additionalProperties": false
+    },
+    "MailPollFailure": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_config_invalid"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_config_invalid"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_unavailable"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_unavailable"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_authentication_refused"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_authentication_refused"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_timeout"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_timeout"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_protocol_invalid"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_protocol_invalid"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "const": "imap_limit"
+            },
+            "polling": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "const": "error"
+                },
+                "lastError": {
+                  "const": "imap_limit"
+                }
+              },
+              "required": [
+                "enabled",
+                "state",
+                "lastError"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "polling"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Networks": {
+      "type": "object",
+      "properties": {
+        "nemhandel": {
+          "type": "object",
+          "properties": {
+            "outbound": {
+              "type": "boolean"
+            },
+            "inbound": {
+              "type": "boolean"
+            },
+            "technicalReady": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "outbound",
+            "inbound",
+            "technicalReady"
+          ],
+          "additionalProperties": false
+        },
+        "peppol": {
+          "type": "object",
+          "properties": {
+            "outbound": {
+              "type": "boolean"
+            },
+            "inbound": {
+              "type": "boolean"
+            },
+            "technicalReady": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "outbound",
+            "inbound",
+            "technicalReady"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "nemhandel",
+        "peppol"
+      ],
+      "additionalProperties": false
+    },
+    "Onboarding": {
+      "type": "object",
+      "properties": {
+        "inbound": {
+          "type": "boolean"
+        },
+        "networks": {
+          "$ref": "#/$defs/Networks"
+        },
+        "technicalReady": {
+          "type": "boolean"
+        },
+        "externallyApproved": {
+          "const": false
+        }
+      },
+      "required": [
+        "inbound",
+        "networks",
+        "technicalReady",
+        "externallyApproved"
+      ],
+      "additionalProperties": false
+    },
+    "PublicConfig": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "publicEInvoice": {
+          "type": "object",
+          "properties": {
+            "configured": {
+              "type": "boolean"
+            },
+            "environment": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "test",
+                    "production"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "registered": {
+              "type": "boolean"
+            },
+            "outbound": {
+              "type": "boolean"
+            },
+            "inbound": {
+              "type": "boolean"
+            },
+            "networks": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Networks"
+                },
+                {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "technicalReady": {
+              "type": "boolean"
+            },
+            "externallyApproved": {
+              "const": false
+            }
+          },
+          "required": [
+            "configured",
+            "environment",
+            "registered",
+            "outbound",
+            "inbound",
+            "networks",
+            "technicalReady",
+            "externallyApproved"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "publicEInvoice"
+      ],
+      "additionalProperties": false
+    },
+    "Registration": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "registration": {
+          "type": "object",
+          "properties": {
+            "registered": {
+              "const": true
+            },
+            "outbound": {
+              "const": true
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            }
+          },
+          "required": [
+            "registered",
+            "outbound",
+            "environment"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "registration"
+      ],
+      "additionalProperties": false
+    },
+    "PairRegistration": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "registration": {
+          "$ref": "#/$defs/Onboarding"
+        }
+      },
+      "required": [
+        "ok",
+        "registration"
+      ],
+      "additionalProperties": false
+    },
+    "PublicEvent": {
+      "$ref": "schemas-invoice_native_http.json#/$defs/PublicEvent"
+    },
+    "NativeSubmission": {
+      "type": "object",
+      "properties": {
+        "submissionReference": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "oioublSha256": {
+          "type": "string"
+        },
+        "envelopeSha256": {
+          "type": "string"
+        },
+        "envelope": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "acknowledged",
+            "failed",
+            "uncertain"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transmissionId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "legacy": {
+          "const": false
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "redeliveryBlocked": {
+          "const": true
+        },
+        "providerStatus": {
+          "enum": [
+            "delivery-uncertain",
+            "delivered",
+            "queued-for-delivery",
+            "document-not-valid",
+            "unable-to-deliver",
+            "unknown-server-error",
+            "temporary-upstream-error"
+          ]
+        },
+        "companyKey": {
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "test",
+            "production"
+          ]
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PublicEvent"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "submissionReference",
+        "idempotencyKey",
+        "oioublSha256",
+        "envelopeSha256",
+        "envelope",
+        "status",
+        "id",
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "transmissionId",
+        "legacy",
+        "duplicate",
+        "redeliveryBlocked",
+        "providerStatus",
+        "companyKey",
+        "environment",
+        "stateHash",
+        "history"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "providerStatus": {
+                "enum": [
+                  "delivered"
+                ]
+              }
+            },
+            "required": [
+              "providerStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "acknowledged"
+              },
+              "transmissionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "transmissionId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "providerStatus": {
+                "enum": [
+                  "document-not-valid",
+                  "unable-to-deliver",
+                  "unknown-server-error"
+                ]
+              }
+            },
+            "required": [
+              "providerStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "failed"
+              },
+              "transmissionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "transmissionId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "providerStatus": {
+                "enum": [
+                  "queued-for-delivery",
+                  "temporary-upstream-error"
+                ]
+              }
+            },
+            "required": [
+              "providerStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "prepared"
+              },
+              "transmissionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "transmissionId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "providerStatus": {
+                "enum": [
+                  "delivery-uncertain"
+                ]
+              }
+            },
+            "required": [
+              "providerStatus"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "uncertain"
+              },
+              "transmissionId": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "status",
+              "transmissionId"
+            ]
+          }
+        }
+      ]
+    },
+    "Submission": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$ref": "#/$defs/NativeSubmission"
+        }
+      ],
+      "description": "Non-native envelope rows retain nullable SQL invoice_no and unrestricted stored status; native history verified by state(), source hash, ledger/environment/company binding. Native status derived: delivered=>acknowledged; document-not-valid/unable-to-deliver/unknown-server-error=>failed; other with ID=>prepared; no ID=>uncertain. All are outer HTTP200 ok:true, not delivery assertions. duplicate false only initial reserve/original completed dispatch."
+    },
+    "PublicSubmissions": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Submission"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "Sent": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "submission": {
+          "$ref": "#/$defs/Submission"
+        }
+      },
+      "required": [
+        "ok",
+        "submission"
+      ],
+      "additionalProperties": false
+    },
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "xml": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "DK-INVOICE-PUBLIC-EXPORT-001",
+              "DK-INVOICE-PUBLIC-OIOUBL-001"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "invoiceNumber",
+        "sha256",
+        "xml",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalSubmission": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "prepared",
+                "acknowledged",
+                "failed",
+                "uncertain"
+              ]
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "const": false
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "const": true
+            },
+            "providerStatus": {
+              "enum": [
+                "delivery-uncertain",
+                "delivered",
+                "queued-for-delivery",
+                "document-not-valid",
+                "unable-to-deliver",
+                "unknown-server-error",
+                "temporary-upstream-error"
+              ]
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PublicEvent"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AccessPoint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "accessPointId": {
+              "type": "string"
+            },
+            "endpointUrl": {
+              "type": "string"
+            },
+            "senderEndpointId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accessPointId",
+            "endpointUrl",
+            "senderEndpointId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "Acknowledgement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "transmissionId": {
+              "type": "string"
+            },
+            "acknowledgedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "transmissionId",
+            "acknowledgedAt"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "Selector": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ExportBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ExportSdkBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OioublBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OioublSdkBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PrepareBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        "confirm": {
+          "const": true
+        },
+        "accessPoint": {
+          "$ref": "#/$defs/AccessPoint"
+        },
+        "acknowledgement": {
+          "$ref": "#/$defs/Acknowledgement"
+        }
+      },
+      "required": [
+        "confirm",
+        "accessPoint"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            },
+            "confirm": {
+              "const": true
+            },
+            "accessPoint": {
+              "$ref": "#/$defs/AccessPoint"
+            },
+            "acknowledgement": {
+              "$ref": "#/$defs/Acknowledgement"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            },
+            "confirm": {
+              "const": true
+            },
+            "accessPoint": {
+              "$ref": "#/$defs/AccessPoint"
+            },
+            "acknowledgement": {
+              "$ref": "#/$defs/Acknowledgement"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PrepareSdkBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "accessPoint": {
+          "type": "object",
+          "properties": {
+            "accessPointId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "endpointUrl": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "senderEndpointId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "accessPointId",
+            "endpointUrl",
+            "senderEndpointId"
+          ],
+          "additionalProperties": false
+        },
+        "acknowledgement": {
+          "type": "object",
+          "properties": {
+            "transmissionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "acknowledgedAt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "transmissionId",
+            "acknowledgedAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "confirm",
+        "accessPoint"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "confirm": {
+              "const": true
+            },
+            "accessPoint": {
+              "type": "object",
+              "properties": {
+                "accessPointId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "endpointUrl": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "senderEndpointId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "accessPointId",
+                "endpointUrl",
+                "senderEndpointId"
+              ],
+              "additionalProperties": false
+            },
+            "acknowledgement": {
+              "type": "object",
+              "properties": {
+                "transmissionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "acknowledgedAt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "transmissionId",
+                "acknowledgedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "confirm": {
+              "const": true
+            },
+            "accessPoint": {
+              "type": "object",
+              "properties": {
+                "accessPointId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "endpointUrl": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "senderEndpointId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "accessPointId",
+                "endpointUrl",
+                "senderEndpointId"
+              ],
+              "additionalProperties": false
+            },
+            "acknowledgement": {
+              "type": "object",
+              "properties": {
+                "transmissionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "acknowledgedAt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                }
+              },
+              "required": [
+                "transmissionId",
+                "acknowledgedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TransmitBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        "confirm": {
+          "const": true
+        },
+        "companyKey": {
+          "type": "string",
+          "x-maxUtf8Bytes": 512
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            },
+            "confirm": {
+              "const": true
+            },
+            "companyKey": {
+              "type": "string",
+              "x-maxUtf8Bytes": 512
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            },
+            "confirm": {
+              "const": true
+            },
+            "companyKey": {
+              "type": "string",
+              "x-maxUtf8Bytes": 512
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TransmitSdkBody": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "companyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "confirm": {
+              "const": true
+            },
+            "companyKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "confirm": {
+              "const": true
+            },
+            "companyKey": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "issueDate": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "invoiceNo": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "deliveryDescription": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "currency": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "paymentDetails": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        },
+        "documentType": {
+          "const": "purchase_sale"
+        },
+        "amountIncVat": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "sender": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "address": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "countryCode": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "identifierKind": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "recipient": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "address": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "countryCode": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "identifierKind": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "purchaseVatLines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "classification": {
+                "enum": [
+                  "dk_purchase_25",
+                  "exempt"
+                ]
+              },
+              "netAmount": {
+                "type": "number"
+              },
+              "vatAmount": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "classification",
+              "netAmount"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "reverseChargeWordingConfirmed": {
+          "type": "boolean"
+        },
+        "danishSimplifiedPurchaseInvoice": {
+          "type": "boolean"
+        },
+        "exemptionCode": {
+          "enum": [
+            "FOREIGN_PHYSICAL_ONLY",
+            null
+          ]
+        },
+        "sourceBankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "accountingRationale": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ReceiveBody": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "const": true
+            },
+            "companyKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxTimestamp": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "metadata": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Metadata"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ingestOptions": {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "forceDuplicateLogicalIdentity": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "boolean"
+                        }
+                      ],
+                      "minItems": 0,
+                      "maxItems": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxPages": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": true
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Metadata"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "forceDuplicateLogicalIdentity": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "boolean"
+                        }
+                      ],
+                      "minItems": 0,
+                      "maxItems": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Direct serde struct sequence requires all seven declared fields, Option fields explicit null in sequence; maps may omit Option fields. IngestOptions default bool allows omitted sequence tail. companyKey/maxTimestamp nonempty trimmed no control <=512/128 UTF8 bytes. Default limit=maxPages=100. Workspace additionally compares raw Value to exact {confirm:true}, so arrays never admitted there."
+    },
+    "ReceiveSdkBody": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "companyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "maxTimestamp": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "invoiceNo": {
+              "type": "string"
+            },
+            "deliveryDescription": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "paymentDetails": {
+              "type": "string"
+            },
+            "documentType": {
+              "const": "purchase_sale"
+            },
+            "amountIncVat": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "sender": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "type": "string"
+                },
+                "countryCode": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "identifierKind": {
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ]
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "recipient": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "type": "string"
+                },
+                "countryCode": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "identifierKind": {
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ]
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "purchaseVatLines": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "classification": {
+                    "enum": [
+                      "dk_purchase_25",
+                      "exempt"
+                    ]
+                  },
+                  "netAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "vatAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "classification",
+                  "netAmount"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            },
+            "reverseChargeWordingConfirmed": {
+              "type": "boolean"
+            },
+            "danishSimplifiedPurchaseInvoice": {
+              "type": "boolean"
+            },
+            "exemptionCode": {
+              "enum": [
+                "FOREIGN_PHYSICAL_ONLY",
+                null
+              ]
+            },
+            "sourceBankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "accountingRationale": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "ingestOptions": {
+          "type": "object",
+          "properties": {
+            "forceDuplicateLogicalIdentity": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "maxPages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ReceivedDocument": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "internalId": {
+              "type": "string"
+            },
+            "status": {
+              "const": "skipped-duplicate"
+            }
+          },
+          "required": [
+            "internalId",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "internalId": {
+              "type": "string"
+            },
+            "status": {
+              "const": "ingested"
+            },
+            "documentNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "internalId",
+            "status",
+            "documentNo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "internalId": {
+              "type": "string"
+            },
+            "status": {
+              "const": "quarantined"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "internalId",
+            "status",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "internalId": {
+              "type": "string"
+            },
+            "status": {
+              "const": "error"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "const": "receive_download_failed"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "internalId",
+            "status",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Received": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "pagesFetched": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "documentsListed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "documentsSkipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "documentsQuarantined": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReceivedDocument"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "pagesFetched",
+        "documentsListed",
+        "documentsIngested",
+        "documentsSkipped",
+        "documentsQuarantined",
+        "documents",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceReceived": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "skipped"
+                  },
+                  "reason": {
+                    "enum": [
+                      "archived",
+                      "not initialized",
+                      "not configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "polled"
+                  },
+                  "documentsIngested": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "documentsIngested"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "failed"
+                  },
+                  "reason": {
+                    "const": "receive failed; inspect authoritative documents and dedup before any further action"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "companies"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedRow": {
+      "type": "object",
+      "properties": {
+        "customerExternalId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customerName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "externalInvoiceId": {
+          "type": "string"
+        },
+        "invoiceDate": {
+          "type": "string"
+        },
+        "controlAccountNo": {
+          "type": "string"
+        },
+        "sourceRecognitionRef": {
+          "type": "string"
+        },
+        "sourceDocumentHash": {
+          "type": "string"
+        },
+        "scheduleHash": {
+          "type": "string"
+        },
+        "source": {
+          "const": "imported"
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "paidAmount": {
+          "type": "number"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "archiveBoundary": {
+          "const": "Imported source record; use invoice list for Rentemester-issued invoices."
+        }
+      },
+      "required": [
+        "customerExternalId",
+        "customerName",
+        "dueDate",
+        "externalInvoiceId",
+        "invoiceDate",
+        "controlAccountNo",
+        "sourceRecognitionRef",
+        "sourceDocumentHash",
+        "scheduleHash",
+        "source",
+        "grossAmount",
+        "paidAmount",
+        "openBalance",
+        "archiveBoundary"
+      ],
+      "additionalProperties": false
+    },
+    "Imported": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "boundary": {
+          "const": "Imported source records only; native Rentemester invoices are deliberately separate to avoid duplicate claims."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "totalOpen": {
+          "type": "number"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImportedRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "asOfDate",
+        "boundary",
+        "count",
+        "totalOpen",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "importedReceivables": {
+          "$ref": "#/$defs/Imported"
+        }
+      },
+      "required": [
+        "ok",
+        "importedReceivables"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedMcp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "boundary": {
+          "const": "Imported source records only; native Rentemester invoices are deliberately separate to avoid duplicate claims."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "totalOpen": {
+          "type": "number"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImportedRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "importedReceivables": {
+          "$ref": "#/$defs/Imported"
+        }
+      },
+      "required": [
+        "ok",
+        "asOfDate",
+        "boundary",
+        "count",
+        "totalOpen",
+        "rows",
+        "errors",
+        "importedReceivables"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceJson": {
+      "type": [
+        "null",
+        "boolean",
+        "number",
+        "string",
+        "array",
+        "object"
+      ],
+      "properties": {},
+      "required": [],
+      "additionalProperties": true,
+      "items": {
+        "$ref": "#/$defs/EvidenceJson"
+      },
+      "x-arbitrary-json": {
+        "scope": "Recursive offline invoice evidence field values",
+        "rationale": "Pure advisory Value evidence reader accepts arbitrary JSON including malformed field types to produce validation errors; not an issuance or transport authority.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-engine/src/invoice_validation.rs",
+            "sha256": "c6b4983406542d83ede085f43132fa9bb9072a740141672600548ecb23ebe8c2",
+            "needle": "pub fn validate(p: &Value) -> Value"
+          }
+        ]
+      }
+    },
+    "ValidationPayload": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": {
+        "$ref": "#/$defs/EvidenceJson"
+      },
+      "description": "Pure advisory accepts every object key/value; validator reads known fields, does not reject extras or allocate invoice. CLI additionally accepts non-object JSON."
+    },
+    "Verdict": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "vatTreatment": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "invoiceType": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "ok",
+        "vatTreatment",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ValidateArgs": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/ValidationPayload"
+        }
+      },
+      "required": [
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "ValidationToolCore": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "HttpFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "DineroFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "outcome": {
+          "const": "not_committed"
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "$ref": "schemas-identity_cli.json#/$defs/Failure"
+    },
+    "NativeClientError": {
+      "$ref": "schemas-invoice_mcp.json#/$defs/NativeClientError"
+    },
+    "ErrorResult": {
+      "$ref": "schemas-invoice_mcp.json#/$defs/NativeErrorResult"
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "report selectors must be strings",
+                    "public-invoice read requires only company",
+                    "public-invoice write requires only company/exact body/confirm:true",
+                    "bilagsmail requires only company",
+                    "mailbox delete requires only company/confirm:true",
+                    "mailbox write requires only company/exact bounded body/confirm:true",
+                    "receive requires company/body/confirm:true only",
+                    "workspace receive requires body/confirm:true only",
+                    "exact company and asOf date required",
+                    "only payload required; no company or confirm",
+                    "payload must be object"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PairSdk": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "network": {
+          "enum": [
+            "nemhandel",
+            "peppol"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "SendSdk": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "HttpHeaders": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "cookie": {
+          "type": "string"
+        },
+        "content-type": {
+          "type": "string"
+        },
+        "sec-fetch-site": {
+          "type": "string"
+        },
+        "x-rentemester-protocol": {
+          "type": "string"
+        },
+        "x-rentemester-manifest": {
+          "type": "string"
+        },
+        "x-rentemester-wire-profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "host"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessFalse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "LocalCliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Flags23": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--invoice-number": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--out"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput23": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags23"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success23": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "xml": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "DK-INVOICE-PUBLIC-EXPORT-001",
+              "DK-INVOICE-PUBLIC-OIOUBL-001"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "outPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "invoiceNumber",
+        "sha256",
+        "xml",
+        "appliedRules",
+        "errors",
+        "outPath"
+      ],
+      "additionalProperties": false
+    },
+    "Flags24": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--invoice-number": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--out"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput24": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags24"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success24": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "xml": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "DK-INVOICE-PUBLIC-EXPORT-001",
+              "DK-INVOICE-PUBLIC-OIOUBL-001"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "outPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "invoiceNumber",
+        "sha256",
+        "xml",
+        "appliedRules",
+        "errors",
+        "outPath"
+      ],
+      "additionalProperties": false
+    },
+    "Flags25": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput25": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags25"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success25": {
+      "$ref": "#/$defs/Imported"
+    },
+    "Flags26": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--invoice-number": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        },
+        "--access-point": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--access-point"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput26": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags26"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success26": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "outPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "prepared",
+                "acknowledged",
+                "failed",
+                "uncertain"
+              ]
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "const": false
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "const": true
+            },
+            "providerStatus": {
+              "enum": [
+                "delivery-uncertain",
+                "delivered",
+                "queued-for-delivery",
+                "document-not-valid",
+                "unable-to-deliver",
+                "unknown-server-error",
+                "temporary-upstream-error"
+              ]
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PublicEvent"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "outPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Flags27": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--invoice-number": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--digisense-company-key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput27": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags27"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success27": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "prepared",
+                "acknowledged",
+                "failed",
+                "uncertain"
+              ]
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "const": false
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "const": true
+            },
+            "providerStatus": {
+              "enum": [
+                "delivery-uncertain",
+                "delivered",
+                "queued-for-delivery",
+                "document-not-valid",
+                "unable-to-deliver",
+                "unknown-server-error",
+                "temporary-upstream-error"
+              ]
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PublicEvent"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Flags28": {
+      "type": "object",
+      "properties": {
+        "--input": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--input"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput28": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags28"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success28": {
+      "$ref": "#/$defs/Verdict"
+    },
+    "Flags29": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput29": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags29"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success29": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Bilagsmail"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags30": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput30": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags30"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success30": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Bilagsmail"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags31": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput31": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags31"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success31": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Bilagsmail"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags32": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput32": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags32"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success32": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Received"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags33": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput33": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags33"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success33": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/WorkspaceReceived"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags34": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput34": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags34"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success34": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/ImportedEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags35": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput35": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags35"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success35": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PairRegistration"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags36": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput36": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags36"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success36": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/MailPoll"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags37": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput37": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags37"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success37": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PublicConfig"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags38": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput38": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags38"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success38": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PublicSubmissions"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags39": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput39": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags39"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success39": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Sent"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags40": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput40": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags40"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success40": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Registration"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags41": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput41": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags41"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success41": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PairRegistration"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags42": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput42": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags42"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success42": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Sent"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Flags43": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput43": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "normalizedFlags": {
+          "$ref": "#/$defs/Flags43"
+        },
+        "stdin": {
+          "type": "string"
+        },
+        "inputFileJson": {
+          "$ref": "#/$defs/EvidenceJson"
+        }
+      },
+      "required": [
+        "argv"
+      ],
+      "additionalProperties": false
+    },
+    "Success43": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/Bilagsmail"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Args44": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Request44": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "bilagsmail"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args44"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success44": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Bilagsmail"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args45": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/SdkConfig"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request45": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "configure_bilagsmail"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args45"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success45": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Bilagsmail"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args46": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Request46": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "delete_bilagsmail_config"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args46"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success46": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Bilagsmail"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args47": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/ReceiveSdkBody"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request47": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_modtag"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args47"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success47": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Received"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args48": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/Confirm"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request48": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_modtag_workspace"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args48"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success48": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/WorkspaceReceived"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args49": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/PairSdk"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request49": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_onboard"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args49"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success49": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/PairRegistration"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args50": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Request50": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_onboarding_status"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args50"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success50": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/PublicConfig"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args51": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/PairSdk"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request51": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_registrer"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args51"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success51": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/PairRegistration"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args52": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "asOf"
+      ],
+      "additionalProperties": false
+    },
+    "Request52": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "invoice_imported_receivables"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args52"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success52": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/ImportedMcp"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args53": {
+      "$ref": "#/$defs/ValidateArgs"
+    },
+    "Request53": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "invoice_validate"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args53"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success53": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/ValidationToolCore"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args54": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/Confirm"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request54": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "poll_bilagsmail"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args54"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success54": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/MailPoll"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args55": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Request55": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "public_invoice_config"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args55"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success55": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/PublicConfig"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args56": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Request56": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "public_invoice_submissions"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args56"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success56": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/PublicSubmissions"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args57": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/SendSdk"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request57": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "refresh_public_invoice_status"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args57"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success57": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Sent"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args58": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/Confirm"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request58": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "register_public_invoice"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args58"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success58": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Registration"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args59": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/SendSdk"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request59": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "send_public_invoice"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args59"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success59": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Sent"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Args60": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "#/$defs/Alias"
+          },
+          "x-maxUtf8Bytes": 16384
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Request60": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "set_bilagsmail_alias"
+            },
+            "arguments": {
+              "$ref": "#/$defs/Args60"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "Success60": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "Exact compact JSON serialization of structuredContent, not independently chosen text."
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "#/$defs/Bilagsmail"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
