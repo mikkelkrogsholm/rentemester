@@ -145,7 +145,7 @@ fn csv() -> std::path::PathBuf {
     p
 }
 fn receipt(system: &str, dry: bool) -> Value {
-    let mut v = json!({"ok":true,"sourceSystem":system,"openingBalanceLineCount":2,"historicalEntriesSkipped":0,"auditTrail":["original source audit"],"appliedRules":["DK-OPENING-BALANCE-001"],"errors":[]});
+    let mut v = json!({"ok":true,"sourceSystem":system,"cutOverDate":"2026-01-01","entryId":1,"entryNo":"2026-0001","entryHash":"a".repeat(64),"openingBalanceLineCount":2,"historicalEntriesSkipped":0,"auditTrail":["original source audit"],"appliedRules":["DK-OPENING-BALANCE-001"],"errors":[]});
     if dry {
         v["dryRun"] = json!(true);
     }
@@ -243,10 +243,16 @@ fn business_refusal_authority_wrong_receipt_and_503_no_retry() {
     assert_eq!(o.status.code(), Some(1));
     assert_eq!(b.len(), 1);
     assert_eq!(serde_json::from_slice::<Value>(&o.stdout).unwrap(), refusal);
+    let mut missing_identity = receipt("synthetic-csv", false);
+    missing_identity
+        .as_object_mut()
+        .unwrap()
+        .remove("entryHash");
     for (status, r, unknown) in [
         (0, Value::Null, true),
         (200, Value::Null, true),
         (200, receipt("dinero", false), true),
+        (200, missing_identity, true),
         (
             503,
             json!({"ok":false,"code":"import_original_unavailable"}),
@@ -287,6 +293,111 @@ fn business_refusal_authority_wrong_receipt_and_503_no_retry() {
     assert_eq!(b.len(), 1);
     assert!(String::from_utf8_lossy(&o.stdout).contains("actor differs"));
     std::fs::remove_file(p).unwrap();
+}
+
+#[test]
+fn human_success_business_and_technical_errors_use_source_streams() {
+    let p = csv();
+    let success = receipt("synthetic-csv", false);
+    let mut refusal = success.clone();
+    refusal["ok"] = json!(false);
+    refusal["errors"] = json!(["Source account conflicts with posted history"]);
+    for (status, result, exit, expected) in [
+        (200, success, 0, "Posteringsnummer: 2026-0001"),
+        (
+            422,
+            refusal,
+            1,
+            "Source account conflicts with posted history",
+        ),
+        (
+            403,
+            json!({"ok":false,"code":"access_denied"}),
+            1,
+            "server_refused",
+        ),
+    ] {
+        let (o, bodies) = run_fixture(
+            &["--file", p.to_str().unwrap(), "--format", "human"],
+            vec![(
+                "POST /api/companies/synthetic/import-original HTTP/1.1",
+                status,
+                result,
+            )],
+        );
+        assert_eq!(o.status.code(), Some(exit), "{o:?}");
+        assert_eq!(bodies.len(), 1);
+        let (text, empty) = if exit == 0 {
+            (&o.stdout, &o.stderr)
+        } else {
+            (&o.stderr, &o.stdout)
+        };
+        let text = String::from_utf8_lossy(text);
+        assert!(empty.is_empty(), "{o:?}");
+        assert!(text.contains(expected), "{o:?}");
+        assert!(text.contains("Migrerer en virksomhed"), "{o:?}");
+        assert!(!text.contains("Contact import"));
+        assert!(!text.trim_start().starts_with('{'));
+    }
+    std::fs::remove_file(p).unwrap();
+}
+
+#[test]
+fn original_example_is_exact_and_offline_before_help_or_binding() {
+    for extra in [
+        vec![],
+        vec!["--help"],
+        vec![
+            "--file=/never/source",
+            "--cookie-file=/never/cookie",
+            "--local-profile=/never/runtime",
+        ],
+    ] {
+        let o = Command::new(BIN)
+            .args(["import", "run", "--example"])
+            .args(extra)
+            .output()
+            .unwrap();
+        assert!(o.status.success(), "{o:?}");
+        assert!(o.stderr.is_empty(), "{o:?}");
+        assert_eq!(
+            o.stdout,
+            include_bytes!("../../../examples/import-synthetic.csv")
+        );
+    }
+    let o = Command::new(BIN)
+        .args(["import", "run", "--example=yes"])
+        .output()
+        .unwrap();
+    assert_eq!(o.status.code(), Some(2));
+    assert!(o.stdout.is_empty());
+    let o = Command::new(BIN)
+        .args(["import", "--help"])
+        .output()
+        .unwrap();
+    let help: Value = serde_json::from_slice(&o.stdout).unwrap();
+    assert!(!help["controls"].as_str().unwrap().contains("no journal"));
+    assert!(help["example"].as_str().unwrap().contains("--example"));
+    let o = Command::new(BIN).arg("--help").output().unwrap();
+    let help: Value = serde_json::from_slice(&o.stdout).unwrap();
+    let import = help["commands"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|v| v["name"].as_str().unwrap().starts_with("import "))
+        .unwrap();
+    assert!(
+        !import["scope"]
+            .as_str()
+            .unwrap()
+            .contains("no ledger posting")
+    );
+    assert!(
+        import["scope"]
+            .as_str()
+            .unwrap()
+            .contains("adopts opening balances")
+    );
 }
 #[test]
 fn usage_and_source_validation_before_credentials() {
@@ -392,7 +503,6 @@ fn verified_unix_owner_workspace_and_passive_protocol_failure() {
                 path.to_str().unwrap(),
                 "--cookie-file",
                 cookie.to_str().unwrap(),
-                "--json",
             ])
             .output()
             .unwrap()
@@ -412,6 +522,12 @@ fn verified_unix_owner_workspace_and_passive_protocol_failure() {
     let o = call(&["--workspace", "/wrong"]);
     assert_eq!(o.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&o.stdout).contains("binding refused"));
+    let o = call(&["--workspace", "/wrong", "--format", "human"]);
+    assert_eq!(o.status.code(), Some(1));
+    assert!(o.stdout.is_empty());
+    let text = String::from_utf8_lossy(&o.stderr);
+    assert!(text.contains("binding refused"));
+    assert!(!text.contains("Contact import"));
     std::fs::set_permissions(path.join("r.json"), std::fs::Permissions::from_mode(0o644)).unwrap();
     let o = call(&[]);
     assert_eq!(o.status.code(), Some(1));

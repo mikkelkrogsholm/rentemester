@@ -124,6 +124,8 @@ async fn source_business_false_is_not_flattened_or_zero_filled() {
     r["ok"] = json!(false);
     r["errors"] = json!(["Missing Kontoplan.csv"]);
     r["auditTrail"] = json!(["Source archive validated"]);
+    // Refusal before the opening post can carry source lines without an entry.
+    r["openingBalanceLineCount"] = json!(2);
     let (origin, t) = fixture(400, Some(r.clone()));
     let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
     assert_eq!(
@@ -136,6 +138,71 @@ async fn source_business_false_is_not_flattened_or_zero_filled() {
         r
     );
     t.join().unwrap();
+}
+
+#[tokio::test]
+async fn opening_and_historical_receipts_require_coherent_entry_identities() {
+    let mut opening = receipt("dinero", false);
+    opening["openingBalanceLineCount"] = json!(2);
+    opening["cutOverDate"] = json!("2026-01-01");
+    opening["entryId"] = json!(1);
+    opening["entryNo"] = json!("2026-0001");
+    opening["entryHash"] = json!("a".repeat(64));
+    opening["historicalEntriesPosted"] = json!([{"voucherRef":"1","entryId":2,"entryNo":"2026-0002","transactionDate":"2026-01-02"}]);
+    let mut cases = vec![(opening.clone(), true)];
+    for key in ["cutOverDate", "entryId", "entryNo", "entryHash"] {
+        let mut missing = opening.clone();
+        missing.as_object_mut().unwrap().remove(key);
+        cases.push((missing, false));
+    }
+    let mut no_opening = receipt("dinero", false);
+    no_opening["historicalEntriesPosted"] = opening["historicalEntriesPosted"].clone();
+    cases.push((no_opening, false));
+    for key in ["entryId", "entryNo"] {
+        let mut collision = opening.clone();
+        collision["historicalEntriesPosted"][0][key] = opening[key].clone();
+        cases.push((collision, false));
+    }
+    let mut duplicated = opening.clone();
+    duplicated["historicalEntriesPosted"]
+        .as_array_mut()
+        .unwrap()
+        .push(opening["historicalEntriesPosted"][0].clone());
+    cases.push((duplicated, false));
+    let mut zero_lines = opening.clone();
+    zero_lines["openingBalanceLineCount"] = json!(0);
+    cases.push((zero_lines, false));
+    let mut skipped_and_posted = opening.clone();
+    skipped_and_posted["historicalEntriesSkipped"] = json!(1);
+    cases.push((skipped_and_posted, false));
+    let mut synthetic_history = opening.clone();
+    synthetic_history["sourceSystem"] = json!("synthetic-csv");
+    cases.push((synthetic_history, false));
+    let mut bare_success = receipt("dinero", false);
+    bare_success["openingBalanceLineCount"] = json!(2);
+    cases.push((bare_success, false));
+    for (result, accepted) in cases {
+        let system = result["sourceSystem"].as_str().unwrap();
+        let name = if system == "dinero" {
+            "source.zip"
+        } else {
+            "source.csv"
+        };
+        let (origin, t) = fixture(200, Some(result.clone()));
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        let response = api
+            .import_original(
+                "synthetic",
+                original_import_body(system, name, b"exact", false).unwrap(),
+            )
+            .await;
+        if accepted {
+            assert_eq!(response.unwrap(), result);
+        } else {
+            assert_eq!(response, Err(Error::OutcomeUnknown), "{result}");
+        }
+        t.join().unwrap();
+    }
 }
 #[tokio::test]
 async fn unknown_receipts_lost_5xx_and_known_authority() {

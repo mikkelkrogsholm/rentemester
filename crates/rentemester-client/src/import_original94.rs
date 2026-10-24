@@ -117,6 +117,21 @@ fn receipt(v: &Value, w: &Wire) -> bool {
     if v.get("entryId").is_some_and(|x| !id(x)) {
         return false;
     }
+    let has_opening = ["entryId", "entryNo", "entryHash"]
+        .iter()
+        .any(|key| v.get(*key).is_some());
+    // A successful primobalance always returns the complete opening identity.
+    // Source failures before posting may legitimately omit it, even with lines.
+    if has_opening || v["ok"] == true && v["openingBalanceLineCount"].as_u64() != Some(0) {
+        if v["openingBalanceLineCount"].as_u64() == Some(0)
+            || !id(&v["entryId"])
+            || ["entryNo", "entryHash", "cutOverDate"]
+                .iter()
+                .any(|key| v[*key].as_str().is_none_or(str::is_empty))
+        {
+            return false;
+        }
+    }
     if let Some(chart) = v.get("chart") {
         let fields = [
             "created",
@@ -149,6 +164,27 @@ fn receipt(v: &Value, w: &Wire) -> bool {
             })
         }) {
             return false;
+        }
+        let rows = a.as_array().unwrap();
+        if !rows.is_empty() {
+            if w.source_system != "dinero"
+                || !has_opening
+                || v["ok"] == true && v["historicalEntriesSkipped"].as_u64() != Some(0)
+            {
+                return false;
+            }
+            let mut ids = std::collections::BTreeSet::from([v["entryId"].as_u64().unwrap()]);
+            let mut numbers = std::collections::BTreeSet::from([v["entryNo"].as_str().unwrap()]);
+            for row in rows {
+                if !ids.insert(row["entryId"].as_u64().unwrap())
+                    || !numbers.insert(row["entryNo"].as_str().unwrap())
+                    || ["voucherRef", "entryNo", "transactionDate"]
+                        .iter()
+                        .any(|key| row[*key].as_str().is_none_or(str::is_empty))
+                {
+                    return false;
+                }
+            }
         }
     }
     if let Some(a) = v.get("accountRoleProposals") {
