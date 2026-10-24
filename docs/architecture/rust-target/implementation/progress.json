@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Whole R42#714 accepted/actually closed: original route/static/binary/config/trusted-principal/readiness/lifecycle scope and allthree criteria. Prospective single-edge consumed server identity contract from712 preserves whole712/722 installed duties, frozen GDD/plan and all other gates; actual retained proof reused without financial/provider replay.",
-  "code_revision": "0ec85447229d1c38423af44a2c1d2e234e28497f",
+  "current_increment": "27supported original MCP operations across source inbox, parties/corporate evidence, knowledge and ownership.28definitions include explicit unavailable identity-onlycreate. Exact1547operation contracts; native389definitions and prior1519businessrows unchanged.18compiled current fixtures, actual receipt/protocol counterexamples and independent source/schema mapping review.",
+  "code_revision": "70e005d4578abab65278923dd80227795d024f5c",
   "spec_revision": "sha256:140ac05099f023cfa82b91d9220190b82e07adde606f7244a744daac8823c259",
-  "state": "40of55 original issues actually CLOSED,15OPEN. Whole714 server accepted. Whole712/722 installed WebKit/vault/cancel/profile duties and J01-J07/platform/Linux packaging/release/cutover/retirement remain; manual desktop LAST.",
+  "state": "40of55originalissuesactuallyCLOSED15OPEN. SupportedoriginalMCPregistrycomponentaccepted; whole717open, no reduced original scope. ManualinstalleddesktopacceptanceLAST.",
   "issues_closed": 40,
   "next": [
-    "Reconcile next existing whole717/718 delivery against actual original operation/UI scope and accepted proof; implement smallest necessary complete missing journey, no speculative polish.",
-    "Whole716 original compatibility/launcher and whole712/722 native desktop remain; final installed manual acceptance last."
+    "Complete original identity-only party creation -> explicit company-role link with private administrative scope and signed recovery through the same Rust engine/server; no inferred role/global visibility.",
+    "Finish remaining30originalMCPnames plus full workflow/annotations/actual operation/reconnect acceptance before whole717closure; preserve all55originalscope and remaining release/cutover/retirement/native gates."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R71/R72 supported original workspace inbox CLI journey accepted: upload -> inspect/status -> explicit target assignment -> document completion using common Rust server. Nine compiled fixtures and four actual receipt RED/GREEN probes; current1519 contracts retain old1513 semantics. Whole716 remains OPEN.",
+  "previous_verified_increment": "Whole R42#714 accepted/actually closed: original route/static/binary/config/trusted-principal/readiness/lifecycle scope and allthree criteria. Prospective single-edge consumed server identity contract from712 preserves whole712/722 installed duties, frozen GDD/plan and all other gates; actual retained proof reused without financial/provider replay.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -18697,6 +18697,19 @@
       "report": "/tmp/rentemester-rust-reports/r73-server714-whole-accepted.json",
       "sha256": "38b60fee114ae7a375af27382ad0a4a5191f60ee0b8c90186ec66ddcc76fc800",
       "source_revision": "0ec85447229d1c38423af44a2c1d2e234e28497f"
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "70e005d4578abab65278923dd80227795d024f5c",
+      "report": "/tmp/rentemester-rust-reports/r75-original-mcp717-contracts-accepted.json",
+      "sha256": "7885e3b555af00904216f5f760201b73b4214d730fe4e9d7756d7067bc596a9e",
+      "scope": "27supported original MCP operations across source inbox, parties/corporate evidence, knowledge and ownership.28definitions include explicit unavailable identity-onlycreate. Exact1547operation contracts; native389definitions and prior1519businessrows unchanged.18compiled current fixtures, actual receipt/protocol counterexamples and independent source/schema mapping review.",
+      "remaining": [
+        "Safe identity-only original party creation through common motor/server and signed recovery, without inferred role or global visibility",
+        "30other original names with explicit supported boundary versus source operating semantics; full31workflow/registered-operation/annotation/service-revocation/reconnect qualification",
+        "Whole717 open,40of55originalissuesclosed15open; all original scope/J01-J07/security/backup/release/cutover/retirement preserved; installed manual desktop acceptance last"
+      ]
     }
   ],
   "scope_clarifications": [
