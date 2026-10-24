@@ -2,6 +2,7 @@ import { expect, test, vi } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { stubGlobal } from "../test/globals";
+import { withProtocol } from "../test/protocol";
 import { renderAt } from "../test/render";
 import { MutationMemoryProvider } from "../lib/mutation-memory";
 import { NativeBackupCard } from "./NativeBackupCard";
@@ -13,7 +14,7 @@ test("workspace backup requires review and downloads the exact server blob witho
   sessionStorage.clear();
   const bytes = '{"synthetic":"signed archive bytes"}';
   const fetchMock = vi.fn(async () => new Response(bytes, {headers:{"content-type":"application/vnd.rentemester.native-backup+json"}}));
-  stubGlobal("fetch", fetchMock);
+  stubGlobal("fetch", withProtocol(fetchMock, [["POST", "/api/workspace/backup"]]));
   const create = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:synthetic-backup");
   const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
   const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
@@ -30,6 +31,7 @@ test("workspace backup requires review and downloads the exact server blob witho
     await userEvent.click(screen.getByRole("checkbox"));
     await userEvent.click(button);
     await screen.findByText(/Downloadet er ikke en gendannelsesprøve/);
+    expect(screen.getByText("Backup → Kontrollér eksporteret backup…")).toBeVisible();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [path, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(path).toBe("/api/workspace/backup");
@@ -45,7 +47,7 @@ test("workspace backup requires review and downloads the exact server blob witho
 test("missing operator key is visible and never retried automatically", async () => {
   sessionStorage.clear();
   const fetchMock = vi.fn(async () => Response.json({ok:false,code:"backup_unavailable",errors:["Synthetic backup unavailable"]},{status:503}));
-  stubGlobal("fetch", fetchMock);
+  stubGlobal("fetch", withProtocol(fetchMock, [["POST", "/api/workspace/backup"]]));
   renderCard();
   await userEvent.click(screen.getByRole("checkbox"));
   await userEvent.click(screen.getByRole("button", {name:"Dan og download backup"}));
@@ -56,7 +58,7 @@ test("missing operator key is visible and never retried automatically", async ()
 test("an interrupted backup request remains blocked after leaving and returning", async () => {
   sessionStorage.clear();
   const fetchMock = vi.fn(async () => { throw new TypeError("Synthetic disconnected response"); });
-  stubGlobal("fetch", fetchMock);
+  stubGlobal("fetch", withProtocol(fetchMock, [["POST", "/api/workspace/backup"]]));
   const view = renderCard();
   await userEvent.click(screen.getByRole("checkbox"));
   await userEvent.click(screen.getByRole("button", {name:"Dan og download backup"}));
@@ -64,4 +66,17 @@ test("an interrupted backup request remains blocked after leaving and returning"
   view.unmount(); renderCard();
   expect(screen.getByRole("button", {name:"Dan og download backup"})).toBeDisabled();
   expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("independent verification guidance separates local key custody, hosted trust and actual restore without web actions", () => {
+  sessionStorage.clear();
+  const fetchMock = vi.fn();
+  stubGlobal("fetch", withProtocol(fetchMock, [["POST", "/api/workspace/backup"]]));
+  renderCard();
+  expect(screen.getByText("Backup → Gem offentlig backupnøgle…").closest("li")).toHaveTextContent(/32 rå bytes.*hosted drift.*operatør.*ikke i sig selv bevis på tillid/);
+  expect(screen.getByText("Backup → Kontrollér eksporteret backup…").closest("li")).toHaveTextContent(/først.*backupfil.*derefter.*nøglefil.*fingeraftryk.*uden server, login/);
+  expect(screen.getByText(/Afvent en fuld verificeret kvittering/)).toHaveTextContent(/signatur.*indholdsfortegnelse.*databaseskema.*databaseintegritet.*journalkæde.*originalbilag/);
+  expect(screen.getByText(/Browseren kan ikke åbne/)).toHaveTextContent(/destinationsstatus.*ikke.*uafhængige kontrol.*ikke en faktisk gendannelsesprøve.*login og totrinsbekræftelse/);
+  expect(screen.queryByRole("button", { name: /Kontrollér eksporteret backup|Gem offentlig backupnøgle/ })).not.toBeInTheDocument();
+  expect(fetchMock).not.toHaveBeenCalled();
 });
