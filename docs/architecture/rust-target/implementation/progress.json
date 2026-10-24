@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R65/R66 original local system healthcheck accepted: fivefilesystemfacts and truthfulschema via existingprotectedSnapshot/catalogue. FlatJSON explicitmode, humanstdout evenpipe, exact0/1/2; no source/sidecarwrites/network/authority. FourstoragefourCLItests and actualancestorRED/GREEN; exact1492contracts639HTTP466CLI387MCP/38partitions.",
-  "code_revision": "8b7d53cc27bca1b7d012dfba403e06b5995d2f50",
-  "spec_revision": "sha256:b7407e2a529a58a32b40a479c8c2ae982aa8bd0c8431c7021fd2896832e56f76",
-  "state": "39of55originalissues actuallyCLOSED16OPEN. Whole716 originalCLI/launcher/offlineschema parity stillOPEN;714/712finalinstalledmanualdependency retained, desktoplast. Alloriginal55/J01-J07/release/cutover/retirement retained.",
+  "current_increment": "R67/R68 thirteen original corporate-record/ownership CLI commands accepted: sameRustSDK/engine; exactflatJSON/human0/1/2, verifiedlocal/remote/currentprincipal, sourcebytes/SHA, independentreview/exacttokens and honestunknownreceipts. Combined17compiledchecks and exact1505contracts (639HTTP479CLI387MCP/38partitions).",
+  "code_revision": "b04f57586ac739bf0bd1c87448f4a51618016e36",
+  "spec_revision": "sha256:0ff6b69ba0103148aa3c10b97db65bf0949fb2b51f5365195cef5a9b6c7f4472",
+  "state": "38of55originalissues actuallyCLOSED17OPEN. Reopened688: base/R01partyregistry includes newmergeproposal/approval functions absentRustwriters; historicalaudit/restore and otherR16 evidence valid. Full716CLI/launcher and714/712finalinstalledmanualdependencies remain; all55/J01-J07/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Nextnecessary716batch: original corporate-record sevencommands and ownership sixcommands as one legal-evidence toreviewedownershipjourney; existingRustAPIs reused, independentadapterownership andoneleadcentralintegration/contracts refresh.",
-    "Full716/714/712andfinalinstalledmanualdesktoplast remain; neverclose onpartialacceptance."
+    "Nextwholeissue688: append-only partymerge proposal/exacthash approval/supersession through commonRustauthority/transaction, source-equivalent andfailclosed; thenclose onfullscope evidence.",
+    "After688, necessary716workspace-inbox6/company-knowledge4 originaladapters; upload/mail/connector nativeboundary explicit, no relabeling or providerreplay."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R63/R64 original audit verify CLI accepted: one native verifier; authoritative flat clean/findings JSON and humanstreams exit0/1, explicit private local/remote transport, failclosed unavailable/protocol/auth refusal. Sixcompiledchecks and valid longPATH RED2/GREEN0; nativeobservation untouched. Exact1491contracts:639HTTP465CLI387MCP/38partitions.",
+  "previous_verified_increment": "R65/R66 original local system healthcheck accepted: fivefilesystemfacts and truthfulschema via existingprotectedSnapshot/catalogue. FlatJSON explicitmode, humanstdout evenpipe, exact0/1/2; no source/sidecarwrites/network/authority. FourstoragefourCLItests and actualancestorRED/GREEN; exact1492contracts639HTTP466CLI387MCP/38partitions.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16351,6 +16351,29 @@
         "Dependencies714/712/finalinstalledmanualdesktop remain; no live/defaultlauncher cutover",
         "All55originalissues/J01-J07/security/accounting/backup/provider/release/cutover/retirement retained"
       ]
+    },
+    "r67_r68_original_registry716": {
+      "issue": 716,
+      "whole_issue_accepted": false,
+      "status": "13originalCLIcommands accepted, full716open",
+      "source_revision": "b04f57586ac739bf0bd1c87448f4a51618016e36",
+      "report": "/tmp/rentemester-rust-reports/r68-original-registry716-contracts-accepted.json",
+      "sha256": "c841f8a3115df16fd58d7b6c3f56450589fc834ece17cbab2bd8b1ff939f351a",
+      "sgd_run": "rust-r68-original-registry716-contracts-20261024T111134.735104000",
+      "remaining": [
+        "Whole716originalCLI/launcher/nativeprofile compatibility and714/712finalinstalledmanualdependencies retained",
+        "Reopened688: missing source-equivalent partymerge proposal/approval writer is nextwholeissue target; earlier historical/collision/account evidence retained",
+        "All55/J01-J07/security/accounting/backup/provider/release/cutover/retirement remain"
+      ]
+    },
+    "r16_party_merge_scope_reopened": {
+      "issue": 688,
+      "state": "OPEN",
+      "whole_issue_accepted": false,
+      "base_revision": "0bbe82bcf0cafd73e2326152740cb06b90222405",
+      "missing": "SourceproposePartyMerge/approvePartyMerge functions have no corresponding currentRustapplication/SDK/HTTPwriter; exactproposal/approval/supersession lifecycle remains",
+      "retained": "AllpreviousR16 collision/accounts/authorization/audithistory/backuprestore evidence; no historicaldata loss",
+      "next": "CompleteexistingwholeR16 missinglifecycle before closing; no newroadmapfeature"
     }
   },
   "verified_history": [
@@ -18448,7 +18471,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 716,
+    "current_issue": 688,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
