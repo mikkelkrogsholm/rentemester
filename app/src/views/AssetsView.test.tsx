@@ -8,9 +8,12 @@
 import { describe, expect, test, vi } from "bun:test";
 import { screen, within, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MutationMemoryProvider } from "../lib/mutation-memory";
 import { AssetsView } from "./AssetsView";
 import { renderAt } from "../test/render";
 import { assets, documents, mockFetch } from "../test/fixtures";
+import manifest from "../../../protocol/http-v1.json";
+import { withProtocol } from "../test/protocol";
 import { stubGlobal } from "../test/globals";
 
 function route(over = {}) {
@@ -133,7 +136,7 @@ describe("AssetsView — Anlægskartotek (#336)", () => {
         headers: { "content-type": "application/json" },
       });
     });
-    stubGlobal("fetch", fetchMock);
+    stubGlobal("fetch", vi.fn(withProtocol(fetchMock, manifest.operations.map(op => [op.method, op.path] as const))));
 
     renderView();
     const row = (await screen.findByText("MacBook Pro")).closest("tr")!;
@@ -232,5 +235,77 @@ describe("asset_disposal report", () => {
     expect(screen.getByText(/Postering 2026-20/)).toBeInTheDocument();
     expect(screen.getByRole("button",{name:/Beregn afskrivning for/})).toBeDisabled();
     expect(screen.queryByRole("button",{name:/^Afhænd /})).toBeNull();
+  });
+});
+
+describe("native immediate write-off owner review", () => {
+  function nativeRoutes() {
+    return { ...route({ nativeAssetAccounts: true, writeOffAvailable: true }),
+      "GET /api/companies/acme-aps/accounts": { accounts: { accounts: [
+        { accountNo: "EX", name: "Synthetic expense", active: true, type: "expense", normalBalance: "debit" },
+        { accountNo: "OLD", name: "Inactive", active: false, type: "expense", normalBalance: "debit" },
+      ] } },
+      "POST /api/companies/acme-aps/asset/original/write-off": { ok: true, entryId: 17, entryNo: "2026-17", entryHash: "a".repeat(64), writeOffId: 9, cost: 1234.56, thresholdDkk: 36000, appliedRules: ["rule"], errors: [] },
+    };
+  }
+  async function fillReview() {
+    await userEvent.click(await screen.findByRole("button", { name: "Straksafskriv" }));
+    const dialog = screen.getByRole("dialog", { name: "Straksafskriv småanskaffelse" });
+    await userEvent.type(within(dialog).getByLabelText("Navn"), "Synthetic keyboard");
+    await userEvent.type(within(dialog).getByLabelText("Beløb (kr.)"), "1.234,56");
+    await userEvent.selectOptions(within(dialog).getByLabelText("Bilag (købsdokument)"), "1");
+    expect(within(dialog).getByLabelText("Udgiftskonto")).toHaveValue("");
+    expect(within(dialog).queryByRole("option", { name: /Inactive/ })).toBeNull();
+    await userEvent.selectOptions(within(dialog).getByLabelText("Udgiftskonto"), "EX");
+    expect(within(dialog).getByLabelText("Hjemmelshenvisning (tærskelregel)")).toHaveValue("");
+    await userEvent.type(within(dialog).getByLabelText("Hjemmelshenvisning (tærskelregel)"), "Advisor judgment");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Gennemgå straksafskrivning" }));
+    return screen.findByRole("dialog", { name: "Bekræft straksafskrivning" });
+  }
+  test("first submit only reviews; explicit confirmation sends once and shows actual journal identity", async () => {
+    mockFetch(nativeRoutes()); renderView();
+    const review = await fillReview();
+    const transport = fetch as unknown as ReturnType<typeof vi.fn>;
+    expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+    expect(within(review).getByText(/Bilag #1/)).toBeInTheDocument();
+    await userEvent.click(within(review).getByRole("button", { name: "Bekræft og bogfør straksafskrivning" }));
+    expect(await screen.findByText(/Bogført: 2026-17/)).toBeInTheDocument();
+    const writes = transport.mock.calls.filter(([, init]) => init?.method === "POST");
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.[0]).toContain("/asset/original/write-off");
+    expect(JSON.parse(String(writes[0]?.[1]?.body)).confirmImmediateWriteOff).toBe(true);
+    expect(transport.mock.calls.filter(([url]) => String(url).endsWith("/assets")).length).toBeGreaterThan(1);
+  });
+  test("unknown receipt remains locked after read-only refresh, dismissal and provider reload", async () => {
+    sessionStorage.removeItem("rentemester:uncertain-operations:v1");
+    const routes: Record<string, any> = nativeRoutes();
+    routes["POST /api/companies/acme-aps/asset/original/write-off"].entryHash = "truncated";
+    routes["GET /api/companies/acme-aps/journal"] = { journal: {} };
+    mockFetch(routes);
+    const mount = () => renderAt(<MutationMemoryProvider><AssetsView /></MutationMemoryProvider>, { route: "/companies/acme-aps/anlaeg", path: "/companies/:slug/anlaeg" });
+    const first = mount();
+    try {
+      const review = await fillReview();
+      const confirm = within(review).getByRole("button", { name: "Bekræft og bogfør straksafskrivning" });
+      fireEvent.click(confirm); fireEvent.click(confirm);
+      await screen.findByText(/Resultatet er ukendt: kvitteringen/);
+      const transport = fetch as unknown as ReturnType<typeof vi.fn>;
+      expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+      await waitFor(() => expect(transport.mock.calls.some(([url]) => String(url).endsWith("/journal"))).toBe(true));
+      first.unmount();
+      mount();
+      await userEvent.click(await screen.findByRole("button", { name: "Straksafskriv" }));
+      expect(await screen.findByText(/en opdateret liste frigiver ikke låsen/)).toBeInTheDocument();
+      expect(screen.getByLabelText("Navn")).toBeDisabled();
+      await userEvent.click(screen.getByRole("button", { name: "Opdatér anlæg og journal" }));
+      expect(screen.getByLabelText("Navn")).toBeDisabled();
+      expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    } finally { sessionStorage.removeItem("rentemester:uncertain-operations:v1"); }
+  });
+  test("cancel review sends nothing and allows editing", async () => {
+    mockFetch(nativeRoutes()); renderView(); const review = await fillReview();
+    await userEvent.click(within(review).getByRole("button", { name: "Annullér" }));
+    expect(screen.getByLabelText("Navn")).toBeEnabled();
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
   });
 });

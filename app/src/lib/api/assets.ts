@@ -8,7 +8,7 @@ import type {
   AssetWriteOffSummary,
   AssetsResponse,
 } from "../types";
-import type { AssetDisposalInput, AssetDisposalApplyInput, AssetDisposalPreview, AssetDisposalReceipt } from "../types/assets";
+import type { NativeAssetWriteOffReceipt, AssetDisposalInput, AssetDisposalApplyInput, AssetDisposalPreview, AssetDisposalReceipt } from "../types/assets";
 import { ApiError, request, type ReadRequestOptions } from "./_shared";
 
 // --- Anlæg (fixed assets) — #336 ----------------------------------------
@@ -19,6 +19,25 @@ import { ApiError, request, type ReadRequestOptions } from "./_shared";
 // backend's `withCompanyMutation` enforces backup-lock + actor attribution.
 
 export const assetsApi = {
+  /** Explicit native binding; invoked only after the owner reviews and confirms. */
+  writeOffNativeAsset: async (slug: string, input: AssetWriteOffInput, confirmation: { confirm: true; confirmImmediateWriteOff: true }): Promise<NativeAssetWriteOffReceipt> => {
+    if (confirmation.confirm !== true || confirmation.confirmImmediateWriteOff !== true) throw new Error("Bekræft straksafskrivningen først.");
+    const value = await request<unknown>(`/api/companies/${encodeURIComponent(slug)}/asset/original/write-off`, {
+      method: "POST",
+      decodeRefusal422: body => obj(body) && exact(body, ["ok", "appliedRules", "errors"]) && body.ok === false && strings(body.appliedRules) && strings(body.errors) && body.errors.length > 0
+        ? new ApiError("source_refused", `${body.errors.join(" · ")} En afvisning kan have gemt en undtagelse; kontrollér undtagelser og bilag.`, 422) : undefined,
+      body: JSON.stringify({ name: input.name, category: input.category, acquisitionDate: input.acquisitionDate,
+        cost: input.cost, documentId: input.purchaseDocumentId, expenseAccount: input.expenseAccountNo,
+        date: input.transactionDate, thresholdRuleSource: input.thresholdRuleSource,
+        ...(input.paymentAccountNo ? { paymentAccount: input.paymentAccountNo } : {}), ...(input.note ? { note: input.note } : {}),
+        confirmImmediateWriteOff: true, confirm: true }),
+    });
+    if (!obj(value) || value.ok !== true || !safeId(value.entryId) || !safeId(value.writeOffId) || !bounded(value.entryNo, 500) || !hash(value.entryHash)
+      || !money(value.cost) || typeof value.cost !== "number" || value.cost <= 0 || value.cost !== input.cost || !money(value.thresholdDkk) || typeof value.thresholdDkk !== "number" || value.thresholdDkk <= 0
+      || !strings(value.appliedRules) || value.appliedRules.length === 0 || !Array.isArray(value.errors) || value.errors.length !== 0)
+      throw new ApiError("internal", "Resultatet er ukendt: kvitteringen kunne ikke valideres. Afstem anlæg og journal manuelt før en ny handling.", 0);
+    return value as unknown as NativeAssetWriteOffReceipt;
+  },
   assetDisposalPreview: async (slug: string, assetId: number, input: AssetDisposalInput) => {
     validateDisposalInput(input, false);
     const r = await request<unknown>(disposalPath(slug, assetId, "disposal/preview"), { method: "POST", readOnly: true, body: JSON.stringify(input) });
@@ -156,3 +175,5 @@ function disposalOutput(value: unknown, preview: boolean, id: number, input?: As
   } else if (!safeId(p.disposalId) || !safeId(p.journalEntryId) || !bounded(p.journalEntryNo,128) || !hash(p.journalEntryHash) || !money(p.carryingValueWrittenOff) || p.remainingCarryingValue !== 0 || typeof p.replayed !== "boolean") return fail();
   return p as unknown as AssetDisposalPreview | AssetDisposalReceipt;
 }
+
+function strings(v: unknown): v is string[] { return Array.isArray(v) && v.every(s => typeof s === "string" && Boolean(s.trim())); }

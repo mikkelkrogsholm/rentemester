@@ -27,7 +27,11 @@ import { ButtonLink, Dialog, Button, Input, PageHeader, Select, MoneyInput } fro
 // All depreciation arithmetic is computed server-side — this view never
 // re-implements the schedule.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useOptionalAuth } from "../lib/auth-context";
+import { useCapabilities } from "../lib/useCapabilities";
+import { useMutationBlock } from "../lib/mutation-memory";
+import type { AssetWriteOffInput, NativeAssetWriteOffReceipt } from "../lib/types/assets";
 import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { formatKroner, todayIso } from "../lib/format";
@@ -253,6 +257,8 @@ export function AssetsView() {
 
       {writeOffOpen ? (
         <WriteOffModal
+          key={`${slug}:${data.nativeAssetAccounts === true}`}
+          nativeAccounts={data.nativeAssetAccounts === true}
           slug={slug}
           onClose={() => setWriteOffOpen(false)}
           onRefresh={state.reload}
@@ -582,18 +588,38 @@ function RegisterAssetModal({
 
 function WriteOffModal({
   slug,
+  nativeAccounts,
   onClose: onDismiss,
   onRefresh,
   onCreated,
   onError,
 }: {
   slug: string;
+  nativeAccounts: boolean;
   onClose: () => void;
   onRefresh: () => void;
   onCreated: () => void;
   onError: (msg: string) => void;
 }) {
   const docs = useDocumentPicker(slug);
+  const chart = useAsync(signal => nativeAccounts ? api.accounts(slug, { signal }) : Promise.resolve(null), [slug, nativeAccounts]);
+  const auth = useOptionalAuth();
+  const { can } = useCapabilities(slug);
+  const allowed = can("company.ledger.post");
+  const currentAllowed = useRef(allowed);
+  currentAllowed.current = allowed;
+  const scope = `/companies/${slug}/assets`;
+  const sendLock = useMutationBlock(`${scope}:native-writeoff`);
+  const [review, setReview] = useState<AssetWriteOffInput | null>(null);
+  const [receipt, setReceipt] = useState<NativeAssetWriteOffReceipt | null>(null);
+  const active = useRef(true);
+  const context = useRef(auth?.context);
+  context.current = auth?.context;
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
+  useEffect(() => { setReview(null); }, [auth?.context, allowed, docs.data, chart.data]);
+  const nativeBlocked = nativeAccounts && (sendLock.blocked || !allowed || !!receipt);
+  const refreshNative = async () => { await Promise.all([api.assets(slug), api.journal(slug)]); if (active.current) onRefresh(); };
+
   const [name, setName] = useState("");
   const [category, setCategory] = useState("smaaanskaffelser");
   // Default to the LOCAL date — `toISOString()` is UTC and is off-by-one in
@@ -603,10 +629,10 @@ function WriteOffModal({
   const [cost, setCost] = useState("");
   const [purchaseDocumentId, setPurchaseDocumentId] = useState<string>("");
   const [expenseAccountNo, setExpenseAccountNo] = useState(
-    DEFAULT_EXPENSE_ACCOUNT,
+    nativeAccounts ? "" : DEFAULT_EXPENSE_ACCOUNT,
   );
   const [thresholdRuleSource, setThresholdRuleSource] = useState(
-    DEFAULT_THRESHOLD_RULE,
+    nativeAccounts ? "" : DEFAULT_THRESHOLD_RULE,
   );
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -617,7 +643,7 @@ function WriteOffModal({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (outcome.isBlocked()) return;
+    if (outcome.isBlocked() || nativeBlocked) return;
     setBusy(true);
     try {
       const costNumber = parseDanishAmount(cost);
@@ -633,7 +659,7 @@ function WriteOffModal({
           "Hjemmelshenvisningen (tærskelregel) er obligatorisk for straksafskrivning.",
         );
       }
-      await api.writeOffAsset(slug, {
+      const input: AssetWriteOffInput = {
         name: name.trim(),
         category: category.trim(),
         acquisitionDate,
@@ -643,7 +669,14 @@ function WriteOffModal({
         expenseAccountNo: expenseAccountNo.trim(),
         thresholdRuleSource: thresholdRuleSource.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
-      }).catch(outcome.reject);
+      };
+      if (nativeAccounts) {
+        if (!chart.data?.accounts.some(a => a.accountNo === expenseAccountNo && a.active === true && a.type === "expense" && a.normalBalance === "debit")) throw new Error("Vælg en aktiv udgiftskonto fra kontoplanen.");
+        if (docs.error || chart.error || docs.loading || chart.loading) throw new Error("Opdatér bilag og kontoplan før gennemgang.");
+        setReview(input);
+        return;
+      }
+      await api.writeOffAsset(slug, input).catch(outcome.reject);
       guard.dismiss();
       onCreated();
     } catch (err) {
@@ -664,6 +697,12 @@ function WriteOffModal({
   return (
     <Dialog title="Straksafskriv småanskaffelse" onClose={onClose} busy={busy}>
     {outcome.feedback}
+    {nativeAccounts && <>
+      <p>Betaling: virksomhedens aktuelt konfigurerede bankrolle. Mangler mappingen, afviser serveren: konfigurér bankrollen under Administrér før ny handling. Der vælges ingen standardkonto her.</p>
+      {(docs.error || chart.error) && <p role="alert">{docs.error || chart.error}</p>}
+      {sendLock.blocked && <div role="alert">Resultatet er ukendt. Gentag ikke handlingen. Afstem bilaget manuelt med anlæg, journal og eventuelle undtagelser; en opdateret liste frigiver ikke låsen.<Button onClick={() => { void refreshNative().catch(err => onError(String(err))); }}>Opdatér anlæg og journal</Button></div>}
+      {receipt && <div role="status">Bogført: {receipt.entryNo} (#{receipt.entryId}) · Straksafskrivning #{receipt.writeOffId}<p>Journalhash: <code>{receipt.entryHash}</code></p></div>}
+    </>}
       {guard.confirmation}
 
 
@@ -672,7 +711,8 @@ function WriteOffModal({
           eksplicit hjemmelshenvisning, og handlingen bogføres som en udgift
           direkte. Bilag og hjemmel arkiveres på audit-sporet.
         </p>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onChange={() => setReview(null)}>
+          <fieldset disabled={nativeBlocked || !!review}>
           <label>
             <span>Navn</span>
             <Input disabled={outcome.blocked}
@@ -735,12 +775,7 @@ function WriteOffModal({
           </label>
           <label>
             <span>Udgiftskonto</span>
-            <Input disabled={outcome.blocked}
-              type="text"
-              required
-              value={expenseAccountNo}
-              onChange={(e) => setExpenseAccountNo(e.target.value)}
-            />
+            {nativeAccounts ? <Select required value={expenseAccountNo} onChange={e => setExpenseAccountNo(e.target.value)}><option value="">Vælg aktiv udgiftskonto</option>{(chart.data?.accounts ?? []).filter(a => a.active === true && a.type === "expense" && a.normalBalance === "debit").map(a => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select> : <Input disabled={outcome.blocked} type="text" required value={expenseAccountNo} onChange={e => setExpenseAccountNo(e.target.value)} />}
           </label>
           <label>
             <span>Hjemmelshenvisning (tærskelregel)</span>
@@ -761,7 +796,7 @@ function WriteOffModal({
           </label>
           <div className="row-actions">
             <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
-              {busy ? "Bogfører…" : "Straksafskriv"}
+              {busy ? "Bogfører…" : nativeAccounts ? "Gennemgå straksafskrivning" : "Straksafskriv"}
             </Button>
             <Button variant="secondary"
               type="button"
@@ -772,7 +807,32 @@ function WriteOffModal({
               Annullér
             </Button>
           </div>
+          </fieldset>
         </form>
+        {nativeAccounts && review && <ConfirmDialog title="Bekræft straksafskrivning" confirmLabel="Bekræft og bogfør straksafskrivning" confirmKind="danger" operationScope={scope} operationKey="native-writeoff-review" confirmDisabled={nativeBlocked} onRefresh={refreshNative} onClose={() => setReview(null)} body={<>
+          <p>Virksomhed: {slug} · Bilag #{review.purchaseDocumentId} · {review.name} · {review.category}</p>
+          <p>{formatKroner(review.cost)} · Anskaffet {review.acquisitionDate} · Bogføres {review.transactionDate}</p>
+          <p>Udgiftskonto {review.expenseAccountNo} · Betaling: aktuel konfigureret bankrolle</p>
+          <p>Hjemmel: {review.thresholdRuleSource} · Note: {review.note || "Ingen"}</p>
+          <p>Jeg bekræfter straksafskrivning og bogføring. Serveren kontrollerer tærskel, moms og journal; dette er ikke en skatteretlig godkendelse.</p>
+        </>} onConfirm={async () => {
+          if (sendLock.isBlocked() || !currentAllowed.current) throw new ApiError("access_denied", "Gennemgangen er ikke længere gyldig.", 403);
+          const originalContext = context.current;
+          if (!sendLock.block()) throw new Error("Beskyttelsen mod gentagelse kunne ikke gemmes.");
+          try {
+            const result = await api.writeOffNativeAsset(slug, review, { confirm: true, confirmImmediateWriteOff: true });
+            sendLock.release();
+            if (active.current && currentAllowed.current && context.current === originalContext) { setReceipt(result); onRefresh(); }
+          } catch (err) {
+            const failure = err as { status?: number; code?: string };
+            if (failure.status && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.code !== "internal") sendLock.release();
+            if (active.current && currentAllowed.current && context.current === originalContext && !(failure.status && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.code !== "internal")) {
+              // Read-only reconciliation never releases the pre-send lock or resends.
+              void refreshNative().catch(() => {});
+            }
+            throw err;
+          }
+        }} />}
 
     </Dialog>
   );
