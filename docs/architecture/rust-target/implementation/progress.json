@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R48 #677:2source-confirmedrecurringHEADmutationroutes safelyrefused beforetemplatecreation/invoicegeneration, actualexistingfixture10HEADcaseRED/GREEN; prior3salesguards/auth/ledger/artifactsretained.",
-  "code_revision": "169606f1ab276bacd3c4c65537e2e44da22ec13a",
-  "spec_revision": "sha256:1221250db9ed431868d663e2bf10119973b5c09cf008e816c93f100d7484f007",
-  "state": "37of55originalissues CLOSED18OPEN.74invoicecontracts+all5source-confirmedHEADmutationroutes nowaccepted;72of639HTTP exactcontracts plusselectedCLI/MCP. Next81delivery/recurrencecontractflow usesfixedsource. Global677/full55/J01-J07/finalmanualdesktop/release/cutover/retirement remain.",
+  "current_increment": "R49 #677:81 exact invoice delivery/manual/original/scheduled/hosted recurrence contracts accepted across4isolated parts after actual source/diffreview and bounded schema corrections.",
+  "code_revision": "400ca6eb7b4c4fd165be25dc54ab755f5c6d84f2",
+  "spec_revision": "sha256:3e0cfb608b97258669c883d97bc65ec8cb025a10ce383b35dae1604576f3a729",
+  "state": "37of55originalissuesCLOSED18OPEN. R49accepted31HTTP25CLI25MCP contracts; total103of639HTTP plusselectedCLI/MCP. Whole677 everyadvertisedoperation remainsclosurebottleneck. Source-only contractacceptance preserves existing runtime/financial/provider proofs; no replay. Full55/J01-J07/finalmanualdesktop/release/cutover/retirement requirements retained.",
   "issues_closed": 37,
   "next": [
-    "Finish remaining567HTTP andotheradvertisedCLI/MCP exactcontracts, next existinginvoice delivery/recurrence userflow; no financial/provider effects replay.",
-    "Close whole677 onlywhenalladvertisedoperation criteria accepted, thencontinue existingremainingproductissues fromretainedvalid evidence.",
-    "FinalinstallednativeTauri/platform/accessibility/J01-J07/release/cutover/retirement requirements remainlast."
+    "Finish remaining536HTTP andotheradvertisedCLI/MCP exactcontracts fromexisting accounting userflows; reuse accepted runtime evidence.",
+    "Close677onlywhen everyadvertisedoperation meets unchangedacceptance, then complete next existing issue from retained valid evidence.",
+    "FinalinstalledmanualTauri/platform/accessibility/J01-J07/release/cutover/retirement remain last."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R46/R47 #677:74exactcustomer/invoice contracts accepted across4isolatedparts; source-discoveredHEAD->Issue correctedearly405 withactualexistingfixtureRED/GREEN; incorrectpublicMCParrayreviewclaim retracted/corrected.",
+  "previous_verified_increment": "R48 #677:2source-confirmedrecurringHEADmutationroutes safelyrefused beforetemplatecreation/invoicegeneration, actualexistingfixture10HEADcaseRED/GREEN; prior3salesguards/auth/ledger/artifactsretained.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16188,6 +16188,25 @@
       "remaining": [
         "Whole677 everyadvertisedoperation exactcontracts:72of639HTTPcurrentlyaccepted,567remainingHTTPplusremainingCLI/MCP",
         "All55 originalscopes/finalmanualdesktop/release/cutover/retirement remain"
+      ]
+    },
+    "r49_delivery_recurring677_component": {
+      "issue": 677,
+      "status": "81selectedexactcontracts component accepted; whole677OPEN",
+      "source_revision": "400ca6eb7b4c4fd165be25dc54ab755f5c6d84f2",
+      "report": "/tmp/rentemester-rust-reports/r49-delivery-recurring677-component-accepted.json",
+      "sha256": "570a302760e59562cfb8973c48613c04bedddf3b67fff5fd5c4f6849409232af",
+      "sgd_run": "rust-r49-delivery-recurring677-contracts-20261024T043608.665509000",
+      "operation_counts": {
+        "delivery_recurring_http": 15,
+        "scheduled_recurring_http": 16,
+        "delivery_recurring_cli": 25,
+        "delivery_recurring_mcp": 25
+      },
+      "whole_issue_accepted": false,
+      "remaining": [
+        "Every other advertised operation still requires exact input/success/refusal/parse-protocol/retry contract.536HTTP operations plus remainingCLI/MCP; global677OPEN.",
+        "All55 original scopes/J01-J07/final installed desktop/platform/accessibility/release/cutover/retirement remain."
       ]
     }
   },
