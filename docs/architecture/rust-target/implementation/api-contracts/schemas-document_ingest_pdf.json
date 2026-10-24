@@ -1169,8 +1169,8 @@
       "properties": {
         "id": {
           "type": "integer",
-          "minimum": -9223372036854775808,
-          "maximum": 9223372036854775807
+          "minimum": 1,
+          "maximum": 9007199254740991
         },
         "documentNo": {
           "type": [
@@ -1239,8 +1239,8 @@
           "oneOf": [
             {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             {
               "type": "null"
@@ -1330,8 +1330,8 @@
         "properties": {
           "id": {
             "type": "integer",
-            "minimum": -9223372036854775808,
-            "maximum": 9223372036854775807
+            "minimum": 1,
+            "maximum": 9007199254740991
           },
           "document_no": {
             "type": [
@@ -1954,7 +1954,7 @@
         "message"
       ],
       "additionalProperties": false,
-      "description": "message equals Bilag {documentNo} er indlæst."
+      "description": "message equals Bilag {documentNo} er indl\u00e6st."
     },
     "Enriched": {
       "type": "object",
@@ -3375,52 +3375,276 @@
       ]
     },
     "RpcError": {
-      "type": "object",
-      "properties": {
-        "jsonrpc": {
-          "const": "2.0"
-        },
-        "id": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/RpcId"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "error": {
+      "oneOf": [
+        {
           "type": "object",
           "properties": {
-            "code": {
-              "enum": [
-                -32700,
-                -32600,
-                -32601,
-                -32602,
-                -32000,
-                -32002
-              ]
+            "jsonrpc": {
+              "const": "2.0"
             },
-            "message": {
-              "type": "string"
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid JSON",
+                    "invalid or oversized newline-delimited message",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
-            "code",
-            "message"
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "document serialization failed",
+                    "document_original requires only company and positive exact id",
+                    "document_original requires positive exact id",
+                    "expected arguments object",
+                    "expected documented PDF arguments",
+                    "expected params object",
+                    "ingest_document body exceeds native35MiB UTF-8 JSON bound",
+                    "ingest_document requires only company, exact body string and confirmation",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "invalid company slug",
+                    "invalid domain read arguments",
+                    "invalid original document arguments",
+                    "invalid original documents list response",
+                    "positive exact document id required",
+                    "report selectors must be strings",
+                    "task execution not supported",
+                    "tool name required",
+                    "unexpected PDF arguments or missing explicit confirmation",
+                    "year allowed only on invoices"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "already initialized",
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
           ],
           "additionalProperties": false
         }
-      },
-      "required": [
-        "jsonrpc",
-        "id",
-        "error"
-      ],
-      "additionalProperties": false,
-      "description": "Selected leaf parse messages and Session messages: expected one JSON-RPC object; invalid JSON-RPC request; session request limit reached; reconnect; request id already used; expected params object; initialize and notifications/initialized required; task execution not supported; tool name required; method not found; expected arguments object; report selectors must be strings; year allowed only on invoices; invalid domain read arguments; year selector too long; document_original requires only company and positive exact id; document_original requires positive exact id; ingest_document requires only company, exact body string and confirmation; ingest_document body exceeds native35MiB UTF-8 JSON bound; expected documented PDF arguments; unexpected PDF arguments or missing explicit confirmation; positive exact document id required; unknown PDF operation; invalid original document arguments; invalid company slug; document serialization failed; invalid original documents list response"
+      ]
     },
     "NativeListNativeEnvelope": {
       "type": "object",
@@ -3990,7 +4214,7 @@
             "message"
           ],
           "additionalProperties": false,
-          "description": "message equals Bilag {documentNo} er indlæst."
+          "description": "message equals Bilag {documentNo} er indl\u00e6st."
         }
       },
       "required": [
