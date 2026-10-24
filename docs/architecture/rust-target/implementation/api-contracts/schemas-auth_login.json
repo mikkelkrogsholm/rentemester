@@ -1,0 +1,643 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "LoginInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "rememberMe": {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            }
+          },
+          "required": [
+            "email",
+            "password"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "number",
+                "string",
+                "array",
+                "object"
+              ]
+            }
+          },
+          "minItems": 2,
+          "maxItems": 3
+        }
+      ],
+      "description": "Serde struct object or positional sequence; unknown/duplicate object fields rejected; explicit null never substitutes for string/bool. Trailing JSON values rejected."
+    },
+    "BeginInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          },
+          "required": [
+            "email",
+            "password"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "number",
+                "string",
+                "array",
+                "object"
+              ]
+            }
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Serde struct object or positional sequence; unknown/duplicate object fields rejected; explicit null never substitutes for string/bool. Trailing JSON values rejected."
+    },
+    "FactorInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            "trustDevice": {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            },
+            "disableSession": {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            },
+            {
+              "type": "boolean",
+              "const": false,
+              "default": false
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "number",
+                "string",
+                "array",
+                "object"
+              ]
+            }
+          },
+          "minItems": 1,
+          "maxItems": 3
+        }
+      ],
+      "description": "Serde struct object or positional sequence; unknown/duplicate object fields rejected; explicit null never substitutes for string/bool. Trailing JSON values rejected."
+    },
+    "ConfirmInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "number",
+                "string",
+                "array",
+                "object"
+              ]
+            }
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ],
+      "description": "Serde struct object or positional sequence; unknown/duplicate object fields rejected; explicit null never substitutes for string/bool. Trailing JSON values rejected."
+    },
+    "SignOutInput": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Challenge": {
+      "type": "object",
+      "properties": {
+        "twoFactorRedirect": {
+          "const": true
+        },
+        "twoFactorMethods": {
+          "type": "array",
+          "items": {
+            "const": "totp"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "twoFactorRedirect",
+        "twoFactorMethods"
+      ],
+      "additionalProperties": false
+    },
+    "Status": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "SignedOut": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "const": true
+        }
+      },
+      "required": [
+        "success"
+      ],
+      "additionalProperties": false
+    },
+    "Setup": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "const": "totp"
+        },
+        "totpURI": {
+          "type": "string",
+          "pattern": "^otpauth://totp/[^:]+:[^?]+\\?secret=[A-Z2-7]{52}&issuer=[^&]+&digits=6&period=30$",
+          "writeOnly": true,
+          "description": "Secret-bearing URI, disclosed only after known setup commit. Runtime issuer Rentemester; email/issuer path encodeURIComponent rules, issuer query form encoding; base32 of raw 32-character secret, no padding. Not a reusable readback."
+        }
+      },
+      "required": [
+        "method",
+        "totpURI"
+      ],
+      "additionalProperties": false
+    },
+    "Enrolled": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "backupCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$",
+            "writeOnly": true
+          },
+          "minItems": 10,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "description": "One post-commit disclosure of ten case-sensitive codes. No codes in session read; consumed backup code cannot be restored by retry."
+        }
+      },
+      "required": [
+        "status",
+        "backupCodes"
+      ],
+      "additionalProperties": false
+    },
+    "RequestRefused": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "request_refused"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "HTTP protocol negotiation is incompatible"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Disconnected": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "rust_workspace_not_connected"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "Rust workspace integration is not connected yet"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Uninstalled": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "rust_endpoint_not_implemented"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "This endpoint is not implemented by the Rust server yet"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Denied": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid credentials"
+        },
+        "code": {
+          "const": "INVALID_CREDENTIALS"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Uncertain": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Authentication outcome could not be confirmed"
+        },
+        "code": {
+          "const": "AUTH_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "EnrollmentRequired": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "MFA enrollment required"
+        },
+        "code": {
+          "const": "MFA_ENROLLMENT_REQUIRED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Locked": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Authentication refused"
+        },
+        "code": {
+          "const": "AUTHENTICATION_LOCKED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidCode": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid code"
+        },
+        "code": {
+          "const": "INVALID_CODE"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidBackup": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid backup code"
+        },
+        "code": {
+          "const": "INVALID_BACKUP_CODE"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "SessionUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "minLength": 1,
+          "description": "Nonempty after Rust trim; UTF-8 byte length <=4096, no char::is_control characters; preserved without normalization."
+        },
+        "name": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+        },
+        "email": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "minLength": 1,
+          "description": "Nonempty after Rust trim; UTF-8 byte length <=4096, no char::is_control characters; preserved without normalization."
+        },
+        "emailVerified": {
+          "const": true
+        },
+        "twoFactorEnabled": {
+          "const": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+          "description": "Valid Gregorian date, year 0001..9999; exact UTC milliseconds. Date-only stored user fields expand to midnight; no numeric epochs."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+          "description": "Valid Gregorian date, year 0001..9999; exact UTC milliseconds. Date-only stored user fields expand to midnight; no numeric epochs."
+        },
+        "image": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "emailVerified",
+        "twoFactorEnabled",
+        "createdAt",
+        "updatedAt",
+        "image"
+      ],
+      "additionalProperties": false
+    },
+    "SessionMetadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "minLength": 1,
+          "description": "Nonempty after Rust trim; UTF-8 byte length <=4096, no char::is_control characters; preserved without normalization."
+        },
+        "userId": {
+          "type": "string",
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "minLength": 1,
+          "description": "Nonempty after Rust trim; UTF-8 byte length <=4096, no char::is_control characters; preserved without normalization."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+          "description": "Valid Gregorian date, year 0001..9999; exact UTC milliseconds. Date-only stored user fields expand to midnight; no numeric epochs."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+          "description": "Valid Gregorian date, year 0001..9999; exact UTC milliseconds. Date-only stored user fields expand to midnight; no numeric epochs."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+          "description": "Valid Gregorian date, year 0001..9999; exact UTC milliseconds. Date-only stored user fields expand to midnight; no numeric epochs."
+        },
+        "ipAddress": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "userAgent": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "createdAt",
+        "updatedAt",
+        "expiresAt",
+        "ipAddress",
+        "userAgent"
+      ],
+      "additionalProperties": false
+    },
+    "SessionView": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "schemas-auth_login.json#/$defs/SessionMetadata"
+        },
+        "user": {
+          "$ref": "schemas-auth_login.json#/$defs/SessionUser"
+        }
+      },
+      "required": [
+        "session",
+        "user"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
