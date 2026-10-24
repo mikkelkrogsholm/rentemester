@@ -40,7 +40,10 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::workspace_inbox_original::accepts(args)
+    crate::group_original::accepts(args)
+        || crate::company_original::accepts(args)
+        || args.first().is_some_and(|s| s == "reg")
+        || crate::workspace_inbox_original::accepts(args)
         || crate::party_original::accepts(args)
         || crate::corporate_records_original::accepts(args)
         || crate::ownership_original::accepts(args)
@@ -104,6 +107,8 @@ pub fn requires_company(args: &[String]) -> bool {
             .take_while(|s| s.as_str() != "--")
             .any(|s| s == "--ixbrl-taxonomy");
     migrated(args)
+        && !args.first().is_some_and(|s| s == "reg")
+        && !(crate::company_original::accepts(args) && !crate::company_original::needs_company(args))
         && !taxonomy
         && !matches!(
             (
@@ -283,7 +288,10 @@ fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<
     // default distinguishes a terminal report from piped flat JSON.
     if !json
         && format == Some("human")
-        && (crate::workspace_inbox_original::accepts(&output)
+        && (crate::group_original::accepts(&output)
+            || crate::company_original::accepts(&output)
+            || output.first().is_some_and(|s|s=="reg")
+            || crate::workspace_inbox_original::accepts(&output)
             || crate::party_original::accepts(&output)
             || crate::corporate_records_original::accepts(&output)
             || crate::ownership_original::accepts(&output)

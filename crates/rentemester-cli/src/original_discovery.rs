@@ -3,6 +3,8 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"group","usage":"group --help","scope":"original27 effective-dated group evidence/mapping/elimination/consolidation commands through common Rust engine/server; explicit credential/anchor/source files, independent review and no company ledger mutation"},
+        {"name":"company add|list|sync-cvr|set-profile|profile","usage":"company --help","scope":"original connected company lifecycle through common Rust server, explicit private runtime or remote binding; first workspace initialization is a separate operator flow"},
         {"name":"workspace-inbox list|inspect|status|ingest|assign|complete","usage":"workspace-inbox --help","scope":"original workspace evidence intake and reviewed company handoff through current Rust server; supported upload profile, no journal effects or automatic retry"},
         {"name":"party propose-merge|approve-merge","usage":"party --help","scope":"explicit reviewed merge and exact hash approval; human cookie, both writable party scopes, no retries or identity rewrite"},
         {"name":"party create|search|inspect|link-role","usage":"party --help","scope":"explicit identity-only creation and current scoped role lifecycle; human cookie authority, bounded JSON files, no inferred role or retry"},
@@ -162,7 +164,9 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "workspace-inbox"
+        "group"
+            | "company"
+            | "workspace-inbox"
             | "party"
             | "corporate-record"
             | "ownership"

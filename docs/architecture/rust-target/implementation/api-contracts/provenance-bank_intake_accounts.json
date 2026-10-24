@@ -56,7 +56,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "e70c16a3acf1fecef07b333fc95a4f75496434a6f4e11bdd05b4ec7d029ce904",
+      "sha256": "d1e69ce28cb5c805a917a363ec8743981a3a314a2634ccaf333348b6a2414246",
       "needle": "pub fn prepare("
     },
     {

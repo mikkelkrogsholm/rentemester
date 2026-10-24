@@ -25,3 +25,11 @@ pub fn compliance(flags:&BTreeMap<&str,&str>,allow:bool,confirm:bool,preview:boo
     if let Some(path)=flags.get("--out") {let html=result.pointer("/complianceReport/html").and_then(Value::as_str).ok_or_else(||invalid("missing server HTML"))?;std::fs::write(path,html).map_err(|_|invalid("could not write report"))?;}
     Ok(json!({"ok":result.get("ok").and_then(Value::as_bool).unwrap_or(false),"data":result}))
 }
+
+/// Private stable presentation boundary; original report worker replaces before acceptance.
+pub fn execute(args:&[String])->crate::dated_reports::Output {
+    match run(args) {
+        Ok(v)=>crate::dated_reports::Output{stdout:if args.iter().any(|s|s=="--json"){format!("{}\n",v)}else{v["report"].as_str().unwrap_or("").to_owned()},stderr:String::new(),exit:if v["ok"]==false{1}else{0}},
+        Err((code,e))=>crate::dated_reports::Output{stdout:format!("{}\n",json!({"ok":false,"code":e.code,"errors":[e.message]})),stderr:String::new(),exit:code}
+    }
+}
