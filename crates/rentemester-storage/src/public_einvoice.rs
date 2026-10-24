@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 mod handoff;
+mod onboarding;
 mod registration;
 pub use handoff::prepare_original;
+pub use onboarding::{direction_registered, onboarding_status, save_direction};
 pub use registration::{
     Identity, Registration, identity, load_bound, outbound_registered, registration, save_key,
     save_outbound,
@@ -498,6 +500,7 @@ pub fn rows(db: &Connection) -> Result<Value, Error> {
 }
 pub fn validate_backup(db: &Connection) -> Result<(), Error> {
     registration::validate(db)?;
+    onboarding::validate(db)?;
     let mut q = db
         .prepare("SELECT id FROM peppol_submissions ORDER BY id")
         .map_err(sql)?;

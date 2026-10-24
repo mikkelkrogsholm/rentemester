@@ -9,16 +9,27 @@ pub const MAX_PUBLIC_INVOICE_BODY: usize = 16 * 1024;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PublicInvoiceMutation {
     Register,
+    RegisterPair,
+    Onboard,
     Send,
     RefreshStatus,
 }
 pub fn public_invoice_body_schema(action: PublicInvoiceMutation) -> Value {
     let mut fields = json!({"confirm":{"const":true}});
     let mut required = vec!["confirm"];
-    if action != PublicInvoiceMutation::Register {
+    if matches!(
+        action,
+        PublicInvoiceMutation::Send | PublicInvoiceMutation::RefreshStatus
+    ) {
         fields["invoiceDocumentId"] =
             json!({"type":"integer","minimum":1,"maximum":9007199254740991u64});
         required.push("invoiceDocumentId");
+    }
+    if matches!(
+        action,
+        PublicInvoiceMutation::RegisterPair | PublicInvoiceMutation::Onboard
+    ) {
+        fields["network"] = json!({"type":"string","enum":["nemhandel","peppol"]});
     }
     object(fields, &required)
 }
@@ -46,7 +57,10 @@ impl ApiClient {
             ));
         }
         body(&bytes, &public_invoice_body_schema(action))?;
-        if action != PublicInvoiceMutation::Register {
+        if matches!(
+            action,
+            PublicInvoiceMutation::Send | PublicInvoiceMutation::RefreshStatus
+        ) {
             let value: Value = serde_json::from_slice(&bytes)
                 .map_err(|_| Error::InvalidInput("native public-invoice JSON required"))?;
             if value["invoiceDocumentId"]
@@ -59,6 +73,8 @@ impl ApiClient {
             }
         }
         let path = match action {
+            PublicInvoiceMutation::RegisterPair => "invoices/public-register-pair",
+            PublicInvoiceMutation::Onboard => "invoices/public-onboard",
             PublicInvoiceMutation::Register => "invoices/public-register",
             PublicInvoiceMutation::Send => "invoices/send-public",
             PublicInvoiceMutation::RefreshStatus => "invoices/send-public/status",
@@ -74,5 +90,43 @@ impl ApiClient {
             Error::Refused { status: 408 } => Error::OutcomeUnknown,
             other => other,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn pair_and_onboard_strict_native_body_schema() {
+        for action in [
+            PublicInvoiceMutation::RegisterPair,
+            PublicInvoiceMutation::Onboard,
+        ] {
+            let schema = public_invoice_body_schema(action);
+            for value in [
+                json!({"confirm":true}),
+                json!({"confirm":true,"network":"peppol"}),
+                json!({"confirm":true,"network":"nemhandel"}),
+            ] {
+                body(&serde_json::to_vec(&value).unwrap(), &schema).unwrap();
+            }
+            for value in [
+                json!({"confirm":false}),
+                json!({"confirm":true,"network":"other"}),
+                json!({"confirm":true,"companyKey":"override"}),
+                json!({"confirm":true,"apiLicenseKey":"secret"}),
+                json!({"confirm":true,"participantId":"87654321"}),
+                json!({"confirm":true,"invoiceDocumentId":1}),
+            ] {
+                assert!(body(&serde_json::to_vec(&value).unwrap(), &schema).is_err());
+            }
+        }
+        assert!(
+            body(
+                br#"{"confirm":true,"network":"peppol"}"#,
+                &public_invoice_body_schema(PublicInvoiceMutation::Register)
+            )
+            .is_err()
+        );
     }
 }

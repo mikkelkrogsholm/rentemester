@@ -539,3 +539,201 @@ fn native_first_delivery_keeps_canonical_duplicate_projection() {
     };
     assert_eq!(first, repeated);
 }
+
+fn advance_pair(
+    owner: &mut Owner,
+    proof: &VerifiedCookie,
+    phase: Admission,
+    outcome: Outcome,
+) -> Next {
+    owner
+        .finish_public_einvoice(proof, &Fixed(NOW), phase, outcome)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+}
+#[test]
+fn pair_partial_success_survives_refusal_and_repeat_discovers_only_missing_direction() {
+    use rentemester_runtime::public_einvoice::{Network, onboarding::Direction};
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let phase = pending(
+        owner
+            .start_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                Intent::RegisterPair(Network::Peppol),
+                "test",
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    assert!(matches!(phase.request(), Request::FindCompany { .. }));
+    let phase = pending(advance_pair(
+        &mut owner,
+        &proof,
+        phase,
+        Outcome::CompanyFound(Discovery::Found("synthetic-key".into())),
+    ));
+    assert!(matches!(
+        phase.request(),
+        Request::FindDirection {
+            network: Network::Peppol,
+            direction: Direction::Outbound,
+            ..
+        }
+    ));
+    let phase = pending(advance_pair(
+        &mut owner,
+        &proof,
+        phase,
+        Outcome::DirectionFound(Discovery::Missing),
+    ));
+    assert!(matches!(
+        phase.request(),
+        Request::Direction {
+            direction: Direction::Outbound,
+            ..
+        }
+    ));
+    let phase = pending(advance_pair(
+        &mut owner,
+        &proof,
+        phase,
+        Outcome::Direction(true),
+    ));
+    assert!(matches!(
+        phase.request(),
+        Request::FindDirection {
+            direction: Direction::Inbound,
+            ..
+        }
+    ));
+    let phase = pending(advance_pair(
+        &mut owner,
+        &proof,
+        phase,
+        Outcome::DirectionFound(Discovery::Missing),
+    ));
+    assert!(
+        owner
+            .finish_public_einvoice(&proof, &Fixed(NOW), phase, Outcome::Direction(false))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    let phase = pending(
+        owner
+            .start_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                Intent::RegisterPair(Network::Peppol),
+                "test",
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    assert!(matches!(
+        phase.request(),
+        Request::FindDirection {
+            direction: Direction::Inbound,
+            ..
+        }
+    ));
+    let complete = advance_pair(
+        &mut owner,
+        &proof,
+        phase,
+        Outcome::DirectionFound(Discovery::Found(())),
+    );
+    match complete {
+        Next::Complete(v) => assert_eq!(v["registration"]["technicalReady"], true),
+        _ => panic!("complete pair expected"),
+    }
+    let phase = pending(
+        owner
+            .start_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                Intent::RegisterPair(Network::Peppol),
+                "test",
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    assert!(matches!(
+        phase.request(),
+        Request::FindDirection {
+            direction: Direction::Inbound,
+            ..
+        }
+    ));
+    // Read/discovery cannot produce a POST after authority revocation.
+    revoke(&mut owner);
+    assert!(
+        owner
+            .finish_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                phase,
+                Outcome::DirectionFound(Discovery::Missing)
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}
+#[test]
+fn pair_current_identity_and_original_outbound_consent_do_not_imply_receive_consent() {
+    use rentemester_runtime::public_einvoice::{Network, onboarding::Direction};
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    register_provider(&mut owner);
+    let phase = pending(
+        owner
+            .start_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                Intent::RegisterPair(Network::Nemhandel),
+                "test",
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    assert!(matches!(
+        phase.request(),
+        Request::FindDirection {
+            direction: Direction::Inbound,
+            ..
+        }
+    ));
+    owner
+        .held
+        .0
+        .as_mut()
+        .unwrap()
+        .company
+        .as_mut()
+        .unwrap()
+        .execute("UPDATE companies SET cvr='87654321' WHERE id=1", [])
+        .unwrap();
+    assert!(
+        owner
+            .finish_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                phase,
+                Outcome::DirectionFound(Discovery::Missing)
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}

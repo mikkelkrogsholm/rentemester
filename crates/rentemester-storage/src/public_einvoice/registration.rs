@@ -332,3 +332,17 @@ pub(super) fn validate(db: &Connection) -> Result<(), Error> {
     }
     Ok(())
 }
+
+pub(super) fn bound_identity(
+    db: &Connection,
+    env: &str,
+    key: &str,
+    i: &Identity,
+) -> Result<bool, Error> {
+    Ok(proofs(db)?.iter().any(|p| {
+        p.kind == "native_public_einvoice_company"
+            && p.environment == env
+            && p.company_key == key
+            && p.identity == *i
+    }))
+}

@@ -1,6 +1,7 @@
 //! Fixed DigiSense REST transport. No SQL, retries, implicit validation, registration, or posting.
-mod recovery;
+pub mod onboarding;
 pub mod receive;
+mod recovery;
 use reqwest::{
     blocking::Client as HttpClient,
     header::{ACCEPT, AUTHORIZATION, CONTENT_ENCODING, CONTENT_TYPE, HeaderValue},
@@ -18,13 +19,15 @@ pub enum Environment {
     Test,
     Production,
 }
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Deserialize, serde::Serialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "lowercase")]
 pub enum Network {
+    #[default]
     Nemhandel,
     Peppol,
 }
 impl Network {
-    fn name(self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             Self::Nemhandel => "nemhandel",
             Self::Peppol => "peppol",

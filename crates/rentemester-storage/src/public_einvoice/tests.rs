@@ -672,3 +672,58 @@ fn restart_retains_manual_ack_block_after_earlier_safe_preparation() {
             .should_deliver
     );
 }
+
+#[test]
+fn onboarding_direction_proofs_partial_repeat_network_and_tamper() {
+    let (mut db, _) = fixture();
+    let tx = db.transaction().unwrap();
+    let i = identity(&tx).unwrap();
+    assert_eq!(
+        onboarding_status(&tx, "test", "synthetic-key").unwrap()["technicalReady"],
+        false
+    );
+    save_direction(
+        &tx,
+        &i,
+        "test",
+        "synthetic-key",
+        "peppol",
+        "inbound",
+        "user:synthetic",
+        NOW,
+    )
+    .unwrap();
+    assert_eq!(
+        onboarding_status(&tx, "test", "synthetic-key").unwrap()["technicalReady"],
+        false
+    ); // split directions never ready
+    save_direction(
+        &tx,
+        &i,
+        "test",
+        "synthetic-key",
+        "peppol",
+        "outbound",
+        "user:synthetic",
+        NOW,
+    )
+    .unwrap();
+    save_direction(
+        &tx,
+        &i,
+        "test",
+        "synthetic-key",
+        "peppol",
+        "outbound",
+        "user:synthetic",
+        NOW,
+    )
+    .unwrap();
+    assert_eq!(
+        onboarding_status(&tx, "test", "synthetic-key").unwrap()["technicalReady"],
+        true
+    );
+    validate_backup(&tx).unwrap();
+    tx.execute("UPDATE digisense_participants SET participant_id='87654321' WHERE network='peppol' AND direction='inbound'",[]).unwrap();
+    assert!(validate_backup(&tx).is_err());
+}
