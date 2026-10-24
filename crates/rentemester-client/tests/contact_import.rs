@@ -119,3 +119,123 @@ async fn import_confirmation_size_and_provider_authority_fail_before_transport()
         Err(Error::InvalidInput(_))
     ));
 }
+
+#[test]
+fn import_schema_exposes_optional_exact_role_without_default() {
+    let schema = rentemester_client::contact_import_body_schema();
+    assert_eq!(schema["properties"]["defaultRole"]["type"], "string");
+    assert_eq!(
+        schema["properties"]["defaultRole"]["enum"],
+        json!(["customer", "vendor"])
+    );
+    assert!(schema["properties"]["defaultRole"].get("default").is_none());
+    assert_eq!(
+        schema["required"],
+        json!(["fileName", "content", "confirm"])
+    );
+    assert_eq!(schema["additionalProperties"], false);
+}
+
+#[tokio::test]
+async fn import_optional_roles_and_omission_forward_exact_caller_bytes_and_cookie() {
+    for role in [None, Some("customer"), Some("vendor")] {
+        let reply = r#"{"ok":true,"import":{"summary":{"parsed":1,"customersCreated":0,"vendorsCreated":1,"skipped":0,"enriched":0,"enrichmentFailures":0},"errors":["row warning"]}}"#;
+        let (origin, wire, task) = server("200 OK", reply, "application/json");
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        // Deliberately noncanonical whitespace/key order: the SDK must not rewrite JSON
+        // or interpret even minimal original CSV headers.
+        let role_field = role.map_or(String::new(), |r| format!(", \"defaultRole\" : \"{r}\""));
+        let bytes = format!(
+            "{{ \"confirm\" : true, \"content\" : \"Kontaktnavn\\nSynthetic\\n\", \"fileName\" : \"Kontakter.csv\"{role_field} }}\n"
+        ).into_bytes();
+        assert_eq!(
+            api.import_contacts("synthetic", bytes.clone(), true)
+                .await
+                .unwrap(),
+            serde_json::from_str::<Value>(reply).unwrap()
+        );
+        let request = wire.recv().unwrap();
+        let end = request.windows(4).position(|w| w == b"\r\n\r\n").unwrap();
+        let headers = String::from_utf8_lossy(&request[..end]).to_lowercase();
+        assert!(headers.starts_with("post /api/companies/synthetic/import http/1.1\r\n"));
+        assert!(headers.contains("\r\ncookie: session=synthetic"));
+        assert_eq!(&request[end + 4..], bytes.as_slice());
+        assert_eq!(task.join().unwrap(), 1);
+    }
+}
+
+#[tokio::test]
+async fn import_invalid_roles_types_and_authority_are_rejected_before_transport() {
+    // A live, unserviced listener also detects accidental discovery or POSTs.
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let api = ApiClient::new(
+        &format!("http://{}", listener.local_addr().unwrap()),
+        true,
+        Some("session=synthetic".into()),
+    )
+    .unwrap();
+    for role in [
+        json!("owner"),
+        json!("Customer"),
+        json!(""),
+        json!(1),
+        json!(true),
+        Value::Null,
+        json!([]),
+        json!({}),
+    ] {
+        let mut value: Value = serde_json::from_slice(&body()).unwrap();
+        value["defaultRole"] = role;
+        assert!(matches!(
+            api.import_contacts("synthetic", serde_json::to_vec(&value).unwrap(), true)
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+    for (key, value) in [
+        ("actor", json!("user:synthetic")),
+        ("identity", json!("owner")),
+        ("provider", json!("untrusted")),
+        ("endpoint", json!("https://untrusted.invalid")),
+        ("enrichCvr", Value::Null),
+        ("confirm", json!(false)),
+        ("confirm", json!("true")),
+        ("confirm", Value::Null),
+    ] {
+        let mut input: Value = serde_json::from_slice(&body()).unwrap();
+        input[key] = value;
+        assert!(matches!(
+            api.import_contacts("synthetic", serde_json::to_vec(&input).unwrap(), true)
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+    assert!(matches!(
+        api.import_contacts("synthetic", body(), false).await,
+        Err(Error::InvalidInput(_))
+    ));
+    assert!(matches!(
+        api.import_contacts("synthetic", vec![b' '; MAX_CONTACT_IMPORT_BODY + 1], true)
+            .await,
+        Err(Error::InvalidInput(_))
+    ));
+    assert_eq!(
+        listener.accept().unwrap_err().kind(),
+        std::io::ErrorKind::WouldBlock
+    );
+}
+
+#[tokio::test]
+async fn import_malformed_success_is_unknown_and_never_retried() {
+    for reply in ["not json", r#"{"ok":"true"}"#, "{}"] {
+        let (origin, wire, task) = server("200 OK", reply, "application/json");
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        assert_eq!(
+            api.import_contacts("synthetic", body(), true).await,
+            Err(Error::OutcomeUnknown)
+        );
+        wire.recv().unwrap();
+        assert_eq!(task.join().unwrap(), 1);
+    }
+}

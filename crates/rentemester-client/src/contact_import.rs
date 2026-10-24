@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 pub const MAX_CONTACT_IMPORT_BODY: usize = 12 * 1024 * 1024;
 pub fn contact_import_body_schema() -> Value {
     object(
-        json!({"fileName":{"type":"string","minLength":1},"content":{"type":"string","minLength":1},"enrichCvr":{"type":"boolean","description":"Explicit optional CVR enrichment; provider configuration and cache remain server-owned"},"confirm":{"const":true}}),
+        json!({"fileName":{"type":"string","minLength":1},"content":{"type":"string","minLength":1},"defaultRole":{"type":"string","enum":["customer","vendor"],"description":"Explicit original contact CSV acceptance and fallback role; classification remains server-owned"},"enrichCvr":{"type":"boolean","description":"Explicit optional CVR enrichment; provider configuration and cache remain server-owned"},"confirm":{"const":true}}),
         &["fileName", "content", "confirm"],
     )
 }
@@ -23,7 +23,7 @@ impl ApiClient {
         }
         let value: Value = serde_json::from_slice(&bytes)
             .map_err(|_| Error::InvalidInput("expected native contact import JSON"))?;
-        let allowed = ["fileName", "content", "enrichCvr", "confirm"];
+        let allowed = ["fileName", "content", "enrichCvr", "confirm", "defaultRole"];
         if value
             .as_object()
             .is_none_or(|o| o.keys().any(|k| !allowed.contains(&k.as_str())))
@@ -31,6 +31,9 @@ impl ApiClient {
             || value["content"].as_str().is_none_or(|s| s.is_empty())
             || value["confirm"] != true
             || value.get("enrichCvr").is_some_and(|v| !v.is_boolean())
+            || value
+                .get("defaultRole")
+                .is_some_and(|v| !matches!(v.as_str(), Some("customer" | "vendor")))
         {
             return Err(Error::InvalidInput(
                 "native import body differs from discoverable schema",
