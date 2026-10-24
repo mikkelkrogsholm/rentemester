@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R51/R52 #677:207accounting/voucher contracts reviewed/integrated and known native HEAD draftcreation defect fixed. Existing realserver fixture20HEADcases10routes and normalGETPOSTauth,ledger/accounts/company/audit/artifacts preserved.",
-  "code_revision": "4790657047211afcfda06758e592d40e261625b1",
-  "spec_revision": "sha256:30f9969479276b018ccb235c64d3fbe1daf8f48e22c32c1ea20688db9fe46efe",
-  "state": "37of55originalissuesCLOSED18OPEN.419exactcontracts accepted(191HTTP122CLI106MCP). Remaining448of639HTTP plus remainingCLI/MCP under677; nextwholebank/payables/invoiceclaims contractflow. All55/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
+  "current_increment": "R53/R54 #677:207bank/payment contracts reviewed/integrated and 11confirmed native HEADmutation handlers fixed. Existing realserver fixture58HEADcases29routes and normalGETPOSTauth,ledger/accounts/company/audit/artifacts preserved.",
+  "code_revision": "06ce3f19bc09305f4baa80abaaaf131b4b8019d6",
+  "spec_revision": "sha256:fe7d66d6da4c15352f6ae6a104cbf1c3491a4e8a06f31a2bd90683124c574f8c",
+  "state": "37of55originalissuesCLOSED18OPEN.626exactcontracts accepted(277HTTP189CLI160MCP). Remaining362of639HTTP plus remainingCLI/MCP under677; nextwholeassets/accruals/mileage/budget/knowledge contractflow. All55/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
     "Finish remaining536HTTP andotheradvertisedCLI/MCP exactcontracts fromexisting accounting userflows; reuse accepted runtime evidence.",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R50 #677:two source-confirmed accounts/company HEADmutationpaths now early405 beforeCreate/Update; sameexistingfixture14HEADcases on7routes andnormalGETPOSTauth/accounts/profile/ledger/artifacts preserved.",
+  "previous_verified_increment": "R51/R52 #677:207accounting/voucher contracts reviewed/integrated and known native HEAD draftcreation defect fixed. Existing realserver fixture20HEADcases10routes and normalGETPOSTauth,ledger/accounts/company/audit/artifacts preserved.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16232,6 +16232,19 @@
       "whole_issue_accepted": false,
       "remaining": [
         "Global677 exactcontracts:448of639HTTP plus remainingadvertised CLI/MCP",
+        "All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained"
+      ]
+    },
+    "r54_head_batch677_component": {
+      "issue": 677,
+      "status": "207sourceboundcontracts andactualbatchHEADfix accepted; whole677OPEN",
+      "source_revision": "06ce3f19bc09305f4baa80abaaaf131b4b8019d6",
+      "report": "/tmp/rentemester-rust-reports/r54-head-batch677-component-accepted.json",
+      "sha256": "68e80eef3364d661a7f4991b713a8a2c56f1323496f2e2d59d6dc124db575d43",
+      "sgd_run": "rust-r54-head-batch677-safety-20261024T060726.645431000",
+      "whole_issue_accepted": false,
+      "remaining": [
+        "Global677 exactcontracts:362of639HTTP plus remainingadvertised CLI/MCP",
         "All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained"
       ]
     }
