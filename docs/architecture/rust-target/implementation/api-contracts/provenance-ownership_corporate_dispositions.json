@@ -1,0 +1,470 @@
+{
+  "partition": "ownership_corporate_dispositions",
+  "status": "specified",
+  "unresolved": [],
+  "method": "Static actual-source trace; no runtime replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http/corporate_records.rs",
+      "sha256": "93f2254f72dcc6d3aba9d71c448556d7e8ab982bca4975aaf04ad4d51626379e",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-host/src/corporate_records.rs",
+      "sha256": "fec2fcbd51c1d5f6e45b055ea20edd46947b567c570452a052d8d186e79bf48a",
+      "needle": "pub fn corporate_records"
+    },
+    {
+      "path": "crates/rentemester-application/src/corporate_records.rs",
+      "sha256": "365aac62f939aba700ed77673d6ba88fe7d82291e966441d68cc105525e91c46",
+      "needle": "pub fn execute_scoped"
+    },
+    {
+      "path": "crates/rentemester-storage/src/corporate_records.rs",
+      "sha256": "56608daa45ae28909708d70a27436d91116e507b05279ee9aff2daed10d83892",
+      "needle": "pub fn inspect"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn incompatible()"
+    },
+    {
+      "path": "crates/rentemester-application/src/parties.rs",
+      "sha256": "b0e7725efa48d47170ec4ec8566c6ce47244d4bc630ef44814e13d66310e50ba",
+      "needle": "pub fn company_sets"
+    },
+    {
+      "path": "crates/rentemester-storage/src/cookie_session.rs",
+      "sha256": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+      "needle": "pub fn resolve("
+    },
+    {
+      "path": "crates/rentemester-storage/src/workspace_transfer.rs",
+      "sha256": "751e5c0dfb984c2bc1685680abb3ae5ac07efb57f71b20c186758b3ba41f24b9",
+      "needle": "pub fn require_business_write"
+    },
+    {
+      "path": "crates/rentemester-application/src/backup_status.rs",
+      "sha256": "3f0fa53c99cc8572149dcb1bce41916292a678bfd83deb107e7027e8546bda48",
+      "needle": "pub fn require_write"
+    },
+    {
+      "path": "crates/rentemester-host/src/backup_scopes.rs",
+      "sha256": "c12c6a4a54f1858cf94e05b3811c4b4d3fe9af45a414318e8076e74c29132770",
+      "needle": "pub(super) fn control_company_auth"
+    },
+    {
+      "path": "crates/rentemester-storage/src/backup_state.rs",
+      "sha256": "05a61db97bfaabc909494096001aa18c9778043c8021dc8f3cbaf37bc8a7d040",
+      "needle": "pub fn settings("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/ownership.rs",
+      "sha256": "bf57718dc6a280aef32462a64fa9173297ac796ac25aa97e703bc8542cfebc3f",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-host/src/ownership.rs",
+      "sha256": "632e4a2acc88ab5c798a885fea92fe545ebcb809214e09afda5ac07a6b855789",
+      "needle": "pub fn ownership"
+    },
+    {
+      "path": "crates/rentemester-application/src/ownership.rs",
+      "sha256": "3228a04d8d90419fb0c7f4206dc996c6668ec976fac1bd122e507780a879b847",
+      "needle": "pub fn execute_scoped"
+    },
+    {
+      "path": "crates/rentemester-storage/src/ownership.rs",
+      "sha256": "97b2302c0d09f89c79c18bdad6b850b20180fac88f0397fcc50ca495e9aac0a5",
+      "needle": "pub fn load"
+    },
+    {
+      "path": "crates/rentemester-engine/src/ownership.rs",
+      "sha256": "30c34a4d4f462f47be2a893c73d489df0136135b42b15ae580c7559c348e0a5c",
+      "needle": "pub struct Fact"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/intercompany_dispositions.rs",
+      "sha256": "d523f1343afd67fd332366091b94f8a32fa7f14b5ebf11b52ade67d07e19d21a",
+      "needle": "pub(super) async fn status"
+    },
+    {
+      "path": "crates/rentemester-host/src/intercompany_dispositions.rs",
+      "sha256": "02b2ee8658ca44585f9379c8d6c2955fd21e1c7eb8b64a0dd68cfb44d966c2d7",
+      "needle": "pub fn intercompany_dispositions"
+    },
+    {
+      "path": "crates/rentemester-application/src/intercompany_dispositions.rs",
+      "sha256": "bcecf60a2c7f048f0102cd053acf64e1afa3084c74df3a06d97db65dfdb7ed0a",
+      "needle": "pub fn authorize"
+    },
+    {
+      "path": "crates/rentemester-storage/src/intercompany_dispositions.rs",
+      "sha256": "922fdab26f0e0e5270926d5cdd85aa7ef35eec436200e19a09589d3f855f266f",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "crates/rentemester-engine/src/intercompany_dispositions.rs",
+      "sha256": "583f619e3a2f6dec5ed8c3b3ee6ece8089a3ad41883173ef051425fc7cfde38e",
+      "needle": "pub struct Disposition"
+    },
+    {
+      "path": "crates/rentemester-storage/src/intercompany_dispositions/history.rs",
+      "sha256": "2b24e0a51080efcbe6a3e9377c4b37dd936d4aa7a1c3d1dd89c9cc9b08a24a95",
+      "needle": "pub fn value"
+    },
+    {
+      "path": "crates/rentemester-storage/src/intercompany_dispositions/journal.rs",
+      "sha256": "fbbe6aa670f0c147f09a7b3ddc79e231a0efce1928343cfbdec7b4af299abb2c",
+      "needle": "pub(super) fn status"
+    },
+    {
+      "path": "src/core/workspace-migrations/0027-intercompany-dispositions-v27.json",
+      "sha256": "c8061487475d8e1247f09d534e64f24164270f1a3d50e4c316e02593a2dddaca",
+      "needle": "CREATE TABLE rm_intercompany_disposition_events"
+    },
+    {
+      "path": "src/core/workspace-migrations/0028-intercompany-disposition-lifecycle-v28.json",
+      "sha256": "05c1140fcfb2161037ca812a2bfb67ebd488a7f51f785ffac5862329bd23d8bb",
+      "needle": "CREATE TABLE rm_intercompany_disposition_lifecycle_events"
+    },
+    {
+      "path": "crates/rentemester-client/src/ownership.rs",
+      "sha256": "676afa5b7337ef1e5290f5a8ec16c7ef18fdc22f84d55fa4c728a791d478f997",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-cli/src/ownership.rs",
+      "sha256": "57c7dd698f88f33b36be1c1d83a8771b382c1900b95ab6d5a0027fc3ff1600ca",
+      "needle": "pub fn run"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "fn validate("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error"
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108",
+      "needle": "pub(super) async fn negotiate"
+    },
+    {
+      "path": "crates/rentemester-client/src/credentials.rs",
+      "sha256": "4f304ef30b4c5382ffcbffb2c1b016e894212a1c8fb4fd9871433c7e4fe1da65",
+      "needle": "pub fn read_cookie_file"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn prepare_with_output"
+    },
+    {
+      "path": "crates/rentemester-client/src/intercompany_dispositions.rs",
+      "sha256": "91d65c377a9a00bd8d9efd8961c6691f9add6793428169ab3a735278e7c4c802",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-cli/src/intercompany_dispositions.rs",
+      "sha256": "9a29f169fec3641c610bac91b78fceefd92c77863419a8a4314e829e7698e1d3",
+      "needle": "pub fn run"
+    },
+    {
+      "path": "crates/rentemester-client/src/corporate_records.rs",
+      "sha256": "756df833526fa0a5575d186fa715293c12ab4497b575ea4319df2c9576b1087d",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-cli/src/corporate_records.rs",
+      "sha256": "d92ae0f1c4be261ccd383409047d5a26e8ccab38f67dc3eab2eb965cd0efba2c",
+      "needle": "pub fn run"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/ownership.rs",
+      "sha256": "6e468efc05211e10ef17c7143bf4fb8fd14b0e45562387392ba979651b33bb6e",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/intercompany_dispositions.rs",
+      "sha256": "40271b503c865e93c1956508228d0011e0e3aa5bf59550d5df5e9755d659b4a9",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/corporate_records.rs",
+      "sha256": "e68cee248afc42d24e76b2376ee943d7d949278b5e5679c17945b58047332185",
+      "needle": "pub async fn call"
+    }
+  ],
+  "leafMapping": {
+    "ownership": [
+      "ownership",
+      "OwnershipGraph",
+      null
+    ],
+    "ownership-history": [
+      "ownership",
+      "OwnershipHistory",
+      null
+    ],
+    "propose-ownership": [
+      "ownership",
+      "OwnershipSnapshot",
+      "OwnershipPropose"
+    ],
+    "review-ownership": [
+      "ownership",
+      "OwnershipSnapshot",
+      "OwnershipReview"
+    ],
+    "apply-ownership": [
+      "ownership",
+      "OwnershipApply",
+      "OwnershipApplyInput"
+    ],
+    "corporate-records": [
+      "corporate_records",
+      "RecordList",
+      null
+    ],
+    "corporate-record": [
+      "corporate_records",
+      "RecordResult",
+      null
+    ],
+    "corporate-record-original": [
+      "corporate_records",
+      "Original",
+      null
+    ],
+    "ingest-corporate-record": [
+      "corporate_records",
+      "RecordResult",
+      "RecordIngest"
+    ],
+    "link-corporate-record": [
+      "corporate_records",
+      "RecordResult",
+      "RecordLink"
+    ],
+    "enrich-corporate-record": [
+      "corporate_records",
+      "PayloadHash",
+      "RecordEnrich"
+    ],
+    "supersede-corporate-record": [
+      "corporate_records",
+      "PayloadHash",
+      "RecordSupersede"
+    ],
+    "group-disposition-status": [
+      "intercompany_dispositions",
+      "DispositionStatus",
+      null
+    ],
+    "plan-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionPlan",
+      "Disposition_plan"
+    ],
+    "propose-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_propose"
+    ],
+    "approve-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_approve"
+    ],
+    "link-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_link"
+    ],
+    "settle-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_settle"
+    ],
+    "supersede-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_supersede"
+    ],
+    "reopen-group-disposition": [
+      "intercompany_dispositions",
+      "DispositionState",
+      "Disposition_reopen"
+    ]
+  },
+  "globalRpcPairs": {
+    "-32700": [
+      "invalid or oversized newline-delimited message",
+      "invalid JSON",
+      "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+    ],
+    "-32600": [
+      "expected one JSON-RPC object",
+      "invalid JSON-RPC request",
+      "request id already used",
+      "already initialized"
+    ],
+    "-32000": [
+      "session request limit reached; reconnect"
+    ],
+    "-32602": [
+      "expected arguments object",
+      "expected params object",
+      "initialize requires protocolVersion, capabilities and clientInfo",
+      "task execution not supported",
+      "tool name required",
+      "report selectors must be strings"
+    ],
+    "-32002": [
+      "initialize and notifications/initialized required"
+    ],
+    "-32601": [
+      "method not found"
+    ]
+  },
+  "cliUsageDiagnostics": [
+    "--company requires a company slug or verified local path",
+    "--cvr is only supported by cvr-lookup",
+    "--local-profile is mutually exclusive with --server and --allow-loopback-http",
+    "--local-profile requires an absolute private profile path",
+    "--max is only supported by bank-suggest-matches",
+    "CFO selectors allowed only on cfo-analytics",
+    "HTTP runtime unavailable",
+    "PDF/booking options require positive --id DOCUMENT_ID",
+    "RENTEMESTER_WORKSPACE differs from the verified local workspace",
+    "archive selectors allowed only on archive commands",
+    "attempt selector allowed only on dinero-import-original",
+    "audit filters are only valid for audit-log-list",
+    "authenticated remote commands require --cookie-file or --service-key-file",
+    "bank-transaction-id allowed only on reconciliation candidates",
+    "body-file only allowed for mileage posting",
+    "cannot inspect session output path",
+    "canonical nonnegative cursor/limit required",
+    "choose one of --cookie-file or --service-key-file",
+    "company must be an ASCII slug or a local path without parent traversal or backslashes",
+    "company path must be an existing non-symlink direct child of the verified local workspace",
+    "company paths require explicit --local-profile; otherwise use an ASCII company slug",
+    "company required",
+    "company required for company operations; year allowed on reports/invoices/bank, account only on reports",
+    "confirmation flags are not login flags",
+    "corporate selectors/body/confirmation do not match command; see remote help",
+    "could not read corporate body",
+    "could not read exact native disposition JSON",
+    "could not read exact ownership body",
+    "could not read native backup lock body",
+    "could not read request from stdin",
+    "could not read secret stdin line",
+    "current human cookie required",
+    "cursor/limit out of range",
+    "destination/operation selectors allowed only on backup destination commands",
+    "dimension/member only on budget-dimension-actuals",
+    "document-id allowed only for invoice extraction commands",
+    "domain writes require --confirm; issue-invoice also requires --preview-reviewed after previewing identical input",
+    "draft-id allowed only on submit/reject/approve-draft",
+    "duplicate --allow-loopback-http",
+    "duplicate --local-profile",
+    "duplicate --open",
+    "duplicate confirmation flag",
+    "duplicate remote flag",
+    "email/factor/session-out allowed only with login",
+    "exact --id required",
+    "expected one remote command",
+    "expected remote command; see remote --help",
+    "explicit --cookie-file required",
+    "explicit --server origin required",
+    "explicit --server required",
+    "explicit anchor --company required",
+    "explicit as-of required",
+    "explicit company required",
+    "explicit record-id required",
+    "explicit server required",
+    "fiscal-year-start/end allowed only on annual-report",
+    "id allowed only on contact updates/deletions, payable payment, invoice PDF or document booking options",
+    "invalid backup destination flags/confirmation",
+    "invalid backup status/lock flags or confirmation",
+    "invalid cursor",
+    "invalid discovery flags; metadata is read-only",
+    "invalid limit",
+    "local source and reviewed hash/key selectors are only allowed on Dinero or opening-balance plan/apply",
+    "login cannot use existing cookie/company/report flags",
+    "login requires --email",
+    "login requires --factor totp or backup",
+    "login requires --session-out NEW_PATH",
+    "only period-close-readiness requires --from and --to",
+    "out/open only allowed on dashboard",
+    "ownership selectors/confirmation do not match command; see remote help",
+    "payment requires positive --id PAYABLE_ID",
+    "pipe password and factor code via private stdin; terminal echo is refused",
+    "private MFA cookie file required",
+    "private cookie file required",
+    "profile-id allowed only for group-consolidated-report",
+    "remote flag requires a value",
+    "remote verification selectors allowed only on remote backup verification commands",
+    "replacement-journal-entry-id allowed only on correction-plan",
+    "secret stdin line must be UTF-8",
+    "secret stdin line outside server input bounds",
+    "secret stdin lines must end in newline",
+    "server required",
+    "service authentication supports scoped company knowledge, context, reports, manual journals, customer/invoice flows, bank reads/import, document ingestion/originals, explicit invoice/payable settlement and invoice email delivery",
+    "session output already exists; choose a new private path",
+    "source/report/format allowed only on report reads/exports",
+    "start-date allowed only on supplier-commitments",
+    "status requires exact --id without company/confirmation; plan forbids confirmation; writes require --confirm and native stdin JSON",
+    "status/as-of allowed only on payables",
+    "unknown remote command",
+    "unknown remote flag; see remote --help",
+    "update/deletion requires positive --id"
+  ],
+  "operationCount": 60,
+  "validation": {
+    "oracle": "/tmp/r57-677-oracle.py ownership_corporate_dispositions",
+    "scope": "Exact selected IDs, source hashes, strict schema resolution; actual semantic review remains main-owned.",
+    "runtimeReplayed": false,
+    "oracleResult": "PASS exactselected ownership_corporate_dispositions 60 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "graphify": {
+      "command": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\"",
+      "result": "completed: 34009 nodes, 107681 edges, no clustering",
+      "generatedObservations": "Independent worker build output only; no production/generated tracked files modified."
+    }
+  }
+}
