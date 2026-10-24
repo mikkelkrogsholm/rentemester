@@ -28,6 +28,7 @@ pub fn help() -> Value {
         {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
         {"name":"journal post|dry-run|reverse|list","usage":"journal --help","scope":"original numeric manual journal operations, rollback-only dry-run, server-side reversal selection; native journal list retained"},
         {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
+        {"name":"audit verify","usage":"audit verify --help","scope":"original flat read-only full audit diagnostic; explicit transport and company"},
         {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
         {"name":"documents","usage":"documents --help","scope":"original intake/list/enrich/company-context/parse/parse-pending/parse-status/parsed-text plus seven party-link/internal decision commands and two source-flat invoice extraction commands (17 total); native extraction remains under remote"},
         {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
@@ -155,7 +156,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
+        "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
             | "accrual"
             | "mileage"
             | "budget"
