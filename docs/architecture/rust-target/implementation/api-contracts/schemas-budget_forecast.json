@@ -2156,7 +2156,8 @@
                     "native budget body exceeds16KiB",
                     "dimension comparison requires company/year/dimension?/member? only",
                     "budget reads require only company/year",
-                    "invalid original budget arguments"
+                    "invalid original budget arguments",
+                    "report selectors must be strings"
                   ]
                 }
               },

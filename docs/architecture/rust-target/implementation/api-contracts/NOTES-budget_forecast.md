@@ -18,8 +18,8 @@ Main retains review, integration and acceptance.
   GET handler/read and Axum suppresses response bytes. No runtime HEAD replay.
 - Direct HTTP native Set accepts object or Serde sequence in declaration order
   `accountNo, period, amount, notes`. Original HTTP Write order is
-  `confirm, accountNo, period, amount, notes`; default tail omissions differ from
-  explicit null amount (custom number deserializer rejects null). Body limits are
+  `confirm, accountNo, period, amount, notes`; all sequence positions are required because the final Option notes field has no
+  explicit default; explicit null amount is refused by its custom deserializer. Body limits are
   UTF-8 byte limits, not Unicode character counts. SDK JSON body validators admit
   objects only; MCP's global object guard prevents public tuple arguments.
 - Native reads use exact live fiscal labels, including shifted fiscal years and
@@ -85,3 +85,5 @@ authentication, financial, upload, scanner, job or external-provider effects run
 Independent AST extraction is written to `$SGD_BUILD_DIR/graphify`, outside owned code.
 
 Lead source correction: non-default Option notes requires complete native4/original5 declaration-order tuple even though earlier original fields have defaults. SDK body schema models effective domain::body: no period pattern validation, notes bound4096 UTF8bytes. Server semantic calendar/nonnegative/account checks remain binding; no production change or effects.
+
+Native public MCP budget calls also admit global report-selector -32602 before leaf parsing, as bound in tools.rs.
