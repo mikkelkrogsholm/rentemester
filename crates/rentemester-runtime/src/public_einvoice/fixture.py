@@ -18,9 +18,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
   if mode=='hang':time.sleep(.5)
   if mode=='large':return self.reply(200,b'x'*(1024*1024+1))
   if mode=='malformed':return self.reply(200,b'not JSON synthetic-private-api-key-74')
+  if path.path.endswith('/validate-auth'):
+   if mode=='auth-missing-fields':return self.reply(200,{'companyKeyConstraint':None})
+   if mode=='auth-refused':return self.reply(403,{'signatureSecret':'never-publish'})
+   return self.reply(200,{'apiLicenseKey':'wrong-key' if mode=='auth-wrong' else 'synthetic-private-api-key-74','signatureSecret':'never-publish','testGlnNumber':'5790000000000','companyKeyConstraint':'restricted_key' if mode=='auth-constrained' else None,'label':'Synthetic'})
+  if path.path.endswith('/list-participants-for-company'):
+   company={'companyType':{'type':'DK:CVR','id':'DK87654321' if mode=='pair-wrong-company' else 'DK12345678'},'companyName':'Synthetic Seller','createdAt':'2026-10-20T10:00:00Z'}
+   participants=[]
+   if mode!='pair-missing':
+    for network in ['nemhandel','peppol']:
+     for direction in ['outbound','inbound']:
+      participants.append({'networkType':network,'companyKey':'company_key','direction':direction,'participantType':'DK:CVR','participantId':'DK12345678','webhookUrl':None,'documentProfiles':'wrong' if mode=='pair-conflict' else 'default-'+network,'createdAt':'2026-10-20T10:00:00Z'})
+   return self.reply(200,{'apiLicenseKey':'synthetic-license','companyKey':'company_key','company':company,'participants':participants})
   if path.path.endswith('/register-company'):
    return self.reply(409,b'already registered') if mode=='invalid' else self.reply(200,{'companyKey':'company_key','message':'registered'})
   if '/register-participant/' in path.path:
+   if mode=='pair-partial' and body['direction']=='inbound':return self.reply(503,{'message':'never-publish'})
    return self.reply(409,b'partly registered') if mode=='invalid' else self.reply(200,{'registeredOnNetwork':True,'webhookRegistered':False,'message':None})
   if path.path.endswith('/validate-document'):
    return self.reply(400,{'statusCode':400,'success':False,'errors':[{'context':'invoice','pattern':'required','description':'synthetic','xpath':None,'type':'error'}]}) if mode=='invalid' else self.reply(200,{'statusCode':200,'success':True,'errors':[]})

@@ -182,6 +182,25 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 ));
                 None
             }
+        } else if path.ends_with("/public-register-pair") || path.ends_with("/public-onboard") {
+            #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct PairInput {
+                confirm: bool,
+                #[serde(default)]
+                network: provider::Network,
+            }
+            let Ok(input) = serde_json::from_value::<PairInput>(body) else {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
+            };
+            if !input.confirm {
+                return refused(StatusCode::BAD_REQUEST, "confirmation_required");
+            }
+            Some(if path.ends_with("/public-onboard") {
+                Intent::Onboard(input.network)
+            } else {
+                Intent::RegisterPair(input.network)
+            })
         } else if path.ends_with("/public-register") {
             if body != json!({"confirm":true}) {
                 return refused(StatusCode::BAD_REQUEST, "confirmation_required");
@@ -299,7 +318,19 @@ pub(super) fn drive(
     // Setup has separate discovery and registration calls for company/outbound.
     // Each result crosses current authority before the next network action.
     // Send uses validation + delivery; status is one read. Never retry a phase.
-    for _ in 0..5 {
+    let generation = client.credential_generation();
+    for _ in 0..9 {
+        if state
+            .native
+            .public_einvoice
+            .get(slug)
+            .is_none_or(|c| c.credential_generation() != generation)
+        {
+            return Err(driver_refusal(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "public_einvoice_refused",
+            ));
+        }
         let admission = match work {
             Next::Complete(v) => {
                 return Ok(v);
@@ -307,6 +338,36 @@ pub(super) fn drive(
             Next::Pending(a) => *a,
         };
         let outcome = match admission.request() {
+            app::Request::Auth => Outcome::Auth(client.validate_auth().ok()),
+            app::Request::FindDirection {
+                cvr,
+                name,
+                company_key,
+                network,
+                direction,
+            } => Outcome::DirectionFound(
+                match client.registered_direction(
+                    company_key,
+                    &provider_cvr(cvr),
+                    name,
+                    network,
+                    direction,
+                ) {
+                    Ok(Some(_)) => app::Discovery::Found(()),
+                    Ok(None) => app::Discovery::Missing,
+                    Err(_) => app::Discovery::Failed,
+                },
+            ),
+            app::Request::Direction {
+                cvr,
+                company_key,
+                network,
+                direction,
+            } => Outcome::Direction(
+                client
+                    .register_direction(company_key, &provider_cvr(cvr), network, direction)
+                    .is_ok(),
+            ),
             app::Request::FindCompany { cvr, name } => {
                 let found = match client.registered_company(&provider_cvr(cvr), name) {
                     Ok(Some(existing)) => app::Discovery::Found(existing.company_key),
@@ -366,6 +427,17 @@ pub(super) fn drive(
                 document_id,
             } => Outcome::Observed(client.status(company_key, document_id).ok().map(observed)),
         };
+        if state
+            .native
+            .public_einvoice
+            .get(slug)
+            .is_none_or(|c| c.credential_generation() != generation)
+        {
+            return Err(driver_refusal(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "public_einvoice_refused",
+            ));
+        }
         let attempt = {
             let Ok(mut owner) = state.native.lock_company(slug) else {
                 return Err(driver_refusal(

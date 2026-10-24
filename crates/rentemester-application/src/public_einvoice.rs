@@ -13,7 +13,13 @@ use rentemester_storage::public_einvoice::{self as store, Identity, Source};
 use rusqlite::{Connection, Transaction};
 use serde_json::{Value, json};
 
+use rentemester_runtime::public_einvoice::{
+    Network,
+    onboarding::{Authorization, Direction},
+};
 pub enum Intent {
+    RegisterPair(Network),
+    Onboard(Network),
     Setup,
     Send(i64),
     OriginalSend(Value),
@@ -32,9 +38,14 @@ pub struct Admission {
     ledger: String,
     environment: String,
     original: bool,
+    pair: Option<Network>,
+    authorization: Option<Authorization>,
     step: Step,
 }
 enum Step {
+    Auth(Identity),
+    FindDirection(Identity, String, Network, Direction),
+    Direction(Identity, String, Network, Direction),
     FindCompany(Identity),
     FindOutbound(Identity, String),
     Company(Identity),
@@ -44,6 +55,20 @@ enum Step {
     Observe(Source, i64, String),
 }
 pub enum Request<'a> {
+    Auth,
+    FindDirection {
+        cvr: &'a str,
+        name: &'a str,
+        company_key: &'a str,
+        network: Network,
+        direction: Direction,
+    },
+    Direction {
+        cvr: &'a str,
+        company_key: &'a str,
+        network: Network,
+        direction: Direction,
+    },
     FindCompany {
         cvr: &'a str,
         name: &'a str,
@@ -84,6 +109,9 @@ pub enum Discovery<T> {
     Failed,
 }
 pub enum Outcome {
+    Auth(Option<Authorization>),
+    DirectionFound(Discovery<()>),
+    Direction(bool),
     CompanyFound(Discovery<String>),
     OutboundFound(Discovery<()>),
     Company(Option<String>),
@@ -95,6 +123,20 @@ pub enum Outcome {
 impl Admission {
     pub fn request(&self) -> Request<'_> {
         match &self.step {
+            Step::Auth(_) => Request::Auth,
+            Step::FindDirection(i, k, n, d) => Request::FindDirection {
+                cvr: &i.cvr,
+                name: &i.company_name,
+                company_key: k,
+                network: *n,
+                direction: *d,
+            },
+            Step::Direction(i, k, n, d) => Request::Direction {
+                cvr: &i.cvr,
+                company_key: k,
+                network: *n,
+                direction: *d,
+            },
             Step::FindCompany(i) => Request::FindCompany {
                 cvr: &i.cvr,
                 name: &i.company_name,
@@ -193,6 +235,8 @@ fn admitted(
         ledger,
         environment: environment.into(),
         original,
+        pair: None,
+        authorization: None,
         step,
     }
 }
@@ -212,6 +256,10 @@ pub fn start(
     if !matches!(environment, "test" | "production") {
         return Err(fail(refused()));
     }
+    let pair = match &intent {
+        Intent::RegisterPair(n) | Intent::Onboard(n) => Some(*n),
+        _ => None,
+    };
     let original = matches!(&intent, Intent::OriginalSend(_));
     control_fence::execute_cookie_subject(
         control,
@@ -226,6 +274,16 @@ pub fn start(
         |tx, actor| {
             let ledger = ledger(tx)?;
             let step = match intent {
+                Intent::Onboard(_) => Step::Auth(store::identity(tx)?),
+                Intent::RegisterPair(n) => {
+                    let i = store::identity(tx)?;
+                    match store::registration(tx, environment)? {
+                        store::Registration::Bound { company_key: k } => {
+                            pair_step(tx, i, k, n, environment)?
+                        }
+                        _ => Step::FindCompany(i),
+                    }
+                }
                 Intent::Setup => {
                     let identity = store::identity(tx)?;
                     match store::registration(tx, environment)? {
@@ -272,14 +330,9 @@ pub fn start(
                     Step::Observe(source, row_id, document_id)
                 }
             };
-            Ok(Next::Pending(Box::new(admitted(
-                &context,
-                actor,
-                ledger,
-                environment,
-                original,
-                step,
-            ))))
+            let mut a = admitted(&context, actor, ledger, environment, original, step);
+            a.pair = pair;
+            Ok(Next::Pending(Box::new(a)))
         },
     )
 }
@@ -312,13 +365,81 @@ pub fn finish(
             }
             let now = at(&context)?;
             match (&admission.step, outcome) {
+                (Step::Auth(i), Outcome::Auth(Some(auth))) => {
+                    if store::identity(tx)? != *i {
+                        return Err(refused());
+                    }
+                    let n = admission.pair.ok_or_else(refused)?;
+                    let step = match store::registration(tx, &admission.environment)? {
+                        store::Registration::Bound { company_key: k } => {
+                            if !auth.permits(&k) {
+                                return Err(refused());
+                            }
+                            pair_step(tx, i.clone(), k, n, &admission.environment)?
+                        }
+                        _ => Step::FindCompany(i.clone()),
+                    };
+                    let mut a = admission;
+                    a.authorization = Some(auth);
+                    Ok(pending(a, step))
+                }
+                (Step::FindDirection(i, k, n, d), Outcome::DirectionFound(Discovery::Missing)) => {
+                    check_pair(tx, &admission, i, k)?;
+                    let step = Step::Direction(i.clone(), k.clone(), *n, *d);
+                    Ok(pending(admission, step))
+                }
+                (
+                    Step::FindDirection(i, k, n, d),
+                    Outcome::DirectionFound(Discovery::Found(())),
+                )
+                | (Step::Direction(i, k, n, d), Outcome::Direction(true)) => {
+                    check_pair(tx, &admission, i, k)?;
+                    store::save_direction(
+                        tx,
+                        i,
+                        &admission.environment,
+                        k,
+                        n.name(),
+                        d.name(),
+                        actor,
+                        &now,
+                    )?;
+                    if *d == Direction::Outbound {
+                        let step =
+                            Step::FindDirection(i.clone(), k.clone(), *n, Direction::Inbound);
+                        Ok(pending(admission, step))
+                    } else {
+                        Ok(Next::Complete(
+                            json!({"ok":true,"registration":store::onboarding_status(tx,&admission.environment,k)?}),
+                        ))
+                    }
+                }
                 (Step::FindCompany(identity), Outcome::CompanyFound(Discovery::Found(key))) => {
+                    if admission
+                        .authorization
+                        .as_ref()
+                        .is_some_and(|a| !a.permits(&key))
+                    {
+                        return Err(refused());
+                    }
                     store::save_key(tx, identity, &admission.environment, &key, actor, &now)?;
                     let identity = store::identity(tx)?;
-                    Ok(pending(admission, Step::FindOutbound(identity, key)))
+                    let step = if let Some(n) = admission.pair {
+                        pair_step(tx, identity, key, n, &admission.environment)?
+                    } else {
+                        Step::FindOutbound(identity, key)
+                    };
+                    Ok(pending(admission, step))
                 }
                 (Step::FindCompany(identity), Outcome::CompanyFound(Discovery::Missing)) => {
                     if store::identity(tx)? != *identity {
+                        return Err(refused());
+                    }
+                    if admission
+                        .authorization
+                        .as_ref()
+                        .is_some_and(|a| !a.permits_new_company())
+                    {
                         return Err(refused());
                     }
                     let identity = identity.clone();
@@ -353,9 +474,21 @@ pub fn finish(
                     ))
                 }
                 (Step::Company(identity), Outcome::Company(Some(key))) => {
+                    if admission
+                        .authorization
+                        .as_ref()
+                        .is_some_and(|a| !a.permits(&key))
+                    {
+                        return Err(refused());
+                    }
                     store::save_key(tx, identity, &admission.environment, &key, actor, &now)?;
                     let identity = store::identity(tx)?;
-                    Ok(pending(admission, Step::FindOutbound(identity, key)))
+                    let step = if let Some(n) = admission.pair {
+                        pair_step(tx, identity, key, n, &admission.environment)?
+                    } else {
+                        Step::FindOutbound(identity, key)
+                    };
+                    Ok(pending(admission, step))
                 }
                 (Step::Outbound(identity, key), Outcome::Outbound(true)) => {
                     store::save_outbound(
@@ -465,9 +598,17 @@ pub fn configuration(
                 (Some(e), Some(k)) => store::outbound_registered(tx, e, k)?,
                 _ => false,
             };
-            Ok(
-                json!({"ok":true,"publicEInvoice":{"configured":environment.is_some(),"environment":environment,"registered":key.is_some(),"outbound":outbound}}),
-            )
+            let status = match (environment, key.as_deref()) {
+                (Some(e), Some(k)) => store::onboarding_status(tx, e, k)?,
+                _ => {
+                    json!({"inbound":false,"networks":{},"technicalReady":false,"externallyApproved":false})
+                }
+            };
+            let mut result = json!({"ok":true,"publicEInvoice":{"configured":environment.is_some(),"environment":environment,"registered":key.is_some(),"outbound":outbound}});
+            for (k, v) in status.as_object().ok_or_else(refused)? {
+                result["publicEInvoice"][k] = v.clone();
+            }
+            Ok(result)
         },
     )
 }
@@ -610,4 +751,28 @@ fn blocked() -> Error {
         "public_einvoice_redelivery_blocked",
         "An existing manual or historical handoff blocks delivery and is not native provider evidence",
     )
+}
+
+fn pair_step(
+    tx: &Connection,
+    i: Identity,
+    key: String,
+    network: Network,
+    env: &str,
+) -> Result<Step, Error> {
+    let direction = if store::direction_registered(tx, env, &key, network.name(), "outbound")? {
+        Direction::Inbound
+    } else {
+        Direction::Outbound
+    };
+    Ok(Step::FindDirection(i, key, network, direction))
+}
+fn check_pair(tx: &Connection, a: &Admission, i: &Identity, key: &str) -> Result<(), Error> {
+    if store::identity(tx)? != *i
+        || store::load_bound(tx, &a.environment)?.as_deref() != Some(key)
+        || a.authorization.as_ref().is_some_and(|v| !v.permits(key))
+    {
+        return Err(refused());
+    }
+    Ok(())
 }

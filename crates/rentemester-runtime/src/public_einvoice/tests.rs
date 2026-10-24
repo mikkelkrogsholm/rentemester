@@ -290,3 +290,111 @@ fn private_ca_never_disables_hostname_or_root_verification() {
     );
     assert!(trace(&other).is_empty());
 }
+
+#[test]
+fn onboarding_auth_constraint_private_and_bounded_tls() {
+    let f = fixture("IP:127.0.0.1");
+    assert!(
+        client(&f, "normal")
+            .validate_auth()
+            .unwrap()
+            .permits("any_key")
+    );
+    let constrained = client(&f, "auth-constrained").validate_auth().unwrap();
+    assert!(constrained.permits("restricted_key"));
+    assert!(!constrained.permits("other_key"));
+    assert!(!constrained.permits_new_company());
+    for mode in [
+        "auth-wrong",
+        "auth-refused",
+        "auth-missing-fields",
+        "malformed",
+        "hang",
+    ] {
+        assert!(client(&f, mode).validate_auth().is_err());
+    }
+}
+#[test]
+fn onboarding_pair_both_networks_discovery_conflict_partial_unknown_tls() {
+    use onboarding::Direction;
+    let f = fixture("IP:127.0.0.1");
+    for n in [Network::Nemhandel, Network::Peppol] {
+        for d in [Direction::Outbound, Direction::Inbound] {
+            let c = client(&f, "normal");
+            assert!(
+                c.register_direction("company_key", "DK12345678", n, d)
+                    .is_ok()
+            );
+            assert!(
+                c.registered_direction("company_key", "DK12345678", "Synthetic Seller", n, d)
+                    .unwrap()
+                    .is_some()
+            );
+            assert!(
+                client(&f, "pair-missing")
+                    .registered_direction("company_key", "DK12345678", "Synthetic Seller", n, d)
+                    .unwrap()
+                    .is_none()
+            );
+            for mode in ["pair-conflict", "pair-wrong-company", "malformed", "hang"] {
+                assert!(
+                    client(&f, mode)
+                        .registered_direction("company_key", "DK12345678", "Synthetic Seller", n, d)
+                        .is_err()
+                );
+            }
+        }
+    }
+    let c = client(&f, "pair-partial");
+    assert!(
+        c.register_direction(
+            "company_key",
+            "DK12345678",
+            Network::Nemhandel,
+            Direction::Outbound
+        )
+        .is_ok()
+    );
+    assert!(
+        c.register_direction(
+            "company_key",
+            "DK12345678",
+            Network::Nemhandel,
+            Direction::Inbound
+        )
+        .is_err()
+    );
+    assert!(
+        client(&f, "malformed")
+            .register_direction(
+                "company_key",
+                "DK12345678",
+                Network::Peppol,
+                Direction::Inbound
+            )
+            .is_err()
+    );
+    // A new independently confirmed attempt can discover canonical state, not resend.
+    assert!(
+        client(&f, "normal")
+            .registered_direction(
+                "company_key",
+                "DK12345678",
+                "Synthetic Seller",
+                Network::Peppol,
+                Direction::Inbound
+            )
+            .unwrap()
+            .is_some()
+    );
+    let registrations: Vec<_> = trace(&f)
+        .into_iter()
+        .filter(|v| v["path"].as_str().unwrap().contains("register-participant"))
+        .collect();
+    for v in registrations {
+        let b = &v["body"];
+        assert_eq!(b["participantId"], "DK12345678");
+        assert_eq!(b["participantType"], "DK:CVR");
+        assert!(b["webhookUrl"].is_null());
+    }
+}

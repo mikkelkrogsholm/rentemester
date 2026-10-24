@@ -9,7 +9,10 @@ use serde_json::{Value, json};
 pub fn accepts(name: &str) -> bool {
     matches!(
         name,
-        "public_invoice_config"
+        "efaktura_registrer"
+            | "efaktura_onboard"
+            | "efaktura_onboarding_status"
+            | "public_invoice_config"
             | "public_invoice_submissions"
             | "register_public_invoice"
             | "send_public_invoice"
@@ -19,6 +22,10 @@ pub fn accepts(name: &str) -> bool {
 pub fn tools() -> Vec<Value> {
     let mut tools = vec![];
     for (name, description) in [
+        (
+            "efaktura_onboarding_status",
+            "Read local inbound/per-network/technicalReady status without provider I/O. Technical registration is not external candidate approval.",
+        ),
         (
             "public_invoice_config",
             "Read safe public-invoice configured/environment/registered/outbound state; no credentials, provider I/O or effects.",
@@ -32,12 +39,14 @@ pub fn tools() -> Vec<Value> {
     }
     for (name, action) in [
         ("register_public_invoice", Action::Register),
+        ("efaktura_registrer", Action::RegisterPair),
+        ("efaktura_onboard", Action::Onboard),
         ("send_public_invoice", Action::Send),
         ("refresh_public_invoice_status", Action::RefreshStatus),
     ] {
         let mut body = native_body(public_invoice_body_schema(action));
         body["maxLength"] = json!(MAX_PUBLIC_INVOICE_BODY);
-        tools.push(tool(name,"Explicit current ExternalSend/fresh-MFA operation; exact native16KiB body once with inner and outer confirm:true. Register accepts {confirm:true}; send/status accept {invoiceDocumentId,confirm:true}. Fixed server/operator configuration only; no credentials, mutable contact overrides, generated keys, automatic retries or posting. HTTP200 is not delivery: prepared means accepted/queued, acknowledged confirmed, failed accepted terminal, uncertain reserved without ID, legacy historical. Preserve transmissionId/redeliveryBlocked and canonical JSON. After transport outcome_unknown read public_invoice_submissions/config before any separate explicit action; never blindly resend.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
+        tools.push(tool(name,"Explicit current ExternalSend/fresh-MFA operation; exact native16KiB body once with inner and outer confirm:true. Register accepts {confirm:true}; efaktura_registrer/efaktura_onboard accept {confirm:true,network?:nemhandel|peppol}, default nemhandel, both directions on one exact local DK:CVR network. Onboard first validates authorization. Partial success retained; separately confirmed calls discover unknown outcomes. Technical readiness is not external candidate approval; send/status accept {invoiceDocumentId,confirm:true}. Fixed server/operator configuration only; no credentials, mutable contact overrides, generated keys, automatic retries or posting. HTTP200 is not delivery: prepared means accepted/queued, acknowledged confirmed, failed accepted terminal, uncertain reserved without ID, legacy historical. Preserve transmissionId/redeliveryBlocked and canonical JSON. After transport outcome_unknown read public_invoice_submissions/config before any separate explicit action; never blindly resend.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
     }
     tools
 }
@@ -58,10 +67,13 @@ pub async fn call(
     name: &str,
     args: Value,
 ) -> Result<Result<Value, Error>, &'static str> {
-    if matches!(name, "public_invoice_config" | "public_invoice_submissions") {
+    if matches!(
+        name,
+        "efaktura_onboarding_status" | "public_invoice_config" | "public_invoice_submissions"
+    ) {
         let i: Read = serde_json::from_value(args)
             .map_err(|_| "public-invoice read requires only company")?;
-        return Ok(if name == "public_invoice_config" {
+        return Ok(if name != "public_invoice_submissions" {
             api.public_invoice_config(&i.company).await
         } else {
             api.public_invoice_submissions(&i.company).await
@@ -70,6 +82,8 @@ pub async fn call(
     let i: Write = serde_json::from_value(args)
         .map_err(|_| "public-invoice write requires only company/exact body/confirm:true")?;
     let action = match name {
+        "efaktura_registrer" => Action::RegisterPair,
+        "efaktura_onboard" => Action::Onboard,
         "register_public_invoice" => Action::Register,
         "send_public_invoice" => Action::Send,
         "refresh_public_invoice_status" => Action::RefreshStatus,

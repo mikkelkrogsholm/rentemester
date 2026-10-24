@@ -6,10 +6,12 @@ use rentemester_engine::Error;
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, io::Read};
 type Failure = (u8, Error);
-pub const COMMANDS: [&str; 5] = [
+pub const COMMANDS: [&str; 7] = [
     "public-invoice-config",
     "public-invoice-submissions",
     "register-public-invoice",
+    "register-public-invoice-pair",
+    "onboard-public-invoice",
     "send-public-invoice",
     "refresh-public-invoice-status",
 ];
@@ -17,7 +19,7 @@ pub fn accepts(command: &str) -> bool {
     COMMANDS.contains(&command)
 }
 pub fn help() -> Value {
-    json!({"commands":COMMANDS,"usage":"public-invoice-config/public-invoice-submissions --company SLUG; register-public-invoice/send-public-invoice/refresh-public-invoice-status --company SLUG --confirm < native.json. Explicit --server and private MFA --cookie-file required.","policy":"Reads never contact provider or send. Writes exact16KiB JSON with inner+outer confirm:true and current ExternalSend/fresh MFA. Registration body is {confirm:true}; send/status body {invoiceDocumentId,confirm:true}. Credentials, environment and company key are operator-owned, never arguments. Issue, post and network handoff are separate. HTTP200 does not mean delivered: prepared is accepted/queued, acknowledged is confirmed, failed is accepted terminal, uncertain is reserved without an ID; legacy remains historical. Preserve canonical transmissionId/redeliveryBlocked; never automatically resend/retry or invent a key. After outcome_unknown inspect public-invoice-submissions/config before deciding any separate explicit action.","bodySchemas":{"register":public_invoice_body_schema(Action::Register),"send":public_invoice_body_schema(Action::Send),"refreshStatus":public_invoice_body_schema(Action::RefreshStatus)}})
+    json!({"commands":COMMANDS,"usage":"public-invoice-config/public-invoice-submissions --company SLUG; register-public-invoice/send-public-invoice/refresh-public-invoice-status --company SLUG --confirm < native.json. Explicit --server and private MFA --cookie-file required.","policy":"Reads never contact provider or send. Writes exact16KiB JSON with inner+outer confirm:true and current ExternalSend/fresh MFA. Registration body is {confirm:true}; send/status body {invoiceDocumentId,confirm:true}. Credentials, environment and company key are operator-owned, never arguments. Issue, post and network handoff are separate. HTTP200 does not mean delivered: prepared is accepted/queued, acknowledged is confirmed, failed is accepted terminal, uncertain is reserved without an ID; legacy remains historical. Preserve canonical transmissionId/redeliveryBlocked; never automatically resend/retry or invent a key. After outcome_unknown inspect public-invoice-submissions/config before deciding any separate explicit action.","pairPolicy":"register-public-invoice-pair/onboard-public-invoice --company SLUG --confirm < native.json: {confirm:true,network?:nemhandel|peppol}, default nemhandel. Pair adds outbound AND inbound for the local DK:CVR on ONE network; onboard first validates authorization. Partial successes remain; a separate confirmed call discovers unknown outcomes before any POST. Technical readiness is not external candidate approval.","bodySchemas":{"registerPair":public_invoice_body_schema(Action::RegisterPair),"onboard":public_invoice_body_schema(Action::Onboard),"register":public_invoice_body_schema(Action::Register),"send":public_invoice_body_schema(Action::Send),"refreshStatus":public_invoice_body_schema(Action::RefreshStatus)}})
 }
 fn invalid() -> Failure {
     (
@@ -68,6 +70,8 @@ pub fn run(
             "public-invoice-submissions" => api.public_invoice_submissions(company).await,
             _ => {
                 let action = match command {
+                    "register-public-invoice-pair" => Action::RegisterPair,
+                    "onboard-public-invoice" => Action::Onboard,
                     "register-public-invoice" => Action::Register,
                     "send-public-invoice" => Action::Send,
                     _ => Action::RefreshStatus,

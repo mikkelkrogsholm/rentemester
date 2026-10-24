@@ -137,12 +137,14 @@ struct Participant {
     network_mode: Option<String>,
     created_at: String,
 }
-fn outbound(
+fn participant(
     bytes: &[u8],
     key: &str,
     cvr_id: &str,
     name: &str,
     secret: &str,
+    network: Network,
+    direction: onboarding::Direction,
 ) -> Result<Option<ParticipantRegistration>, Error> {
     let value: Value = serde_json::from_slice(bytes).map_err(|_| Error::Protocol)?;
     if !value.as_object().is_some_and(|v| {
@@ -219,13 +221,14 @@ fn outbound(
             }
             _ => return Err(Error::Protocol),
         }
-        if p.network_type == "nemhandel" && p.direction == "outbound" {
+        if p.network_type == network.name() && p.direction == direction.name() {
             // A conflicting participant is not absence; never silently POST over it.
             if found
                 || p.participant_type != "DK:CVR"
                 || p.participant_id != cvr_id
                 || p.webhook_url.is_some()
-                || p.document_profiles.as_deref() != Some("default-nemhandel")
+                || p.document_profiles.as_deref()
+                    != Some(format!("default-{}", network.name()).as_str())
             {
                 return Err(Error::Protocol);
             }
@@ -270,8 +273,65 @@ impl Client {
         if status != 200 {
             return Err(Error::Refused { status });
         }
-        outbound(&bytes, key, cvr_id, name, self.secret.as_str())
+        participant(
+            &bytes,
+            key,
+            cvr_id,
+            name,
+            self.secret.as_str(),
+            Network::Nemhandel,
+            onboarding::Direction::Outbound,
+        )
     }
 }
 #[cfg(test)]
 mod tests;
+
+impl Client {
+    pub fn registered_direction(
+        &self,
+        key: &str,
+        cvr_id: &str,
+        name: &str,
+        network: Network,
+        direction: onboarding::Direction,
+    ) -> Result<Option<ParticipantRegistration>, Error> {
+        if !company_key(key) || !cvr(cvr_id) || !text(name, 4096) {
+            return Err(Error::InvalidInput);
+        }
+        let mut url = self.url(&["list-participants-for-company"])?;
+        url.query_pairs_mut().append_pair("companyKey", key);
+        let (status, bytes) = self.request(url, None)?;
+        if status != 200 {
+            return Err(Error::Refused { status });
+        }
+        participant(
+            &bytes,
+            key,
+            cvr_id,
+            name,
+            self.secret.as_str(),
+            network,
+            direction,
+        )
+    }
+}
+
+#[cfg(test)]
+fn outbound(
+    bytes: &[u8],
+    key: &str,
+    cvr_id: &str,
+    name: &str,
+    secret: &str,
+) -> Result<Option<ParticipantRegistration>, Error> {
+    participant(
+        bytes,
+        key,
+        cvr_id,
+        name,
+        secret,
+        Network::Nemhandel,
+        onboarding::Direction::Outbound,
+    )
+}
