@@ -52,8 +52,22 @@ fn wire<S: Read + Write>(s: &mut S, expected: &str, status: u16, result: &Value)
     b[end.unwrap()..].to_vec()
 }
 fn bounded_accept(l: &TcpListener) -> Option<std::net::TcpStream> {
-    let at=std::time::Instant::now();
-    loop {match l.accept(){Ok((s,_))=>{s.set_nonblocking(false).unwrap();return Some(s)},Err(e) if e.kind()==std::io::ErrorKind::WouldBlock=>{if at.elapsed()>std::time::Duration::from_secs(5){return None;}thread::sleep(std::time::Duration::from_millis(5));},Err(e)=>panic!("{e}")}}
+    let at = std::time::Instant::now();
+    loop {
+        match l.accept() {
+            Ok((s, _)) => {
+                s.set_nonblocking(false).unwrap();
+                return Some(s);
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                if at.elapsed() > std::time::Duration::from_secs(5) {
+                    return None;
+                }
+                thread::sleep(std::time::Duration::from_millis(5));
+            }
+            Err(e) => panic!("{e}"),
+        }
+    }
 }
 fn run_fixture(
     args: &[&str],
@@ -83,11 +97,15 @@ fn run_fixture(
         assert_eq!(manifest["operations"].as_array().unwrap().len(), 642);
         let mut bodies = vec![];
         for (path, status, v) in steps {
-            let Some(mut s) = bounded_accept(&l) else { return bodies; };
+            let Some(mut s) = bounded_accept(&l) else {
+                return bodies;
+            };
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             wire(&mut s, "GET /api/protocol HTTP/1.1", 200, &manifest);
-            let Some(mut s) = bounded_accept(&l) else { return bodies; };
+            let Some(mut s) = bounded_accept(&l) else {
+                return bodies;
+            };
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             bodies.push(wire(&mut s, path, status, &v));
@@ -142,7 +160,7 @@ fn five_original_keys_body_projection_and_streams() {
             (
                 "GET /api/companies/synthetic-company/company HTTP/1.1",
                 200,
-                json!({"ok":true,"company":profile()}),
+                json!({"ok":true,"company":({let mut p=profile();p["fiscalYearStartMonth"]=json!(4);p})}),
             ),
         ],
     );
@@ -313,25 +331,6 @@ fn parse_and_missing_runtime_are_no_effect_and_example_is_offline() {
         assert!(o.status.success());
         assert!(String::from_utf8_lossy(&o.stdout).contains("--bank-account"));
     }
-    for args in [
-        vec!["add", "--name", "Synthetic", "--address", "Address"],
-        vec!["set-profile", "--company", "synthetic", "--name", "Rename"],
-    ] {
-        let o = Command::new(BIN)
-            .arg("company")
-            .args(args)
-            .args([
-                "--server",
-                "https://example.invalid",
-                "--cookie-file",
-                "/never-opened",
-                "--json",
-            ])
-            .output()
-            .unwrap();
-        assert_eq!(o.status.code(), Some(1));
-        assert!(String::from_utf8_lossy(&o.stdout).contains("does not expose"));
-    }
 }
 #[test]
 fn verified_unix_owner_workspace_and_passive_protocol_failure() {
@@ -497,19 +496,279 @@ fn full_partial_patch_and_mismatched_receipt_are_not_silently_accepted() {
 
 #[test]
 fn source_list_wrapper_blank_slug_and_empty_payment_are_truthful() {
-    let (out,_) = run_fixture(&["list","--json"], vec![("GET /api/companies HTTP/1.1",200,json!({"ok":true,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","role":"owner","archived":true}]}))]);
+    let (out, _) = run_fixture(
+        &["list", "--json"],
+        vec![(
+            "GET /api/companies HTTP/1.1",
+            200,
+            json!({"ok":true,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","role":"owner","archived":true}]}),
+        )],
+    );
     assert!(out.status.success());
-    assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(),json!({"ok":true,"message":"1 company: archived","workspace":null,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","archived":true}]}));
+    assert_eq!(
+        serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+        json!({"ok":true,"message":"1 company: archived","workspace":null,"count":1,"companies":[{"slug":"archived","name":"Archived Synthetic","archived":true}]})
+    );
     for slug in ["", "   ", " synthetic-company "] {
-        let (out,bodies)=run_fixture(&["add","--name","Synthetic Company","--slug",slug,"--json"],vec![("POST /api/companies HTTP/1.1",201,json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}})),("GET /api/companies/synthetic-company/company HTTP/1.1",200,json!({"ok":true,"company":profile()}))]);
-        assert!(out.status.success(),"slug={slug:?} {out:?}");assert_eq!(bodies.len(),2);
-        let body:Value=serde_json::from_slice(&bodies[0]).unwrap();
-        if slug.trim().is_empty(){assert!(body.get("slug").is_none());}else{assert_eq!(body["slug"],"synthetic-company");}
-        assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap()["slug"],"synthetic-company");
+        let (out, bodies) = run_fixture(
+            &[
+                "add",
+                "--name",
+                "Synthetic Company",
+                "--slug",
+                slug,
+                "--json",
+            ],
+            vec![
+                (
+                    "POST /api/companies HTTP/1.1",
+                    201,
+                    json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}}),
+                ),
+                (
+                    "GET /api/companies/synthetic-company/company HTTP/1.1",
+                    200,
+                    json!({"ok":true,"company":profile()}),
+                ),
+            ],
+        );
+        assert!(out.status.success(), "slug={slug:?} {out:?}");
+        assert_eq!(bodies.len(), 2);
+        let body: Value = serde_json::from_slice(&bodies[0]).unwrap();
+        if slug.trim().is_empty() {
+            assert!(body.get("slug").is_none());
+        } else {
+            assert_eq!(body["slug"], "synthetic-company");
+        }
+        assert_eq!(
+            serde_json::from_slice::<Value>(&out.stdout).unwrap()["slug"],
+            "synthetic-company"
+        );
     }
-    let (out,bodies)=run_fixture(&["set-profile","--company","synthetic","--bank-name","","--json"],vec![("GET /api/companies/synthetic/company HTTP/1.1",200,json!({"ok":true,"company":profile()})),("PATCH /api/companies/synthetic/company HTTP/1.1",200,json!({"ok":true,"company":profile()}))]);
-    assert!(out.status.success(),"{out:?}");assert_eq!(bodies.len(),2);
-    assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap()["updatedFields"],json!([]));
-    let (out,_)=run_fixture(&["list","--format","human"],vec![("GET /api/companies HTTP/1.1",200,json!({"ok":true,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","role":"owner","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]}))]);
-    assert!(out.status.success());assert!(String::from_utf8_lossy(&out.stdout).contains("  Antal: 1\n"));
+    let (out, bodies) = run_fixture(
+        &[
+            "set-profile",
+            "--company",
+            "synthetic",
+            "--bank-name",
+            "",
+            "--json",
+        ],
+        vec![
+            (
+                "GET /api/companies/synthetic/company HTTP/1.1",
+                200,
+                json!({"ok":true,"company":profile()}),
+            ),
+            (
+                "PATCH /api/companies/synthetic/company HTTP/1.1",
+                200,
+                json!({"ok":true,"company":profile()}),
+            ),
+        ],
+    );
+    assert!(out.status.success(), "{out:?}");
+    assert_eq!(bodies.len(), 2);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&out.stdout).unwrap()["updatedFields"],
+        json!([])
+    );
+    let (out, _) = run_fixture(
+        &["list", "--format", "human"],
+        vec![(
+            "GET /api/companies HTTP/1.1",
+            200,
+            json!({"ok":true,"count":1,"companies":[{"slug":"synthetic","name":"Synthetic Company","role":"owner","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]}),
+        )],
+    );
+    assert!(out.status.success());
+    assert!(String::from_utf8_lossy(&out.stdout).contains("  Antal: 1\n"));
+}
+
+#[test]
+fn creation_identity_terms_rename_and_exact_profile_readback() {
+    let mut created = profile();
+    created["cvr"] = json!("DK12345678");
+    created["address"] = json!("Synthetic Road");
+    created["postalCode"] = json!("1234");
+    created["city"] = Value::Null;
+    created["paymentTermsDays"] = json!(0);
+    created["fiscalYearStartMonth"] = json!(4);
+    created["fiscalYearLabelStrategy"] = json!("span");
+    let (out, bodies) = run_fixture(
+        &[
+            "add",
+            "--name",
+            " Synthetic Company ",
+            "--slug",
+            " ",
+            "--cvr",
+            " dk12345678 ",
+            "--address",
+            " Synthetic Road ",
+            "--postal-code",
+            " 1234 ",
+            "--city",
+            " ",
+            "--payment-terms",
+            "0",
+            "--fiscal-year-start-month",
+            "4",
+            "--fiscal-year-label-strategy",
+            "span",
+            "--json",
+        ],
+        vec![
+            (
+                "POST /api/companies HTTP/1.1",
+                201,
+                json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}}),
+            ),
+            (
+                "GET /api/companies/synthetic-company/company HTTP/1.1",
+                200,
+                json!({"ok":true,"company":created}),
+            ),
+        ],
+    );
+    assert!(out.status.success(), "{out:?}");
+    assert_eq!(bodies.len(), 2);
+    let body: Value = serde_json::from_slice(&bodies[0]).unwrap();
+    assert_eq!(
+        body,
+        json!({"name":" Synthetic Company ","cvr":" dk12345678 ","address":" Synthetic Road ","postalCode":" 1234 ","city":" ","paymentTermsDays":0,"fiscalYearStartMonth":"4","fiscalYearLabelStrategy":"span"})
+    );
+    let mut renamed = created.clone();
+    renamed["name"] = json!("Renamed Synthetic");
+    renamed["vatPeriodType"] = Value::Null;
+    let (out, bodies) = run_fixture(
+        &[
+            "set-profile",
+            "--company",
+            "synthetic-company",
+            "--name",
+            " Renamed Synthetic ",
+            "--no-vat",
+            "--json",
+        ],
+        vec![
+            (
+                "GET /api/companies/synthetic-company/company HTTP/1.1",
+                200,
+                json!({"ok":true,"company":created}),
+            ),
+            (
+                "PATCH /api/companies/synthetic-company/company HTTP/1.1",
+                200,
+                json!({"ok":true,"company":renamed}),
+            ),
+        ],
+    );
+    assert!(out.status.success(), "{out:?}");
+    assert_eq!(
+        serde_json::from_slice::<Value>(&bodies[1]).unwrap(),
+        json!({"name":" Renamed Synthetic ","vatPeriodType":null})
+    );
+    let v: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(v["updatedFields"], json!(["name", "vatPeriodType"]));
+    assert_eq!(v["settings"]["paymentTermsDays"], 0);
+    let (out, bodies) = run_fixture(
+        &["profile", "--company", "synthetic-company", "--json"],
+        vec![(
+            "GET /api/companies/synthetic-company/company HTTP/1.1",
+            200,
+            json!({"ok":true,"company":renamed}),
+        )],
+    );
+    assert!(out.status.success(), "{out:?}");
+    assert_eq!(bodies.len(), 1);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+        json!({"ok":true,"profile":{"name":"Renamed Synthetic","cvr":"DK12345678","address":"Synthetic Road","postalCode":"1234","city":null,"paymentTermsDays":0,"vatPeriodType":null,"vatRegistered":false,"vatPeriodLabel":"ikke momsregistreret"}})
+    );
+}
+
+#[test]
+fn supplied_creation_fields_and_rename_cannot_have_wrong_or_lost_receipts() {
+    for (flag, value) in [
+        ("--address", "Expected"),
+        ("--postal-code", "1234"),
+        ("--city", "Expected"),
+        ("--payment-terms", "0"),
+        ("--cvr", "12345678"),
+        ("--fiscal-year-start-month", "4"),
+        ("--fiscal-year-label-strategy", "span"),
+        ("--bank-name", "Expected Bank"),
+    ] {
+        let (out, bodies) = run_fixture(
+            &["add", "--name", "Synthetic Company", flag, value, "--json"],
+            vec![
+                (
+                    "POST /api/companies HTTP/1.1",
+                    201,
+                    json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}}),
+                ),
+                (
+                    "GET /api/companies/synthetic-company/company HTTP/1.1",
+                    200,
+                    json!({"ok":true,"company":profile()}),
+                ),
+            ],
+        );
+        assert_eq!(out.status.code(), Some(1), "{flag}: {out:?}");
+        assert!(String::from_utf8_lossy(&out.stdout).contains("outcome_unknown"));
+        assert_eq!(bodies.len(), 2); // one POST, one read, no compensating write
+    }
+    for receipt in [json!({"ok":true,"company":profile()}), Value::Null] {
+        let (out, bodies) = run_fixture(
+            &[
+                "set-profile",
+                "--company",
+                "synthetic",
+                "--name",
+                "Renamed",
+                "--json",
+            ],
+            vec![
+                (
+                    "GET /api/companies/synthetic/company HTTP/1.1",
+                    200,
+                    json!({"ok":true,"company":profile()}),
+                ),
+                (
+                    "PATCH /api/companies/synthetic/company HTTP/1.1",
+                    200,
+                    receipt,
+                ),
+            ],
+        );
+        assert_eq!(out.status.code(), Some(1));
+        assert!(String::from_utf8_lossy(&out.stdout).contains("outcome_unknown"));
+        assert_eq!(bodies.len(), 2);
+    }
+    let (out, bodies) = run_fixture(
+        &[
+            "add",
+            "--name",
+            "Synthetic Company",
+            "--address",
+            "Expected",
+            "--json",
+        ],
+        vec![
+            (
+                "POST /api/companies HTTP/1.1",
+                201,
+                json!({"ok":true,"company":{"slug":"synthetic-company","name":"Synthetic Company"}}),
+            ),
+            (
+                "GET /api/companies/synthetic-company/company HTTP/1.1",
+                503,
+                json!({"ok":false}),
+            ),
+        ],
+    );
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stdout).contains("outcome_unknown"));
+    assert_eq!(bodies.len(), 2);
 }

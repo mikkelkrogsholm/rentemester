@@ -33,7 +33,7 @@ pub fn needs_company(a: &[String]) -> bool {
         .is_some_and(|s| matches!(s.as_str(), "add" | "list"))
 }
 pub fn help() -> Value {
-    json!({"commands":["company add --name TEXT [--slug SLUG] [--cvr TEXT] [--bank-name TEXT --bank-reg TEXT --bank-account TEXT --iban TEXT] [--fiscal-year-start-month 1-12 --fiscal-year-label-strategy end-year|start-year|span]","company list","company sync-cvr --company SLUG|PATH","company set-profile --company SLUG|PATH [--cvr TEXT --address TEXT --postal-code TEXT --city TEXT --payment-terms 0-365 --vat-period month|quarter|half-year|none --no-vat --bank-name TEXT --bank-reg TEXT --bank-account TEXT --iban TEXT]","company profile --company SLUG|PATH"],"connection":"--server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --workspace is exact verified local workspace equality only; --json or --format human|json; --allow-loopback-http","example":"company set-profile --company <sti-eller-slug> --bank-name <bank> --bank-reg <regnr> --bank-account <kontonr> --iban <IBAN>. Only supplied fields change. Pass --example for this template.","controls":"Current human cookie; optional --actor user:ID equality assertion. Explicit write command is intent, native confirmation is retained. Current Admin/WorkspaceManage, backup and writer gates remain. Bank append-only and VAT activity guards are server-owned. No retry: outcome_unknown requires companies/profile readback before another explicit action.","blockers":"Typed creation does not expose --address/--postal-code/--city/--payment-terms; typed profile update does not expose --name. These fail before dispatch, never silently dropped. Connected creation is NOT first-workspace bootstrap: provision an existing operator/runtime separately. No autostart or local database fallback."})
+    json!({"commands":["company add --name TEXT [--slug SLUG] [--cvr TEXT --address TEXT --postal-code TEXT --city TEXT --payment-terms 0-365] [--bank-name TEXT --bank-reg TEXT --bank-account TEXT --iban TEXT] [--fiscal-year-start-month 1-12 --fiscal-year-label-strategy end-year|start-year|span]","company list","company sync-cvr --company SLUG|PATH","company set-profile --company SLUG|PATH [--name TEXT --cvr TEXT --address TEXT --postal-code TEXT --city TEXT --payment-terms 0-365 --vat-period month|quarter|half-year|none --no-vat --bank-name TEXT --bank-reg TEXT --bank-account TEXT --iban TEXT]","company profile --company SLUG|PATH"],"connection":"--server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --workspace is exact verified local workspace equality only; --json or --format human|json; --allow-loopback-http","example":"company set-profile --company <sti-eller-slug> --bank-name <bank> --bank-reg <regnr> --bank-account <kontonr> --iban <IBAN>. Only supplied fields change. Pass --example for this template.","controls":"Current human cookie; optional --actor user:ID equality assertion. Explicit write command is intent, native confirmation is retained. Current Admin/WorkspaceManage, backup and writer gates remain. Bank append-only and VAT activity guards are server-owned. No retry: outcome_unknown requires companies/profile readback before another explicit action.","blockers":"Connected creation is NOT first-workspace bootstrap: provision an existing operator/runtime separately. No autostart or local database fallback."})
 }
 fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     if a == ["company"] || a == ["company", "--help"] {
@@ -260,6 +260,43 @@ fn valid_profile(v: &Value) -> bool {
                 .as_str()
                 .is_some_and(|s| matches!(s, "month" | "quarter" | "half-year")))
 }
+// Bind only supplied intent to the canonical native producer. No defaults or keys
+// are inferred here; a mismatched post-write receipt is an unknown outcome.
+fn matches_intent(body: &Value, company: &Value) -> bool {
+    body.as_object().unwrap().iter().all(|(key, expected)| {
+        let actual = &company[key];
+        if key == "slug" {
+            return true;
+        } // immutable selector checked on creation receipt
+        if key == "payment" {
+            return expected.as_object().unwrap().iter().all(|(field, value)| {
+                let text = value.as_str().unwrap().trim();
+                text.is_empty() || company["payment"][field] == text
+            });
+        }
+        if key == "fiscalYearStartMonth" {
+            return expected.as_str().and_then(|s| s.trim().parse::<u64>().ok()) == actual.as_u64();
+        }
+        if key == "cvr" {
+            let text = expected.as_str().unwrap().trim().to_ascii_uppercase();
+            return if text.is_empty() {
+                actual.is_null()
+            } else {
+                actual == &json!(format!("DK{}", text.strip_prefix("DK").unwrap_or(&text)))
+            };
+        }
+        if let Some(text) = expected.as_str() {
+            let text = text.trim();
+            if text.is_empty() {
+                actual.is_null()
+            } else {
+                actual == text
+            }
+        } else {
+            actual == expected
+        }
+    })
+}
 pub fn execute(a: &[String]) -> Output {
     let f = match parse(a) {
         Ok(f) => f,
@@ -275,22 +312,6 @@ pub fn execute(a: &[String]) -> Output {
     let op = a[1].as_str();
     let machine = machine(a);
     let fail = |message: String| emit(json!({"ok":false,"errors":[message]}), machine, op);
-    let unsupported: Vec<_> = if op == "add" {
-        ["--address", "--postal-code", "--city", "--payment-terms"]
-            .into_iter()
-            .filter(|k| f.contains_key(k))
-            .collect()
-    } else if op == "set-profile" && f.contains_key("--name") {
-        vec!["--name"]
-    } else {
-        vec![]
-    };
-    if !unsupported.is_empty() {
-        return fail(format!(
-            "Typed current server does not expose {} for company {op}; no write dispatched",
-            unsupported.join(", ")
-        ));
-    }
     let mut body = json!({});
     for (flag, key) in IDENTITY {
         if let Some(v) = f.get(flag) {
@@ -314,8 +335,14 @@ pub fn execute(a: &[String]) -> Output {
         ("--fiscal-year-label-strategy", "fiscalYearLabelStrategy"),
     ] {
         if let Some(v) = f.get(flag) {
-            if key=="slug" { let slug=v.trim(); if !slug.is_empty(){body[key]=json!(slug);} }
-            else {body[key] = json!(v);}
+            if key == "slug" {
+                let slug = v.trim();
+                if !slug.is_empty() {
+                    body[key] = json!(slug);
+                }
+            } else {
+                body[key] = json!(v);
+            }
         }
     }
     let mut payment = json!({});
@@ -364,10 +391,10 @@ pub fn execute(a: &[String]) -> Output {
  let message=if out.is_empty(){"Workspace has no companies yet".to_owned()}else{format!("{} {}: {slugs}",out.len(),if out.len()==1{"company"}else{"companies"})};
  // The authenticated API does not expose a canonical filesystem root. Null is an explicit native-profile boundary, never a fabricated remote/local path.
  Ok(json!({"ok":true,"message":message,"workspace":null,"count":out.len(),"companies":out}))},
- "add"=>{let v=api.create_company(serde_json::to_vec(&body).unwrap(),true).await?;if v["company"]["name"].as_str()!=f.get("--name").map(|s|s.trim())||f.get("--slug").filter(|slug|!slug.trim().is_empty()).is_some_and(|slug|v["company"]["slug"].as_str()!=Some(slug.trim())){return Err(Error::OutcomeUnknown);}let p=api.company_profile(v["company"]["slug"].as_str().unwrap()).await.map_err(|_|Error::OutcomeUnknown)?;if p["ok"]!=true||!valid_profile(&p["company"]){return Err(Error::OutcomeUnknown);}let has_payment=p["company"]["payment"].as_object().is_some_and(|p|p.values().any(|v|v.as_str().is_some_and(|s|!s.is_empty())));Ok(json!({"hasPaymentDetails":has_payment,"ok":true,"message":format!("Created company '{}'",v["company"]["slug"].as_str().unwrap()),"workspaceCreated":false,"slug":v["company"]["slug"],"name":v["company"]["name"]}))},
+ "add"=>{let v=api.create_company(serde_json::to_vec(&body).unwrap(),true).await?;if v["company"]["name"].as_str()!=f.get("--name").map(|s|s.trim())||f.get("--slug").filter(|slug|!slug.trim().is_empty()).is_some_and(|slug|v["company"]["slug"].as_str()!=Some(slug.trim())){return Err(Error::OutcomeUnknown);}let p=api.company_profile(v["company"]["slug"].as_str().unwrap()).await.map_err(|_|Error::OutcomeUnknown)?;if p["ok"]!=true||!valid_profile(&p["company"])||!matches_intent(&body,&p["company"]){return Err(Error::OutcomeUnknown);}let has_payment=p["company"]["payment"].as_object().is_some_and(|p|p.values().any(|v|v.as_str().is_some_and(|s|!s.is_empty())));Ok(json!({"hasPaymentDetails":has_payment,"ok":true,"message":format!("Created company '{}'",v["company"]["slug"].as_str().unwrap()),"workspaceCreated":false,"slug":v["company"]["slug"],"name":v["company"]["name"]}))},
  "sync-cvr"=>api.sync_company_cvr(f["--company"],true).await,
  "profile"=>{let v=api.company_profile(f["--company"]).await?;if v["ok"]!=true||!valid_profile(&v["company"]){return Err(Error::Protocol);}Ok(json!({"ok":true,"profile":profile(&v["company"])}))},
- _=>{let before=api.company_profile(f["--company"]).await?;if before["ok"]!=true||!valid_profile(&before["company"]){return Err(Error::Protocol);}let v=api.company_setup_mutation(f["--company"],CompanySetupMutation::UpdateProfile,serde_json::to_vec(&body).unwrap(),true).await?;if v["ok"]!=true||!valid_profile(&v["company"]){return Err(Error::OutcomeUnknown);}for (key,expected) in body.as_object().unwrap() { if key=="payment" {for (field,value) in expected.as_object().unwrap(){let text=value.as_str().unwrap().trim();let actual=&v["company"]["payment"][field];if !text.is_empty()&&actual!=text{return Err(Error::OutcomeUnknown);}}continue;} let actual=&v["company"][key]; let matches=if key=="cvr" {let normalized=expected.as_str().unwrap().trim().to_ascii_uppercase(); if normalized.is_empty(){actual.is_null()}else{actual==&json!(format!("DK{}",normalized.strip_prefix("DK").unwrap_or(&normalized)))}} else if expected.is_string(){let text=expected.as_str().unwrap().trim(); if text.is_empty(){actual.is_null()}else{actual==text}}else{actual==expected}; if !matches{return Err(Error::OutcomeUnknown);} }
+ _=>{let before=api.company_profile(f["--company"]).await?;if before["ok"]!=true||!valid_profile(&before["company"]){return Err(Error::Protocol);}let v=api.company_setup_mutation(f["--company"],CompanySetupMutation::UpdateProfile,serde_json::to_vec(&body).unwrap(),true).await?;if v["ok"]!=true||!valid_profile(&v["company"]){return Err(Error::OutcomeUnknown);}if !matches_intent(&body,&v["company"]){return Err(Error::OutcomeUnknown);}
  let mut updated=vec![];for(_,key)in IDENTITY{if body.get(*key).is_some()&&before["company"][*key]!=v["company"][*key]{updated.push(*key);}}if body.get("payment").and_then(Value::as_object).is_some_and(|p|p.values().any(|v|v.as_str().is_some_and(|s|!s.trim().is_empty()))){updated.push("payment");}if body.get("vatPeriodType").is_some(){updated.push("vatPeriodType");}let mut settings=v["company"].clone();settings.as_object_mut().unwrap().remove("payment");settings.as_object_mut().unwrap().remove("createdAt");Ok(json!({"ok":true,"settings":settings,"updatedFields":updated,"errors":[],"vatPeriodType":v["company"]["vatPeriodType"],"vatRegistered":!v["company"]["vatPeriodType"].is_null()}))}
  }
  });

@@ -108,17 +108,17 @@
     },
     {
       "path": "crates/rentemester-storage/src/company_setup.rs",
-      "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+      "sha256": "9925b2381f9bb141a56277166ff779758579c0bcfa10690feb9d1b5362e9af79",
       "needle": "pub fn accounts("
     },
     {
       "path": "crates/rentemester-storage/src/company_setup.rs",
-      "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+      "sha256": "9925b2381f9bb141a56277166ff779758579c0bcfa10690feb9d1b5362e9af79",
       "needle": "pub fn profile("
     },
     {
       "path": "crates/rentemester-client/src/company_setup.rs",
-      "sha256": "17ea42bc4b4bc3746c6f721179fe89036742a1896372d30471fcae8ae18f1bfb",
+      "sha256": "14b746aa17de3f7cf1ca87326cdc1b5ae20ecb04eb199ebba7dfa049345177c5",
       "needle": "pub async fn company_setup_mutation("
     },
     {
