@@ -28,3 +28,28 @@ Graphify query preceded source inspection. The existing strict Python oracle pas
 
 ## Lead source-review repair
 Lead source review: admitted destination/remote403 failures retain exact engine message plus required outcomeUnknown:false, separate from proof failures. Six documents::outcome-backed operations include503 outcome_unknown, including their bodyless HEAD projections. No restore/backup/authority stage weakened or effect replayed.
+
+## 2026-10-25 — Independent owner verification in the standard Tauri host
+
+R96 reuses the existing frozen-file and separately trusted raw32-byte-key
+verifier in the default Tauri shell. Native host menus select/review the files
+and run the packaged server's read-only `--verify-backup` mode without starting
+a server, login, source-workspace access, network or restore. The selected hashes
+bind pending/success/refusal receipts. Local public-key export uses the existing
+validated key and a new file outside the source profile, never overwriting files
+or exporting a private key. Remote React receives no native filesystem command.
+
+Seven actual native cases and seven shared-UI cases passed on the combined
+source. The native compiler is qualified rustc1.99.1; the existing MSRV1.95 is
+unchanged. The wrong default1.94.1 failure and bounded fixture repairs remain
+recorded. These are headless targeted checks, not actual OS-dialog clicks,
+installed desktop qualification or a fresh restore rehearsal. Existing backup
+core evidence is retained; the verifier and server CLI implementation did not
+change. The shared React UI retains confirmation/uncertain-download controls,
+explains separate key custody and distinguishes download, destination status,
+full signature/inventory/schema/journal/original checking and actual restore.
+
+All1605 business operation contracts remain unchanged; only current source
+hashes refresh. Full721/J01-J02-J04-J05,678/Tauri accessibility/platform matrix,
+all55 remaining parity/release/cutover gates and final installed desktop LAST
+remain. No live accounting data or installed application was switched.
