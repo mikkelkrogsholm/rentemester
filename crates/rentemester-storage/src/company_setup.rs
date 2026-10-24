@@ -399,6 +399,20 @@ pub fn update_profile(
     let before = profile(tx)?;
     for (key, value) in input {
         match key.as_str() {
+            "name" => {
+                let supplied = value
+                    .as_str()
+                    .ok_or_else(|| fail("company name must be a string"))?;
+                let name = supplied.trim();
+                if name.is_empty() || name.len() > 1024 || supplied.chars().any(char::is_control) {
+                    return Err(fail(
+                        "nonblank company name of at most 1024 bytes without controls required",
+                    ));
+                }
+                // Like CVR sync, only change the canonical profile label, never its slug/path.
+                tx.execute("UPDATE companies SET name=?1 WHERE id=1", [name])
+                    .map_err(sql)?;
+            }
             "cvr" => {
                 let value = value.as_str().ok_or_else(|| fail("CVR must be a string"))?;
                 let text = value.trim().to_ascii_uppercase();
