@@ -1,0 +1,1495 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "At most256 UTF-8 bytes."
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "ErrorId": {
+      "anyOf": [
+        {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "SdkJson": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "x-arbitrary-json": {
+            "scope": "Successful upstream response JSON at structuredContent.data (and ignored unknown request fields where referenced)",
+            "rationale": "ApiClient::request parses serde_json::Value without typed response validation; tools::call preserves that entire value, including scalar, null, arrays and unknown object fields. Native producer-specific schemas are separately supplied, not imposed by the SDK.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-client/src/lib.rs",
+                "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+                "needle": "serde_json::from_slice(&bytes)"
+              },
+              {
+                "path": "crates/rentemester-mcp/src/tools.rs",
+                "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+                "needle": "Ok(data) =>"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "TextContent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "description": "Compact JSON serialization of exactly structuredContent; not a prose message. Equality is a producer invariant, not expressible by JSON Schema."
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "SdkReturned": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "SdkReturnResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-identity_mcp.json#/$defs/SdkReturned"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ClientErrorDetails": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "transport"
+            },
+            "message": {
+              "const": "server transport failed"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "protocol"
+            },
+            "message": {
+              "const": "invalid server response"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "outcome_unknown"
+            },
+            "message": {
+              "const": "operation outcome unknown; reconcile server state before retrying"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "server_refused"
+            },
+            "message": {
+              "type": "string",
+              "pattern": "^server refused request \\(HTTP [0-9]+\\)$"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "const": "invalid_input"
+            },
+            "message": {
+              "enum": [
+                "invalid input: explicit service lifecycle confirmation and native8192-byte body required",
+                "invalid input: expected native JSON object",
+                "invalid input: native body shape differs from discoverable domain schema",
+                "invalid input: native lifecycle JSON required",
+                "invalid input: native operation UUID required",
+                "invalid input: bounded native service identifier required",
+                "invalid input: native displayName bound required",
+                "invalid input: native expiry interval required",
+                "invalid input: invalid endpoint",
+                "invalid input: service key and Cookie cannot be combined",
+                "invalid input: invalid service key",
+                "invalid input: invalid cookie"
+              ]
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ClientError": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "error": {
+                  "$ref": "schemas-identity_mcp.json#/$defs/ClientErrorDetails"
+                }
+              },
+              "required": [
+                "ok",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "unknown tool",
+                    "expected empty arguments object",
+                    "service_principals accepts no arguments",
+                    "service lifecycle requires only body/confirm",
+                    "service lifecycle exceeds native8192 bytes"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-identity_mcp.json#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MeRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "me"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "MeNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-workspace_identity.json#/$defs/Me"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CompaniesRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "companies"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "CompaniesNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-workspace_identity.json#/$defs/HumanCompanies"
+                    },
+                    {
+                      "$ref": "schemas-workspace_identity.json#/$defs/ServiceCompanies"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ServicePrincipalsRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "service_principals"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/EmptyParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "ServicePrincipalsNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-service_identity.json#/$defs/Inventory"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CreateServicePrincipalBodyAdvertised": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "type": "string",
+          "description": "Existing native UUID syntax, optional for issuance/revoke; retain caller operationId for explicit recovery, never generate a new one"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Native trimmed nonblank display name, at most120 Unicode scalar values and1024 UTF8 bytes"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000
+        }
+      },
+      "required": [
+        "confirm",
+        "displayName"
+      ],
+      "additionalProperties": false
+    },
+    "CreateServicePrincipalAdvertised": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 8192,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-identity_mcp.json#/$defs/CreateServicePrincipalBodyAdvertised"
+          }
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CreateServicePrincipalRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "create_service_principal"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/WriteParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "CreateServicePrincipalNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-service_identity.json#/$defs/IssuedCreate"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RotateServicePrincipalBodyAdvertised": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "type": "string",
+          "description": "Existing native UUID syntax, optional for issuance/revoke; retain caller operationId for explicit recovery, never generate a new one"
+        },
+        "serviceAccountId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false
+    },
+    "RotateServicePrincipalAdvertised": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 8192,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-identity_mcp.json#/$defs/RotateServicePrincipalBodyAdvertised"
+          }
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RotateServicePrincipalRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "rotate_service_principal"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/WriteParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "RotateServicePrincipalNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-service_identity.json#/$defs/IssuedRotate"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeServicePrincipalBodyAdvertised": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "type": "string",
+          "description": "Existing native UUID syntax, optional for issuance/revoke; retain caller operationId for explicit recovery, never generate a new one"
+        },
+        "serviceAccountId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeServicePrincipalAdvertised": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 8192,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-identity_mcp.json#/$defs/RevokeServicePrincipalBodyAdvertised"
+          }
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeServicePrincipalRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "revoke_service_principal"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/WriteParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "RevokeServicePrincipalNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-service_identity.json#/$defs/Revoked"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RecoverServicePrincipalBodyAdvertised": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "type": "string",
+          "description": "Existing native UUID syntax, optional for issuance/revoke; retain caller operationId for explicit recovery, never generate a new one"
+        }
+      },
+      "required": [
+        "confirm",
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "RecoverServicePrincipalAdvertised": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 8192,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-identity_mcp.json#/$defs/RecoverServicePrincipalBodyAdvertised"
+          }
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RecoverServicePrincipalRequest": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "recover_service_principal"
+            },
+            "arguments": {
+              "$ref": "schemas-identity_mcp.json#/$defs/WriteParsed"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": {
+            "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+          },
+          "description": "arguments absent defaults to {}; task presence always invalid params, even null.",
+          "not": {
+            "required": [
+              "task"
+            ]
+          }
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-identity_mcp.json#/$defs/SdkJson"
+      }
+    },
+    "RecoverServicePrincipalNativeResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-identity_mcp.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-identity_mcp.json#/$defs/TextContent"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-service_identity.json#/$defs/Recovery"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "EmptyParsed": {
+      "oneOf": [
+        {
+          "$ref": "schemas-identity_mcp.json#/$defs/Empty"
+        },
+        {
+          "type": "array",
+          "items": {
+            "not": {}
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      ],
+      "description": "Actual serde derived Empty accepts map or exact zero-field sequence; advertised tools/list remains object only."
+    },
+    "WriteObjectParsed": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "WriteParsed": {
+      "oneOf": [
+        {
+          "$ref": "schemas-identity_mcp.json#/$defs/WriteObjectParsed"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Actual serde derived Write accepts object or exactly [bodyString,boolean]; false reaches SDK invalid_input."
+    }
+  }
+}
