@@ -12,7 +12,7 @@ GET session does not read its request body or inspect content encoding/type: the
 
 ## HEAD and installation
 
-HEAD `/api/auth/get-session` is an explicit closure returning 405 `Allow: GET`; it does not call GET, parse a body, apply auth gates, consume rate budget or read identity. The installed route's HEAD transport body is suppressed, despite constructing request_refused JSON. Outer protocol negotiation may reject independently with its own JSON409 before that closure; the declaration retains that separate producer rather than inventing a successful HEAD representation.
+HEAD `/api/auth/get-session` is an explicit closure returning 405 `Allow: GET`; it does not call GET, parse a body, apply auth gates, consume rate budget or read identity. The installed route's HEAD transport body is suppressed, despite constructing request_refused JSON. Outer protocol negotiation may construct its own JSON409 before that closure; Axum still suppresses all top-level HEAD wire bodies, including this middleware refusal; the declaration retains that separate producer rather than inventing a successful HEAD representation.
 
 Identity handlers are conditional on native identity installation; enrollment additionally requires the enrollment handler pair. Current `Backend::identity` supplies them using the admitted Rust host owner, not Bun or a legacy TS auth service. The executable's disconnected API fallback is 503 `rust_workspace_not_connected`, not an auth denial; a connected but absent endpoint uses 503 `rust_endpoint_not_implemented`. Those exact fallback shapes are local schema definitions and source-bound installation cases. Negotiated private operations on disconnected/public-only manifest are protocol409 before fallback. The full manifest alone is not proof that every optional handler is installed.
 
@@ -49,3 +49,6 @@ The shared React `LoginAttempts` fence is a client consumer comparison, not the 
 ## Evidence boundary
 
 Graphify query was performed first; source review used actual current native route/parser/constructor/recovery bytes at da30984a56fc08877f0dbdaba799527b05447c66. The supplied Python oracle checks frozen selected IDs, structural contracts, resolved schemas and source hashes only. It cannot establish semantic constructor coverage or runtime acceptance. Those remain lead-reviewed; global #677 acceptance and retained completed #712 evidence are unchanged.
+
+## Lead review correction
+Actual no-effect GET/HEAD protocol probe `/tmp/rentemester-rust-reports/r05-677-head-wire-probe.json` observed GET409 with98 entity bytes versus HEAD409 with0 entity bytes and retained Content-Length98/application-json headers. Source transport unchanged from accepted compiled c351c1f6 through da30984a. Constructed schemas are retained separately from wire bodies; this is no authentication or business effect replay.
