@@ -83,3 +83,5 @@ HTTP exact bodies and private Unix/workspace binding; no real CVR/provider/auth
 setup. Malformed receipts are outcome_unknown, no automatic retry. Full catalogue
 and combined acceptance remain lead-owned. No import-run accounting/archive,
 opening balance, new parser/provider, rootbootstrap or whole-#716 closure claimed.
+
+Lead review corrected direct-HTTP ImportObject/ImportHttp for actual Option<Role>: null/omitted retains strict policy, original four-position prefix remains and optional fifth customer/vendor/null is accepted. SDK remains optional string enum only. Existing engine wire tests already prove the four/five-position producer; no new financial/provider/auth effects or runtime changes.
