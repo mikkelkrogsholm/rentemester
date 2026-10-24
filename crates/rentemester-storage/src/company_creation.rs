@@ -9,6 +9,10 @@ pub struct Input {
     pub name: String,
     pub slug: Option<String>,
     pub cvr: Option<String>,
+    pub address: Option<String>,
+    pub postal_code: Option<String>,
+    pub city: Option<String>,
+    pub payment_terms_days: Option<i64>,
     pub fiscal_year_start_month: Option<String>,
     pub fiscal_year_label_strategy: Option<String>,
     #[serde(default = "default_vat")]
@@ -104,6 +108,27 @@ pub fn settings(i: &Input) -> Result<Settings, Error> {
     let mut profile = serde_json::Map::new();
     profile.insert("cvr".into(), json!(cvr));
     profile.insert("vatPeriodType".into(), i.vat_period_type.clone());
+    // Omitted/null values retain fresh defaults. Supplied text uses the same
+    // trim/empty-to-null semantics as the canonical profile writer below.
+    for (key, value) in [
+        ("address", &i.address),
+        ("postalCode", &i.postal_code),
+        ("city", &i.city),
+    ] {
+        if let Some(value) = value {
+            let text = value.trim();
+            if text.len() > 1024 || text.chars().any(char::is_control) {
+                return Err(refused());
+            }
+            profile.insert(key.into(), json!(text));
+        }
+    }
+    if let Some(days) = i.payment_terms_days {
+        if !(0..=365).contains(&days) {
+            return Err(refused());
+        }
+        profile.insert("paymentTermsDays".into(), json!(days));
+    }
     if let Some(p) = &i.payment {
         let mut payment = serde_json::Map::new();
         for (k, v) in [
