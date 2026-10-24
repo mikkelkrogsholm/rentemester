@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R87/R88 originalcontactCSV flow andofflineimportsystems accepted; samecommonRustbackend, whole716open",
-  "code_revision": "8351965da3744ca109a77748bda6b39724c87e8a",
+  "current_increment": "R89/R90 original profile -> verified archive -> CFO read flow accepted; whole717 open",
+  "code_revision": "37bc04cab106054a8fe1f19d7986be7322d792d5",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_contact_import_component_accepted_whole716_open",
+  "state": "original_read_flow_component_accepted_whole717_open",
   "issues_closed": 40,
   "next": [
-    "46otheroriginalCLI literalkeys, positivegroupoverview, firstworkspace/rootbootstrap/canonicalpaths andcomplete265per-operation runtime/files/credential/confirmation/streams/0-1-2 acceptance remain in716.",
-    "40of55originalissuesclosed15open; full717/reconnect/browser/native/release/cutover/retirement andJ01-J07 remain; manualinstalleddesktopLAST."
+    "717:18otheroriginalMCP names; all31originalworkflowdescriptions and completeperoperation/service/revocation/isolation/protocol/reconnect acceptance remain.",
+    "OriginalCFOworkspaceassertion requiresverifiedlocalruntime; remoteoriginalworkspaceidentity andfilesystemcompanyselectors remainexplicitnativebindingboundaries, notwholeparity.",
+    "71646otheroriginalCLIkeys/overview/bootstrap/path/full265; full55originalissues/J01-J07/finalrelease/cutover/retirement remain; manualinstalleddesktopLAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R85/R86 commonRustcompany create -> rename -> inspect accepted; originalfivefieldgap resolved, legacyHTTPinputs retained; whole716open",
+  "previous_verified_increment": "R87/R88 originalcontactCSV flow andofflineimportsystems accepted; samecommonRustbackend, whole716open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16608,6 +16609,10 @@
     "r88_original_contact_import": {
       "path": "/private/tmp/rentemester-rust-reports/r88-original-contact716-current-contracts-qualified.json",
       "sha256": "9871ea583c6bc65107496f4451cb4f7880661e63d438fdf1f75338b377716660"
+    },
+    "r90_original_read_flow": {
+      "path": "/private/tmp/rentemester-rust-reports/r90-original-read717-current-contracts-qualified.json",
+      "sha256": "dcc3292e87cdb226732d1d1800bd7e6c055955ea6d4112bdc8771e091604715a"
     }
   },
   "verified_history": [
@@ -18812,6 +18817,19 @@
       "remaining": [
         "46otheroriginalCLI literalkeys, positivegroupoverview, firstworkspace/rootbootstrap/canonicalpaths andcomplete265per-operation runtime/files/credential/confirmation/streams/0-1-2 acceptance remain in716.",
         "40of55originalissuesclosed15open; full717/reconnect/browser/native/release/cutover/retirement andJ01-J07 remain; manualinstalleddesktopLAST."
+      ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "37bc04cab106054a8fe1f19d7986be7322d792d5",
+      "report": "/tmp/rentemester-rust-reports/r90-original-read717-current-contracts-qualified.json",
+      "sha256": "dcc3292e87cdb226732d1d1800bd7e6c055955ea6d4112bdc8771e091604715a",
+      "scope": "4originalMCPreads/current1600contracts;13actualcompiledcases/current429catalogue; samecommonserver/sourceproofs/authority, no financial/provider/auth/desktopreplay.",
+      "remaining": [
+        "717:18otheroriginalMCP names; all31originalworkflowdescriptions and completeperoperation/service/revocation/isolation/protocol/reconnect acceptance remain.",
+        "OriginalCFOworkspaceassertion requiresverifiedlocalruntime; remoteoriginalworkspaceidentity andfilesystemcompanyselectors remainexplicitnativebindingboundaries, notwholeparity.",
+        "71646otheroriginalCLIkeys/overview/bootstrap/path/full265; full55originalissues/J01-J07/finalrelease/cutover/retirement remain; manualinstalleddesktopLAST."
       ]
     }
   ],
