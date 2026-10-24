@@ -1,0 +1,367 @@
+{
+  "workIssue": "#677",
+  "partition": "delivery_recurring_cli",
+  "scope": "25 selected CLI leaves only; whole #677 acceptance remains main-owned",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "match run(args)"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "if recurring_original::accepts"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn prepare_with_output"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+      "needle": "pub fn load(profile:"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn send("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn response("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "fn document_action<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-cli/src/invoice_email.rs",
+      "sha256": "60ec8f0dda731d5477967346507411c329520779aa3c5d78d0de9b81ddf98191",
+      "needle": "use rentemester_client::{InvoiceEmailMutation, MAX_INVOICE_EMAIL_BODY, invoice_email_body_schema};"
+    },
+    {
+      "path": "crates/rentemester-client/src/invoice_email.rs",
+      "sha256": "7f3b86de1ebef6e62d810466531fd290bd7e5b7a0df8545a929f2fa6218b2885",
+      "needle": "//! Explicit invoice delivery. Known refusals retain canonical evidence; ambiguous writes never replay."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/invoice_email.rs",
+      "sha256": "fbfc6603f9063d5b3a2e2173652a6996c78571657b318cdd107afb1f335fd7bd",
+      "needle": "//! Explicit external SMTP side effect over the admitted owner's durable reservation."
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_email.rs",
+      "sha256": "b68f8d5b08be276526a30a398b445be4c35a08b4cb142de0b0bc75c336689677",
+      "needle": "//! Reservation, fresh authority, one SMTP handoff, durable outcome. Never a transaction during SMTP."
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_email.rs",
+      "sha256": "b9a7f45d92d38cb7c9d6ef510d08a95f024b2d3847d772b764f3fdbf955d3724",
+      "needle": "//! Append-only invoice email reservations and evidence. No credentials, MIME bytes or network I/O."
+    },
+    {
+      "path": "crates/rentemester-host/src/invoice_email.rs",
+      "sha256": "db25aa1b526fac97f17f8f6ded7057ad05799b469b17821e9a22553ba3c6052a",
+      "needle": "//! Fixed invoice email operations under the same Owner lease/mutex and guarded original namespace."
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_email/service.rs",
+      "sha256": "d249ba763102db86cf931e7c538ca1df444a56edca5708301ab7ca720249d832",
+      "needle": "precharged::continue_operation"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company/precharged.rs",
+      "sha256": "b04e173a9af60904dad2a3727e0fe4fa7b3c930171ef2eb2792a4f06dfcdb88f",
+      "needle": "fn continue_mode<T>"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/invoice_mail.rs",
+      "sha256": "6839953998892259472b9a22d332c03e5155e1d62c2d18f28e64041744d38352",
+      "needle": "let message_id ="
+    },
+    {
+      "path": "crates/rentemester-cli/src/recurring_invoices.rs",
+      "sha256": "ad0ce1877bd22304f3f7cb8ce688e739987f108d4523897c0d060b90c6561975",
+      "needle": "use rentemester_client::{"
+    },
+    {
+      "path": "crates/rentemester-client/src/recurring_invoices.rs",
+      "sha256": "3c3982b490d45b8378a54026c51dcf134ff0a5788fe087ed1316c2bf4f480643",
+      "needle": "//! Explicit manual invoice templates. The server owns periods, issuance and deduplication."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_invoices.rs",
+      "sha256": "00ded637b2600dcbe391aad63b99362529d223a55abb5347b81e01dfc2faf542",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-application/src/recurring_invoices.rs",
+      "sha256": "2d866dd5011f55249ec552267a82f9393a4760fdbd7db054fc4a0ecd2892ba7e",
+      "needle": "//! Explicit manual recurring generation shares ordinary invoice issuance and current authority."
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+      "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+      "needle": "//! Immutable recurring specifications; generation is an explicit fenced transaction."
+    },
+    {
+      "path": "crates/rentemester-cli/src/recurring_original.rs",
+      "sha256": "9e96a23e3227d8d30658ac3ce0efd011bb1870b5750fac144952c88134ae764d",
+      "needle": "//! Original recurring CLI commands. All periods, source validation and issuance stay server-owned."
+    },
+    {
+      "path": "crates/rentemester-client/src/recurring_original.rs",
+      "sha256": "3d8c79b8fa2a6ec4d602ca4bbd71c6ca644fc481b72c9a324240646fac2ad6bd",
+      "needle": "//! Original structured recurring operations over the common server-owned engine."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_original.rs",
+      "sha256": "b60dd0463b96632d89ffd88c787056059c3ffb669ee38d3fdf13146da5034679",
+      "needle": "//! Source-shaped recurring contracts over the same admitted native company owner."
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+      "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+      "needle": "//! Original recurring inputs over the shared immutable template and generation tables."
+    },
+    {
+      "path": "crates/rentemester-host/src/service_sales.rs",
+      "sha256": "c0ac15d8be0cd29e9c245cc9b5fda5ba3b3481dde490e4f7db674446a6449635",
+      "needle": "//! Service sales use the same admitted physical owner and namespace as human sales."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_workspace.rs",
+      "sha256": "e0b4ffa5372d4531d0167da20cff246210ef0619c8ca2116f3b77a45015a7f11",
+      "needle": "fn deliver("
+    },
+    {
+      "path": "crates/rentemester-host/src/recurring_workspace.rs",
+      "sha256": "1b4684f5ae2522c74dc25e1c6073e9ab68c5452bbf7011d8093729fca5784813",
+      "needle": "pub fn recurring_workspace_catalog("
+    },
+    {
+      "path": "crates/rentemester-application/src/recurring_workspace.rs",
+      "sha256": "8c4c98980d4e2569ca2d9c4ae1b3a1117907badcd4e3ebc1502c9fdc72b3bbda",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_workspace.rs",
+      "sha256": "ba5298e4985ab47bc0e5598f0d2e9ffcccf44a4cf81dcaf1c11969f84100ec2f",
+      "needle": "pub fn plan("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_workspace/validation.rs",
+      "sha256": "5bf065d3ba0b90a215476383b85185f3f33de7d7542952d4a70e62a6acf25f3b",
+      "needle": "pub fn validate_history("
+    },
+    {
+      "path": "crates/rentemester-cli/src/hosted_recurring.rs",
+      "sha256": "b9f0c65cb4bcc2b200c312632a35f30e14641975f9f69d37ad5239796fb7fb4d",
+      "needle": "use rentemester_client::{"
+    },
+    {
+      "path": "crates/rentemester-client/src/hosted_recurring.rs",
+      "sha256": "7a3d06a52f2cf26820d6369a56bd4a6fd2630fbe7cf945e57f268dc0f05b4bc8",
+      "needle": "//! Explicit human-reviewed delegation to the configured executor; never accepts executor credentials."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/hosted_recurring.rs",
+      "sha256": "4a47741788c39e7ac48d50c263aa4517f9494762a345880228b000e41e5c7181",
+      "needle": "//! Human-reviewed delegation to the configured live executor. No product JSON carries a key."
+    },
+    {
+      "path": "crates/rentemester-application/src/hosted_recurring.rs",
+      "sha256": "95127e70610802e6ccbb3ce92dc0af13f141fc8bca05316c104893fdd6d7dedd",
+      "needle": "//! Fixed generation-only hosted operation. Service usage precedes a fresh control/company fence."
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring/hosted.rs",
+      "sha256": "92dd3000974c0036b971f2b18a46c7a6a1b3238e2c3174d46be06ddb77515628",
+      "needle": "//! Typed V3 hosted delegation. These stored facts are historical intent, never live control authority."
+    },
+    {
+      "path": "crates/rentemester-host/src/hosted_recurring.rs",
+      "sha256": "de9504260887bf3bcea5e48449c4c9f3b7e05e3075ca8586fe15a3e95205eb4d",
+      "needle": "//! Fixed hosted operations on the existing held Owner, lease and selected-company guard."
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring_schema.rs",
+      "sha256": "53ed2da7c06c7756efbbe370f500cb87bb9cb9e065ccf3e9348f6fd21887e465",
+      "needle": "pub fn installed("
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring/recovery.rs",
+      "sha256": "49062ca8dc46a3317c725a624a5e471618cc569c67b4c1c6a07e2b4b638c8cbf",
+      "needle": "struct RestoreConsent"
+    },
+    {
+      "path": "crates/rentemester-engine/src/scheduled_recurring.rs",
+      "sha256": "a7d8aa13475645867538b86e12022746da51777b7b20456c23a8ead1d9ad2247",
+      "needle": "pub struct Occurrence"
+    },
+    {
+      "path": "crates/rentemester-cli/src/scheduled_recurring.rs",
+      "sha256": "ceac7915401dcfcc6c4e0d097311a0e95dcfa6db2403eccd228b415e49a6ac8d",
+      "needle": "use rentemester_client::{"
+    },
+    {
+      "path": "crates/rentemester-client/src/scheduled_recurring.rs",
+      "sha256": "e78cc55e0a8fd4ad469ab7ffd2023e68d703de7a3015e513e4c3bceca77c9f83",
+      "needle": "//! Explicit scheduled recurring consent and caller-driven dispatch; server owns every period."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/scheduled_recurring.rs",
+      "sha256": "16bf79ce598c73011bc44ee1942caa91e9fee8dceea54e947234e85040f62028",
+      "needle": "//! Bounded explicit scheduling operations; GET/reopen never dispatch or initialize schema."
+    },
+    {
+      "path": "crates/rentemester-application/src/scheduled_recurring.rs",
+      "sha256": "ed284865901bc115607839a453a5b18c2375e7cb30a1a1dda72f56014ecaa6a9",
+      "needle": "//! Caller-driven scheduled generation under the ordinary current-session commit fence."
+    },
+    {
+      "path": "crates/rentemester-storage/src/scheduled_recurring.rs",
+      "sha256": "37c407ec4e657b7209637e6a5f8d1f14024021dd734e48f965dd79cd6cb65514",
+      "needle": "//! Durable company-local generation consent and append-only occurrence decisions; no live grants."
+    },
+    {
+      "path": "crates/rentemester-host/src/scheduled_recurring.rs",
+      "sha256": "58dd3906d9a482d60dc92f8f4c7a9ad07f8f961d602829fe39208614419a62ae",
+      "needle": "//! Exact owned context, source namespace and continuous mutex admission."
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "get(recurring_invoices::handle).post(recurring_invoices::handle)"
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "pub(crate) fn body("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_invoice.rs",
+      "sha256": "60ee6af1eed8c0b2f63fe9e17d08d01b10991c62ca98206b323d9096ef6d1e23",
+      "needle": "pub struct Line"
+    }
+  ],
+  "method": "Graphify query first, then actual global preprocess/dispatch/SDK/HTTP/Owner/application/storage/error/recovery source reading. No discovery schema used as success proof. Native producer schemas distinguished from permissive SDK Value readers.",
+  "retainedEvidence": "Existing #692/#709/#711/R44 retained at actual scope without replay. Accepted17765f15 sales HEAD and169606f1 recurring HEAD guards retained; existing10 HEAD RED/GREEN evidence not rerun or expanded.",
+  "selection": [
+    "cli:remote invoice-email-status",
+    "cli:remote invoice-email-send",
+    "cli:remote invoice-email-reconcile",
+    "cli:remote invoice-email-retry",
+    "cli:remote recurring-invoices",
+    "cli:remote create-recurring-invoice",
+    "cli:remote generate-recurring-invoice",
+    "cli:remote retire-recurring-invoice",
+    "cli:recurring-invoice create",
+    "cli:recurring-invoice generate",
+    "cli:recurring-invoice list",
+    "cli:recurring-invoice run-workspace",
+    "cli:remote hosted-recurring-plan",
+    "cli:remote consent-hosted-recurring",
+    "cli:remote revoke-hosted-recurring",
+    "cli:remote scheduled-recurring",
+    "cli:remote scheduled-recurring-plan",
+    "cli:remote enable-scheduled-recurring",
+    "cli:remote pause-scheduled-recurring",
+    "cli:remote resume-scheduled-recurring",
+    "cli:remote cancel-scheduled-recurring",
+    "cli:remote catch-up-scheduled-recurring",
+    "cli:remote skip-scheduled-recurring",
+    "cli:remote dispatch-scheduled-recurring",
+    "cli:remote reconsent-scheduled-recurring"
+  ],
+  "validation": {
+    "strictOracle": {
+      "command": "python3 /tmp/r49-677-oracle.py delivery_recurring_cli",
+      "result": "PASS exactselected delivery_recurring_cli 25; semantic review required; whole677 remains open"
+    },
+    "whitespace": {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    "graphify": {
+      "queryFirst": true,
+      "extractCommand": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\"",
+      "nodes": 34009,
+      "edges": 107681,
+      "result": "completed, independent worker build output"
+    },
+    "notExecuted": [
+      "Cargo",
+      "server",
+      "browser",
+      "network",
+      "SMTP",
+      "IMAP",
+      "provider",
+      "financial mutations",
+      "consent/job/auth effects",
+      "live-ledger HEAD"
+    ],
+    "acceptanceOwner": "main",
+    "commit": "none; runner captures owned changes"
+  }
+}
