@@ -1,0 +1,588 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "OperationIdInput": {
+      "type": "string",
+      "pattern": "^\\s*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}\\s*$",
+      "description": "Rust trim then ASCII lower-case; UUID version 1..8 and RFC variant. Surrounding Rust Unicode whitespace accepted, canonicalized before history lookup. Not an idempotent replay key."
+    },
+    "Uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "Identifier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nonblank after Rust trim, at most 4096 UTF-8 bytes, no Rust char::is_control. Database identifiers are exact case-sensitive values; not UUID-coerced."
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+      "description": "Validated Gregorian year 0001..9999 UTC, exactly millisecond precision; no leap seconds."
+    },
+    "CreatedTimestamp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-service_identity.json#/$defs/Timestamp"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"
+        }
+      ],
+      "description": "Inventory preserves original database bytes. Legacy SQL timestamp YYYY-MM-DD HH:mm:ss accepted by stamp via UTC .000Z normalization for validation only; calendar must validate and createdAt cannot be future."
+    },
+    "Credential": {
+      "type": "object",
+      "properties": {
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "$ref": "schemas-service_identity.json#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "credentialId",
+        "enabled",
+        "expiresAt"
+      ],
+      "additionalProperties": false,
+      "description": "No secret, key hash, prefix, provider marker or start field. NULL enabled remains null, not false."
+    },
+    "Principal": {
+      "type": "object",
+      "properties": {
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Nonblank, no controls, <=1024 UTF-8 bytes; inventory does not trim stored metadata."
+        },
+        "createdAt": {
+          "$ref": "schemas-service_identity.json#/$defs/CreatedTimestamp"
+        },
+        "activeCredentialCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "credentials": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-service_identity.json#/$defs/Credential"
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "serviceAccountId",
+        "displayName",
+        "createdAt",
+        "activeCredentialCount",
+        "credentials"
+      ],
+      "additionalProperties": false,
+      "description": "activeCredentialCount counts enabled != Some(0), including NULL and expired credentials. It is not proof of currently usable authority; expiry is not subtracted."
+    },
+    "Inventory": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "principals": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-service_identity.json#/$defs/Principal"
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "ok",
+        "principals"
+      ],
+      "additionalProperties": false
+    },
+    "Issued": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "secret": {
+          "type": "string",
+          "pattern": "^rms_[A-Za-z]{64}$",
+          "minLength": 68,
+          "maxLength": 68,
+          "description": "One-time known-commit response secret, not redisclosed on list, recovery or same-operation replay. Retain securely only; no examples."
+        }
+      },
+      "required": [
+        "ok",
+        "operationId",
+        "serviceAccountId",
+        "credentialId",
+        "secret"
+      ],
+      "additionalProperties": false,
+      "description": "Create emits generated service_ + 32 lower hex serviceAccountId; rotate preserves requested registered principal. Generated credentialId is v4 lower-case UUID. operationId is canonical caller UUID or generated v4. All fields required; no expiresAt in receipt."
+    },
+    "Revoked": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "revoked": {
+          "const": true
+        }
+      },
+      "required": [
+        "ok",
+        "operationId",
+        "revoked"
+      ],
+      "additionalProperties": false
+    },
+    "Recovery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "operationId": {
+              "$ref": "schemas-service_identity.json#/$defs/Uuid"
+            },
+            "serviceAccountId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "status": {
+              "const": "completed"
+            },
+            "recovered": {
+              "type": "boolean"
+            },
+            "credentialId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "replacementCredentialId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "ok",
+            "operationId",
+            "serviceAccountId",
+            "status",
+            "recovered",
+            "credentialId",
+            "replacementCredentialId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "operationId": {
+              "$ref": "schemas-service_identity.json#/$defs/Uuid"
+            },
+            "serviceAccountId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "status": {
+              "const": "completed"
+            },
+            "recovered": {
+              "const": false
+            },
+            "credentialId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "replacementCredentialId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            }
+          },
+          "required": [
+            "ok",
+            "operationId",
+            "serviceAccountId",
+            "status",
+            "recovered",
+            "credentialId",
+            "replacementCredentialId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "operationId": {
+              "$ref": "schemas-service_identity.json#/$defs/Uuid"
+            },
+            "serviceAccountId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "status": {
+              "const": "recovered"
+            },
+            "recovered": {
+              "const": true
+            },
+            "credentialId": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-service_identity.json#/$defs/Identifier"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "replacementCredentialId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "ok",
+            "operationId",
+            "serviceAccountId",
+            "status",
+            "recovered",
+            "credentialId",
+            "replacementCredentialId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "operationId": {
+              "$ref": "schemas-service_identity.json#/$defs/Uuid"
+            },
+            "serviceAccountId": {
+              "$ref": "schemas-service_identity.json#/$defs/Identifier"
+            },
+            "status": {
+              "const": "recovering"
+            },
+            "recovered": {
+              "const": false
+            },
+            "credentialId": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-service_identity.json#/$defs/Identifier"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "replacementCredentialId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "ok",
+            "operationId",
+            "serviceAccountId",
+            "status",
+            "recovered",
+            "credentialId",
+            "replacementCredentialId"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "completed with null replacement is revoke; recovered is true only when this call completed recovery, otherwise false. completed with replacement is create (credentialId == replacementCredentialId) or rotate (credentialId is old credential, replacement differs). recovered/recovering credentialId is null for create or old credential for rotate. Recent recovering (<30000ms) is returned without cleanup, recovered:false. Native new create/rotate/revoke operations append pending+completed in one transaction; nonterminal states are retained legacy history, not invented native provider progress."
+    },
+    "RequestRefused": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "request_refused"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidCredentials": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid credentials"
+        },
+        "code": {
+          "const": "INVALID_CREDENTIALS"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Unconfirmed": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Authentication outcome could not be confirmed"
+        },
+        "code": {
+          "const": "AUTH_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "OperationReused": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "OPERATION_REUSED"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "HTTP protocol negotiation is incompatible"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CreateInput": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Trimmed before storage validation: nonblank, <=1024 UTF-8 bytes and <=120 Unicode scalar values after trim, no control characters."
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000,
+          "default": 7776000
+        }
+      },
+      "required": [
+        "confirm",
+        "displayName"
+      ],
+      "additionalProperties": false,
+      "description": "Strict camelCase object, duplicate recognized fields and unknown fields refused. Optional means absent only: explicit null refused. confirm:false refused. Expires is JSON u64 integer (not 1.0 or exponent notation); allowed range inclusive. No revision, grants, permissions, actor, provider, company, or retry-key fields."
+    },
+    "RotateInput": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000,
+          "default": 7776000
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false,
+      "description": "Strict camelCase object, duplicate recognized fields and unknown fields refused. Optional means absent only: explicit null refused. confirm:false refused. Expires is JSON u64 integer (not 1.0 or exponent notation); allowed range inclusive. No revision, grants, permissions, actor, provider, company, or retry-key fields."
+    },
+    "RevokeInput": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false,
+      "description": "Strict camelCase object, duplicate recognized fields and unknown fields refused. Optional means absent only: explicit null refused. confirm:false refused. Expires is JSON u64 integer (not 1.0 or exponent notation); allowed range inclusive. No revision, grants, permissions, actor, provider, company, or retry-key fields."
+    },
+    "RecoverInput": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        }
+      },
+      "required": [
+        "confirm",
+        "operationId"
+      ],
+      "additionalProperties": false,
+      "description": "Strict camelCase object, duplicate recognized fields and unknown fields refused. Optional means absent only: explicit null refused. confirm:false refused. Expires is JSON u64 integer (not 1.0 or exponent notation); allowed range inclusive. No revision, grants, permissions, actor, provider, company, or retry-key fields."
+    },
+    "IssuedCreate": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "serviceAccountId": {
+          "type": "string",
+          "pattern": "^service_[0-9a-f]{32}$"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "secret": {
+          "type": "string",
+          "pattern": "^rms_[A-Za-z]{64}$",
+          "minLength": 68,
+          "maxLength": 68,
+          "description": "One-time known-commit response secret, not redisclosed on list, recovery or same-operation replay. Retain securely only; no examples."
+        }
+      },
+      "required": [
+        "ok",
+        "operationId",
+        "serviceAccountId",
+        "credentialId",
+        "secret"
+      ],
+      "additionalProperties": false,
+      "description": "Create emits generated service_ + 32 lower hex serviceAccountId; rotate preserves requested registered principal. Generated credentialId is v4 lower-case UUID. operationId is canonical caller UUID or generated v4. All fields required; no expiresAt in receipt."
+    },
+    "IssuedRotate": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Uuid"
+        },
+        "secret": {
+          "type": "string",
+          "pattern": "^rms_[A-Za-z]{64}$",
+          "minLength": 68,
+          "maxLength": 68,
+          "description": "One-time known-commit response secret, not redisclosed on list, recovery or same-operation replay. Retain securely only; no examples."
+        }
+      },
+      "required": [
+        "ok",
+        "operationId",
+        "serviceAccountId",
+        "credentialId",
+        "secret"
+      ],
+      "additionalProperties": false,
+      "description": "Create emits generated service_ + 32 lower hex serviceAccountId; rotate preserves requested registered principal. Generated credentialId is v4 lower-case UUID. operationId is canonical caller UUID or generated v4. All fields required; no expiresAt in receipt."
+    }
+  }
+}
