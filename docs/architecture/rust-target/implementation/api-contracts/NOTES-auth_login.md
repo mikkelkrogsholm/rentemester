@@ -52,3 +52,6 @@ Graphify query was performed first; source review used actual current native rou
 
 ## Lead review correction
 Actual no-effect GET/HEAD protocol probe `/tmp/rentemester-rust-reports/r05-677-head-wire-probe.json` observed GET409 with98 entity bytes versus HEAD409 with0 entity bytes and retained Content-Length98/application-json headers. Source transport unchanged from accepted compiled c351c1f6 through da30984a. Constructed schemas are retained separately from wire bodies; this is no authentication or business effect replay.
+
+## Production wiring accepted — e3c32ecd
+The existing native password-change, password-bound backup-code management and own-session control callbacks are now installed by production `Backend::identity` through the same admitted `Owner::control_auth`. Earlier absent-handler observations describe da30984a/c052a73d only. Optional alternative router configurations may still omit handlers and return404; existing native input/output/refusal/recovery schemas and explicit HEAD behavior are unchanged. Source hashes in operation/provenance files now bind the updated host/backend bytes. Whole #677 remains open for its other advertised HTTP/CLI/MCP contracts.

@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R43 #678 exactdesktopcompiler gap accepted f25e6952; R05 #67742identitycontracts accepted c052a73d. R42 #712candidatefcd6ae0b remainsunaccepted foractualpasswordrotation browser/session boundary.",
-  "code_revision": "f25e6952128929e77389371d7fded8898c5f104b",
-  "spec_revision": "sha256:0b1323735e5aba59fca6230973d5fca4ebf9db2f14b254c4526dae4ed58f988c",
-  "state": "37of55 originalissues CLOSED,18OPEN. Accepted42 exactcurrentidentityHTTPcontracts + deterministiccompatibledesktopcompiler component. Actual712productionwiring/notice candidate preserved, notintegrated/accepted: passwordrotation200 followedbyownerUIlogin; narrowcookiehash/bodyshape diagnostic next. Alloriginalscope andfinalmanualdesktop gates remain.",
+  "current_increment": "R44 #712 existing nativeaccountsecurity +sameReactUI completeflow accepted e3c32ecd: password/recovery/sessioncontrols productionwiring, accountboundconfirmation andrequest-expiry generationrace repaired.",
+  "code_revision": "e3c32ecd0c69e3f9f3ab901141b97b0357c270c4",
+  "spec_revision": "sha256:515f3907be1c7f0fcd8e4ab1861d4b958d6a1e4cd4c06f1bfe382edd7cb5e246",
+  "state": "37of55originalissues CLOSED,18OPEN. CurrentsharedReact/Rust accountsecuritywholeflow accepted: realnormalMFA passwordchange/rotation, oldpasswordrefusal, list/single/all revocation, newpassword+MFA afterrestart andunchangedcanonicalledger. Source-reviewed staleordinary401/newrefresh race hasRED/GREEN86tests; current401/cancel/loading failclosed retained. Whole712OPEN onlyremainingoriginal677/fullnativefinalqualification andall55/J01-J07/release/cutover/retirement gates.",
   "issues_closed": 37,
   "next": [
-    "Diagnose sharedUI auth-revalidation/late401 generation boundary only; rawserver/browsercookie path proven valid. Preservefcdcandidate, no blindwholeflow replay.",
-    "Complete original677 everyadvertisedoperation exactschema/retry scope; reuseaccepted42identitycontracts andexistingprotocol proof.",
-    "Finalinstalleddesktop/nativeOSvault/currentaccount/cancel/platform/accessibility andalloriginalJ01-J07/release/cutover/retirement gates remainlast."
+    "Finish original677 exactinput/success/refusal/parse-protocol+retry for everyadvertisedHTTP/CLI/MCPoperation;42identitysubset retained, sourcebindings/currentcallbackinstallation updated.",
+    "Triageremainingexistingissues againstretainedacceptedcode/evidence andcloseimmediatelywhenfullscopepasses; nooptionalpolish oracceptedbusiness/provider replay.",
+    "FinalinstallednativeTauri/WebKit vault/cancel/account/platform/accessibility/J07 andallrelease/cutover/retirement requirements remainlast."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R41 #712 current sharedReact/Tauri login cancellation and explicitOS-vault component accepted at6fcf4fe1; whole712OPEN for exact677dependency and final installednativeGUI qualification.",
+  "previous_verified_increment": "R43 #678 exactdesktopcompiler gap accepted f25e6952; R05 #67742identitycontracts accepted c052a73d. R42 #712candidatefcd6ae0b remainsunaccepted foractualpasswordrotation browser/session boundary.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16099,7 +16099,7 @@
     },
     "r42_account_security712_unaccepted_candidate": {
       "issue": 712,
-      "status": "unaccepted candidate preserved; actualbrowser/session blocker",
+      "status": "Historicalunacceptedcandidate preserved; repaired andaccepted byR44e3c32ecd, alloldfailedreceipts retained",
       "source_revision": "fcd6ae0b742a0a787c8d15ef2e018f04e78612ce",
       "snapshot_ref": "refs/rentemester/sgd-snapshots/r42-712-account-security/unaccepted-reviewed-candidate",
       "report": "/private/tmp/rentemester-r34-708-clean/.sgd/observations/r42-712-blocked-candidate.json",
@@ -16120,7 +16120,25 @@
         "candidate_revision": "fcd6ae0b742a0a787c8d15ef2e018f04e78612ce",
         "raw_cookie_boundary_passed": true,
         "wholeOrComponentAccepted": false
-      }
+      },
+      "resolved_by": "r44_account_security712_component"
+    },
+    "r44_account_security712_component": {
+      "issue": 712,
+      "status": "component accepted; wholeissue OPEN",
+      "source_revision": "e3c32ecd0c69e3f9f3ab901141b97b0357c270c4",
+      "report": "/tmp/rentemester-rust-reports/r44-account-security712-component-accepted.json",
+      "sha256": "32a36073b8c1dc0567113cba86c0fd02de3191e14be483bc6edd615de077efdb",
+      "sgd_run": "rust-r44-identity712-expiry-generation-20261024T033420.475872000",
+      "whole_issue_accepted": false,
+      "actualSharedUiPasswordSessionMfaRestart": true,
+      "current401StillClears": true,
+      "noFinancialProviderEffects": true,
+      "remaining": [
+        "#677 everyadvertisedHTTP/CLI/MCP exactschema/retry dependency staysOPEN;42subsetnotwaiver",
+        "CurrentinstalledTauriWebKit nativevault/cancel/exactserver/account/platform/accessibility qualification finalmanualdesktoplast",
+        "Alloriginal712/55/J01-J07/release/cutover/retirement scope retained"
+      ]
     }
   },
   "verified_history": [

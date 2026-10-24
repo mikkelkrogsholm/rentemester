@@ -31,3 +31,6 @@ After a lost/malformed successful create/rotate/revoke response or AUTH_UNCONFIR
 ## Evidence limits
 
 Source-only JSON/schema/hash validation is the requested bounded check; no Cargo/build/browser/server/provider effects, new framework or product tests. The supplied strict oracle checks structural shapes/local refs/frozen IDs/provenance, not semantic proof of constructor equivalence or runtime acceptance. Main must review the exact constructor/recovery declarations. No examples contain secrets or user data. No changes outside this partition's four artifacts are intended.
+
+## Production wiring accepted — e3c32ecd
+The existing native password-change, password-bound backup-code management and own-session control callbacks are now installed by production `Backend::identity` through the same admitted `Owner::control_auth`. Earlier absent-handler observations describe da30984a/c052a73d only. Optional alternative router configurations may still omit handlers and return404; existing native input/output/refusal/recovery schemas and explicit HEAD behavior are unchanged. Source hashes in operation/provenance files now bind the updated host/backend bytes. Whole #677 remains open for its other advertised HTTP/CLI/MCP contracts.

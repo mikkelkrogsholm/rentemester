@@ -9,14 +9,7 @@ source declarations do not manufacture additional runtime success receipts.
 
 ## Current installation is not capability advertisement
 
-`Backend::identity` constructs native recovery and verification handlers, but
-sets `password_change`, `backup_management`, and `session_control` to `None`.
-Their routes are registered, but return 404 `{"code":"request_refused"}` before
-browser admission or parsing. The artifacts specify their actual conditional
-native wire constructors without claiming they are enabled in the current
-production backend. There is no missing constructor for their conditional
-outputs: application/storage implement the native shapes. The concrete absent
-production wiring is those three optional fields, not permission to add code.
+`Backend::identity` installs native recovery, verification, password-change, backup-code management and session-control handlers through the shared admitted Owner. This fixes the formerly absent callbacks observed at da30984a/c052a73d. A trusted alternative router may still omit an optional callback and return404 before admission or parsing; the conditional failure remains declared. Installed callbacks retain the same strict parser, native authorization, transaction and wire contracts.
 HEAD closures still run independently and return 405 with `Allow: GET`, with
 Axum suppressing entity bytes; they neither authenticate nor execute GET.
 Outer protocol negotiation can reject first with its distinct 409 envelope.
@@ -101,3 +94,6 @@ rerun and no global completion claim is made.
 ## Lead review correction
 Actual no-effect GET/HEAD protocol probe `/tmp/rentemester-rust-reports/r05-677-head-wire-probe.json` observed GET409 with98 entity bytes versus HEAD409 with0 entity bytes and retained Content-Length98/application-json headers. Source transport unchanged from accepted compiled c351c1f6 through da30984a. Constructed schemas are retained separately from wire bodies; this is no authentication or business effect replay.
 Header schemas describe required application-owned headers as a projection, allowing typed transport additions rather than forbidding Content-Length/Date/outer protocol headers. Conditional Set-Cookie arrays preserve four clears (session revocation) or four clears plus new session (rotating password change), with current native cookie semantics above.
+
+## Production wiring accepted — e3c32ecd
+The existing native password-change, password-bound backup-code management and own-session control callbacks are now installed by production `Backend::identity` through the same admitted `Owner::control_auth`. Earlier absent-handler observations describe da30984a/c052a73d only. Optional alternative router configurations may still omit handlers and return404; existing native input/output/refusal/recovery schemas and explicit HEAD behavior are unchanged. Source hashes in operation/provenance files now bind the updated host/backend bytes. Whole #677 remains open for its other advertised HTTP/CLI/MCP contracts.

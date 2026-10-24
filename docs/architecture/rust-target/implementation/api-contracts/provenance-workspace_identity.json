@@ -83,12 +83,12 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "c37ce198666ee382ce5d3290ff50e08025db1dfd3daf43284079e2bd208bb5ee",
+      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
       "needle": "workspace_context: Some(Box::new(move |proof|"
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "e80b24b5b6927b76eee026252f63b1264580f57cdc55dab301cee6e634b9247c",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
       "needle": "fn control_auth<T>("
     },
     {

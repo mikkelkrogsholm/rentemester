@@ -2,9 +2,9 @@
   "workIssue": 677,
   "partition": "auth_lifecycle",
   "scope": "Exactly 15 selected HTTP identities, not full #677, original 55/J01-J07, CLI/MCP, or full advertised registry.",
-  "sourceRevision": "da30984a (source bytes authoritative via sha256)",
+  "sourceRevision": "e3c32ecd0c69e3f9f3ab901141b97b0357c270c4 (current byte SHA256 bindings authoritative)",
   "method": "Source-reviewed native dispatcher, parser, application/storage constructors and recovery; no runtime replay or delivery assertion. Strict oracle is structural only.",
-  "currentInstallation": "Backend::identity wires verification and recovery, but password_change, backup_management and session_control None; conditional constructors declared, no production availability claim. HEAD explicit 405 irrespective optional handler.",
+  "currentInstallation": "Backend::identity now wires verification/recovery plus password_change, backup_management and session_control Some through the shared admitted Owner. Alternative trusted routers may omit optional handlers and return404. Explicit HEAD405 remains independent of callback presence.",
   "sourceRefs": [
     {
       "path": "crates/rentemester-server/src/lib.rs",
@@ -38,7 +38,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "c37ce198666ee382ce5d3290ff50e08025db1dfd3daf43284079e2bd208bb5ee",
+      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
       "needle": "pub fn identity("
     },
     {
