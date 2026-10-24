@@ -1,6 +1,6 @@
 # R05: HTTP protocol major 1
 
-This is the compatible client/server admission part of issue #677. Exact output schemas and operation-specific retry contracts for the complete advertised HTTP/MCP/CLI surface remain required; this delivery does not close #677.
+This is the major-1 compatibility policy for issue #677. The complete source-reviewed contract set contains1,490 advertised identities:639 HTTP,464 CLI and387 MCP across38 finite partitions. Each `operations-*.jsonl` row binds its exact input, success, refusal, parse/protocol, binary, selector/order, authority/revision/confirmation and operation-specific retry contract to current source hashes; companion `schemas-*.json`, `provenance-*.json` and `NOTES-*.md` retain shapes and semantic review. These transport contracts do not claim the entire Rust migration or external provider approval.
 
 ## Public metadata and current access
 
@@ -30,4 +30,10 @@ A failed preflight means the dependent request was not sent. React returns `ApiE
 
 Revoked sessions retain the current 401 behavior. Cancelled/superseded reads retain cancellation and cannot expire a newer session through an old response. Binary payloads and success headers remain intact; malformed binary errors retain typed failure handling. A malformed PDF success still yields an unknown write outcome, and opening-input alternatives both retain strict unknown-field refusal and exact money strings.
 
-The complete retry matrix must record actual supported keys, scope, expiry/tombstones, natural deduplication, authoritative read-back and unresolved provider outcomes for each operation. Unsupported/keyless writes retain one dispatch and explicit status/read-back/manual resolution; protocol admission does not add retry support.
+The complete per-operation retry matrix records actual supported keys, scope, expiry/tombstones, natural deduplication, authoritative read-back and unresolved provider outcomes in each row’s `contracts.retry`. Unsupported/keyless writes retain one dispatch and explicit status/read-back/manual resolution; protocol admission does not add retry support.
+
+## Qualified HEAD refusal correction
+
+The public invoice configuration/submission GET-backed HEAD routes return405 with `Allow: GET` as the first handler action after outer protocol admission, before credentials, body parsing, Owner or provider dispatch. HEAD has zero response bytes, including protocol409. GET/POST controls are unchanged. The existing real-server regression passed64HEADcases over31routes with empty/invoice/confirmed-send bodies, GET/POST401 and unchanged accounting/artifact invariants. The preserved RED401 result documents the corrected dispatch defect; no provider or financial actions were replayed.
+
+Whole #677 qualification is bound to source `909af0cfe12b16303585680928b1d0930492dce8`, SGD `rust-r59-public-head677-safety-20261024T074548.638981000` and master SHA256 `38165a775bf47126a72403e4eb8774430c412ccd0cb0cf91dca2c9e46e313626`. Retained R05 protocol receipts and all source/diff reviews remain attributed to their actual revisions. The other original issues and final installed desktop/release/cutover/retirement acceptance remain separate.
