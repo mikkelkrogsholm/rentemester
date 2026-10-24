@@ -260,3 +260,27 @@ fn missing_provider_configuration_keeps_original_csv_and_counts_attempted_roles(
     );
     assert_eq!(counts(&o), (1, 1, 0, 0));
 }
+
+#[test]
+fn explicit_original_minimal_customer_is_cookie_authorized_offline_and_idempotent() {
+    let (_dir, mut o, _cookies, p, _) = setup();
+    let mut lookup = provider(&o);
+    let request = serde_json::from_value(json!({"fileName":"synthetic.csv","content":"Kontaktnavn\nOriginal minimal\n","confirm":true,"defaultRole":"customer"})).unwrap();
+    let r = o
+        .import_contacts(&p, &Fixed(NOW), &request, &mut lookup)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(r["import"]["summary"]["customersCreated"], 1);
+    assert_eq!(counts(&o), (1, 0, 0, 0));
+    let r = o
+        .import_contacts(&p, &Fixed(NOW), &request, &mut lookup)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(r["import"]["summary"]["skipped"], 1);
+    assert_eq!(lookup.calls, 0);
+    assert_eq!(counts(&o), (1, 0, 0, 0));
+}

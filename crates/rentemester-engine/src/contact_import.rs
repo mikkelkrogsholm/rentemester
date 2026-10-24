@@ -17,8 +17,12 @@ pub struct Input {
     #[serde(default)]
     pub enrich_cvr: bool,
     pub confirm: bool,
+    /// Explicit original-source header contract and no-history fallback.
+    #[serde(default)]
+    pub default_role: Option<Role>,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Role {
     Customer,
     Vendor,
@@ -50,6 +54,9 @@ pub struct Contact {
 }
 impl Contact {
     pub fn roles(&self) -> Vec<Role> {
+        self.roles_with_default(Role::Vendor)
+    }
+    pub fn roles_with_default(&self, default: Role) -> Vec<Role> {
         let mut roles = vec![];
         if self.total_sales != 0.0 {
             roles.push(Role::Customer);
@@ -58,7 +65,7 @@ impl Contact {
             roles.push(Role::Vendor);
         }
         if roles.is_empty() {
-            roles.push(Role::Vendor);
+            roles.push(default);
         }
         roles
     }
@@ -174,6 +181,13 @@ fn csv(raw: &str) -> Result<Vec<(usize, Vec<String>)>, Error> {
     Ok(records)
 }
 pub fn parse(raw: &str) -> Result<Parsed, Error> {
+    parse_with_headers(raw, &["kontaktnavn", "cvr-nummer", "kontakttype"])
+}
+/// Original contact import accepts optional columns, but shares all CSV and row controls.
+pub fn parse_original(raw: &str) -> Result<Parsed, Error> {
+    parse_with_headers(raw, &["kontaktnavn"])
+}
+fn parse_with_headers(raw: &str, required: &[&str]) -> Result<Parsed, Error> {
     let records = csv(raw)?;
     let mut columns = BTreeMap::new();
     for (i, h) in records[0].1.iter().enumerate() {
@@ -182,10 +196,7 @@ pub fn parse(raw: &str) -> Result<Parsed, Error> {
             return Err(refused("kontakt-CSV har dublerede kendte kolonner"));
         }
     }
-    if ["kontaktnavn", "cvr-nummer", "kontakttype"]
-        .iter()
-        .any(|k| !columns.contains_key(*k))
-    {
+    if required.iter().any(|k| !columns.contains_key(*k)) {
         return Err(refused(
             "Filen blev ikke genkendt. Understøttet format: Dinero — Kontakter (kunder og leverandører).",
         ));

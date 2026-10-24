@@ -15,6 +15,7 @@ fn input(rows: &str, enrich: bool) -> Input {
         ),
         enrich_cvr: enrich,
         confirm: true,
+        default_role: None,
     }
 }
 fn lookup(cvr: &str) -> Lookup {
@@ -143,10 +144,11 @@ fn expected_row_refusal_is_partial_but_storage_failure_rolls_back_every_effect()
         let tx = db
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .unwrap();
-        let i = input(
+        let mut i = input(
             "Invalid;12345678;Company;DK;1;1;bad;0;\nGood;;Other;;0;0;;;\n",
             false,
         );
+        i.default_role = Some(Role::Vendor);
         let p = prepare(&tx, &i, NOW).unwrap();
         let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
         assert_eq!(r["import"]["summary"]["customersCreated"], 0);
@@ -158,10 +160,11 @@ fn expected_row_refusal_is_partial_but_storage_failure_rolls_back_every_effect()
         let tx = db
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .unwrap();
-        let i = input(
+        let mut i = input(
             "First;12345678;Company;DK;1;0;;;\nFail;;Other;;0;0;;;\n",
             true,
         );
+        i.default_role = Some(Role::Vendor);
         let p = prepare(&tx, &i, NOW).unwrap();
         let e = execute(&tx, &p, &[lookup("12345678")], "synthetic", NOW).unwrap_err();
         assert_eq!(e.code, "contact_storage_unavailable");
@@ -253,4 +256,106 @@ fn current_gdpr_erasure_prevents_reintroduction_and_provider_disclosure() {
     assert_eq!(r["import"]["summary"]["vendorsCreated"], 0);
     assert_eq!(count(&tx, "cvr_lookups"), 0);
     assert!(!r["import"]["errors"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn explicit_original_roles_minimal_headers_partial_rows_and_repeat_are_masterdata_only() {
+    for fallback in [Role::Customer, Role::Vendor] {
+        let mut db = database();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let mut i = input("", false);
+        i.default_role = Some(fallback);
+        i.content = "Kontaktnavn;Total salg;Total køb\nNone;0;0\nSales;1;0\nPurchases;0;1\nBoth;1;1\nInvalid;NaN;0\n;0;1\n".into();
+        let accounts = count(&tx, "accounts");
+        let p = prepare(&tx, &i, NOW).unwrap();
+        let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
+        assert_eq!(r["ok"], true);
+        assert_eq!(r["import"]["summary"]["parsed"], 4);
+        assert_eq!(r["import"]["errors"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            count(&tx, "customers"),
+            if fallback == Role::Customer { 3 } else { 2 }
+        );
+        assert_eq!(
+            count(&tx, "vendors"),
+            if fallback == Role::Vendor { 3 } else { 2 }
+        );
+        let changes = tx.total_changes();
+        let p = prepare(&tx, &i, NOW).unwrap();
+        let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
+        assert_eq!(r["import"]["summary"]["skipped"], 5);
+        assert_eq!(changes, tx.total_changes());
+        i.content = "Kontaktnavn\nMinimal\n".into();
+        let p = prepare(&tx, &i, NOW).unwrap();
+        let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
+        assert_eq!(
+            r["import"]["summary"][if fallback == Role::Customer {
+                "customersCreated"
+            } else {
+                "vendorsCreated"
+            }],
+            1
+        );
+        i.default_role = None;
+        assert!(prepare(&tx, &i, NOW).is_err());
+        i.default_role = Some(fallback);
+        i.content = "Other\nMissing name header\n".into();
+        assert!(prepare(&tx, &i, NOW).is_err());
+        i.content = "Kontaktnavn\nUnconfirmed\n".into();
+        i.confirm = false;
+        assert!(prepare(&tx, &i, NOW).is_err());
+        assert_eq!(count(&tx, "accounts"), accounts);
+        assert_eq!(count(&tx, "journal_entries"), 0);
+        assert_eq!(count(&tx, "cvr_lookups"), 0);
+    }
+}
+
+#[test]
+fn original_fallback_is_retained_for_lookup_dedup_cache_and_erasure() {
+    let mut db = database();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let mut i = input("", true);
+    i.default_role = Some(Role::Customer);
+    i.content = "Kontaktnavn;CVR-nummer;Landekode\nFallback;12345678;DK\n".into();
+    let p = prepare(&tx, &i, NOW).unwrap();
+    assert_eq!(p.lookup_needs.len(), 1);
+    // Mutating caller input after preparation must not change the prepared role.
+    i.default_role = Some(Role::Vendor);
+    let r = execute(&tx, &p, &[lookup("12345678")], "synthetic", NOW).unwrap();
+    assert_eq!(r["import"]["summary"]["customersCreated"], 1);
+    assert_eq!(count(&tx, "vendors"), 0);
+    // Existing customer is not an existing vendor; fresh cache still prevents disclosure.
+    let p = prepare(&tx, &i, NOW).unwrap();
+    assert!(p.lookup_needs.is_empty());
+    let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
+    assert_eq!(r["import"]["summary"]["vendorsCreated"], 1);
+    assert_eq!(r["import"]["summary"]["enriched"], 1);
+    crate::gdpr::erase(
+        &tx,
+        &crate::gdpr::Input {
+            cvr: Some("DK12345678".into()),
+            name: None,
+            as_of: None,
+            confirm: true,
+        },
+        "2099-01-01",
+        "synthetic",
+    )
+    .unwrap();
+    // A new name avoids the retained-record dedup path and exercises the CVR tombstone.
+    i.content = "Kontaktnavn;CVR-nummer;Landekode\nRenamed erased;12345678;DK\n".into();
+    for role in [Role::Customer, Role::Vendor] {
+        i.default_role = Some(role);
+        let p = prepare(&tx, &i, NOW).unwrap();
+        assert!(p.lookup_needs.is_empty());
+        let r = execute(&tx, &p, &[], "synthetic", NOW).unwrap();
+        assert_eq!(r["import"]["summary"]["customersCreated"], 0);
+        assert_eq!(r["import"]["summary"]["vendorsCreated"], 0);
+        assert!(!r["import"]["errors"].as_array().unwrap().is_empty());
+    }
+    assert_eq!(count(&tx, "journal_entries"), 0);
 }
