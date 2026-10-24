@@ -312,6 +312,15 @@ impl Backend {
                 config.runtime_profile,
             )?
         };
+        // Schema admission is a startup phase, never a disposal preview/apply side effect.
+        let startup_companies = owner.catalog()?.companies;
+        for company in startup_companies.into_iter().filter(|c| !c.archived) {
+            if owner.recurring_company_initialized_for_schema(&company.slug)? {
+                owner.select_company(&company.slug)?;
+                owner.upgrade_asset_disposal_schema()?;
+            }
+        }
+        owner.select_company(&config.company_slug)?;
         if let Some(first) = &config.first_owner {
             let key = rentemester_runtime::bootstrap::ReservationKey::new(
                 &config.workspace,

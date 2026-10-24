@@ -443,7 +443,7 @@ fn health_response(connected: bool, readiness: rentemester_storage::readiness::R
     use rentemester_storage::readiness::Code;
     let status = if readiness.unusable() { StatusCode::SERVICE_UNAVAILABLE } else { StatusCode::OK };
     let mut body = if connected || readiness.unusable() {
-        serde_json::json!({"ok":!readiness.unusable(),"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":readiness.code == Code::Current,"setupRequired":readiness.code == Code::SetupRequired})
+        serde_json::json!({"ok":!readiness.unusable(),"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":matches!(readiness.code, Code::Current | Code::SetupRequired),"setupRequired":readiness.code == Code::SetupRequired})
     } else {
         serde_json::json!({"ok":true,"backend":"rust","workspaceReady":false})
     };
@@ -463,7 +463,7 @@ mod origin_tests {
         assert_eq!(body, serde_json::json!({"ok":true,"backend":"rust","workspaceReady":false,"readiness":{"status":"not_ready","code":"not_configured"}}));
         for (code, name, state, ready, setup, status) in [
             (Code::Current,"current","ready",true,false,StatusCode::OK),
-            (Code::SetupRequired,"setup_required","not_ready",false,true,StatusCode::OK),
+            (Code::SetupRequired,"setup_required","not_ready",true,true,StatusCode::OK),
             (Code::MigrationRequired,"migration_required","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
             (Code::UnsupportedSchema,"unsupported_schema","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
             (Code::StorageUnavailable,"storage_unavailable","unavailable",false,false,StatusCode::SERVICE_UNAVAILABLE),
