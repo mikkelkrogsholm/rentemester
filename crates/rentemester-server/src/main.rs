@@ -453,6 +453,38 @@ fn health_response(connected: bool, readiness: rentemester_storage::readiness::R
 
 #[cfg(test)]
 mod origin_tests {
+    #[tokio::test]
+    async fn readiness_degraded_router_exposes_no_identity_or_product_authority() {
+        use rentemester_storage::readiness::{Code, Readiness};
+        for code in [Code::MigrationRequired, Code::UnsupportedSchema, Code::StorageUnavailable] {
+            let router = super::cockpit_router(std::path::PathBuf::from("."), None, None, Some(Readiness::new(code)));
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let origin = format!("http://{}", listener.local_addr().unwrap());
+            let (stop, stopped) = tokio::sync::oneshot::channel();
+            let server = tokio::spawn(async move {
+                axum::serve(listener, router).with_graceful_shutdown(async { let _ = stopped.await; }).await.unwrap();
+            });
+            let client = reqwest::Client::builder().no_proxy().build().unwrap();
+            let health = client.get(format!("{origin}/api/health")).send().await.unwrap();
+            assert_eq!(health.status(), 503);
+            assert!(!health.headers().contains_key("set-cookie"));
+            let body: serde_json::Value = serde_json::from_slice(&health.bytes().await.unwrap()).unwrap();
+            assert_eq!(body["readiness"], serde_json::to_value(Readiness::new(code)).unwrap());
+            assert_eq!(body["workspaceReady"], false);
+            let head = client.head(format!("{origin}/api/health")).send().await.unwrap();
+            assert_eq!(head.status(), 503);
+            assert!(head.bytes().await.unwrap().is_empty());
+            for path in ["/api/me", "/api/auth/get-session", "/api/companies/private-company/accounts"] {
+                let response = client.get(format!("{origin}{path}")).send().await.unwrap();
+                assert_eq!(response.status(), 503, "degraded router must exclude {path}");
+                assert!(!response.headers().contains_key("set-cookie"));
+                let body: serde_json::Value = serde_json::from_slice(&response.bytes().await.unwrap()).unwrap();
+                assert_eq!(body["code"], "rust_workspace_not_connected");
+            }
+            stop.send(()).unwrap();
+            server.await.unwrap();
+        }
+    }
     #[test]
     fn readiness_public_response_is_exact_and_sanitized() {
         use rentemester_storage::readiness::{Code, Readiness};
