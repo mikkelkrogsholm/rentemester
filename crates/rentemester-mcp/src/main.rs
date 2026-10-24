@@ -5,6 +5,7 @@
 mod registry_original717;
 mod knowledge_ownership_original717;
 mod inbox_original717;
+mod intercompany_original717;
 mod mileage_posting;
 mod vat_purchase_original;
 mod asset_disposal;

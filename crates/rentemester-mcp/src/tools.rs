@@ -228,6 +228,7 @@ pub fn list() -> Value {
     tools.extend(crate::registry_original717::tools());
     tools.extend(crate::knowledge_ownership_original717::tools());
     tools.extend(crate::inbox_original717::tools());
+    tools.extend(crate::intercompany_original717::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -290,6 +291,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     if crate::registry_original717::accepts(name) { return crate::registry_original717::call(api,name,args).await; }
     if crate::knowledge_ownership_original717::accepts(name) { return crate::knowledge_ownership_original717::call(api,name,args).await; }
+    if crate::intercompany_original717::accepts(name) { return crate::intercompany_original717::call(api,name,args).await; }
     if crate::inbox_original717::accepts(name) { return crate::inbox_original717::call(api,name,args).await; }
     if crate::dimensions_original::accepts(name) { return crate::dimensions_original::call(api,name,args).await; }
     if crate::vat_original::accepts(name) { return crate::vat_original::call(api,name,args).await; }
