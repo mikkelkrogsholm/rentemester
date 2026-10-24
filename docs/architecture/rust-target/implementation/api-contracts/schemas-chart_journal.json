@@ -1,0 +1,6983 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-chart_journal.json",
+  "$defs": {
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "business": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "HTTP protocol negotiation is incompatible"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "string",
+      "pattern": "^(?!-0\\.00$)-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+    },
+    "Rate": {
+      "type": "string",
+      "pattern": "^(?!0\\.000000$)(0|[1-9][0-9]*)\\.[0-9]{6}$"
+    },
+    "SignedId": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]*)$",
+      "description": "Canonical signed i64 decimal string; range checked by identifier decoder."
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Real Gregorian date required, not merely regex."
+    },
+    "Resolution": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "role": {
+              "type": "string"
+            },
+            "accountNo": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "confirmedBy": {
+              "type": "string"
+            },
+            "confirmationSource": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok",
+            "role",
+            "accountNo",
+            "version",
+            "confirmedBy",
+            "confirmationSource"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "role": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok",
+            "role",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Proposal": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "proposedAt": {
+          "type": "string"
+        },
+        "compatible": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "accountNo",
+        "source",
+        "proposedAt",
+        "compatible"
+      ],
+      "additionalProperties": false
+    },
+    "RoleStatus": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "ambiguous"
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ambiguous": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proposals": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+          },
+          "minItems": 8,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "ok",
+        "status",
+        "missing",
+        "ambiguous",
+        "proposals",
+        "candidates",
+        "reasons",
+        "roles"
+      ],
+      "additionalProperties": false
+    },
+    "RoleConfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "ambiguous"
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ambiguous": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proposals": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+          },
+          "minItems": 8,
+          "maxItems": 8
+        },
+        "resolution": {
+          "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+        }
+      },
+      "required": [
+        "ok",
+        "status",
+        "missing",
+        "ambiguous",
+        "proposals",
+        "candidates",
+        "reasons",
+        "roles",
+        "resolution"
+      ],
+      "additionalProperties": false
+    },
+    "RoleFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "ambiguous"
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ambiguous": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "proposals": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "role",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+          },
+          "minItems": 8,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "status",
+        "missing",
+        "ambiguous",
+        "proposals",
+        "candidates",
+        "reasons",
+        "roles"
+      ],
+      "additionalProperties": false
+    },
+    "SourceAccount": {
+      "type": "object",
+      "properties": {
+        "account_no": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "default_vat_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "account_no",
+        "name",
+        "type",
+        "default_vat_code"
+      ],
+      "additionalProperties": false
+    },
+    "SourceAccounts": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/SourceAccount"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "AccountCreated": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountNo"
+      ],
+      "additionalProperties": false
+    },
+    "SourceCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "DK-CHART-OF-ACCOUNTS-ADD-001"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "accountNo",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SourceAdd": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "accountNo": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "normalBalance": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "defaultVatCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "allowDirectPosting": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "accountNo",
+            "name",
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "input",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "SourceRole": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "accountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAccountInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "accountNo": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "normalBalance": {
+              "type": "string"
+            },
+            "defaultVatCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "accountNo",
+            "name",
+            "type",
+            "normalBalance"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "NativeRoleInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "string"
+            },
+            "accountNo": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "role",
+            "accountNo",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "CompanyProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "postalCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companyForm": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industryCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industryText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvrStatus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "auditWaived": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvrSyncedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatPeriodType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "bankName": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "registrationNo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "accountNo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "iban": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "bankName",
+                "registrationNo",
+                "accountNo",
+                "iban"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "country",
+        "currency",
+        "cvr",
+        "fiscalYearStartMonth",
+        "fiscalYearLabelStrategy",
+        "address",
+        "postalCode",
+        "city",
+        "companyForm",
+        "industryCode",
+        "industryText",
+        "cvrStatus",
+        "auditWaived",
+        "cvrSyncedAt",
+        "vatPeriodType",
+        "paymentTermsDays",
+        "createdAt",
+        "payment"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAccountRow": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "normalBalance": {
+          "type": "string"
+        },
+        "defaultVatCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "hasPostings": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "accountNo",
+        "name",
+        "type",
+        "normalBalance",
+        "defaultVatCode",
+        "active",
+        "hasPostings"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAccounts": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/NativeAccountRow"
+          }
+        },
+        "byType": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "nativeSetup": {
+          "const": true
+        },
+        "accountRoles": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "complete",
+                "incomplete",
+                "ambiguous"
+              ]
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ambiguous": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "proposals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "proposedAt": {
+                    "type": "string"
+                  },
+                  "compatible": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "role",
+                  "accountNo",
+                  "source",
+                  "proposedAt",
+                  "compatible"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "proposedAt": {
+                    "type": "string"
+                  },
+                  "compatible": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "role",
+                  "accountNo",
+                  "source",
+                  "proposedAt",
+                  "compatible"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "role",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "resolutions": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+              },
+              "minItems": 10,
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "status",
+            "missing",
+            "ambiguous",
+            "proposals",
+            "candidates",
+            "reasons",
+            "resolutions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "accounts",
+        "byType",
+        "nativeSetup",
+        "accountRoles"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAccountsEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accounts": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeAccounts"
+        }
+      },
+      "required": [
+        "ok",
+        "accounts"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCreatedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "account": {
+          "$ref": "schemas-chart_journal.json#/$defs/AccountCreated"
+        }
+      },
+      "required": [
+        "ok",
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRoleEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "resolution": {
+          "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+        }
+      },
+      "required": [
+        "ok",
+        "resolution"
+      ],
+      "additionalProperties": false
+    },
+    "NativeLine": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "accountNo": {
+              "type": "string",
+              "minLength": 1
+            },
+            "debitAmount": {
+              "$ref": "schemas-chart_journal.json#/$defs/Money"
+            },
+            "creditAmount": {
+              "$ref": "schemas-chart_journal.json#/$defs/Money"
+            },
+            "vatCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "accountNo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Money"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Money"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "ManualJournal": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "transactionDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "text": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "documentId": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sourceBankTransactionId": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "amountForeign": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "amountDkk": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "fxRateToDkk": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Rate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "createdByProgram": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/NativeLine"
+              }
+            }
+          },
+          "required": [
+            "transactionDate",
+            "text",
+            "currency",
+            "lines"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-chart_journal.json#/$defs/Rate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/NativeLine"
+              }
+            }
+          ],
+          "minItems": 10,
+          "maxItems": 10
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "SourceJournal": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string",
+                "minLength": 1
+              },
+              "debitAmount": {
+                "type": "number"
+              },
+              "creditAmount": {
+                "type": "number"
+              },
+              "vatCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "text": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "accountNo"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPost": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "input": {
+              "$ref": "schemas-chart_journal.json#/$defs/SourceJournal"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/SourceJournal"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "SelectorJson": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "x-arbitrary-json": {
+            "scope": "entryId/matchDocumentId JSON selector only",
+            "rationale": "Actual Option<Value> leaves retain arbitrary JSON; numeric valid ID wins, otherwise fallback. No top-level escape.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-application/src/journal_original.rs",
+                "sha256": "5c20245355c40495d926b7e2504c07e4fdb0615e5d7f0ebc838832ef78e717b7",
+                "needle": "pub entry_id: Option<Value>"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "OriginalReverse": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "entryId": {
+              "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+            },
+            "entryNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "matchText": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "matchDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "matchDocumentId": {
+              "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+            },
+            "transactionDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "transactionDate",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 8,
+          "maxItems": 8
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "KeyedOriginalPost": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "schemas-chart_journal.json#/$defs/SourceJournal"
+        },
+        "confirm": {
+          "const": true
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+        }
+      },
+      "required": [
+        "input",
+        "confirm",
+        "idempotencyKey"
+      ],
+      "additionalProperties": false
+    },
+    "KeyedOriginalReverse": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+        },
+        "entryNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matchText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matchDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matchDocumentId": {
+          "$ref": "schemas-chart_journal.json#/$defs/SelectorJson"
+        },
+        "transactionDate": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+        }
+      },
+      "required": [
+        "transactionDate",
+        "reason",
+        "confirm",
+        "idempotencyKey"
+      ],
+      "additionalProperties": false
+    },
+    "ReversalRequest": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "entryId": {
+              "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+            },
+            "transactionDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "entryId",
+            "transactionDate",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/SignedId"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "PostEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "input": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "const": "rentemester-manual-journal-post/1"
+                    },
+                    "expectedRuleVersion": {
+                      "type": "string"
+                    },
+                    "idempotencyKey": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request": {
+                      "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+                    },
+                    "recoveryRequired": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "expectedRuleVersion",
+                    "request"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": "rentemester-manual-journal-post/1"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ],
+                  "minItems": 5,
+                  "maxItems": 5
+                }
+              ],
+              "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+            }
+          },
+          "required": [
+            "confirm",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "const": "rentemester-manual-journal-post/1"
+                    },
+                    "expectedRuleVersion": {
+                      "type": "string"
+                    },
+                    "idempotencyKey": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request": {
+                      "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+                    },
+                    "recoveryRequired": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "expectedRuleVersion",
+                    "request"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": "rentemester-manual-journal-post/1"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ],
+                  "minItems": 5,
+                  "maxItems": 5
+                }
+              ],
+              "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "ReverseEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "input": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "const": "rentemester-manual-journal-reversal/1"
+                    },
+                    "expectedRuleVersion": {
+                      "type": "string"
+                    },
+                    "idempotencyKey": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request": {
+                      "$ref": "schemas-chart_journal.json#/$defs/ReversalRequest"
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "expectedRuleVersion",
+                    "request"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": "rentemester-manual-journal-reversal/1"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "schemas-chart_journal.json#/$defs/ReversalRequest"
+                    }
+                  ],
+                  "minItems": 4,
+                  "maxItems": 4
+                }
+              ],
+              "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+            }
+          },
+          "required": [
+            "confirm",
+            "input"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "const": "rentemester-manual-journal-reversal/1"
+                    },
+                    "expectedRuleVersion": {
+                      "type": "string"
+                    },
+                    "idempotencyKey": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request": {
+                      "$ref": "schemas-chart_journal.json#/$defs/ReversalRequest"
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "expectedRuleVersion",
+                    "request"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": "rentemester-manual-journal-reversal/1"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "schemas-chart_journal.json#/$defs/ReversalRequest"
+                    }
+                  ],
+                  "minItems": 4,
+                  "maxItems": 4
+                }
+              ],
+              "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "Receipt": {
+      "type": "object",
+      "properties": {
+        "replayed": {
+          "type": "boolean"
+        },
+        "receiptId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string"
+        },
+        "reconciliation": {
+          "type": "object",
+          "properties": {
+            "archiveSha256": {
+              "type": "string"
+            },
+            "restoreBoundaryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "sourcePrincipal": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "subject"
+              ],
+              "additionalProperties": false
+            },
+            "mappedUserId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "archiveSha256",
+            "restoreBoundaryId",
+            "sourcePrincipal",
+            "mappedUserId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "replayed",
+        "receiptId",
+        "createdAt",
+        "expiresAt"
+      ],
+      "additionalProperties": false
+    },
+    "Posted": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "Reversed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "originalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "originalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "Idempotency": {
+      "type": "object",
+      "properties": {
+        "replayed": {
+          "type": "boolean"
+        },
+        "receiptId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "replayed",
+        "receiptId",
+        "createdAt",
+        "expiresAt"
+      ],
+      "additionalProperties": false
+    },
+    "KeyedPosted": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "idempotency"
+      ],
+      "additionalProperties": false
+    },
+    "NativePosted": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "receipt": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "business": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "KeyedReversed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "originalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "originalEntryId",
+        "idempotency"
+      ],
+      "additionalProperties": false
+    },
+    "NativeReversed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "originalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "receipt": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "business": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "originalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "DryRun": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "previousHash": {
+          "type": "string"
+        },
+        "accountEffects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "accountName": {
+                "type": "string"
+              },
+              "balanceBefore": {
+                "type": "number"
+              },
+              "balanceAfter": {
+                "type": "number"
+              },
+              "delta": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "accountNo",
+              "accountName",
+              "balanceBefore",
+              "balanceAfter",
+              "delta"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "previousHash",
+        "accountEffects"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "reversalOfEntryId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bookedDebitTotal": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "entryNo",
+        "transactionDate",
+        "text",
+        "currency",
+        "amountForeign",
+        "amountDkk",
+        "fxRateToDkk",
+        "documentId",
+        "sourceBankTransactionId",
+        "status",
+        "reversalOfEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryPage": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/HistoryRow"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "entries",
+        "total",
+        "count",
+        "limit",
+        "offset",
+        "hasMore"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "journalHistory": {
+          "$ref": "schemas-chart_journal.json#/$defs/HistoryPage"
+        },
+        "usage": {
+          "type": "string"
+        },
+        "business": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "journalHistory"
+      ],
+      "additionalProperties": false
+    },
+    "SnakeHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+          },
+          "entry_no": {
+            "type": "string"
+          },
+          "transaction_date": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "amount_foreign": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount_dkk": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fx_rate_to_dkk": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_bank_transaction_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "reversal_of_entry_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "entry_no",
+          "transaction_date",
+          "text",
+          "currency",
+          "amount_foreign",
+          "amount_dkk",
+          "fx_rate_to_dkk",
+          "document_id",
+          "source_bank_transaction_id",
+          "status",
+          "reversal_of_entry_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "HistoryQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "to": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "posted",
+            "reversed"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "all": {
+          "const": "true"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Acknowledge": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "const": true
+            },
+            "receiptId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "confirm",
+            "receiptId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": true
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "StoredReceiptValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/StoredReceiptValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "x-arbitrary-json": {
+            "scope": "manual recovery receipts[].result historical outcome_json",
+            "rationale": "inventory reads serde_json::Value from retained mutation_idempotency_outcomes; it does not revalidate against current post result constructor. resultAvailable false has null result and never authorizes repost.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/manual_post_recovery.rs",
+                "sha256": "b2f7686b64f43d6fad4b27a26547ea8780a8617065273dce7f4b10694eafd980",
+                "needle": "serde_json::from_str::<Value>(&s)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "RecoveryInventory": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "receipts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "receiptId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "resultAvailable": {
+                "type": "boolean"
+              },
+              "result": {
+                "$ref": "schemas-chart_journal.json#/$defs/StoredReceiptValue"
+              }
+            },
+            "required": [
+              "receiptId",
+              "createdAt",
+              "resultAvailable",
+              "result"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "ok",
+        "receipts"
+      ],
+      "additionalProperties": false
+    },
+    "RecoveryAck": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "acknowledgedReceiptId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "ok",
+        "acknowledgedReceiptId"
+      ],
+      "additionalProperties": false
+    },
+    "Company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "cvr",
+        "country",
+        "currency",
+        "fiscalYearStartMonth",
+        "fiscalYearLabelStrategy"
+      ],
+      "additionalProperties": false
+    },
+    "FiscalYears": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "enum": [
+              "live",
+              "archive"
+            ]
+          },
+          "selectable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "start",
+          "end",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "LiveJournal": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "ledgerUuid": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "archivedSource": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "$ref": "schemas-chart_journal.json#/$defs/FiscalYears"
+        },
+        "periodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "selectedSource": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "entryNo": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "documentId": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "documentNo": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total": {
+                "type": "number"
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "journalLineId": {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    "accountNo": {
+                      "type": "string"
+                    },
+                    "accountName": {
+                      "type": "string"
+                    },
+                    "debit": {
+                      "type": "number"
+                    },
+                    "credit": {
+                      "type": "number"
+                    },
+                    "text": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "journalLineId",
+                    "accountNo",
+                    "accountName",
+                    "debit",
+                    "credit",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "reversalOfEntryId": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reversalOfEntryNo": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reversedByEntryId": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reversedByEntryNo": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "entryNo",
+              "date",
+              "text",
+              "documentId",
+              "documentNo",
+              "total",
+              "lines",
+              "reversalOfEntryId",
+              "reversalOfEntryNo",
+              "reversedByEntryId",
+              "reversedByEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accountFilter": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "accountNo": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "accountNo",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nativePosting": {
+          "type": "object",
+          "properties": {
+            "ruleVersion": {
+              "type": "string"
+            },
+            "accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "normalBalance": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "allowDirectPosting": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "normalBalance",
+                  "active",
+                  "allowDirectPosting"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "ruleVersion",
+            "accounts"
+          ],
+          "additionalProperties": false
+        },
+        "ledgerBasis": {
+          "const": "native_ledger_only"
+        },
+        "openingBalanceBasis": {
+          "type": "object",
+          "properties": {
+            "basis": {
+              "const": "live"
+            },
+            "cutOverDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "openingJournalEntryId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "archiveAmountsIncluded": {
+              "const": false
+            }
+          },
+          "required": [
+            "basis",
+            "cutOverDate",
+            "openingJournalEntryId",
+            "archiveAmountsIncluded"
+          ],
+          "additionalProperties": false
+        },
+        "liveCoverage": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "partial",
+                "complete"
+              ]
+            },
+            "reason": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "periodStart": {
+              "type": "string"
+            },
+            "periodEnd": {
+              "type": "string"
+            },
+            "cutOverDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason",
+            "periodStart",
+            "periodEnd",
+            "cutOverDate"
+          ],
+          "additionalProperties": false
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "slug",
+        "ledgerUuid",
+        "selectedYear",
+        "archived",
+        "archivedSource",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "source",
+        "selectedSource",
+        "entries",
+        "accountFilter",
+        "nativePosting",
+        "ledgerBasis",
+        "openingBalanceBasis",
+        "liveCoverage"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveJournal": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "ledgerUuid": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "archivedSource": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "$ref": "schemas-chart_journal.json#/$defs/FiscalYears"
+        },
+        "periodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "selectedSource": {
+          "type": "string"
+        },
+        "companyIdentityBasis": {
+          "const": "current"
+        },
+        "declaredCurrency": {
+          "type": "string"
+        },
+        "asOfDate": {
+          "type": "null"
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "importId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "sourceHash": {
+              "type": "string"
+            },
+            "parserContract": {
+              "type": "string"
+            },
+            "declaredCurrency": {
+              "type": "string"
+            },
+            "sourceSystem": {
+              "type": "string"
+            },
+            "classificationSource": {
+              "const": "current_chart"
+            },
+            "periodBasis": {
+              "const": "archived_closing_snapshot; date not supplied"
+            },
+            "observedPostingStart": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "observedPostingEnd": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "importId",
+            "sourceHash",
+            "parserContract",
+            "declaredCurrency",
+            "sourceSystem",
+            "classificationSource",
+            "periodBasis",
+            "observedPostingStart",
+            "observedPostingEnd"
+          ],
+          "additionalProperties": false
+        },
+        "completeness": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "ready"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "hasBalanceFile": {
+              "type": "boolean"
+            },
+            "closingBalanceCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "unclassifiedAccounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "normalBalance": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "debit": {
+                    "$ref": "schemas-chart_journal.json#/$defs/Money"
+                  },
+                  "credit": {
+                    "$ref": "schemas-chart_journal.json#/$defs/Money"
+                  },
+                  "balance": {
+                    "$ref": "schemas-chart_journal.json#/$defs/Money"
+                  },
+                  "amount": {
+                    "$ref": "schemas-chart_journal.json#/$defs/Money"
+                  },
+                  "sourceRows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lineNo": {
+                          "type": "integer",
+                          "minimum": -9223372036854775808,
+                          "maximum": 9223372036854775807
+                        },
+                        "sourceAmount": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "$ref": "schemas-chart_journal.json#/$defs/Money"
+                        }
+                      },
+                      "required": [
+                        "lineNo",
+                        "sourceAmount",
+                        "amount"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "normalBalance",
+                  "debit",
+                  "credit",
+                  "balance",
+                  "amount",
+                  "sourceRows"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "status",
+            "reasons",
+            "hasBalanceFile",
+            "closingBalanceCount",
+            "unclassifiedAccounts"
+          ],
+          "additionalProperties": false
+        },
+        "comparison": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "unavailable"
+            },
+            "reason": {
+              "const": "archive_period_bounds_unknown"
+            }
+          },
+          "required": [
+            "status",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "null"
+              },
+              "entryNo": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "documentId": {
+                "type": "null"
+              },
+              "documentNo": {
+                "type": "null"
+              },
+              "total": {
+                "$ref": "schemas-chart_journal.json#/$defs/Money"
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "journalLineId": {
+                      "type": "null"
+                    },
+                    "sourceId": {
+                      "type": "string"
+                    },
+                    "lineNo": {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    "accountNo": {
+                      "type": "string"
+                    },
+                    "accountName": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string"
+                    },
+                    "voucher": {
+                      "type": "string"
+                    },
+                    "voucherType": {
+                      "type": "string"
+                    },
+                    "vatType": {
+                      "type": "string"
+                    },
+                    "debit": {
+                      "$ref": "schemas-chart_journal.json#/$defs/Money"
+                    },
+                    "credit": {
+                      "$ref": "schemas-chart_journal.json#/$defs/Money"
+                    },
+                    "balance": {
+                      "$ref": "schemas-chart_journal.json#/$defs/Money"
+                    },
+                    "sourceAmount": {
+                      "type": "string"
+                    },
+                    "runningBalance": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-chart_journal.json#/$defs/Money"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "sourceRunningBalance": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "journalLineId",
+                    "sourceId",
+                    "lineNo",
+                    "accountNo",
+                    "accountName",
+                    "date",
+                    "voucher",
+                    "voucherType",
+                    "vatType",
+                    "debit",
+                    "credit",
+                    "balance",
+                    "sourceAmount",
+                    "runningBalance",
+                    "sourceRunningBalance",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "reversalOfEntryId": {
+                "type": "null"
+              },
+              "reversalOfEntryNo": {
+                "type": "null"
+              },
+              "reversedByEntryId": {
+                "type": "null"
+              },
+              "reversedByEntryNo": {
+                "type": "null"
+              },
+              "journalEntryId": {
+                "type": "null"
+              },
+              "sourceId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "entryNo",
+              "date",
+              "text",
+              "documentId",
+              "documentNo",
+              "total",
+              "lines",
+              "reversalOfEntryId",
+              "reversalOfEntryNo",
+              "reversedByEntryId",
+              "reversedByEntryNo",
+              "journalEntryId",
+              "sourceId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accountFilter": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "accountNo": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "accountNo",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "slug",
+        "ledgerUuid",
+        "selectedYear",
+        "archived",
+        "archivedSource",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "source",
+        "selectedSource",
+        "companyIdentityBasis",
+        "declaredCurrency",
+        "asOfDate",
+        "evidence",
+        "completeness",
+        "comparison",
+        "entries",
+        "accountFilter"
+      ],
+      "additionalProperties": false
+    },
+    "JournalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "journal": {
+          "anyOf": [
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/LiveJournal"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/ArchiveJournal"
+            }
+          ]
+        },
+        "usage": {
+          "type": "string"
+        },
+        "business": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "journal"
+      ],
+      "additionalProperties": false
+    },
+    "PreviewInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "rentemester-manual-journal-request/1"
+            },
+            "expectedRuleVersion": {
+              "type": "string"
+            },
+            "latestAllowedDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "request": {
+              "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+            }
+          },
+          "required": [
+            "format",
+            "expectedRuleVersion",
+            "latestAllowedDate",
+            "request"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "rentemester-manual-journal-request/1"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            {
+              "$ref": "schemas-chart_journal.json#/$defs/ManualJournal"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ],
+      "description": "Direct Serde map (unknown/duplicate fields refused) or full declaration-order sequence; optional map members may be omitted. Semantic admission follows decoding."
+    },
+    "PreviewOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "format": {
+          "const": "rentemester-manual-journal-preview/1"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "advisory": {
+              "const": true
+            },
+            "clockPolicy": {
+              "const": "explicit-preview-horizon"
+            },
+            "latestAllowedDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "ruleArtifactSha256": {
+              "type": "string"
+            },
+            "validation": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "ruleVersion": {
+                  "type": "string"
+                },
+                "requiredRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "requiredStorageRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "totalDebit": {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                "totalCredit": {
+                  "$ref": "schemas-chart_journal.json#/$defs/Money"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "field": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "field",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "ruleVersion",
+                "requiredRules",
+                "requiredStorageRules",
+                "totalDebit",
+                "totalCredit",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "advisory",
+            "clockPolicy",
+            "latestAllowedDate",
+            "ruleArtifactSha256",
+            "validation"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "format",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "HashesOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "format": {
+          "const": "rentemester-journal-hashes/1"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "entriesChecked": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "entriesChecked",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "format",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RpcError": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18446744073709551615
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "integer"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "NativeToolError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "McpAccounts": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpJournal": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "account": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpHistory": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "from": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "to": {
+          "$ref": "schemas-chart_journal.json#/$defs/Date"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "posted",
+            "reversed"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceRead": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceAdd": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "accountNo": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "normalBalance": {
+              "enum": [
+                "debit",
+                "credit"
+              ]
+            },
+            "defaultVatCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "allowDirectPosting": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "accountNo",
+            "name",
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "input",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceRole": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "role",
+        "accountNo",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpCreate": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-chart_journal.json#/$defs/NativeAccountInput"
+          },
+          "description": "UTF-8 bytes <=16384; SDK accepts only object, type asset/liability/equity/income/expense/vat, normalBalance debit/credit, no inner confirm; direct HTTP full sequences are not public here."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpConfirm": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-chart_journal.json#/$defs/NativeRoleInput"
+          },
+          "description": "UTF-8 bytes <=16384; SDK accepts only object, role one of eight required roles, accountNo string and inner confirm:true. Direct HTTP FX-role extensions/full sequences not SDK public grammar."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpNativePost": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "envelope": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-chart_journal.json#/$defs/PostEnvelope"
+          },
+          "description": "SDK requires object with confirm:true and nonempty input.idempotencyKey before sending; max65536 UTF-8 bytes. Derived direct HTTP sequence alternatives are not public SDK grammar."
+        }
+      },
+      "required": [
+        "company",
+        "envelope"
+      ],
+      "additionalProperties": false
+    },
+    "McpNativeReverse": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "envelope": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-chart_journal.json#/$defs/ReverseEnvelope"
+          },
+          "description": "SDK requires object with confirm:true and nonempty input.idempotencyKey before sending; max65536 UTF-8 bytes. Derived direct HTTP sequence alternatives are not public SDK grammar."
+        }
+      },
+      "required": [
+        "company",
+        "envelope"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalPost": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "transactionDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string"
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "sourceBankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "amountForeign": {
+              "type": "number"
+            },
+            "amountDkk": {
+              "type": "number"
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "debitAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "creditAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "vatCode": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "accountNo"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 2
+            }
+          },
+          "required": [
+            "transactionDate",
+            "text",
+            "lines"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+        }
+      },
+      "required": [
+        "company",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalDryRun": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "transactionDate": {
+              "$ref": "schemas-chart_journal.json#/$defs/Date"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string"
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "sourceBankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "amountForeign": {
+              "type": "number"
+            },
+            "amountDkk": {
+              "type": "number"
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "debitAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "creditAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "vatCode": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "accountNo"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 2
+            }
+          },
+          "required": [
+            "transactionDate",
+            "text",
+            "lines"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "company",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalReverse": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "matchText": {
+          "type": "string"
+        },
+        "matchDate": {
+          "type": "string"
+        },
+        "matchDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UTF-16 length <=128; not all ECMAScript whitespace. No generated key."
+        }
+      },
+      "required": [
+        "company",
+        "date",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "SourceMcpFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "McpAccountsData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeAccountsEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpAccountsResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpAccountsData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpAccountsData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpCreateData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeCreatedEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpCreateResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpCreateData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpCreateData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpConfirmData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeRoleEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpConfirmResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpConfirmData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpConfirmData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpJournalData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/JournalEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpJournalResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpJournalData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpJournalData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpHistoryData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/McpHistoryPage"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpHistoryResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpHistoryData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpHistoryData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpPostData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativePosted"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpPostResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpPostData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpPostData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpReverseData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeReversed"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpReverseResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpReverseData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpReverseData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceListData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "defaultVatCode": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "defaultVatCode"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "count",
+            "accounts"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceAddData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/AccountCreated"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceStatusData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "complete",
+                "incomplete",
+                "ambiguous"
+              ]
+            },
+            "missing": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ambiguous": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "proposals": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+              }
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/Proposal"
+              }
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "role",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-chart_journal.json#/$defs/Resolution"
+              },
+              "minItems": 8,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "status",
+            "missing",
+            "ambiguous",
+            "proposals",
+            "candidates",
+            "reasons",
+            "roles"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceRoleData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "$ref": "schemas-chart_journal.json#/$defs/RoleConfirmed"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceListResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpSourceListData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpSourceListData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceAddResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpSourceAddData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpSourceAddData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceStatusResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpSourceStatusData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpSourceStatusData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpSourceRoleResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpSourceRoleData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpSourceRoleData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalPostData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "idempotency": {
+                  "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "idempotency"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalPostResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpOriginalPostData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpOriginalPostData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalReverseData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "originalEntryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "originalEntryId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "originalEntryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "idempotency": {
+                  "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "originalEntryId",
+                "idempotency"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalReverseResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpOriginalReverseData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpOriginalReverseData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalDryRunData": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "previousHash": {
+                  "type": "string"
+                },
+                "accountEffects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountNo": {
+                        "type": "string"
+                      },
+                      "accountName": {
+                        "type": "string"
+                      },
+                      "balanceBefore": {
+                        "type": "number"
+                      },
+                      "balanceAfter": {
+                        "type": "number"
+                      },
+                      "delta": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "accountNo",
+                      "accountName",
+                      "balanceBefore",
+                      "balanceAfter",
+                      "delta"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "previousHash",
+                "accountEffects"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalDryRunResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/McpOriginalDryRunData"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/McpOriginalDryRunData"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailureResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/SourceMcpFailure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/SourceMcpFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpNativeFailureResult": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpHistoryRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "reversalOfEntryId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "entryNo",
+        "transactionDate",
+        "text",
+        "currency",
+        "amountForeign",
+        "amountDkk",
+        "fxRateToDkk",
+        "documentId",
+        "sourceBankTransactionId",
+        "status",
+        "reversalOfEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "McpHistoryPage": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-chart_journal.json#/$defs/McpHistoryRow"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextOffset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "entries",
+        "total",
+        "count",
+        "limit",
+        "offset",
+        "hasMore"
+      ],
+      "additionalProperties": false
+    },
+    "AccountsUnknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "outcome": {
+          "const": "unknown"
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "Write outcome unknown; read canonical accounts before another action"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "outcome",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
