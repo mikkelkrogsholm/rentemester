@@ -37120,6 +37120,3486 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "Group716Plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mode": {
+          "const": "dry-run"
+        },
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ledgerEffects": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Empty"
+          },
+          "maxItems": 0
+        },
+        "proposedSides": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "left"
+            },
+            {
+              "const": "right"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "warnings": {
+          "const": [
+            "Each legal company must post separately through its normal policy, document, VAT and period controls."
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "mode",
+        "disposition",
+        "payloadHash",
+        "ledgerEffects",
+        "proposedSides",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "Group716State": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Status": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "stale_or_reversed_journal",
+                      "one_sided_posting"
+                    ]
+                  },
+                  "side": {
+                    "enum": [
+                      "left",
+                      "right"
+                    ]
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "side",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "overdue_settlement"
+                  },
+                  "dueDate": {
+                    "type": "string"
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "dueDate",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "balanced": {
+          "type": "boolean"
+        },
+        "scope": {
+          "const": "intercompany-disposition-status"
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links",
+        "exceptions",
+        "balanced",
+        "scope",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Structure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "structure-status-only"
+        },
+        "consolidationStatus": {
+          "const": "not-available"
+        },
+        "consolidatedFigures": {
+          "type": "null"
+        },
+        "rawCompanySums": {
+          "type": "null"
+        },
+        "blockers": {
+          "const": [
+            "structure overview deliberately contains no financial consolidation",
+            "use an approved reporting profile and the consolidated-report contract for figures"
+          ]
+        },
+        "groupCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "consolidationStatus",
+        "consolidatedFigures",
+        "rawCompanySums",
+        "blockers",
+        "groupCount"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ManifestReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "structure-status-only"
+        },
+        "consolidationStatus": {
+          "const": "not-available"
+        },
+        "consolidatedFigures": {
+          "type": "null"
+        },
+        "rawCompanySums": {
+          "type": "null"
+        },
+        "blockers": {
+          "const": [
+            "structure overview deliberately contains no financial consolidation",
+            "use an approved reporting profile and the consolidated-report contract for figures"
+          ]
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "unchanged"
+          ]
+        },
+        "manifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "consolidationStatus",
+        "consolidatedFigures",
+        "rawCompanySums",
+        "blockers",
+        "status",
+        "manifestHash"
+      ],
+      "additionalProperties": false
+    },
+    "Group716MappingReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mappingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "revoked"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "mappingId",
+        "mappingHash",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ProfileReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "profileId",
+        "profileHash",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716EliminationReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "eliminationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "rejected",
+            "applied",
+            "reversed"
+          ]
+        },
+        "eventHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "eliminationId",
+        "payloadHash",
+        "status",
+        "eventHash"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ProfileRevoke": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "revoked"
+        }
+      },
+      "required": [
+        "ok",
+        "profileId",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_plan_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_link_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--side": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--journal-entry-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--ledger-head-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_disposition_statusInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--as-of": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_settle_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--settlement-evidence-json": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reopen_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_supersede_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--replacement-disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_manifestInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_apply_manifestInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--policy-company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_revoke_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reject_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_apply_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reverse_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_revoke_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ReportRaw": {
+      "type": "object",
+      "properties": {
+        "lineId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "byCompany": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "companySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "number",
+                "minimum": -90071992547409.9,
+                "maximum": 90071992547409.9,
+                "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+              },
+              "sourceHashes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            "required": [
+              "companySlug",
+              "amount",
+              "sourceHashes"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "total": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        }
+      },
+      "required": [
+        "lineId",
+        "byCompany",
+        "total"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ReportElimination": {
+      "type": "object",
+      "properties": {
+        "eliminationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "adjustments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "number",
+                "minimum": -90071992547409.9,
+                "maximum": 90071992547409.9,
+                "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+              }
+            },
+            "required": [
+              "lineId",
+              "amount"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "eliminationId",
+        "payloadHash",
+        "adjustments"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ReportFigure": {
+      "type": "object",
+      "properties": {
+        "lineId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "section": {
+          "enum": [
+            "asset",
+            "liability",
+            "equity",
+            "income",
+            "expense"
+          ]
+        },
+        "rawCompanySum": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        },
+        "eliminationAdjustment": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        },
+        "consolidatedAmount": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        }
+      },
+      "required": [
+        "lineId",
+        "label",
+        "section",
+        "rawCompanySum",
+        "eliminationAdjustment",
+        "consolidatedAmount"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ConsolidatedReport": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scope": {
+              "const": "consolidated-report"
+            },
+            "period": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "ready"
+            },
+            "blockers": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "profileHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "groupId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rawCompanySums": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportRaw"
+              }
+            },
+            "appliedEliminations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportElimination"
+              }
+            },
+            "sourceSnapshots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "companySlug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ledgerHeadHash": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "entryCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "companySlug",
+                  "ledgerHeadHash",
+                  "entryCount"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "consolidatedFigures": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportFigure"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "scope",
+            "period",
+            "status",
+            "blockers",
+            "rawCompanySums",
+            "appliedEliminations",
+            "sourceSnapshots",
+            "consolidatedFigures",
+            "profileId",
+            "profileHash",
+            "groupId",
+            "currency"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scope": {
+              "const": "consolidated-report"
+            },
+            "period": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "blocked"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "profileHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "groupId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rawCompanySums": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportRaw"
+              }
+            },
+            "appliedEliminations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportElimination"
+              }
+            },
+            "sourceSnapshots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "companySlug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ledgerHeadHash": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "entryCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "companySlug",
+                  "ledgerHeadHash",
+                  "entryCount"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "consolidatedFigures": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "ok",
+            "scope",
+            "period",
+            "status",
+            "blockers",
+            "rawCompanySums",
+            "appliedEliminations",
+            "sourceSnapshots",
+            "consolidatedFigures"
+          ],
+          "additionalProperties": true
+        }
+      ]
+    },
+    "Group716_consolidated_reportInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--as-of": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--profile-id",
+        "--from",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Mapping": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leftCompanySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rightCompanySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leftAccountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "rightAccountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "leftPosition": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        },
+        "rightPosition": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "validToExclusive": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "id",
+        "groupId",
+        "leftCompanySlug",
+        "rightCompanySlug",
+        "leftAccountNos",
+        "rightAccountNos",
+        "evidenceRefs",
+        "leftPosition",
+        "rightPosition",
+        "validFrom"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Profile": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "reportingLines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "enum": [
+                  "asset",
+                  "liability",
+                  "equity",
+                  "income",
+                  "expense"
+                ]
+              },
+              "displayOrder": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "role": {
+                "const": "current-result"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "section",
+              "displayOrder"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 5,
+          "maxItems": 512
+        },
+        "accountMappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "companySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "accountNo": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reportingLineId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "validFrom": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "validToExclusive": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "id",
+              "companySlug",
+              "accountNo",
+              "reportingLineId",
+              "validFrom"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 4096
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "validToExclusive": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "version",
+        "id",
+        "groupId",
+        "currency",
+        "reportingLines",
+        "accountMappings",
+        "evidenceRefs",
+        "validFrom"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ReconciliationRow": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mappingHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "left": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "right": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "enum": [
+                "matched",
+                "mismatch"
+              ]
+            },
+            "difference": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+            },
+            "reason": {
+              "const": "exact-native-currency-difference"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "mappingId",
+            "mappingHash",
+            "left",
+            "right",
+            "status",
+            "difference",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "const": "not-comparable"
+            },
+            "reason": {
+              "const": "blocked"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "mappingId",
+            "status",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mappingHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "left": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "right": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "not-comparable"
+            },
+            "reason": {
+              "const": "currency-mismatch"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "mappingId",
+            "mappingHash",
+            "left",
+            "right",
+            "status",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Group716Reconciliation": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "intercompany-reconciliation"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReconciliationRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "asOf",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "Group716EliminationSide": {
+      "type": "object",
+      "properties": {
+        "companySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "selectionHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ledgerHeadHash": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "creditOre": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "debitOre": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "position": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        }
+      },
+      "required": [
+        "companySlug",
+        "accountNos",
+        "selectionHash",
+        "ledgerHeadHash",
+        "entryCount"
+      ],
+      "additionalProperties": false
+    },
+    "Group716BalancePayload": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "intercompany-balance"
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amountOre": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 2048
+        },
+        "left": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716EliminationSide"
+        },
+        "right": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716EliminationSide"
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "version",
+        "id",
+        "kind",
+        "groupId",
+        "mappingId",
+        "mappingHash",
+        "asOf",
+        "currency",
+        "amountOre",
+        "left",
+        "right",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "Group716AppliedEliminations": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "consolidation-eliminations"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "eliminations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eliminationId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "payloadHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "eventHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "payload": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716BalancePayload"
+              }
+            },
+            "required": [
+              "eliminationId",
+              "payloadHash",
+              "eventHash",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "asOf",
+        "eliminations"
+      ],
+      "additionalProperties": false
+    },
+    "Group716OverviewUnavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "Existing SDK/current HTTP does not expose source structure overview with current ledger-availability facts; manifest alone cannot prove source readiness"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code": {
+          "const": "unsupported_native_profile"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--mapping": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--mapping"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ValidatedMapping": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mapping": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716Mapping"
+        }
+      },
+      "required": [
+        "ok",
+        "mapping"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--profile": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--profile"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ValidatedProfile": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profile": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716Profile"
+        }
+      },
+      "required": [
+        "ok",
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reconcileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_eliminationsInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_overviewInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
     }
   }
 }
