@@ -327,8 +327,12 @@ pub(crate) fn issue_payload_with_principal(
     let json_path = guard
         .publish_document(&json)
         .map_err(|_| evidence_error())?;
+    #[cfg(test)]
+    control_fence::checkpoint("issuance_json_published");
     let pdf_path = guard.publish_document(&pdf).map_err(|_| evidence_error())?;
-    sales::register_with_principal(
+    #[cfg(test)]
+    control_fence::checkpoint("issuance_pdf_published");
+    let result = sales::register_with_principal(
         tx,
         payload,
         Artifact {
@@ -345,7 +349,10 @@ pub(crate) fn issue_payload_with_principal(
         },
         actor,
         principal,
-    )
+    )?;
+    #[cfg(test)]
+    control_fence::checkpoint("issuance_registered");
+    Ok(result)
 }
 
 /// Explicit service sales slice, using the same domain/evidence logic as human sales.

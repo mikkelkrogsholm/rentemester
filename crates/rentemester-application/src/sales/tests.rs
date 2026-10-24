@@ -486,3 +486,6 @@ fn service_payment_rejects_wrong_sign_currency_and_amount_without_posting() {
         0
     );
 }
+
+#[path = "issuance_recovery_tests.rs"]
+mod issuance_recovery_tests;
