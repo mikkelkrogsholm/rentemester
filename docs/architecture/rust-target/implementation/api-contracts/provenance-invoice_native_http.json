@@ -153,5 +153,10 @@
     "recovery": "No native idempotency receipts; original invoice/journal/evidence and cash reconciliation authoritative; source-bound original readbacks, never speculative replay",
     "HEAD": "Axum GET route fallback retains HEAD method: sales mutation != GET, requires Origin/InvoiceInput, falls through to Issue for all selected HEAD paths. Wire entity bytes stripped including middleware failures; not a safe probe."
   },
-  "validation": "Source documentation only. Existing strict Python oracle is structural/sourcehash validation, not semantic acceptance or replay evidence. No Cargo/server/browser/network/effect replays."
+  "validation": "Source documentation only. Existing strict Python oracle is structural/sourcehash validation, not semantic acceptance or replay evidence. No Cargo/server/browser/network/effect replays.",
+  "leadRepair": {
+    "rejectedCommit": "112ac19a3854d447e2dccb87a165997f52960d4a",
+    "diagnosis": "Correct currentHEADrequiredOrigin headerdeclaration; actualHEAD->Issue defect preserved asdiagnosedproductgap, targetedcode/testrepair required beforeexternalpublication.",
+    "newModelAttempt": false
+  }
 }

@@ -24,3 +24,5 @@ On unknown writes, reconcile exact invoice document ID/number, original JSON/PDF
 ## Evidence
 
 Provenance binds current advertisement/parser/dispatch/producer/failure/recovery source bytes. JSON Schema 2020-12 definitions are owned locally; no dependencies on parallel worker partitions. Existing Python oracle checks coverage/source hashes/resolution/eight fields; semantic source review remains main's responsibility. No existing #692/#709/#711 or other financial proof was rerun. No commit by worker (runner captures changes).
+
+Lead source-review correction: Correct currentHEADrequiredOrigin headerdeclaration; actualHEAD->Issue defect preserved asdiagnosedproductgap, targetedcode/testrepair required beforeexternalpublication.
