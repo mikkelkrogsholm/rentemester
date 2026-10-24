@@ -1,0 +1,7462 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-bank_reconciliation_corrections.json",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "number"
+    },
+    "SafeId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "SignedId": {
+      "type": "integer",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807
+    },
+    "Principal": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "service-account"
+          ]
+        },
+        "subjectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "kind",
+        "subjectId"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_companies": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fiscal_year_start_month": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscal_year_label_strategy": {
+          "type": "string"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "city": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "company_form": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industry_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "industry_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvr_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audit_waived": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cvr_synced_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payment_terms_days": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "vat_period_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mail_alias": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "country",
+        "currency",
+        "cvr",
+        "fiscal_year_start_month",
+        "fiscal_year_label_strategy",
+        "address",
+        "postal_code",
+        "city",
+        "company_form",
+        "industry_code",
+        "industry_text",
+        "cvr_status",
+        "audit_waived",
+        "cvr_synced_at",
+        "payment_terms_days",
+        "created_at",
+        "vat_period_type",
+        "mail_alias"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_bank_transactions": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "transaction_date": {
+          "type": "string"
+        },
+        "booking_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "amount": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount_dkk": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fx_rate_to_dkk": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_file_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "import_batch_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transaction_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "retain_until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bank_account_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "counterparty_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "counterparty_account": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archive_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customer_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "balance_after": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "raw_json": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "transaction_date",
+        "booking_date",
+        "text",
+        "amount",
+        "currency",
+        "reference",
+        "amount_dkk",
+        "fx_rate_to_dkk",
+        "source_file_hash",
+        "import_batch_id",
+        "transaction_hash",
+        "status",
+        "retain_until",
+        "bank_account_id",
+        "counterparty_name",
+        "counterparty_account",
+        "message",
+        "archive_reference",
+        "customer_reference",
+        "balance_after",
+        "raw_json"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_documents": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "document_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "original_filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stored_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mime_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sha256_hash": {
+          "type": "string"
+        },
+        "upload_datetime": {
+          "type": "string"
+        },
+        "supplier_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoice_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoice_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount_inc_vat": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string"
+        },
+        "delivery_description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sender_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sender_address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sender_vat_cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplier_country_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplier_identifier_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplier_identity_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipient_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipient_address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipient_vat_cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vat_amount": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payment_details": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exemption_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payload_json": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retain_until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "document_no",
+        "source",
+        "original_filename",
+        "stored_path",
+        "mime_type",
+        "sha256_hash",
+        "upload_datetime",
+        "supplier_name",
+        "invoice_no",
+        "invoice_date",
+        "amount_inc_vat",
+        "currency",
+        "status",
+        "document_type",
+        "delivery_description",
+        "sender_name",
+        "sender_address",
+        "sender_vat_cvr",
+        "supplier_country_code",
+        "supplier_identifier_kind",
+        "supplier_identity_status",
+        "recipient_name",
+        "recipient_address",
+        "recipient_vat_cvr",
+        "vat_amount",
+        "payment_details",
+        "exemption_code",
+        "payload_json",
+        "retain_until"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_journal_entries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entry_no": {
+          "type": "string"
+        },
+        "transaction_date": {
+          "type": "string"
+        },
+        "registration_datetime": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "source_bank_transaction_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amount_foreign": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount_dkk": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fx_rate_to_dkk": {
+          "anyOf": [
+            {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rule_version": {
+          "type": "string"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "created_by_program": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "reversal_of_entry_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entry_hash": {
+          "type": "string"
+        },
+        "locked": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "retain_until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "entry_no",
+        "transaction_date",
+        "registration_datetime",
+        "text",
+        "source_bank_transaction_id",
+        "document_id",
+        "currency",
+        "amount_foreign",
+        "amount_dkk",
+        "fx_rate_to_dkk",
+        "rule_version",
+        "created_by",
+        "created_by_program",
+        "status",
+        "reversal_of_entry_id",
+        "previous_hash",
+        "entry_hash",
+        "locked",
+        "retain_until"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_journal_lines": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journal_entry_id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "account_id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "debit_amount": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "credit_amount": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "vat_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "journal_entry_id",
+        "account_id",
+        "debit_amount",
+        "credit_amount",
+        "vat_code",
+        "currency",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_vendors": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vat_or_cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identifier_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identity_status": {
+          "type": "string"
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "website": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "default_expense_account": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "default_vat_treatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archived": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "vat_or_cvr",
+        "country_code",
+        "identifier_kind",
+        "identity_status",
+        "email",
+        "phone",
+        "website",
+        "default_expense_account",
+        "default_vat_treatment",
+        "notes",
+        "archived",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_accounting_periods": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "period_start": {
+          "type": "string"
+        },
+        "period_end": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "closed_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "closed_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reported_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "period_start",
+        "period_end",
+        "kind",
+        "status",
+        "closed_at",
+        "closed_by",
+        "reported_at",
+        "reference",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Period": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "period_start": {
+          "type": "string"
+        },
+        "period_end": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "closed_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "closed_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reported_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "effectiveStatus": {
+          "enum": [
+            "open",
+            "closed",
+            "reported"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "period_start",
+        "period_end",
+        "kind",
+        "status",
+        "closed_at",
+        "closed_by",
+        "reported_at",
+        "reference",
+        "created_at",
+        "effectiveStatus"
+      ],
+      "additionalProperties": false
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "account_no": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "type": {
+          "type": "string"
+        },
+        "active": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "role",
+        "account_no",
+        "version",
+        "type",
+        "active"
+      ],
+      "additionalProperties": false
+    },
+    "Account": {
+      "type": "object",
+      "properties": {
+        "account_no": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "active": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_no",
+        "type",
+        "active",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "LineTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "History": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "direct"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalHash": {
+                "type": "string"
+              },
+              "entryNo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "journalHash",
+              "entryNo"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "append-only"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "matchMethod": {
+                "type": "string"
+              },
+              "sourceReference": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "actor": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "entryNo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "journalEntryId",
+              "matchMethod",
+              "sourceReference",
+              "note",
+              "actor",
+              "createdAt",
+              "entryNo"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "correction"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "supersedes": {
+                "type": "string"
+              },
+              "oldJournalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "replacementJournalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "bankAccountNo": {
+                "type": "string"
+              },
+              "bankAmountDkk": {
+                "type": "number"
+              },
+              "replacementJournalHash": {
+                "type": "string"
+              },
+              "planHash": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "principalKind": {
+                "type": "string"
+              },
+              "principalSubjectId": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "replacementEntryNo": {
+                "type": "string"
+              },
+              "oldEntryNo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "supersedes",
+              "oldJournalEntryId",
+              "replacementJournalEntryId",
+              "bankAccountNo",
+              "bankAmountDkk",
+              "replacementJournalHash",
+              "planHash",
+              "reason",
+              "actor",
+              "principalKind",
+              "principalSubjectId",
+              "createdAt",
+              "replacementEntryNo",
+              "oldEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "LinkPlan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "rentemester-native-bank-link-v1"
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "bankDate": {
+          "type": "string"
+        },
+        "bankText": {
+          "type": "string"
+        },
+        "bankCurrency": {
+          "type": "string"
+        },
+        "bankAmount": {
+          "type": "number"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "bankAccountNo": {
+          "type": "string"
+        },
+        "sourceHash": {
+          "type": "string"
+        },
+        "transactionHash": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "journalHash": {
+          "type": "string"
+        },
+        "journalDate": {
+          "type": "string"
+        },
+        "journalBankMovement": {
+          "type": "number"
+        },
+        "document": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "sha256": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effect": {
+          "const": "link_only_no_posting"
+        },
+        "planHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "bankTransactionId",
+        "bankDate",
+        "bankText",
+        "bankCurrency",
+        "bankAmount",
+        "bankAmountDkk",
+        "bankAccountNo",
+        "sourceHash",
+        "transactionHash",
+        "journalEntryId",
+        "journalEntryNo",
+        "journalHash",
+        "journalDate",
+        "journalBankMovement",
+        "document",
+        "effect",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "Candidates": {
+      "type": "object",
+      "properties": {
+        "plans": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LinkPlan"
+          }
+        },
+        "correctionAvailable": {
+          "const": true
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plans",
+        "correctionAvailable",
+        "note"
+      ],
+      "additionalProperties": false
+    },
+    "CorrectionPlan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "rentemester-bank-reconciliation-correction-v1"
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "currentJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reversalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reconciliationId": {
+          "type": "string"
+        },
+        "currentJournalEntryNo": {
+          "type": "string"
+        },
+        "currentJournalHash": {
+          "type": "string"
+        },
+        "reversalJournalEntryNo": {
+          "type": "string"
+        },
+        "reversalJournalHash": {
+          "type": "string"
+        },
+        "replacementJournalEntryNo": {
+          "type": "string"
+        },
+        "replacementJournalHash": {
+          "type": "string"
+        },
+        "bankAccountNo": {
+          "type": "string"
+        },
+        "sourceHash": {
+          "type": "string"
+        },
+        "transactionHash": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "replacementBankMovement": {
+          "type": "number"
+        },
+        "history": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/History"
+        },
+        "replacementEvidence": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LinkPlan"
+        },
+        "originalLines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LineTuple"
+          }
+        },
+        "reversalLines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LineTuple"
+          }
+        },
+        "replacementLines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LineTuple"
+          }
+        },
+        "effect": {
+          "const": "correction_evidence_only_no_posting"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "bankTransactionId",
+        "currentJournalEntryId",
+        "reversalJournalEntryId",
+        "replacementJournalEntryId",
+        "reconciliationId",
+        "currentJournalEntryNo",
+        "currentJournalHash",
+        "reversalJournalEntryNo",
+        "reversalJournalHash",
+        "replacementJournalEntryNo",
+        "replacementJournalHash",
+        "bankAccountNo",
+        "sourceHash",
+        "transactionHash",
+        "planHash",
+        "bankAmountDkk",
+        "replacementBankMovement",
+        "history",
+        "replacementEvidence",
+        "originalLines",
+        "reversalLines",
+        "replacementLines",
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "CorrectionPlanCore": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/CorrectionPlan"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "plan",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "LinkResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reconciliationId": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "effect": {
+          "const": "link_only_no_posting"
+        }
+      },
+      "required": [
+        "id",
+        "reconciliationId",
+        "journalEntryId",
+        "journalEntryNo",
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "CorrectionResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reconciliationId": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string"
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "effect": {
+          "const": "correction_evidence_only_no_posting"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "receipt": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "reconciliationId",
+        "planHash",
+        "idempotent",
+        "effect",
+        "errors",
+        "receipt"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLinkData": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "linkKind": {
+          "const": "append-only"
+        },
+        "bankAmount": {
+          "type": "number"
+        },
+        "journalBankMovement": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "idempotent",
+        "bankTransactionId",
+        "journalEntryId",
+        "journalEntryNo",
+        "linkKind",
+        "bankAmount",
+        "journalBankMovement"
+      ],
+      "additionalProperties": false
+    },
+    "Suggestion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "issued_invoice",
+                "credit_note_refund"
+              ]
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confidence": {
+              "type": "number"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "customerName": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "documentId",
+            "invoiceNo",
+            "confidence",
+            "reasons",
+            "customerName"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "purchase_sale",
+                "supplier_credit_refund"
+              ]
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confidence": {
+              "type": "number"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "supplierName": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "documentId",
+            "invoiceNo",
+            "confidence",
+            "reasons",
+            "supplierName"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AdviceRow": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "date": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Suggestion"
+          }
+        },
+        "unsafeMatchReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "date",
+        "text",
+        "amount",
+        "currency",
+        "reference",
+        "suggestions",
+        "unsafeMatchReason"
+      ],
+      "additionalProperties": false
+    },
+    "Advice": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/AdviceRow"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "ok",
+            "count",
+            "rows",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "count": {
+              "const": 0
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/AdviceRow"
+              },
+              "maxItems": 0
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "count",
+            "rows",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BillLine": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "debitAmount": {
+          "type": "string"
+        },
+        "creditAmount": {
+          "type": "string"
+        },
+        "vatCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "accountNo",
+        "debitAmount",
+        "creditAmount",
+        "vatCode",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "BillRequest": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|-[1-9][0-9]*|[1-9][0-9]*)$",
+              "maxLength": 20,
+              "description": "Canonical signed64 nominal ID string, inclusive -9223372036854775808..9223372036854775807; generated by identifiers row_id serialization, not JSON integer."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|-[1-9][0-9]*|[1-9][0-9]*)$",
+              "maxLength": 20,
+              "description": "Canonical signed64 nominal ID string, inclusive -9223372036854775808..9223372036854775807; generated by identifiers row_id serialization, not JSON integer."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdByProgram": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/BillLine"
+          }
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "currency",
+        "documentId",
+        "sourceBankTransactionId",
+        "amountForeign",
+        "amountDkk",
+        "fxRateToDkk",
+        "createdByProgram",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "DirectProof": {
+      "type": "object",
+      "properties": {
+        "bankSourceHash": {
+          "type": "string"
+        },
+        "bank": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Stored_bank_transactions"
+        },
+        "documentHash": {
+          "type": "string"
+        },
+        "documentMetadataHash": {
+          "type": "string"
+        },
+        "original": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Stored_journal_entries"
+        },
+        "originalLines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Stored_journal_lines"
+          }
+        },
+        "reconciliation": {
+          "type": "string"
+        },
+        "reconciliationHistory": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/History"
+        },
+        "company": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Stored_companies"
+        },
+        "vendor": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Stored_vendors"
+          }
+        },
+        "billRequest": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/BillRequest"
+        },
+        "ruleVersion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bankSourceHash",
+        "bank",
+        "documentHash",
+        "documentMetadataHash",
+        "original",
+        "originalLines",
+        "reconciliation",
+        "reconciliationHistory",
+        "company",
+        "vendor",
+        "billRequest",
+        "ruleVersion"
+      ],
+      "additionalProperties": false
+    },
+    "DirectSummary": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "documentNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "invoiceNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "invoiceDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "supplierName": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "currency": {
+              "type": "string"
+            },
+            "grossAmount": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": [
+                "number",
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "documentNo",
+            "invoiceNo",
+            "invoiceDate",
+            "supplierName",
+            "currency",
+            "grossAmount",
+            "vatAmount"
+          ],
+          "additionalProperties": false
+        },
+        "bank": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "date": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "signedAmount": {
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            "amount": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "id",
+            "date",
+            "text",
+            "currency",
+            "signedAmount",
+            "amount"
+          ],
+          "additionalProperties": false
+        },
+        "originalJournal": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "entryNo": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            },
+            "hash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "entryNo",
+            "date",
+            "hash"
+          ],
+          "additionalProperties": false
+        },
+        "expenseAccount": {
+          "type": "object",
+          "properties": {
+            "accountNo": {
+              "type": "string"
+            },
+            "name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "accountNo",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "effectiveVatTreatment": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "document",
+        "bank",
+        "originalJournal",
+        "expenseAccount",
+        "effectiveVatTreatment"
+      ],
+      "additionalProperties": false
+    },
+    "DirectPlan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "rentemester-direct-bank-purchase-payable-correction-v1"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentHash": {
+          "type": "string"
+        },
+        "documentPayloadHash": {
+          "type": "string"
+        },
+        "documentVatAmount": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "bankDate": {
+          "type": "string"
+        },
+        "bankAmount": {
+          "type": "number"
+        },
+        "originalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "originalJournalEntryNo": {
+          "type": "string"
+        },
+        "originalJournalHash": {
+          "type": "string"
+        },
+        "originalJournalDate": {
+          "type": "string"
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "vatTreatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vendorId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatPeriodType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountRoles": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Role"
+          }
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Account"
+          }
+        },
+        "accountingPeriods": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Period"
+          }
+        },
+        "sourceProof": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectProof"
+        },
+        "summary": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectSummary"
+        },
+        "planHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentId",
+        "documentHash",
+        "documentPayloadHash",
+        "documentVatAmount",
+        "bankTransactionId",
+        "bankDate",
+        "bankAmount",
+        "originalJournalEntryId",
+        "originalJournalEntryNo",
+        "originalJournalHash",
+        "originalJournalDate",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "vatTreatment",
+        "vendorId",
+        "note",
+        "vatPeriodType",
+        "accountRoles",
+        "accounts",
+        "accountingPeriods",
+        "sourceProof",
+        "summary",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "DirectReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "settlementJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "originalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reversalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "sourcePrincipal": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "subjectId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "subjectId"
+          ],
+          "additionalProperties": false
+        },
+        "actor": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "idempotent",
+        "id",
+        "payableId",
+        "paymentId",
+        "settlementJournalEntryId",
+        "originalJournalEntryId",
+        "reversalJournalEntryId",
+        "sourcePrincipal",
+        "actor",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "DirectCore": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "correction": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectReceipt"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        }
+      },
+      "required": [
+        "ok",
+        "correction"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAdvice": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/AdviceRow"
+              }
+            }
+          },
+          "required": [
+            "count",
+            "rows"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCorrectionPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "plan": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/CorrectionPlan"
+            }
+          },
+          "required": [
+            "plan"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCorrection": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "reconciliationId": {
+              "type": "string"
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "idempotent": {
+              "type": "boolean"
+            },
+            "effect": {
+              "const": "correction_evidence_only_no_posting"
+            },
+            "receipt": {
+              "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+            }
+          },
+          "required": [
+            "id",
+            "reconciliationId",
+            "planHash",
+            "idempotent",
+            "effect",
+            "receipt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLink": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalLinkData"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "const": "DK-BOOKKEEPING-RECONCILIATION-001"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDirectPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "plan": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectPlan"
+            }
+          },
+          "required": [
+            "plan"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDirectApply": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "idempotent": {
+              "type": "boolean"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "payableId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "paymentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "settlementJournalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "originalJournalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "reversalJournalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "sourcePrincipal": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "subjectId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "subjectId"
+              ],
+              "additionalProperties": false
+            },
+            "actor": {
+              "type": "string"
+            },
+            "idempotency": {
+              "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+            }
+          },
+          "required": [
+            "idempotent",
+            "id",
+            "payableId",
+            "paymentId",
+            "settlementJournalEntryId",
+            "originalJournalEntryId",
+            "reversalJournalEntryId",
+            "sourcePrincipal",
+            "actor"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "NativeLinkInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "bankTransactionId",
+            "journalEntryId",
+            "planHash",
+            "note",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "SdkLinkInput": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "journalEntryId",
+        "planHash",
+        "note",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "NativeCorrectionInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "replacementJournalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedReconciliationId": {
+              "type": "string"
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "bankTransactionId",
+            "replacementJournalEntryId",
+            "expectedReconciliationId",
+            "planHash",
+            "reason",
+            "idempotencyKey",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "SdkCorrectionInput": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedReconciliationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "replacementJournalEntryId",
+        "expectedReconciliationId",
+        "planHash",
+        "reason",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "OriginalLinkInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "matchMethod": {
+              "type": "string"
+            },
+            "sourceReference": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "confirm",
+            "bankTransactionId",
+            "journalEntryId",
+            "matchMethod"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 6
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "OriginalCorrectionInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "replacementJournalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedReconciliationId": {
+              "type": "string"
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "expectedPrincipal": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+            }
+          },
+          "required": [
+            "confirm",
+            "bankTransactionId",
+            "replacementJournalEntryId",
+            "expectedReconciliationId",
+            "planHash",
+            "reason",
+            "idempotencyKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 8
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "NativeDirectPlanInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "billDate": {
+              "type": "string"
+            },
+            "dueDate": {
+              "type": "string"
+            },
+            "expenseAccountNo": {
+              "type": "string"
+            },
+            "vatTreatment": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vendorId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "bankTransactionId",
+            "billDate",
+            "dueDate",
+            "expenseAccountNo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 8,
+          "maxItems": 8
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "NativeDirectApplyInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "billDate": {
+              "type": "string"
+            },
+            "dueDate": {
+              "type": "string"
+            },
+            "expenseAccountNo": {
+              "type": "string"
+            },
+            "vatTreatment": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vendorId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "bankTransactionId",
+            "billDate",
+            "dueDate",
+            "expenseAccountNo",
+            "planHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 12,
+          "maxItems": 12
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "SdkDirectPlanInput": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "dueDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendorId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "SdkDirectApplyInput": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "dueDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vendorId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "planHash",
+        "reason",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "OriginalDirectWire": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "billDate": {
+              "type": "string"
+            },
+            "dueDate": {
+              "type": "string"
+            },
+            "expenseAccountNo": {
+              "type": "string"
+            },
+            "vatTreatment": {
+              "type": "string"
+            },
+            "vendorId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "note": {
+              "type": "string"
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "expectedPrincipal": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+            }
+          },
+          "required": [
+            "documentId",
+            "bankTransactionId",
+            "billDate",
+            "dueDate",
+            "expenseAccountNo"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 13
+        }
+      ],
+      "description": "Serde map with duplicate/unknown rejection or declaration-order sequence; admission checks follow decoding."
+    },
+    "AdviceQuery": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "PlanQuery": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "replacementJournalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "CandidatesQuery": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "bankTransactionId"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCandidates": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "reconciliationCandidates": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Candidates"
+        }
+      },
+      "required": [
+        "ok",
+        "reconciliationCandidates"
+      ],
+      "additionalProperties": false
+    },
+    "NativeLink": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "reconciliation": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/LinkResult"
+        }
+      },
+      "required": [
+        "ok",
+        "reconciliation"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCorrectionPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/CorrectionPlanCore"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCorrection": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "correction": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/CorrectionResult"
+        }
+      },
+      "required": [
+        "ok",
+        "correction"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDirectPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "SdkOriginalDirectPlan": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "SdkOriginalDirectApply": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedPrincipal": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+        }
+      },
+      "required": [
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "planHash",
+        "reason",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "x-string-length-unit": "UTF-8 bytes in SDK domain::validate (schema minLength/maxLength denotes source bounds; server semantics separately specified)"
+    },
+    "SdkOriginalCorrection": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedReconciliationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedPrincipal": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Principal"
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "replacementJournalEntryId",
+        "expectedReconciliationId",
+        "planHash",
+        "reason",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "SdkOriginalLink": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "matchMethod": {
+          "enum": [
+            "exact-date-amount",
+            "settlement-lag-amount",
+            "source-reference",
+            "manual-review"
+          ]
+        },
+        "sourceReference": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "confirm",
+        "bankTransactionId",
+        "journalEntryId",
+        "matchMethod"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-max-utf8-bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid JSON",
+                    "invalid or oversized newline-delimited message",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "already initialized",
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "bank/replacement required",
+                    "company/expenseAccountNo must be nonempty",
+                    "confirm must be boolean",
+                    "correction body exceeds native 16KiB",
+                    "correction body exceeds native16KiB",
+                    "correction requires only company, exact native body string and confirmation",
+                    "expected arguments object",
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "nonempty apply strings required",
+                    "nonempty company required",
+                    "nonempty correction fields required",
+                    "original apply field bounds differ",
+                    "original correction field bounds differ",
+                    "plan requires only company and exact body",
+                    "positive exact bankTransactionId required",
+                    "positive safe integer IDs required",
+                    "positive safe integer selectors required",
+                    "reconciliation body exceeds native16KiB",
+                    "reconciliation candidates require only company and positive exact bankTransactionId",
+                    "reconciliation link requires company, exact body string and confirmation",
+                    "report selectors must be strings",
+                    "required apply field absent",
+                    "required direct correction field absent",
+                    "requires company, exact body and confirm:true",
+                    "strings reject explicit null/nonstrings",
+                    "task execution not supported",
+                    "tool name required",
+                    "unknown VAT treatment",
+                    "unknown bank tool field, no actor/principal/body accepted",
+                    "unknown direct correction field; no caller identity/body accepted"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "NativeAdapterFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+    },
+    "CliFailure": {
+      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Failure"
+    },
+    "UnknownKey": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "idempotencyKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "idempotencyKey",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Cli18Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--bank-transaction-id"
+      ],
+      "additionalProperties": false
+    },
+    "Cli18Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCandidates"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli19Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli19Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeLink"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli20Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--replacement-journal-entry-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--bank-transaction-id",
+        "--replacement-journal-entry-id"
+      ],
+      "additionalProperties": false
+    },
+    "Cli20Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCorrectionPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli21Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli21Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCorrection"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli22Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Cli22Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Advice"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli23Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Cli23Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeDirectPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli24Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli24Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectCore"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Cli25Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli25Success": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/AdviceRow"
+          }
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "count",
+        "rows",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Cli26Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--journal-entry-id": {
+          "type": "string"
+        },
+        "--match-method": {
+          "type": "string"
+        },
+        "--source-reference": {
+          "type": "string"
+        },
+        "--note": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        }
+      },
+      "required": [
+        "--company",
+        "--bank-transaction-id",
+        "--journal-entry-id",
+        "--match-method",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli26Success": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "linkKind": {
+          "const": "append-only"
+        },
+        "bankAmount": {
+          "type": "number"
+        },
+        "journalBankMovement": {
+          "type": "number"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "const": "DK-BOOKKEEPING-RECONCILIATION-001"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "idempotent",
+        "bankTransactionId",
+        "journalEntryId",
+        "journalEntryNo",
+        "linkKind",
+        "bankAmount",
+        "journalBankMovement",
+        "ok",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "Cli27Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--replacement-journal-entry-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--bank-transaction-id",
+        "--replacement-journal-entry-id"
+      ],
+      "additionalProperties": false
+    },
+    "Cli27Success": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/CorrectionPlan"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "plan",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Cli28Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--replacement-journal-entry-id": {
+          "type": "string"
+        },
+        "--expected-reconciliation-id": {
+          "type": "string"
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--reason": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        }
+      },
+      "required": [
+        "--company",
+        "--bank-transaction-id",
+        "--replacement-journal-entry-id",
+        "--expected-reconciliation-id",
+        "--plan-hash",
+        "--reason",
+        "--idempotency-key",
+        "--principal",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli28Success": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reconciliationId": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string"
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "effect": {
+          "const": "correction_evidence_only_no_posting"
+        },
+        "receipt": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "id",
+        "reconciliationId",
+        "planHash",
+        "idempotent",
+        "effect",
+        "receipt",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Cli29Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--bill-date": {
+          "type": "string"
+        },
+        "--due-date": {
+          "type": "string"
+        },
+        "--expense-account": {
+          "type": "string"
+        },
+        "--vat-treatment": {
+          "type": "string"
+        },
+        "--vendor-id": {
+          "type": "string"
+        },
+        "--note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--bank-transaction-id",
+        "--bill-date",
+        "--due-date",
+        "--expense-account"
+      ],
+      "additionalProperties": false
+    },
+    "Cli29Success": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectPlan"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "plan",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Cli30Flags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--bill-date": {
+          "type": "string"
+        },
+        "--due-date": {
+          "type": "string"
+        },
+        "--expense-account": {
+          "type": "string"
+        },
+        "--vat-treatment": {
+          "type": "string"
+        },
+        "--vendor-id": {
+          "type": "string"
+        },
+        "--note": {
+          "type": "string"
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--reason": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--bank-transaction-id",
+        "--bill-date",
+        "--due-date",
+        "--expense-account",
+        "--plan-hash",
+        "--reason",
+        "--idempotency-key",
+        "--principal",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Cli30Success": {
+      "type": "object",
+      "properties": {
+        "idempotent": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "settlementJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "originalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reversalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "sourcePrincipal": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "subjectId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "subjectId"
+          ],
+          "additionalProperties": false
+        },
+        "actor": {
+          "type": "string"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "idempotent",
+        "id",
+        "payableId",
+        "paymentId",
+        "settlementJournalEntryId",
+        "originalJournalEntryId",
+        "reversalJournalEntryId",
+        "sourcePrincipal",
+        "actor",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp31Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "bankTransactionId": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SignedId"
+        }
+      },
+      "required": [
+        "company",
+        "bankTransactionId"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp31Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "data": {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCandidates"
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCandidates"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp31Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                }
+              ]
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp32Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 16384,
+          "x-max-utf8-bytes": 16384,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SdkLinkInput"
+          }
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp32Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "data": {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeLink"
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeLink"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp32Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                }
+              ]
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp33Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 16384,
+          "x-max-utf8-bytes": 16384,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SdkCorrectionInput"
+          }
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp33Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "data": {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCorrection"
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeCorrection"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp33Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                }
+              ]
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp34Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp34Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalAdvice"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalAdvice"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp34Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp35Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "bankTransactionId",
+        "replacementJournalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp35Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalCorrectionPlan"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalCorrectionPlan"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp35Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp36Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "replacementJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedReconciliationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-max-utf16-code-units": 1000
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-max-utf16-code-units": 200
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "bankTransactionId",
+        "replacementJournalEntryId",
+        "expectedReconciliationId",
+        "planHash",
+        "reason",
+        "idempotencyKey"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp36Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalCorrection"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalCorrection"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp36Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp37Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 16384,
+          "x-max-utf8-bytes": 16384,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SdkDirectPlanInput"
+          }
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp37Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "data": {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeDirectPlan"
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeDirectPlan"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp37Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "ok": {
+                              "const": false
+                            },
+                            "data": {
+                              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Failure"
+                            }
+                          },
+                          "required": [
+                            "ok",
+                            "data"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "data": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Failure"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp38Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 16384,
+          "x-max-utf8-bytes": 16384,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SdkDirectApplyInput"
+          }
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp38Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "data": {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectCore"
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/DirectCore"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp38Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "anyOf": [
+                        {
+                          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "ok": {
+                              "const": false
+                            },
+                            "data": {
+                              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Failure"
+                            }
+                          },
+                          "required": [
+                            "ok",
+                            "data"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/NativeAdapterFailure"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false
+                    },
+                    "data": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/Failure"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp39Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp39Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalDirectPlan"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalDirectPlan"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp39Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp40Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vatTreatment": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-max-utf16-code-units": 1000
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-max-utf16-code-units": 128
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "documentId",
+        "bankTransactionId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "planHash",
+        "reason",
+        "idempotencyKey"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp40Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalDirectApply"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalDirectApply"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp40Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/OriginalFailure"
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAdviceQuery": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "max": {
+          "$ref": "schemas-bank_reconciliation_corrections.json#/$defs/SafeId"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  }
+}
