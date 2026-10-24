@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "27supported original MCP operations across source inbox, parties/corporate evidence, knowledge and ownership.28definitions include explicit unavailable identity-onlycreate. Exact1547operation contracts; native389definitions and prior1519businessrows unchanged.18compiled current fixtures, actual receipt/protocol counterexamples and independent source/schema mapping review.",
-  "code_revision": "70e005d4578abab65278923dd80227795d024f5c",
-  "spec_revision": "sha256:140ac05099f023cfa82b91d9220190b82e07adde606f7244a744daac8823c259",
-  "state": "40of55originalissuesactuallyCLOSED15OPEN. SupportedoriginalMCPregistrycomponentaccepted; whole717open, no reduced original scope. ManualinstalleddesktopacceptanceLAST.",
+  "current_increment": "Actual normalMFA/currentMCPserver identity-only create with canonicalduplicatealiases; explicitrole and role-freeprivateanchor; restartfreshMFA and independentlyverified signedsource-free restore underfreshMFAowner preserve exact parties/source/history/roles andzerojournals. Rawrunnerfailed only legacyfixturetail; exacttwo scannedintake originals andprovider[] independentlyvalidated, all2758source/artifact/browser pins rehashed. No thirdrun, no old7documentparty or rawoverallPASS claim.",
+  "code_revision": "3e8421c4dfb216680740598836bea61807bf4445",
+  "spec_revision": "3e8421c4dfb216680740598836bea61807bf4445",
+  "state": "40of55originalissuesCLOSED15OPEN. Originalidentity-onlypartyjourney andcurrent1548contracts accepted atbounded exactscope. Full717remaining30originalnames/full31workflows/reconnect etc unchanged; manualinstalleddesktopLAST.",
   "issues_closed": 40,
   "next": [
-    "Complete original identity-only party creation -> explicit company-role link with private administrative scope and signed recovery through the same Rust engine/server; no inferred role/global visibility.",
-    "Finish remaining30originalMCPnames plus full workflow/annotations/actual operation/reconnect acceptance before whole717closure; preserve all55originalscope and remaining release/cutover/retirement/native gates."
+    "Next necessary existing717agent flow: original intercompany disposition read/plan/propose/review/link/settle lifecycle through existing common SDK/server, reuse accepted domain/authority/backup proof and preserve exact source outputs/recovery.",
+    "Remaining30originalMCPnames/full31workflow/currentoperation/annotation/service-revocation/reconnect qualification; original reusedrunnerfinish/gatewaytail and secondrestoredrestart are not claimed by R78. Retain all55scope/J01-J07/release/cutover/retirement/native desktop-last."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Whole R42#714 accepted/actually closed: original route/static/binary/config/trusted-principal/readiness/lifecycle scope and allthree criteria. Prospective single-edge consumed server identity contract from712 preserves whole712/722 installed duties, frozen GDD/plan and all other gates; actual retained proof reused without financial/provider replay.",
+  "previous_verified_increment": "27supported original MCP operations across source inbox, parties/corporate evidence, knowledge and ownership.28definitions include explicit unavailable identity-onlycreate. Exact1547operation contracts; native389definitions and prior1519businessrows unchanged.18compiled current fixtures, actual receipt/protocol counterexamples and independent source/schema mapping review.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -18709,6 +18709,30 @@
         "Safe identity-only original party creation through common motor/server and signed recovery, without inferred role or global visibility",
         "30other original names with explicit supported boundary versus source operating semantics; full31workflow/registered-operation/annotation/service-revocation/reconnect qualification",
         "Whole717 open,40of55originalissuesclosed15open; all original scope/J01-J07/security/backup/release/cutover/retirement preserved; installed manual desktop acceptance last"
+      ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "3e8421c4dfb216680740598836bea61807bf4445",
+      "report": "/tmp/rentemester-rust-reports/r77-identity-party717-contracts-accepted.json",
+      "sha256": "62a0081ac3504bfb07ddde90e9d0869813763625f06d30f522f8bfff8342fcb4",
+      "scope": "Safe original identity-only creation -> explicitcompany role; exact1548contracts, selectedcompany rolefilter/allscope backup/role controls",
+      "remaining": [
+        "Actual newly added private anchor across normal MFA MCP->server runtime, restart and outer signed source-free recovery remains until separately qualified; portable codec alone is not that proof",
+        "Full717remaining30originalnames, full31workflows/currentoperation/annotation/service-revocation/reconnect acceptance; all55scope/J01-J07/release/cutover/retirement/native desktop-last unchanged"
+      ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "3e8421c4dfb216680740598836bea61807bf4445",
+      "report": "/tmp/rentemester-rust-reports/r78-identity-party-journey-qualified.json",
+      "sha256": "ae1c4e26e9bf7031cac5bb4823ef37e6ad41754185fdea61ec3c008e4f69d56d",
+      "scope": "Actual normalMFA/currentMCPserver identity-only create with canonicalduplicatealiases; explicitrole and role-freeprivateanchor; restartfreshMFA and independentlyverified signedsource-free restore underfreshMFAowner preserve exact parties/source/history/roles andzerojournals. Rawrunnerfailed only legacyfixturetail; exacttwo scannedintake originals andprovider[] independentlyvalidated, all2758source/artifact/browser pins rehashed. No thirdrun, no old7documentparty or rawoverallPASS claim.",
+      "remaining": [
+        "Original reused runner finish/controller-success and final gateway-summary tail not executed after scenario count assertion. Raw receipts stay failed; qualified scope is completed identity journey only, no old7documentparty acceptance claim.",
+        "Full717remaining30originalnames, full31workflow/currentoperation/annotation/service-revocation/reconnect and all55original gates remain; installed manualdesktop acceptance last."
       ]
     }
   ],
