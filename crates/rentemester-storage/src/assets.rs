@@ -368,7 +368,7 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
         writeoffs.push(json!({"id":r.get::<_,i64>(0).map_err(invalid)?,"name":r.get::<_,String>(1).map_err(invalid)?,"category":r.get::<_,String>(2).map_err(invalid)?,"acquisitionDate":r.get::<_,String>(3).map_err(invalid)?,"writeOffDate":r.get::<_,String>(4).map_err(invalid)?,"cost":wire(&value)?,"expenseAccountNo":r.get::<_,String>(6).map_err(invalid)?,"thresholdDkk":wire(&legacy_money(r.get_ref(7).map_err(invalid)?)?)?,"thresholdRuleSource":r.get::<_,String>(8).map_err(invalid)?,"note":r.get::<_,Option<String>>(9).map_err(invalid)?,"purchaseDocumentId":r.get::<_,i64>(10).map_err(invalid)?,"journalEntryId":r.get::<_,i64>(11).map_err(invalid)?}));
     }
     Ok(
-        json!({"slug":slug,"company":company,"nativeAssetAccounts":true,"writeOffAvailable":false,"assets":rows,"writeOffs":writeoffs,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&carrying)?,"activeCount":active,"disposedCount":disposed_count,"fullyDepreciatedCount":rows.len()-active-disposed_count,"writeOffCount":writeoffs.len(),"writeOffTotal":wire(&total)?}}),
+        json!({"slug":slug,"company":company,"nativeAssetAccounts":true,"writeOffAvailable":true,"assets":rows,"writeOffs":writeoffs,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&carrying)?,"activeCount":active,"disposedCount":disposed_count,"fullyDepreciatedCount":rows.len()-active-disposed_count,"writeOffCount":writeoffs.len(),"writeOffTotal":wire(&total)?}}),
     )
 }
 
@@ -438,6 +438,7 @@ mod tests {
             assert!(depreciate(&tx, id, &request, "synthetic", "2026-10-19", today).is_err());
         }
         let listed = list(&tx, "synthetic").unwrap();
+        assert_eq!(listed["writeOffAvailable"], true);
         assert_eq!(listed["totals"]["netBookValue"], 0.0);
         assert_eq!(listed["totals"]["accumulatedDepreciation"], 1000.0);
         assert_eq!(listed["assets"][0]["status"], "fully-depreciated");

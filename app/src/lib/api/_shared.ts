@@ -40,7 +40,7 @@ function signalAuthExpired(observationGeneration: number): void {
   }
 }
 
-type ApiRequestOptions = RequestInit & { readOnly?: boolean };
+type ApiRequestOptions = RequestInit & { readOnly?: boolean; decodeRefusal422?: (body: unknown) => ApiError | undefined };
 
 function isWrite(init?: ApiRequestOptions): boolean {
   return !init?.readOnly && init?.method !== undefined && !["GET", "HEAD"].includes(init.method.toUpperCase());
@@ -48,7 +48,7 @@ function isWrite(init?: ApiRequestOptions): boolean {
 
 async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Response> {
   if (!ordinaryWorkspaceWriteAllowed(path, init?.method ?? "GET", init?.readOnly)) throw new ApiError("workspace_not_active", "Workspace er skrivebeskyttet. Kontrollér flytningens aktuelle tilstand.", 423);
-  const { readOnly, ...fetchOptions } = init ?? {};
+  const { readOnly, decodeRefusal422, ...fetchOptions } = init ?? {};
   let admission: Record<string, string>;
   try {
     admission = await protocolHeaders(path, init?.method ?? "GET", init?.signal);
@@ -106,6 +106,10 @@ export async function request<T>(path: string, init?: ApiRequestOptions): Promis
   }
   // A superseded auth read must not expire the newer session via its old 401.
   init?.signal?.throwIfAborted();
+  if (!res.ok && res.status === 422) {
+    const refusal = init?.decodeRefusal422?.(body);
+    if (refusal) throw refusal;
+  }
   if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.", observationGeneration);
   if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`, observationGeneration);
   return body as T;

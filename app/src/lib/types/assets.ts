@@ -142,3 +142,6 @@ export type AssetDisposalReceipt = {
   cost: number; accumulatedDepreciation: number; carryingValueWrittenOff: number; remainingCarryingValue: 0;
   journalEntryId: number; journalEntryNo: string; journalEntryHash: string; replayed: boolean;
 };
+
+/** Validated flat original Rust write-off receipt. */
+export type NativeAssetWriteOffReceipt = { ok: true; entryId: number; entryNo: string; entryHash: string; writeOffId: number; cost: number; thresholdDkk: number; appliedRules: string[]; errors: [] };
