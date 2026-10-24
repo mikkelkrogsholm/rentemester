@@ -37120,6 +37120,1702 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "Group716Plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mode": {
+          "const": "dry-run"
+        },
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ledgerEffects": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Empty"
+          },
+          "maxItems": 0
+        },
+        "proposedSides": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "left"
+            },
+            {
+              "const": "right"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "warnings": {
+          "const": [
+            "Each legal company must post separately through its normal policy, document, VAT and period controls."
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "mode",
+        "disposition",
+        "payloadHash",
+        "ledgerEffects",
+        "proposedSides",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "Group716State": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Status": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "stale_or_reversed_journal",
+                      "one_sided_posting"
+                    ]
+                  },
+                  "side": {
+                    "enum": [
+                      "left",
+                      "right"
+                    ]
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "side",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "overdue_settlement"
+                  },
+                  "dueDate": {
+                    "type": "string"
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "dueDate",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "balanced": {
+          "type": "boolean"
+        },
+        "scope": {
+          "const": "intercompany-disposition-status"
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links",
+        "exceptions",
+        "balanced",
+        "scope",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Structure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "structure-status-only"
+        },
+        "consolidationStatus": {
+          "const": "not-available"
+        },
+        "consolidatedFigures": {
+          "type": "null"
+        },
+        "rawCompanySums": {
+          "type": "null"
+        },
+        "blockers": {
+          "const": [
+            "structure overview deliberately contains no financial consolidation",
+            "use an approved reporting profile and the consolidated-report contract for figures"
+          ]
+        },
+        "groupCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "consolidationStatus",
+        "consolidatedFigures",
+        "rawCompanySums",
+        "blockers",
+        "groupCount"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ManifestReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "structure-status-only"
+        },
+        "consolidationStatus": {
+          "const": "not-available"
+        },
+        "consolidatedFigures": {
+          "type": "null"
+        },
+        "rawCompanySums": {
+          "type": "null"
+        },
+        "blockers": {
+          "const": [
+            "structure overview deliberately contains no financial consolidation",
+            "use an approved reporting profile and the consolidated-report contract for figures"
+          ]
+        },
+        "status": {
+          "enum": [
+            "applied",
+            "unchanged"
+          ]
+        },
+        "manifestHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "consolidationStatus",
+        "consolidatedFigures",
+        "rawCompanySums",
+        "blockers",
+        "status",
+        "manifestHash"
+      ],
+      "additionalProperties": false
+    },
+    "Group716MappingReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mappingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "revoked"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "mappingId",
+        "mappingHash",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ProfileReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profileHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "profileId",
+        "profileHash",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716EliminationReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "eliminationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "rejected",
+            "applied",
+            "reversed"
+          ]
+        },
+        "eventHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "eliminationId",
+        "payloadHash",
+        "status",
+        "eventHash"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ProfileRevoke": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "revoked"
+        }
+      },
+      "required": [
+        "ok",
+        "profileId",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_plan_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_link_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--side": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--journal-entry-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--ledger-head-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_disposition_statusInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--as-of": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_settle_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--settlement-evidence-json": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reopen_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_supersede_dispositionInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--replacement-disposition-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_manifestInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_apply_manifestInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--policy-company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_revoke_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--mapping-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reject_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_apply_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reverse_eliminationInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--elimination-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--payload-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_propose_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_approve_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-hash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_revoke_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
     }
   }
 }
