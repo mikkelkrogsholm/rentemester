@@ -70,6 +70,18 @@ fn observe(
     actor: Option<&str>,
     native: bool,
 ) -> Output {
+    observe_custom(op, status, body, human, actor, native, None, None)
+}
+fn observe_custom(
+    op: &str,
+    status: u16,
+    body: Value,
+    human: bool,
+    actor: Option<&str>,
+    native: bool,
+    custom_args: Option<Vec<String>>,
+    custom_metadata: Option<Value>,
+) -> Output {
     let listener = common::TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", listener.local_addr().unwrap());
     listener.set_nonblocking(true).unwrap();
@@ -82,11 +94,29 @@ fn observe(
     private(&dir.join("cookie"), b"session=synthetic");
     private(&dir.join("bytes"), b"abc");
     let metadata = json!({"recordId":"record-synthetic","type":"articles","filename":"synthetic.bin","source":"synthetic","receivedAt":"2026-01-01T00:00:00Z","recordDate":null,"retentionUntil":null,"uploader":"synthetic","sensitivity":"normal","links":[{"type":"company","id":"synthetic"}]});
+    let metadata = custom_metadata.unwrap_or(metadata);
     private(&dir.join("metadata"), metadata.to_string().as_bytes());
     let operation = op.to_owned();
     let asserted = actor.is_some();
     let forged = actor == Some("user:forged");
     let expected_metadata = metadata.clone();
+    let expected_values = custom_args
+        .as_ref()
+        .into_iter()
+        .flatten()
+        .filter_map(|token| {
+            let (key, value) = token.split_once('=')?;
+            let key = match key {
+                "--assertion" => "assertion",
+                "--reason" => "reason",
+                "--link-id" => "id",
+                "--link-type" => "type",
+                _ => return None,
+            };
+            Some((key.to_string(), json!(value)))
+        })
+        .collect::<Vec<_>>();
+
     let task = thread::spawn(move || {
         let start = Instant::now();
         let mut last = None;
@@ -153,6 +183,15 @@ fn observe(
                     let v: Value = serde_json::from_slice(&b).unwrap();
                     assert_eq!(v["confirm"], true);
                     assert!(v.get("actor").is_none());
+                    for (key, expected) in &expected_values {
+                        assert_eq!(&v[key], expected, "exact prose/link wire value");
+                    }
+                    if operation == "enrich" {
+                        assert!(v["assertion"].is_string());
+                    }
+                    if operation == "supersede" {
+                        assert!(v["reason"].is_string());
+                    }
                     if operation == "ingest" {
                         let mut expected = expected_metadata.clone();
                         expected["bytesBase64"] = json!("YWJj");
@@ -179,7 +218,7 @@ fn observe(
     let mut a = if native {
         vec!["remote".into(), "corporate-records".into()]
     } else {
-        args(op)
+        custom_args.unwrap_or_else(|| args(op))
     };
     if op == "ingest" {
         a.extend([
@@ -558,4 +597,57 @@ fn local_unix_binding_and_workspace_assertion_never_fall_back_to_tcp() {
     );
     assert!(tcp.accept().is_err());
     fs::remove_dir_all(path).unwrap();
+}
+
+#[test]
+fn source_bounded_multiline_prose_and_large_ingest_metadata_are_supported() {
+    let prose = "first line\nsecond line";
+    for (op, flag) in [
+        ("enrich", "--assertion"),
+        ("supersede", "--reason"),
+        ("link", "--link-id"),
+    ] {
+        let mut a = args(op);
+        a.retain(|token| !token.starts_with(&format!("{flag}=")));
+        if op == "link" {
+            a.retain(|token| !token.starts_with("--link-type="));
+            a.push("--link-type=legacy_evidence_ref".into());
+        }
+        a.push(format!("{flag}={prose}"));
+        let out = observe_custom(op, 200, response(op), false, None, false, Some(a), None);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{op}: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        assert_eq!(
+            serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+            response(op)
+        );
+    }
+    let mut metadata = json!({"recordId":"record-synthetic","type":"articles","filename":"synthetic.bin","source":"synthetic","receivedAt":"2026-01-01T00:00:00Z","recordDate":null,"retentionUntil":null,"uploader":"synthetic","sensitivity":"normal","links":[{"type":"company","id":"synthetic"}]});
+    for i in 0..140 {
+        metadata["links"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"type":"legacy_evidence_ref","id":format!("{i:03}-{}","x".repeat(240))}));
+    }
+    assert!(metadata.to_string().len() > 32 * 1024);
+    let out = observe_custom(
+        "ingest",
+        200,
+        response("ingest"),
+        false,
+        None,
+        false,
+        None,
+        Some(metadata),
+    );
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
 }

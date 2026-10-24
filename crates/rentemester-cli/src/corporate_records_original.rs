@@ -126,7 +126,12 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
         ("--actor", 160),
     ] {
         if let Some(v) = f.get(k) {
-            if !text(v, max)
+            let valid = if matches!(k, "--assertion" | "--reason" | "--link-id") {
+                rentemester_engine::company_knowledge::text(v, max).is_ok()
+            } else {
+                text(v, max)
+            };
+            if !valid
                 || matches!(k, "--record-id" | "--replacement-record-id")
                     && matches!(*v, "." | "..")
             {
