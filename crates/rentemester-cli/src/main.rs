@@ -13,6 +13,7 @@ mod annual_exports;
 mod audit_log;
 mod audit_verify;
 mod audit_verify_original;
+mod system_healthcheck_original;
 mod backup_governance;
 mod backup_registration;
 mod backup_remote;
@@ -329,6 +330,12 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if system_healthcheck_original::accepts(&args) {
+        let output = system_healthcheck_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     // Static repository reports bypass legacy discovery and all company/login binding.
     if args.first().is_some_and(|s| s == "reg") {
         return match regulatory::run(&args) {
