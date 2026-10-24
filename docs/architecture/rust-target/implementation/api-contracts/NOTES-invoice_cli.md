@@ -28,3 +28,5 @@ Current human or service authority, original user/actor/binding policy, source v
 - `git diff --check`: no whitespace errors.
 - Graphify query performed first; `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed in worker-specific build output (34,008 nodes, 107,676 edges). No tracked graph artifacts edited.
 - No production edits, dependency changes, builds, network calls or accepted financial proof replays. No commit created; runner captures the four owned files.
+
+Lead source-review correction: All10remoteinputschemas no longeraccept member (globalbudget-onlyguard); original4reads correctlybodylesswithoutconfirmation.

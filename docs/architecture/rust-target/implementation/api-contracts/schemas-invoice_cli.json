@@ -3345,9 +3345,9 @@
             },
             "reverseChargeBasis": {
               "enum": [
-                "DK_MOMSLOVEN_§46_STK_1_NR_3",
-                "DK_MOMSLOVEN_§46_STK_1_NR_6",
-                "DK_MOMSLOVEN_§46_STK_1_NR_7",
+                "DK_MOMSLOVEN_\u00a746_STK_1_NR_3",
+                "DK_MOMSLOVEN_\u00a746_STK_1_NR_6",
+                "DK_MOMSLOVEN_\u00a746_STK_1_NR_7",
                 "EU_MOMSDIREKTIV_ART_196",
                 "EU_MOMSDIREKTIV_ART_199"
               ]
@@ -5587,10 +5587,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -5750,10 +5746,6 @@
               "minLength": 1
             },
             "--limit": {
-              "type": "string",
-              "minLength": 1
-            },
-            "--member": {
               "type": "string",
               "minLength": 1
             }
@@ -5924,10 +5916,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -6062,10 +6050,6 @@
               "minLength": 1
             },
             "--limit": {
-              "type": "string",
-              "minLength": 1
-            },
-            "--member": {
               "type": "string",
               "minLength": 1
             }
@@ -6231,10 +6215,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -6395,10 +6375,6 @@
               "minLength": 1
             },
             "--limit": {
-              "type": "string",
-              "minLength": 1
-            },
-            "--member": {
               "type": "string",
               "minLength": 1
             }
@@ -6563,10 +6539,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -6699,10 +6671,6 @@
               "minLength": 1
             },
             "--limit": {
-              "type": "string",
-              "minLength": 1
-            },
-            "--member": {
               "type": "string",
               "minLength": 1
             }
@@ -6867,10 +6835,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -7033,10 +6997,6 @@
             "--limit": {
               "type": "string",
               "minLength": 1
-            },
-            "--member": {
-              "type": "string",
-              "minLength": 1
             }
           },
           "required": [
@@ -7194,9 +7154,9 @@
                 },
                 "reverseChargeBasis": {
                   "enum": [
-                    "DK_MOMSLOVEN_§46_STK_1_NR_3",
-                    "DK_MOMSLOVEN_§46_STK_1_NR_6",
-                    "DK_MOMSLOVEN_§46_STK_1_NR_7",
+                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_3",
+                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_6",
+                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_7",
                     "EU_MOMSDIREKTIV_ART_196",
                     "EU_MOMSDIREKTIV_ART_199"
                   ]

@@ -270,5 +270,10 @@
       "needle": "pub fn freeze("
     }
   ],
-  "scope": "23 selected CLI leaves only. Current native producers, SDK acceptance and original/remote formatting distinguished. Existing financial proofs not replayed. Full677/all55/J01-J07/final desktop acceptance retained."
+  "scope": "23 selected CLI leaves only. Current native producers, SDK acceptance and original/remote formatting distinguished. Existing financial proofs not replayed. Full677/all55/J01-J07/final desktop acceptance retained.",
+  "leadRepair": {
+    "rejectedCommit": "9338184de4599c13bee3a158ac05693c358f66b0",
+    "diagnosis": "All10remoteinputschemas no longeraccept member (globalbudget-onlyguard); original4reads correctlybodylesswithoutconfirmation.",
+    "newModelAttempt": false
+  }
 }
