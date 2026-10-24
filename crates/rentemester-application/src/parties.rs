@@ -9,7 +9,7 @@ use rentemester_storage::{parties as storage, workspace_context::Catalog};
 use rusqlite::{Connection, TransactionBehavior};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
-pub use storage::{Alias, ApproveMerge, Assertion, Create, ProposeMerge, Role};
+pub use storage::{Alias, ApproveMerge, Assertion, Create, CreateIdentity, ProposeMerge, Role};
 pub enum Action<'a> {
     List {
         query: Option<&'a str>,
@@ -18,6 +18,7 @@ pub enum Action<'a> {
     },
     Inspect(&'a str),
     Create(&'a Create),
+    CreateIdentity(&'a CreateIdentity),
     Role(&'a str, &'a Role),
     Assertion(&'a str, &'a Assertion),
     Alias(&'a str, &'a Alias),
@@ -117,9 +118,33 @@ pub fn execute_scoped(
                 query,
                 cursor,
                 limit,
-            } => return storage::list(&tx, &visible, query, cursor, limit),
+            } => {
+                return storage::list(
+                    &tx,
+                    &BTreeSet::from([slug.to_owned()]),
+                    query,
+                    cursor,
+                    limit,
+                );
+            }
             Action::Inspect(id) => {
                 return storage::inspect(&tx, id, &visible).map(|p| json!({"party":p}));
+            }
+            Action::CreateIdentity(input) => {
+                if let Some(id) = input.party_id.as_deref() {
+                    let id = rentemester_engine::company_knowledge::trim(id);
+                    if storage::exists(&tx, id)? && !storage::visible(&tx, id, &visible)? {
+                        return Err(error("party_not_found"));
+                    }
+                }
+                backup.require(&tx, clock, &[slug.to_owned()])?;
+                let generated = format!(
+                    "party-{}",
+                    rentemester_runtime::auth::new_token()
+                        .map_err(|_| error("entropy_unavailable"))?
+                        .as_str()
+                );
+                storage::create_identity(&tx, input, slug, &generated, &actor, &stamp)?
             }
             Action::Create(input) => {
                 if let Some(id) = input.party_id.as_deref() {
@@ -150,8 +175,10 @@ pub fn execute_scoped(
                 id
             }
             Action::Role(id, input) => {
-                storage::inspect(&tx, id, &visible)?;
-                backup.require(&tx, clock, &[slug.to_owned()])?;
+                authorize_update(&tx, id, &visible, &writable)?;
+                let mut scopes = storage::scopes(&tx, id)?;
+                scopes.insert(slug.to_owned());
+                backup.require(&tx, clock, &scopes.into_iter().collect::<Vec<_>>())?;
                 storage::role(&tx, id, slug, input, &actor, &stamp)?;
                 id.into()
             }
@@ -229,7 +256,198 @@ fn authorize_update(
     Ok(())
 }
 #[cfg(test)]
-mod tests;
+mod tests {
+    include!("parties/tests.rs");
+    #[test]
+    fn identity_only_scoped_lifecycle_collision_and_current_authority() {
+        let (_d, mut c, cookies, p, cat) = fixture();
+        let body = json!({"partyId":"identity-only","kind":"organization","name":"Synthetic identity","aliases":[],"identifiers":[],"source":"synthetic-review","observedAt":"2026-01-01","reviewAssertion":"Reviewed synthetic identity"});
+        let input: CreateIdentity = serde_json::from_value(body.clone()).unwrap();
+        for field in ["role", "defaults", "companySlug", "actor", "principal"] {
+            let mut bad = body.clone();
+            bad[field] = json!("forged");
+            assert!(serde_json::from_value::<CreateIdentity>(bad).is_err());
+        }
+        struct Reject;
+        impl crate::backup_status::CompanyScopes for Reject {
+            fn require(
+                &mut self,
+                _tx: &rusqlite::Transaction<'_>,
+                _clock: &dyn Clock,
+                scopes: &[String],
+            ) -> Result<(), rentemester_engine::Error> {
+                assert_eq!(scopes, &["a".to_owned()]);
+                Err(error("backup_overdue"))
+            }
+        }
+        assert_eq!(
+            execute_scoped(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::CreateIdentity(&input),
+                &mut Reject
+            )
+            .unwrap_err()
+            .error
+            .code,
+            "backup_overdue"
+        );
+        assert_eq!(
+            c.query_row("SELECT count(*) FROM rm_party_events", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+        let first = execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::CreateIdentity(&input),
+        )
+        .unwrap();
+        assert_eq!(first["party"]["roles"], json!([]));
+        assert_eq!(first["party"]["history"].as_array().unwrap().len(), 1);
+        for slug in ["a", "b"] {
+            assert_eq!(
+                execute(
+                    &mut c,
+                    &cookies,
+                    &Fixed,
+                    &p,
+                    &cat,
+                    slug,
+                    Action::List {
+                        query: None,
+                        cursor: 0,
+                        limit: 25
+                    }
+                )
+                .unwrap()["count"],
+                0
+            );
+        }
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "missing",
+                Action::CreateIdentity(&input)
+            )
+            .is_err()
+        );
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::CreateIdentity(&input)
+            )
+            .is_err()
+        );
+        assert_eq!(
+            c.query_row("SELECT count(*) FROM rm_party_events", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+        // Losing the anchor company must remove visibility even when selected company remains writable.
+        c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','a','revoke',NULL,'user:u')",[]).unwrap();
+        let e = execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "b",
+            Action::Inspect("identity-only"),
+        )
+        .unwrap_err();
+        assert_eq!(e.error.code, "party_not_found");
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "b",
+                Action::Role(
+                    "identity-only",
+                    &Role {
+                        role: "supplier".into(),
+                        defaults: None
+                    }
+                )
+            )
+            .is_err()
+        );
+        c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','a','grant','bookkeeper','user:u')",[]).unwrap();
+        let linked = execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Role(
+                "identity-only",
+                &Role {
+                    role: "supplier".into(),
+                    defaults: None,
+                },
+            ),
+        )
+        .unwrap();
+        assert_eq!(linked["party"]["roles"][0]["role"], "supplier");
+        assert_eq!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::List {
+                    query: None,
+                    cursor: 0,
+                    limit: 25
+                }
+            )
+            .unwrap()["count"],
+            1
+        );
+        assert_eq!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "b",
+                Action::List {
+                    query: None,
+                    cursor: 0,
+                    limit: 25
+                }
+            )
+            .unwrap()["count"],
+            0
+        );
+    }
+}
 
 #[cfg(test)]
 pub(crate) fn execute(

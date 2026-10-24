@@ -5,6 +5,7 @@ enum Command {
     List(Option<String>, usize, usize),
     Inspect(String),
     Create(app::Create),
+    CreateIdentity(app::CreateIdentity),
     Role(String, app::Role),
     Assertion(String, app::Assertion),
     Alias(String, app::Alias),
@@ -58,6 +59,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let body = Value::Object(body);
         let c = match (id, parts.get(6).copied()) {
             (None, None) => serde_json::from_value(body).map(Command::Create),
+            (Some(id), None) if id == "create-identity" => {
+                serde_json::from_value(body).map(Command::CreateIdentity)
+            }
             (Some(id), Some("role")) => serde_json::from_value(body).map(|b| Command::Role(id, b)),
             (Some(id), Some("assertion")) => {
                 serde_json::from_value(body).map(|b| Command::Assertion(id, b))
@@ -122,6 +126,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             },
             Command::Inspect(id) => Action::Inspect(id),
             Command::Create(i) => Action::Create(i),
+            Command::CreateIdentity(i) => Action::CreateIdentity(i),
             Command::Role(id, i) => Action::Role(id, i),
             Command::Assertion(id, i) => Action::Assertion(id, i),
             Command::Alias(id, i) => Action::Alias(id, i),
@@ -309,6 +314,176 @@ mod tests {
             for field in [
                 "actor",
                 "observedAt",
+                "principal",
+                "companySlug",
+                "unexpected",
+            ] {
+                let mut body = valid.clone();
+                body[field] = json!("forged");
+                assert_eq!(
+                    post(body).send().await.unwrap().status(),
+                    StatusCode::BAD_REQUEST
+                );
+            }
+            assert_eq!(
+                client
+                    .post(format!("{url}?actor=forged"))
+                    .header("origin", &origin)
+                    .header("cookie", &cookie)
+                    .header("content-type", "application/json")
+                    .body(valid.to_string())
+                    .send()
+                    .await
+                    .unwrap()
+                    .status(),
+                StatusCode::BAD_REQUEST
+            );
+            assert_eq!(
+                post(valid)
+                    .header("content-encoding", "gzip")
+                    .send()
+                    .await
+                    .unwrap()
+                    .status(),
+                StatusCode::BAD_REQUEST
+            );
+            assert_eq!(
+                db.query_row("SELECT count(*) FROM rm_party_events", [], |r| r
+                    .get::<_, i64>(0))
+                    .unwrap(),
+                0
+            );
+        }
+        server.abort();
+        let _ = server.await;
+        drop(db);
+        tokio::task::spawn_blocking(move || drop(backend))
+            .await
+            .unwrap();
+    }
+    #[cfg(target_os = "macos")]
+    #[tokio::test]
+    async fn identity_only_registered_http_gates_refuse_before_effects() {
+        use std::os::unix::fs::{DirBuilderExt, MetadataExt, PermissionsExt};
+        struct Synthetic(std::path::PathBuf);
+        impl Drop for Synthetic {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let base = std::env::temp_dir().canonicalize().unwrap().join(format!(
+            "party-merge-{}",
+            rentemester_runtime::auth::new_token().unwrap().as_str()
+        ));
+        std::fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&base)
+            .unwrap();
+        let base = Synthetic(base);
+        let root = base.0.join("workspace");
+        let config = base.0.join("server.json");
+        let key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        std::fs::write(&config,json!({"root":root,"brokerUid":std::fs::metadata(&base.0).unwrap().uid(),"runtimeProfile":"local-user-macos","workspace":"synthetic","companySlug":"a","companyName":"Synthetic Merge","cookieKey":key,"mfaKey":key,"accounts":[]}).to_string()).unwrap();
+        std::fs::set_permissions(&config, std::fs::Permissions::from_mode(0o600)).unwrap();
+        let load_origin = origin.clone();
+        let backend = tokio::task::spawn_blocking(move || {
+            Backend::load(&config, &load_origin, true, true).unwrap()
+        })
+        .await
+        .unwrap();
+        let cookie = backend
+            .cookies
+            .issue_session("synthetic-merge-token")
+            .unwrap()
+            .set_cookie()
+            .split(';')
+            .next()
+            .unwrap()
+            .to_owned();
+        let router = super::super::router(backend.clone(), &origin);
+        let server = tokio::spawn(async move {
+            axum::serve(listener, router).await.unwrap();
+        });
+        let client = reqwest::Client::builder().no_proxy().build().unwrap();
+        let db = rusqlite::Connection::open_with_flags(
+            root.join(".rentemester/workspace-control.sqlite"),
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )
+        .unwrap();
+        for suffix in ["create-identity"] {
+            let url = format!("{origin}/api/companies/a/workspace-parties/{suffix}");
+            let valid = json!({"partyId":"synthetic-identity","kind":"organization","name":"Synthetic identity","source":"synthetic-review","observedAt":"2026-01-01","reviewAssertion":"Synthetic reviewed","confirm":true});
+            for method in [
+                reqwest::Method::GET,
+                reqwest::Method::HEAD,
+                reqwest::Method::PUT,
+                reqwest::Method::DELETE,
+            ] {
+                assert_eq!(
+                    client.request(method, &url).send().await.unwrap().status(),
+                    StatusCode::METHOD_NOT_ALLOWED
+                );
+            }
+            let post = |body: Value| {
+                client
+                    .post(&url)
+                    .header("origin", &origin)
+                    .header("cookie", &cookie)
+                    .header("content-type", "application/json")
+                    .body(body.to_string())
+            };
+            assert_eq!(
+                client
+                    .post(&url)
+                    .header("origin", &origin)
+                    .header("content-type", "application/json")
+                    .body(valid.to_string())
+                    .send()
+                    .await
+                    .unwrap()
+                    .status(),
+                StatusCode::UNAUTHORIZED
+            );
+            assert_eq!(
+                client
+                    .post(&url)
+                    .header("origin", "http://evil.invalid")
+                    .header("cookie", &cookie)
+                    .body(valid.to_string())
+                    .send()
+                    .await
+                    .unwrap()
+                    .status(),
+                StatusCode::FORBIDDEN
+            );
+            assert_eq!(
+                post(valid.clone())
+                    .header("authorization", "Bearer synthetic")
+                    .send()
+                    .await
+                    .unwrap()
+                    .status(),
+                StatusCode::UNAUTHORIZED
+            );
+            for confirm in [Value::Null, json!(false), json!("true")] {
+                let mut body = valid.clone();
+                body["confirm"] = confirm;
+                let reply = post(body).send().await.unwrap();
+                assert_eq!(reply.status(), StatusCode::BAD_REQUEST);
+                assert!(
+                    reply
+                        .text()
+                        .await
+                        .unwrap()
+                        .contains("confirmation_required")
+                );
+            }
+            for field in [
+                "actor",
+                "role",
+                "defaults",
                 "principal",
                 "companySlug",
                 "unexpected",

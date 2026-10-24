@@ -88,6 +88,24 @@ pub fn validate_companies(db: &Connection, companies: &[String]) -> Result<(), E
             }
         }
     }
+    let mut q = db
+        .prepare(
+            "SELECT canonical_payload,payload_hash FROM rm_party_events WHERE event_type='linked'",
+        )
+        .map_err(sql)?;
+    for row in q
+        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
+        .map_err(sql)?
+    {
+        let (raw, h) = row.map_err(sql)?;
+        let p: Value = serde_json::from_str(&raw).map_err(sql)?;
+        if p.get("scopeKind").is_some() {
+            let slug = crate::parties::registration(&raw, &h)?;
+            if !known.contains(&slug) {
+                return Err(refused("identity scope refers to an unregistered company"));
+            }
+        }
+    }
     Ok(())
 }
 pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Result<(), Error> {
@@ -397,7 +415,13 @@ fn facts(db: &Connection) -> Result<(), Error> {
             "created" => {}
             "linked" => {
                 let p = &e.payload;
-                if p.get("role").is_some() {
+                if p.get("scopeKind").is_some() {
+                    let raw = crate::parties::canonical(p);
+                    crate::parties::registration(&raw, &e.hash)?;
+                    if e.id <= *c_id {
+                        return Err(refused("identity registration predates creation"));
+                    }
+                } else if p.get("role").is_some() {
                     keys(p, &["companySlug", "role", "defaults"])?;
                     let key = (
                         e.party.clone(),
@@ -609,6 +633,96 @@ mod tests {
         let e = export_control(&tx).unwrap();
         tx.rollback().unwrap();
         e
+    }
+    #[test]
+    fn identity_only_source_free_codec_and_strict_anchor_rollback() {
+        let (mut source, _) = pair();
+        let tx = source.transaction().unwrap();
+        let i = serde_json::from_value(json!({"partyId":"identity-only","kind":"organization","name":"Synthetic identity","source":"synthetic","observedAt":"2026-01-01","reviewAssertion":"Synthetic reviewed"})).unwrap();
+        crate::parties::create_identity(
+            &tx,
+            &i,
+            "synthetic",
+            "unused",
+            "user:synthetic",
+            "2026-01-02T00:00:00.000Z",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        let e = exported(&mut source);
+        drop(source); // Recovery has no access to the source control database.
+        for case in 0..5 {
+            let mut bytes: Value = serde_json::from_slice(&e.parties_bytes).unwrap();
+            if case >= 2 {
+                let row = &mut bytes["tables"][TABLES[0]]["rows"][1];
+                let mut p: Value = serde_json::from_str(row[5]["value"].as_str().unwrap()).unwrap();
+                match case {
+                    2 => p["companySlug"] = json!("missing"),
+                    3 => p["role"] = json!("supplier"),
+                    _ => p["scopeKind"] = json!("arbitrary"),
+                }
+                row[4]["value"] = json!(crate::parties::hash(&p));
+                row[5]["value"] = json!(crate::parties::canonical(&p));
+            }
+            let mut target = Connection::open_in_memory().unwrap();
+            initialize_control(&mut target, &e.bytes, &"a".repeat(64)).unwrap();
+            let companies = if case == 1 {
+                vec![]
+            } else {
+                vec!["synthetic".into()]
+            };
+            let result = initialize(
+                &mut target,
+                &serde_json::to_vec(&bytes).unwrap(),
+                &companies,
+            );
+            if case != 0 {
+                assert!(result.is_err(), "case {case}");
+                assert_eq!(
+                    target
+                        .query_row("SELECT count(*) FROM rm_party_events", [], |r| r
+                            .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+                continue;
+            }
+            result.unwrap();
+            let tx = target.transaction().unwrap();
+            let visible = BTreeSet::from(["synthetic".to_owned()]);
+            assert_eq!(
+                crate::parties::inspect(&tx, "identity-only", &visible).unwrap()["roles"],
+                json!([])
+            );
+            assert_eq!(
+                crate::parties::list(&tx, &visible, None, 0, 25).unwrap()["count"],
+                0
+            );
+            assert!(
+                crate::parties::inspect(
+                    &tx,
+                    "identity-only",
+                    &BTreeSet::from(["other".to_owned()])
+                )
+                .is_err()
+            );
+            crate::parties::role(
+                &tx,
+                "identity-only",
+                "synthetic",
+                &crate::parties::Role {
+                    role: "supplier".into(),
+                    defaults: None,
+                },
+                "user:restored",
+                "2026-01-03T00:00:00.000Z",
+            )
+            .unwrap();
+            assert_eq!(
+                crate::parties::list(&tx, &visible, None, 0, 25).unwrap()["count"],
+                1
+            );
+        }
     }
     #[test]
     fn party_codec_roundtrip_preserves_all_source_tables_native_projection_and_no_authority() {
