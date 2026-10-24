@@ -180,3 +180,26 @@ pub fn apply(
 
 #[cfg(test)]
 mod tests;
+
+/// Original one-command admission. The caller owns authority and atomic rollback.
+pub fn run_original(
+    tx: &Transaction<'_>, input: &Input, verified: &[VerifiedArchive], latest: Date,
+    actor: Actor<'_>, now_ms: i64,
+) -> Result<Value, Error> {
+    let parsed = source(input)?;
+    let accounts = chart(&parsed);
+    let changes = source_chart::prepare(tx, &accounts)?;
+    let at = rentemester_engine::company_knowledge::timestamp(now_ms)?;
+    source_chart::apply(tx, &accounts, &changes,
+        actor.subject.strip_prefix("user:").filter(|s| !s.is_empty())
+            .ok_or_else(|| refused("current human actor required"))?, &at)?;
+    let result = opening_balance::apply_original(
+        tx, &opening(&parsed), verified, latest, actor, now_ms, None, Some(input),
+    )?;
+    let record = &result["openingBalance"];
+    Ok(json!({"ok":true,"sourceSystem":"synthetic-csv","cutOverDate":parsed.cut_over_date,
+        "openingBalanceLineCount":parsed.opening_balances.len(),"historicalEntriesSkipped":0,
+        "entryId":record["journalEntryId"],"entryNo":record["journalEntryNo"],"entryHash":record["journalEntryHash"],
+        "auditTrail":["Import started from source system 'synthetic-csv'", "Source chart reconciled", "Opening balance posted"],
+        "appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[]}))
+}

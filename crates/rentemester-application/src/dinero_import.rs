@@ -18,6 +18,7 @@ use serde_json::{Value, json};
 #[derive(Clone, Copy)]
 pub enum Action<'a> {
     Plan(&'a Prepared),
+    OriginalRun(&'a Prepared, bool),
     Apply(&'a Prepared, &'a store::Apply),
     List,
     Original(i64),
@@ -81,9 +82,9 @@ pub fn execute(
     context: Context<'_>,
     action: Action<'_>,
 ) -> Result<Committed<Output>, Failure> {
-    let readonly = !matches!(action, Action::Apply(..));
+    let readonly = !matches!(action, Action::Apply(..) | Action::OriginalRun(..));
     let permission = match action {
-        Action::Apply(..) => Permission::CompanyAdmin,
+        Action::Apply(..) | Action::OriginalRun(..) => Permission::CompanyAdmin,
         Action::Original(_) => Permission::CompanyDocumentsRead,
         _ => Permission::CompanyRead,
     };
@@ -141,7 +142,7 @@ pub fn execute(
                         },
                     })
                 }
-                Action::Plan(file) | Action::Apply(file, _) => {
+                Action::Plan(file) | Action::Apply(file, _) | Action::OriginalRun(file, _) => {
                     if !matches!(file.mime(), "application/json" | "application/zip") {
                         return Err(Error::new(
                             "dinero_import_invalid",
@@ -169,6 +170,39 @@ pub fn execute(
                     match action {
                         Action::Plan(_) => {
                             Ok(Output::Json(store::prepare(tx, &decoded, latest)?.review()))
+                        }
+                        Action::OriginalRun(_, dry_run) => {
+                            tx.execute_batch("SAVEPOINT original_import94").map_err(|_| unavailable())?;
+                            let business = (|| {
+                                let prepared = store::prepare(tx, &decoded, latest)?;
+                                let receipts = store::receipt_publications(tx, &decoded)?;
+                                publish(guard, file, &decoded.source.path, &mut owned)?;
+                                for receipt in receipts {
+                                    let doc = Prepared::new(receipt.path, receipt.bytes).map_err(|_| unavailable())?;
+                                    publish(guard, &doc, &doc.relative_path(), &mut owned)?;
+                                }
+                                if let Some(archive) = &decoded.archive {
+                                    let doc = Prepared::new("dinero-closed-history.json".into(), archive.bytes.clone()).map_err(|_| unavailable())?;
+                                    publish(guard, &doc, &archive.source.path, &mut owned)?;
+                                }
+                                let receipt = store::apply_original(tx, &prepared, latest, subject, now, &verified_archives)?;
+                                store::original_result(tx, &decoded, &receipt)
+                            })();
+                            if dry_run || business.is_err() {
+                                tx.execute_batch("ROLLBACK TO original_import94").map_err(|_| unavailable())?;
+                                for token in owned.drain(..).rev() {
+                                    guard.rollback_document(token).map_err(|_| unavailable())?;
+                                }
+                            }
+                            tx.execute_batch("RELEASE original_import94").map_err(|_| unavailable())?;
+                            match business {
+                                Ok(mut value) => { if dry_run { value["dryRun"] = json!(true); } Ok(Output::Json(value)) }
+                                Err(error) if matches!(error.code, "dinero_import_refused" | "opening_balance_refused" | "company_setup_refused") =>
+                                    Ok(Output::Json(json!({"ok":false,"sourceSystem":"dinero","cutOverDate":decoded.parsed.cut_over_date,
+                                        "openingBalanceLineCount":decoded.parsed.opening_lines.len(),"historicalEntriesSkipped":decoded.parsed.vouchers.len(),
+                                        "auditTrail":["Dinero import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}))),
+                                Err(error) => Err(error),
+                            }
                         }
                         Action::Apply(_, input) => {
                             if !input.confirm {

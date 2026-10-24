@@ -534,12 +534,20 @@ pub fn apply_with_archives(
     now_ms: i64,
     verified: &[crate::archive_import::VerifiedArchive],
 ) -> Result<Value, Error> {
-    journal_post::require_current(tx)?;
     crate::idempotency::validate_key(&input.idempotency_key)?;
-    if !input.confirm
-        || subject.is_empty()
+    if !input.confirm || input.plan_hash != p.plan_hash {
+        return Err(refused("explicit current reviewed import confirmation required"));
+    }
+    apply_original(tx, p, latest, subject, now_ms, verified)
+}
+/// Complete canonical import without a client key or a fabricated durable keyed receipt.
+pub fn apply_original(
+    tx: &Transaction<'_>, p: &Prepared, latest: Date, subject: &str, now_ms: i64,
+    verified: &[crate::archive_import::VerifiedArchive],
+) -> Result<Value, Error> {
+    journal_post::require_current(tx)?;
+    if subject.is_empty()
         || subject.chars().any(char::is_control)
-        || input.plan_hash != p.plan_hash
     {
         return Err(refused(
             "explicit current reviewed import confirmation required",
@@ -559,20 +567,7 @@ pub fn apply_with_archives(
     let mut archive_import_ids = vec![];
     if let Some(source) = &p.decoded.archive {
         let prepared = crate::archive_import::prepare(tx, &source.source, &source.parsed)?;
-        let result = crate::archive_import::apply(
-            tx,
-            &prepared,
-            &crate::archive_import::Apply {
-                plan_hash: prepared.review()["planHash"]
-                    .as_str()
-                    .ok_or_else(|| refused("archive plan unavailable"))?
-                    .into(),
-                idempotency_key: input.idempotency_key.clone(),
-                confirm: true,
-            },
-            subject,
-            now_ms,
-        )?;
+        let result = crate::archive_import::apply_original(tx, &prepared, subject, now_ms)?;
         let id = result["archiveImport"]["importId"]
             .as_i64()
             .ok_or_else(|| refused("archive receipt unavailable"))?;
@@ -618,27 +613,10 @@ pub fn apply_with_archives(
             note: Some("Import fra dinero".into()),
             source_archive_import_ids: archive_import_ids.clone(),
         };
-        let plan = opening_balance::prepare_import(tx, &input_open, &archived, latest, &token)?;
-        let input = opening_balance::Apply {
-            input: input_open,
-            plan_hash: plan.review()["planHash"]
-                .as_str()
-                .ok_or_else(|| refused("opening plan unavailable"))?
-                .into(),
-            idempotency_key: input.idempotency_key.clone(),
-            confirm: true,
-        };
-        let result = opening_balance::apply_import(
-            tx,
-            &input,
-            &archived,
-            latest,
-            journal_post::Actor {
-                subject: &actor,
-                program: opening_balance::PROGRAM,
-            },
-            now_ms,
-            &token,
+        let result = opening_balance::apply_original(
+            tx, &input_open, &archived, latest,
+            journal_post::Actor { subject: &actor, program: opening_balance::PROGRAM },
+            now_ms, Some(&token), None,
         )?;
         Some(result["openingBalance"].clone())
     } else {
@@ -730,4 +708,43 @@ pub fn apply_with_archives(
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES(?1,'dinero_import',?2,?3,?4,?5)",params![EVENT,attempt_id.to_string(),serde_json::to_string(&event).map_err(invalid)?,actor,at]).map_err(invalid)?;
     validate_history(tx)?;
     Ok(receipt)
+}
+
+/// Flat original result, derived from the actual accepted journals and source.
+pub fn original_result(db: &Connection, decoded: &Decoded, receipt: &Value) -> Result<Value, Error> {
+    let parsed = &decoded.parsed;
+    let mut posted = vec![];
+    if let Some(first) = receipt["firstHistoricalEntryId"].as_i64() {
+        let mut q = db.prepare("SELECT id,entry_no,transaction_date FROM journal_entries WHERE id>=?1 ORDER BY id").map_err(invalid)?;
+        let rows = q.query_map([first], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?))).map_err(invalid)?;
+        for (row, voucher) in rows.zip(&parsed.vouchers) {
+            let (id, no, date) = row.map_err(invalid)?;
+            posted.push(json!({"voucherRef":voucher.voucher_ref,"entryId":id,"entryNo":no,"transactionDate":date}));
+        }
+    }
+    let mut chart = json!({"created":[],"existing":[],"updated":[],"differences":[],"conflicts":[],"unmappedVatCodes":[]});
+    if let Some(changes) = receipt["chartReconciliation"].as_array() {
+        for change in changes {
+            let key = match change["action"].as_str() { Some("create") => "created", Some("update") => "updated", _ => "existing" };
+            chart[key].as_array_mut().unwrap().push(change["accountNo"].clone());
+        }
+    }
+    let mut value = json!({"ok":true,"sourceSystem":"dinero","openingBalanceLineCount":parsed.opening_lines.len(),
+        "historicalEntriesSkipped":0,"historicalEntriesPosted":posted,"chart":chart,
+        "accountRoleProposals":parsed.role_proposals,
+        "auditTrail":["Import started from source system 'dinero'","Source chart reconciled","Canonical opening, historical journals, archive and source provenance accepted"],
+        "appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[]});
+    if let Some(date) = parsed.cut_over_date { value["cutOverDate"] = json!(date); }
+    let opening = &receipt["openingBalance"];
+    if opening.is_object() {
+        value["entryId"] = opening["journalEntryId"].clone();
+        value["entryNo"] = opening["journalEntryNo"].clone();
+        value["entryHash"] = opening["journalEntryHash"].clone();
+    }
+    if !parsed.controls.is_empty() {
+        let mut receivable = Money::default(); let mut payable = Money::default();
+        for c in &parsed.controls { if c.kind == "receivable" { receivable.add(&c.amount); } else { payable.add(&c.amount); } }
+        value["migrationOpenItems"] = json!({"batchCount":parsed.controls.len(),"receivableAmount":receivable.decimal().parse::<f64>().map_err(invalid)?,"payableAmount":payable.decimal().parse::<f64>().map_err(invalid)?});
+    }
+    Ok(value)
 }

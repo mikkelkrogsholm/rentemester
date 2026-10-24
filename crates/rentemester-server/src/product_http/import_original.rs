@@ -56,11 +56,8 @@ fn parse(bytes: &[u8]) -> Result<Input, ()> {
     }
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    // Frozen private-base stub: no accounting, source publication or invented key.
-    // The owning backend worker replaces this with current Owner/fence execution.
-    if let Err(r) = proof(&state, &request, true) {
-        return *r;
-    }
+    let cookie = match proof(&state, &request, true) { Ok(cookie) => cookie, Err(r) => return *r };
+    let slug = request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     if !selected(&state, &request) {
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
@@ -76,11 +73,65 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let Ok(bytes) = to_bytes(request.into_body(), MAX_BODY).await else {
         return refused(StatusCode::PAYLOAD_TOO_LARGE, "import_original_invalid");
     };
-    if parse(&bytes).is_err() {
-        return refused(StatusCode::BAD_REQUEST, "import_original_invalid");
+    let input = match parse(&bytes) {
+        Ok(input) => input,
+        Err(()) => return refused(StatusCode::BAD_REQUEST, "import_original_invalid"),
+    };
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
+        match &input {
+            Input::Synthetic { source, dry_run } => owner.opening_balance(
+                &cookie, &SystemClock,
+                rentemester_application::opening_balance::Action::OriginalRun(source, *dry_run),
+            ).map(|attempt| attempt.outcome.map(|v| v.value)).map_err(|_| ()),
+            Input::Dinero { file, dry_run } => owner.dinero_import(
+                &cookie, &SystemClock,
+                rentemester_application::dinero_import::Action::OriginalRun(file, *dry_run),
+            ).map(|attempt| attempt.outcome.map(|v| match v.value {
+                rentemester_application::dinero_import::Output::Json(value) => value,
+                _ => unreachable!("original import returns JSON"),
+            })).map_err(|_| ()),
+        }
+    }).await;
+    match result {
+        Ok(Ok(Ok(value))) => response(StatusCode::OK, value),
+        Ok(Ok(Err(f))) => {
+            let unknown = f.stage != rentemester_application::control_fence::FailureStage::NotCommitted;
+            let status = if unknown || !f.control_reusable || !f.company_reusable || f.error.code.contains("unavailable") {
+                StatusCode::SERVICE_UNAVAILABLE
+            } else if matches!(f.error.code, "access_denied" | "invalid_credentials") {
+                StatusCode::FORBIDDEN
+            } else { StatusCode::UNPROCESSABLE_ENTITY };
+            response(status, json!({"ok":false,"code":if unknown {"outcome_unknown"} else {f.error.code},"errors":[f.error.message]}))
+        }
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown"),
     }
-    refused(
-        StatusCode::SERVICE_UNAVAILABLE,
-        "import_original_unavailable",
-    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn body(system: &str, bytes: &[u8]) -> serde_json::Value {
+        json!({"sourceSystem":system,"fileName":"source.json","contentBase64":STANDARD.encode(bytes),"dryRun":true,"confirm":true})
+    }
+    #[test]
+    fn original_import94_frozen_wire_rejects_actor_key_hash_and_invalid_content() {
+        let b = body("synthetic-csv", b"source");
+        assert!(matches!(parse(&serde_json::to_vec(&b).unwrap()), Ok(Input::Synthetic { dry_run: true, .. })));
+        for field in ["actor", "idempotencyKey", "planHash", "outputPath"] {
+            let mut bad = b.clone(); bad[field] = json!("override");
+            assert!(parse(&serde_json::to_vec(&bad).unwrap()).is_err());
+        }
+        for (field, value) in [("confirm",json!(false)),("fileName",json!("../x")),("sourceSystem",json!("other")),("contentBase64",json!("c291cmNl\n"))] {
+            let mut bad = b.clone(); bad[field] = value;
+            assert!(parse(&serde_json::to_vec(&bad).unwrap()).is_err());
+        }
+        assert!(parse(&serde_json::to_vec(&body("synthetic-csv", &[255])).unwrap()).is_err());
+        assert!(parse(&serde_json::to_vec(&body("synthetic-csv", &vec![b'x';48*1024+1])).unwrap()).is_err());
+        assert!(matches!(parse(&serde_json::to_vec(&body("dinero", b"{}")).unwrap()), Ok(Input::Dinero { dry_run: true, .. })));
+    }
 }

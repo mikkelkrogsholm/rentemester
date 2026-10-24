@@ -1204,3 +1204,36 @@ fn changed_role_or_journal_head_invalidates_review_before_chart_updates() {
         tx.rollback().unwrap();
     }
 }
+
+#[test]
+fn original_import94_complete_dinero_history_openitems_rollback_and_refusal() {
+    let (_, mut db) = db();
+    let bytes = source("24500,000000", false);
+    let decoded = decode_source(&bytes).unwrap();
+    let before = snapshot(&db);
+    {
+        let tx = db.transaction().unwrap();
+        let p = prepare(&tx, &decoded, latest()).unwrap();
+        let receipt = apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).unwrap();
+        let result = original_result(&tx, &decoded, &receipt).unwrap();
+        assert_eq!(result["sourceSystem"], "dinero");
+        assert_eq!(result["historicalEntriesPosted"].as_array().unwrap().len(), 3);
+        assert_eq!(result["migrationOpenItems"]["batchCount"], 1);
+        verify_sources(&tx, &bytes);
+        assert!(apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).is_err());
+        tx.rollback().unwrap();
+    }
+    assert_eq!(snapshot(&db), before);
+    let bad = decode_source(&source("24501,000000", false)).unwrap();
+    {
+        let tx = db.transaction().unwrap();
+        let p = prepare(&tx, &bad, latest()).unwrap();
+        assert!(apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).is_err());
+    }
+    assert_eq!(snapshot(&db), before);
+    let tx = db.transaction().unwrap();
+    let p = prepare(&tx, &decoded, latest()).unwrap();
+    apply_original(&tx, &p, latest(), "synthetic", NOW, &[]).unwrap();
+    tx.commit().unwrap();
+    verify_sources(&db, &bytes);
+}
