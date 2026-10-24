@@ -13,6 +13,7 @@ const defaultSession = () => sessionStatus === 200
   : { data: null, error: { status: sessionStatus, message: "Temporarily unavailable" } };
 let sessionLoader = async () => defaultSession();
 mock.module("./auth-client", () => ({ authClient: { getSession: () => sessionLoader() } }));
+const { request, requestBlob } = await import("./api/_shared");
 const { AuthProvider, useAuth } = await import("./auth-context");
 beforeEach(() => { sessionStatus = 200; sessionUser = user; sessionLoader = async () => defaultSession(); });
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider hosted backend="rust">{children}</AuthProvider>;
@@ -125,6 +126,71 @@ test("old completion cannot finish a newer pending refresh", async () => {
   await act(async () => { second.resolve(response(context)); await refresh; });
   expect(result.current.loading).toBe(false);
   expect(result.current.context?.user.id).toBe(user.id);
+});
+
+for (const binary of [false, true]) {
+  test(`old ordinary ${binary ? "blob" : "JSON"} 401 cannot cancel a pending same-subject session refresh`, async () => {
+    const oldReply = deferred<Response>();
+    const newSession = deferred<ReturnType<typeof defaultSession>>();
+    let ordinaryStarted = false;
+    stubAuthFetch(async (input) => {
+      if (String(input) === "/api/companies") {
+        ordinaryStarted = true;
+        return oldReply.promise;
+      }
+      return response(context);
+    });
+    const { result } = renderHook(useAuth, { wrapper });
+    await waitFor(() => expect(result.current.context?.user.id).toBe(user.id));
+    // No view cleanup or AbortSignal: this is an ordinary request still in flight.
+    const oldRequest = (binary ? requestBlob : request)("/api/companies").catch(error => error);
+    await waitFor(() => expect(ordinaryStarted).toBe(true));
+    sessionLoader = () => newSession.promise;
+    let refresh!: Promise<void>;
+    act(() => { refresh = result.current.refresh({ expectedUserId: user.id }); });
+    await act(async () => {
+      oldReply.resolve(response({ ok: false, code: "unauthorized" }, 401));
+      expect(await oldRequest).toMatchObject({ status: 401, code: "unauthorized" });
+    });
+    await act(async () => {
+      newSession.resolve({ data: { user, session: { id: "rotated-same-subject" } }, error: null });
+      await refresh;
+    });
+    expect(result.current.session?.id).toBe(user.id);
+    expect(result.current.currentSessionId).toBe("rotated-same-subject");
+    expect(result.current.context?.user.id).toBe(user.id);
+    expect(result.current.bootstrapError).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+
+  test(`current ordinary ${binary ? "blob" : "JSON"} 401 still clears identity and grants`, async () => {
+    stubAuthFetch(async (input) => String(input) === "/api/companies"
+      ? response({ ok: false }, 401) : response(context));
+    const { result } = renderHook(useAuth, { wrapper });
+    await waitFor(() => expect(result.current.context?.user.id).toBe(user.id));
+    await act(async () => {
+      await expect((binary ? requestBlob : request)("/api/companies")).rejects.toMatchObject({ status: 401 });
+    });
+    expect(result.current.session).toBeNull();
+    expect(result.current.currentSessionId).toBeNull();
+    expect(result.current.context).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+}
+
+test("untagged local cancellation fences a pending session reply", async () => {
+  const pending = deferred<ReturnType<typeof defaultSession>>();
+  sessionLoader = () => pending.promise;
+  let reads = 0;
+  stubAuthFetch(async () => { reads++; return response(context); });
+  const { result } = renderHook(useAuth, { wrapper });
+  act(() => { window.dispatchEvent(new Event("rentemester:auth-expired")); });
+  await act(async () => { pending.resolve(defaultSession()); });
+  expect(result.current.session).toBeNull();
+  expect(result.current.currentSessionId).toBeNull();
+  expect(result.current.context).toBeNull();
+  expect(result.current.loading).toBe(false);
+  expect(reads).toBe(0);
 });
 
 test("session and workspace identity must agree", async () => {

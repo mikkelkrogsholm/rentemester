@@ -25,10 +25,17 @@ export class ApiError extends Error {
   }
 }
 
+// Requests observe the session boundary at entry, before protocol admission/fetch.
+// Refresh and explicit local clearing revoke only old expiry authority, not errors.
+let authObservationGeneration = 0;
+export function invalidateAuthObservations(): void {
+  authObservationGeneration++;
+}
+
 /** Raised once for an expired hosted browser session.  The app shell listens
  * for this event so an old view is never left visible after a 401. */
-function signalAuthExpired(): void {
-  if (typeof window !== "undefined") {
+function signalAuthExpired(observationGeneration: number): void {
+  if (observationGeneration === authObservationGeneration && typeof window !== "undefined") {
     window.dispatchEvent(new Event("rentemester:auth-expired"));
   }
 }
@@ -70,41 +77,43 @@ async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Re
 }
 
 /** Decode the same server envelope for JSON responses and binary failures. */
-function responseError(res: Response, body: unknown, fallback: string): ApiError {
+function responseError(res: Response, body: unknown, fallback: string, observationGeneration: number): ApiError {
   const env = body && typeof body === "object" ? body as { errors?: unknown; code?: unknown } : undefined;
   const errors = Array.isArray(env?.errors) ? env.errors.map(String) : [];
   const code = res.status === 401 ? "unauthorized" : typeof env?.code === "string" ? env.code : "internal";
-  if (code === "unauthorized") signalAuthExpired();
+  if (code === "unauthorized") signalAuthExpired(observationGeneration);
   const message = res.status === 403 && ["access_denied", "forbidden", "internal"].includes(code)
     ? "Du har ikke adgang til denne handling. Bed workspace-ejeren kontrollere dine rettigheder."
     : errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback);
   return new ApiError(code, message, res.status);
 }
 
-function bodyReadError(res: Response, cause: unknown, init?: ApiRequestOptions): unknown {
+function bodyReadError(res: Response, cause: unknown, observationGeneration: number, init?: ApiRequestOptions): unknown {
   if (isAborted(cause, init?.signal)) return cause;
   return responseError(res, undefined, isWrite(init)
     ? "Serverens svar på handlingen kunne ikke læses. Kontrollér status, før du starter en ny handling."
-    : "Serveren gav et ugyldigt svar.");
+    : "Serveren gav et ugyldigt svar.", observationGeneration);
 }
 
 export async function request<T>(path: string, init?: ApiRequestOptions): Promise<T> {
+  const observationGeneration = authObservationGeneration;
   const res = await fetchResponse(path, init);
   let body: unknown;
   try {
     body = await res.json();
   } catch (cause) {
-    throw bodyReadError(res, cause, init);
+    throw bodyReadError(res, cause, observationGeneration, init);
   }
   // A superseded auth read must not expire the newer session via its old 401.
   init?.signal?.throwIfAborted();
-  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.");
-  if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`);
+  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.", observationGeneration);
+  if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`, observationGeneration);
   return body as T;
 }
 
 /** Binary success keeps domain headers; transport failures use the canonical seam. */
 export async function requestBlob(path: string, init?: ApiRequestOptions): Promise<{ blob: Blob; headers: Headers }> {
+  const observationGeneration = authObservationGeneration;
   const res = await fetchResponse(path, init);
   if (!res.ok) {
     let body: unknown;
@@ -112,14 +121,14 @@ export async function requestBlob(path: string, init?: ApiRequestOptions): Promi
       if (isAborted(cause, init?.signal)) throw cause;
     }
     init?.signal?.throwIfAborted();
-    throw responseError(res, body, `HTTP ${res.status}`);
+    throw responseError(res, body, `HTTP ${res.status}`, observationGeneration);
   }
   try {
     const blob = await res.blob();
     init?.signal?.throwIfAborted();
     return { blob, headers: res.headers };
   } catch (cause) {
-    throw bodyReadError(res, cause, init);
+    throw bodyReadError(res, cause, observationGeneration, init);
   }
 }
 

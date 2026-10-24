@@ -1,7 +1,7 @@
 import { loginAttempts } from "./login-attempt";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { authClient } from "./auth-client";
-import { ApiError, request } from "./api/_shared";
+import { ApiError, invalidateAuthObservations, request } from "./api/_shared";
 import type { CompanyRole, WorkspaceRole } from "../../../src/core/access-permissions";
 
 export type SessionUser = {
@@ -56,6 +56,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
   const contextRead = useRef<AbortController | null>(null);
 
   const clear = useCallback(() => {
+    invalidateAuthObservations();
     generation.current++;
     contextRead.current?.abort();
     contextRead.current = null;
@@ -68,6 +69,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
   }, []);
 
   const refresh = useCallback(async (options?: { successNotice?: string; expectedUserId?: string }) => {
+    invalidateAuthObservations();
     const currentGeneration = ++generation.current;
     contextRead.current?.abort();
     const controller = new AbortController();
@@ -124,7 +126,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
 
   useEffect(() => {
     void refresh();
-    return () => { generation.current++; contextRead.current?.abort(); contextRead.current = null; };
+    return () => { invalidateAuthObservations(); generation.current++; contextRead.current?.abort(); contextRead.current = null; };
   }, [refresh]);
   useEffect(() => {
     const onExpired = () => clear();
