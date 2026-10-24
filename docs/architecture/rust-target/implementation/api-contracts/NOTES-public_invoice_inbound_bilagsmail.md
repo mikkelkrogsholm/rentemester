@@ -17,16 +17,16 @@ The existing strict Python oracle checks identity coverage, source hashes and re
 
 ## HEAD: preserve actual handlers, not a generalized fence
 
-R54's accepted 11 handlers/18 routes remain unchanged. The four selected GET-backed routes here use other handlers without that early fence:
+R54's accepted 11 handlers/18 routes remain unchanged. Historical R58 observed four selected GET-backed routes without that early fence. R59 corrects the two public invoice routes; mailbox/imported behavior remains unchanged:
 
 | HEAD route | Actual leaf behavior after outer negotiation |
 |---|---|
 | bilagsmail | Mutation origin/cookie proof, selected/query/encoding checks, unmatched method returns 404 not_found before worker/Owner. |
 | imported-receivables | Non-applying cookie proof, selected/query/encoding/idempotency checks, method falls through to 405 invalid_input; this constructor does not add Allow. |
-| public-config | Mutation proof, non-read JSON parse; falls through Send input, not configuration read. Typical bodyless request is 400. A valid confirmed invoice body can enter current external-send phases. |
-| public-submissions | Same non-read dispatch as public-config; not a submissions GET alias. |
+| public-config | R59: unconditional 405 Allow: GET before proof/body/Owner/provider. Historical unsafe send fallthrough was corrected. |
+| public-submissions | R59: same early 405 Allow: GET fence as public-config, never a submissions GET alias. |
 
-Axum suppresses all wire response body bytes for HEAD while preserving status/headers. No probes were run. HEAD declarations are intentionally not normalized to GET or to R54's early 405/Allow:GET behavior.
+Axum suppresses all wire response body bytes for HEAD while preserving status/headers. R58 ran no probes. R59 uses the existing synthetic real-server fixture: RED401, then GREEN405 for public routes, with 64 HEAD cases over31routes, GET/POST auth and exact accounting/artifact invariants retained; no provider actions. HEAD remains a refusal, not a GET alias.
 
 ## Family controls and recovery
 
@@ -61,4 +61,7 @@ Imported schedule reads reverify accepted physical source/archive evidence and r
 `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`: completed, 34,009 nodes / 107,681 edges, generated observations confined to independent build output.
 
 ## Lead source-review repair
-Lead source review repaired four original public-invoice CLI refusal JSON variants to include actual local fail() errors-only DTO and validated422 business core/domain codes alongside client errors. Human stderr differs and local publication may fail after successful server audit. No provider/effects replay. Accurately observed unsafe publicHEAD remains explicit blocker for separate diagnosed R59 handler fence before whole677 acceptance/publication.
+Lead source review repaired four original public-invoice CLI refusal JSON variants to include actual local fail() errors-only DTO and validated422 business core/domain codes alongside client errors. Human stderr differs and local publication may fail after successful server audit. No provider/effects replay. R59 removes the accurately observed unsafe publicHEAD blocker by a first-statement handler fence; actual existing-fixture RED/GREEN proof binds current source/binary/logs. Full #677 acceptance still requires all1490 exact contracts, retained protocol proofs and lead source review.
+
+## R59 bounded correction
+Two public HEAD contracts now specify early405AllowGET and bodyless409 protocol refusal. Other GET/POST contracts retain behavior; current source hashes refreshed here and in delivery_recurring_http only. Historical R58 reviews and failed receipts are preserved.

@@ -176,7 +176,7 @@ async fn sales_head_requests_cannot_enter_mutation_dispatch() {
     let originals = artifacts(&root.join("a"));
     let client = reqwest::Client::builder().no_proxy().build().unwrap();
     let invoice = r#"{"issueDate":"2026-01-01","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street"},"lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}"#;
-    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company", "accounting-drafts", "posting-rules", "reviewed-bank", "payables", "mileage", "budget", "budget-vs-actual", "budget-dimension-actuals", "assets", "assets/1/next-depreciation", "accruals", "accruals/1/schedule", "master-data/original/customers", "master-data/original/vendors", "master-data/original/cvr-lookup", "workspace-parties", "corporate-records", "workspace-inbox", "invoices/1/reminder-claims", "supplier-commitments", "supplier-commitments/matches", "exceptions"] {
+    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company", "accounting-drafts", "posting-rules", "reviewed-bank", "payables", "mileage", "budget", "budget-vs-actual", "budget-dimension-actuals", "assets", "assets/1/next-depreciation", "accruals", "accruals/1/schedule", "master-data/original/customers", "master-data/original/vendors", "master-data/original/cvr-lookup", "workspace-parties", "corporate-records", "workspace-inbox", "invoices/1/reminder-claims", "supplier-commitments", "supplier-commitments/matches", "exceptions", "invoices/public-config", "invoices/public-submissions"] {
         for body in ["", invoice] {
             let response = client.request(reqwest::Method::HEAD, format!("{origin}/api/companies/a/{path}"))
                 .header("origin", &origin)
@@ -188,6 +188,16 @@ async fn sales_head_requests_cannot_enter_mutation_dispatch() {
             assert!(response.bytes().await.unwrap().is_empty());
         }
         assert_eq!(client.get(format!("{origin}/api/companies/a/{path}")).send().await.unwrap().status(), 401);
+    }
+    for path in ["invoices/public-config", "invoices/public-submissions"] {
+        let response = client.request(reqwest::Method::HEAD, format!("{origin}/api/companies/a/{path}"))
+            .header("origin", &origin)
+            .header("content-type", "application/json")
+            .header("cookie", "better-auth.session_token=synthetic-invalid")
+            .body(r#"{"invoiceDocumentId":1,"confirm":true}"#).send().await.unwrap();
+        assert_eq!(response.status(), 405, "confirmed public-send HEAD {path} must refuse before authentication/provider dispatch");
+        assert_eq!(response.headers()["allow"], "GET");
+        assert!(response.bytes().await.unwrap().is_empty());
     }
     assert_eq!(client.post(format!("{origin}/api/companies/a/invoices/issue"))
         .header("origin", &origin).header("content-type", "application/json")

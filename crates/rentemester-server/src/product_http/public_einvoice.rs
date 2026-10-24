@@ -131,6 +131,12 @@ fn original_result(value: Value) -> Value {
     row
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // GET-backed HEAD must refuse before credentials or provider send dispatch.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let path = request.uri().path().to_owned();
     let slug = path.split('/').nth(3).unwrap_or("").to_owned();
     let read = request.method() == axum::http::Method::GET;
