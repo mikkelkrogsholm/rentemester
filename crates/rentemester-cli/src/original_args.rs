@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::bookkeeping_batch_original::accepts(args)
+    crate::audit_verify_original::accepts(args)
+        || crate::bookkeeping_batch_original::accepts(args)
         || crate::accounting_draft_original::accepts(args)
         || crate::accounts_original::accepts(args)
         || crate::posting_rules_original::accepts(args)
@@ -177,7 +178,7 @@ fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
+                "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "budget"
                     | "asset"
                     | "accrual"

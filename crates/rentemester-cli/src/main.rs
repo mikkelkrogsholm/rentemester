@@ -12,6 +12,7 @@ mod expense_original;
 mod annual_exports;
 mod audit_log;
 mod audit_verify;
+mod audit_verify_original;
 mod backup_governance;
 mod backup_registration;
 mod backup_remote;
@@ -536,9 +537,21 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     }
+    if audit_verify_original::accepts(&args) {
+        match audit_verify_original::preflight(&args) {
+            Ok(true) => { println!("{}",audit_verify_original::help()); return ExitCode::SUCCESS; }
+            Ok(false) => {}
+            Err(o) => { eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
+        }
+    }
+    let audit_args = audit_verify_original::accepts(&args).then(|| args.clone());
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
+            if let Some(args) = &audit_args {
+                let o = audit_verify_original::refusal(args,"Audit verification unavailable: local binding refused");
+                print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+            }
             if code == 2 && std::env::args().any(|s| s == "documents") {
                 eprintln!("{}: {}", error.code, error.message);
             } else {
@@ -550,6 +563,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if audit_verify_original::accepts(&args) {
+        let o = audit_verify_original::execute(&args);
+        print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
     if bookkeeping_batch_original::accepts(&args) {
         let output=bookkeeping_batch_original::execute(&args);
         print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);

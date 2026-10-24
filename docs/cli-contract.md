@@ -202,3 +202,33 @@ konkret (kør kommandoen mod en test-virksomhed, eller læs `src/cli/<domæne>.t
 Bemærk desuden de få CLI-only-kommandoer uden MCP-pendant (fx `invoice create`,
 `invoice export-public`); de er listet under "CLI/MCP-mapping" i
 [`docs/mcp-tool-surface.md`](mcp-tool-surface.md).
+
+## Rust compatibility: original `audit verify` (#716)
+
+`rentemester-rust audit verify --help` discovers the original read-only diagnostic.
+Select an explicit `--server ORIGIN` or verified private `--local-profile PATH`,
+an explicit `--company SLUG` (or verified local company path), and exactly one
+private `--cookie-file PATH` / `--service-key-file PATH`. Split and attached
+selectors and global output flags use the original argument pipeline. There is
+no actor override, stdin input, confirmation, repair, retry or local fallback.
+The existing server's CompanyRead permission and native five-component verifier
+remain authoritative; no separate CLI verifier is introduced.
+
+For a validated, available native v1 observation, original output is flat
+`{ok,entries,errors}`. Clean findings exit 0; corrupt findings exit 1 (not a green
+observation wrapper). JSON is pretty-printed on stdout with empty stderr; human
+success is on stdout and human failure on stderr, using original emitResult
+labels and summaries. Usage errors exit 2 on stderr. Network, authentication,
+credential, protocol, local binding and unavailable observations fail closed
+with catch-shaped `{ok:false,errors}` (exit 1); raw responses and credentials are
+not printed, and no entry count is invented.
+
+**Versioned compatibility boundary:** the original Bun offline pending-schema
+branch emits a truthful inspection `schema` object. Native audit verification v1
+does not expose that inspection metadata. This Rust adapter therefore cannot
+reproduce that branch: it refuses with the catch-shaped output, omitting both
+`schema` and `entries`, rather than synthesizing migration versions or reading
+SQL locally. Full #716/launcher compatibility remains separate work; the Bun
+production launcher is unchanged. Native `remote audit-verify` and the SDK keep
+their existing successful-observation contract (exit 0 can contain failed audit
+findings under `data.audit`).
