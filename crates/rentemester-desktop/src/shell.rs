@@ -1,4 +1,6 @@
 //! Rust host for the same web interface, served directly by the selected Rust backend.
+#[cfg(unix)]
+mod backup_verify_state;
 #[allow(dead_code)]
 mod local_backend;
 mod session_vault;
@@ -69,6 +71,7 @@ struct ShellState {
     managed: Mutex<Option<Managed>>,
     connecting: AtomicBool,
     vault_busy: AtomicBool,
+    backup_busy: AtomicBool,
     generation: session_vault::Generation,
     remembered: Mutex<Option<session_vault::Binding>>,
     selected_origin: Mutex<Option<Url>>,
@@ -560,6 +563,177 @@ fn local_menu(app: &AppHandle, id: &str) {
         _ => {}
     }
 }
+// Host menus only: no command, web event or native filesystem capability is exposed.
+struct BackupLease(Arc<ShellState>);
+impl Drop for BackupLease {
+    fn drop(&mut self) {
+        self.0.backup_busy.store(false, Ordering::Release);
+    }
+}
+fn backup_menu(app: &AppHandle, id: &str) {
+    if !matches!(id, "backup-verify" | "backup-save-key") {
+        return;
+    }
+    let state = app.state::<Arc<ShellState>>().inner().clone();
+    if state.backup_busy.swap(true, Ordering::AcqRel) {
+        return;
+    }
+    let lease = BackupLease(state);
+    let save = id == "backup-save-key";
+    let handle = app.clone();
+    // Menu callbacks need not be on the Cocoa UI thread. RFD's synchronous
+    // panels and the explicit review always run there, never on a runtime worker.
+    let _ = app.run_on_main_thread(move || {
+        #[cfg(target_os = "macos")]
+        {
+            if save {
+                let result = save_backup_key(&lease.0);
+                if let Err(error) = result {
+                    show_info(&handle, "Offentlig backupnøgle ikke gemt", error);
+                }
+                return;
+            }
+            // A cancelled/new selection must not leave an old approval visible.
+            if let Some(previous) = handle.get_webview_window("local-info") {
+                let _ = previous.close();
+            }
+            let review = match pick_backup_review() {
+                Ok(Some(review)) => review,
+                Ok(None) => return, // Cancellation is not approval and starts no child.
+                Err(error) => {
+                    show_info(&handle, "Backup ikke godkendt", error);
+                    return;
+                }
+            };
+            show_info(
+                &handle,
+                "Kontrol af valgt backup",
+                format!("{}\n\nKONTROLLEN KØRER\nIngen backup er godkendt endnu. Resultatet vises her, når den skrivebeskyttede kontrol er afsluttet.", review.description()),
+            );
+            let binary = lease.0.options.server_binary.clone();
+            tauri::async_runtime::spawn(async move {
+                let result = tauri::async_runtime::spawn_blocking(move || {
+                    let result = backup_verify_state::verify(&binary, &review.archive, &review.key);
+                    review.receipt(result)
+                }).await.unwrap_or_else(|_| "Kontrollen kunne ikke afsluttes. Ingen backup er godkendt. Prøv igen.".into());
+                let ui = handle.clone();
+                // Keep the lease through presentation. Closing a workspace or
+                // switching server cannot rebind this independent selected-byte receipt.
+                let _ = handle.run_on_main_thread(move || {
+                    show_info(&ui, "Kontrol af valgt backup", result);
+                    drop(lease);
+                });
+            });
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (save, lease);
+            show_info(&handle, "Backup", "Native backupkontrol og nøgleeksport er kun kvalificeret på macOS. Ingen fil er godkendt eller gemt.".into());
+        }
+    });
+}
+#[cfg(unix)]
+struct BackupReview {
+    archive: backup_verify_state::Selection,
+    key: backup_verify_state::Selection,
+}
+#[cfg(unix)]
+impl BackupReview {
+    fn selected(archive: Option<PathBuf>, key: Option<PathBuf>) -> Result<Option<Self>, String> {
+        let (Some(archive), Some(key)) = (archive, key) else {
+            return Ok(None);
+        };
+        Ok(Some(Self {
+            archive: backup_verify_state::Selection::read(&archive, false)?,
+            key: backup_verify_state::Selection::read(&key, true)?,
+        }))
+    }
+    fn description(&self) -> String {
+        format!(
+            "Valgt backup: {}\n{} bytes · SHA-256 {}\n\nSeparat betroet offentlig nøgle: {}\n{} bytes · SHA-256 {}",
+            self.archive.name,
+            self.archive.size(),
+            self.archive.sha256,
+            self.key.name,
+            self.key.size(),
+            self.key.sha256
+        )
+    }
+    fn receipt(&self, result: Result<backup_verify_state::Verified, String>) -> String {
+        let status = match result {
+            Ok(verified) => format!(
+                "VERIFICERET\nFormat: {}\nKontrolomfang: {}\nVirksomheder i den valgte fil: {}\nSignatur, inventar, aktuelt schema, integritet, journalkæde og originaler er kontrolleret.",
+                backup_verify_state::FORMAT,
+                backup_verify_state::SCOPE,
+                verified.companies
+            ),
+            Err(error) => format!("IKKE GODKENDT\n{error}"),
+        };
+        format!(
+            "{}\n\n{status}\n\nDette vedrører kun de valgte bytes og den valgte nøgle, ikke den aktive virksomheds tilstand. Ingen server er startet, og ingen gendannelse er foretaget. Kontrollen er ikke en faktisk gendannelsesprøve i en ny mappe.",
+            self.description()
+        )
+    }
+}
+#[cfg(target_os = "macos")]
+fn pick_backup_review() -> Result<Option<BackupReview>, String> {
+    let archive = rfd::FileDialog::new()
+        .set_title("Vælg eksporteret backup")
+        .pick_file();
+    if archive.is_none() {
+        return Ok(None);
+    }
+    let key = rfd::FileDialog::new()
+        .set_title("Vælg separat betroet offentlig nøgle (rå 32 bytes)")
+        .pick_file();
+    let Some(review) = BackupReview::selected(archive, key)? else {
+        return Ok(None);
+    };
+    let confirmation = rfd::MessageDialog::new()
+        .set_title("Kontrollér valgte bytes og nøglens oprindelse")
+        .set_description(format!("{}\n\nBekræft kun, hvis nøglen er modtaget og kontrolleret separat fra backupfilen. For en hosted server skal operatøren levere nøglen separat; den aktive forbindelse er ikke et tillidsbevis. Ingen nøgle fra arkivet bruges.\n\nFortsæt med skrivebeskyttet fuld kontrol af netop disse bytes? Dette er ikke en gendannelsesprøve.", review.description()))
+        .set_buttons(rfd::MessageButtons::OkCancel).show();
+    Ok((confirmation == rfd::MessageDialogResult::Ok).then_some(review))
+}
+#[cfg(target_os = "macos")]
+fn save_backup_key(state: &ShellState) -> Result<(), String> {
+    let (source, key) = state.managed.lock().map_err(|_| "Lokal drift er utilgængelig")?
+        .as_ref().ok_or("Nøgleeksport kræver en eksisterende administreret lokal profil. En hosted nøgle skal leveres separat af operatøren.")?
+        .backup_public_key()?;
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("Gem offentlig backupnøgle som ny fil")
+        .set_file_name("backup-public.key")
+        .save_file()
+    else {
+        return Ok(());
+    };
+    save_backup_key_new(&path, &source, &key)?;
+    rfd::MessageDialog::new().set_title("Offentlig backupnøgle gemt")
+        .set_description(format!("{}\n32 rå bytes. Opbevar nøglen separat og betroet. Ingen privat nøgle er eksporteret.", path.display())).show();
+    Ok(())
+}
+#[cfg(unix)]
+fn save_backup_key_new(
+    path: &std::path::Path,
+    source: &std::path::Path,
+    key: &[u8; 32],
+) -> Result<(), String> {
+    use std::{fs::OpenOptions, io::Write, os::unix::fs::OpenOptionsExt};
+    let parent = path
+        .parent()
+        .filter(|_| path.is_absolute())
+        .and_then(|p| p.canonicalize().ok())
+        .ok_or("Vælg en absolut sti i en eksisterende mappe")?;
+    let profile = source.parent().ok_or("Den lokale nøglesti er ugyldig")?;
+    if parent.starts_with(profile) {
+        return Err("Gem nøglen uden for den lokale kildeprofil. Profilen ændres ikke.".into());
+    }
+    let destination = parent.join(path.file_name().ok_or("Vælg et nyt filnavn")?);
+    let mut file = OpenOptions::new().write(true).create_new(true).mode(0o600)
+        .open(destination).map_err(|_| "Filen kunne ikke oprettes. Vælg et nyt filnavn i en skrivbar mappe; eksisterende filer og links overskrives aldrig.")?;
+    file.write_all(key).and_then(|_| file.sync_all())
+        .map_err(|_| "Nøglen blev ikke sikkert gemt. En ufuldstændig ny fil kan være oprettet; vælg et nyt filnavn og prøv igen.".into())
+}
 fn main() {
     // Held until the managed child has stopped and the application exits.
     let _package_lease = match rentemester_runtime::package_update::current_executable_lease() {
@@ -587,6 +761,7 @@ fn main() {
         managed: Mutex::new(None),
         connecting: AtomicBool::new(false),
         vault_busy: AtomicBool::new(false),
+        backup_busy: AtomicBool::new(false),
         generation: session_vault::Generation::default(),
         remembered: Mutex::new(None),
         selected_origin: Mutex::new(None),
@@ -611,6 +786,21 @@ fn main() {
                 None::<&str>,
             )?;
             let local = Submenu::with_items(handle, "Lokal drift", true, &[&verify, &backup])?;
+            let check_backup = MenuItem::with_id(
+                handle,
+                "backup-verify",
+                "Kontrollér eksporteret backup…",
+                true,
+                None::<&str>,
+            )?;
+            let save_key = MenuItem::with_id(
+                handle,
+                "backup-save-key",
+                "Gem offentlig backupnøgle…",
+                true,
+                None::<&str>,
+            )?;
+            let backups = Submenu::with_items(handle, "Backup", true, &[&check_backup, &save_key])?;
             let edit = Submenu::with_items(
                 handle,
                 "Rediger",
@@ -658,7 +848,7 @@ fn main() {
             let login = Submenu::with_items(handle, "Login", true, &[&save, &forget, &cancel])?;
             app.set_menu(Menu::with_items(
                 handle,
-                &[&application, &edit, &local, &login],
+                &[&application, &edit, &local, &login, &backups],
             )?)?;
             WebviewWindowBuilder::new(app, "launcher", WebviewUrl::App("index.html".into()))
                 .title("Rentemester")
@@ -700,6 +890,7 @@ fn main() {
             Ok(())
         })
         .on_menu_event(|app, event| {
+            backup_menu(app, event.id().as_ref());
             local_menu(app, event.id().as_ref());
             session_menu(app, event.id().as_ref());
         })
@@ -745,6 +936,91 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
+    fn backup_fixture() -> PathBuf {
+        use ring::rand::{SecureRandom, SystemRandom};
+        use std::os::unix::fs::DirBuilderExt;
+        let mut random = [0u8; 24];
+        SystemRandom::new().fill(&mut random).unwrap();
+        let suffix = random
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        let path = std::env::temp_dir()
+            .canonicalize()
+            .unwrap()
+            .join(format!("rentemester-backup-adapter-{suffix}"));
+        std::fs::DirBuilder::new()
+            .mode(0o700)
+            .create(&path)
+            .unwrap();
+        path
+    }
+    #[test]
+    #[cfg(unix)]
+    fn backup_review_without_managed_freezes_bytes_and_binds_refusal_receipt() {
+        let dir = backup_fixture();
+        let archive = dir.join("export.json");
+        let key = dir.join("separate.key");
+        std::fs::write(&archive, b"selected archive").unwrap();
+        std::fs::write(&key, [7; 32]).unwrap();
+        // The adapter takes only two OS selections, not a backend/session.
+        let review = BackupReview::selected(Some(archive.clone()), Some(key.clone()))
+            .unwrap()
+            .unwrap();
+        let description = review.description();
+        std::fs::write(&archive, b"replacement").unwrap();
+        std::fs::write(&key, [9; 32]).unwrap();
+        assert_eq!(review.description(), description);
+        assert!(description.contains("16 bytes"));
+        assert!(description.contains(&review.archive.sha256));
+        assert!(description.contains(&review.key.sha256));
+        let result = backup_verify_state::verify(
+            std::path::Path::new("/nonexistent-backup-verifier"),
+            &review.archive,
+            &review.key,
+        );
+        assert!(result.is_err());
+        let receipt = review.receipt(result);
+        assert!(receipt.contains("IKKE GODKENDT"));
+        assert!(!receipt.contains("VERIFICERET"));
+        assert!(receipt.contains(&description));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    #[cfg(unix)]
+    fn backup_cancelled_selection_never_reads_or_creates_review() {
+        assert!(
+            BackupReview::selected(None, Some("/nonexistent".into()))
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            BackupReview::selected(Some("/nonexistent".into()), None)
+                .unwrap()
+                .is_none()
+        );
+    }
+    #[test]
+    #[cfg(unix)]
+    fn backup_public_key_save_is_raw_new_file_only_and_outside_source_profile() {
+        let dir = backup_fixture();
+        let profile = dir.join("profile");
+        std::fs::create_dir(&profile).unwrap();
+        let source = profile.join("backup-public.key");
+        let destination = dir.join("separate.key");
+        let key = [3; 32];
+        assert!(save_backup_key_new(&source, &source, &key).is_err());
+        save_backup_key_new(&destination, &source, &key).unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), key);
+        assert!(save_backup_key_new(&destination, &source, &[4; 32]).is_err());
+        assert_eq!(std::fs::read(&destination).unwrap(), key);
+        let link = dir.join("link.key");
+        std::os::unix::fs::symlink(&destination, &link).unwrap();
+        assert!(save_backup_key_new(&link, &source, &key).is_err());
+        assert!(!source.exists());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
     #[test]
     fn external_connections_require_exact_https_origin_and_same_origin_navigation() {
         for value in [
