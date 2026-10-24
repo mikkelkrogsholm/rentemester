@@ -216,6 +216,8 @@ No deadlines, effort estimates, unsupported platform claims, external approvals 
 
 Edges are completion prerequisites. Contract-driven scaffolding/prototypes may begin earlier with explicit stable interfaces; no dependent acceptance is claimed before prerequisites pass. Readiness is checked per bounded implementation package, not for an entire phase at once.
 
+Prospective amendment (2026-10-24), only R42 → R41: R42 requires the accepted server-side identity contract from #712, rather than whole installed-native #712 completion. The consumed contract, exact evidence, invalidation and original frozen edge are recorded in [r42-server-identity-prerequisite.json](../implementation/contracts/r42-server-identity-prerequisite.json). Whole #712/#722 installed WebKit/vault/cancel/profile duties, all other completion edges, original scopes/J01–J07 and release/cutover/retirement gates are unchanged. Final installed manual desktop acceptance stays last. The original plan/GDD edge remains historical; this annotation is its sole prospective override.
+
 ## Authoritative execution state
 
 GitHub issues are the single task-state authority. Each child has exactly one

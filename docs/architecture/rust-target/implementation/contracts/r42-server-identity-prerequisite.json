@@ -1,0 +1,168 @@
+{
+  "format": "rentemester-prospective-dependency-amendment/1",
+  "id": "r42.consumed-server-identity.v1",
+  "consumer_issue": 714,
+  "provider_issue": 712,
+  "effective_from_source": "a75e6bad7d7a885c9cb9353c8cae11cca9782b67",
+  "kind": "prospective single-edge sequencing refinement",
+  "replaces": {
+    "edge_id": "edge.delivery.r42.requires.r41",
+    "original_rule": "Complete whole R41/#712 before accepting R42/#714",
+    "original_frozen_models": {
+      "docs/architecture/rust-target/epic/gdd.json": "c5f8bc03bb0b7730e30520c458b57961472a5b94db732e2428e1422af7ab9d38",
+      "docs/architecture/rust-target/epic/plan.json": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a"
+    },
+    "original_pointers": [
+      "epic/plan.json#/issues/41/depends_on/5",
+      "epic/gdd.json#/edges/276",
+      "epic/gdd.json#/nodes/action.delivery.r42/contract/preconditions/5"
+    ],
+    "historical_bytes_and_all_other_edges_unchanged": true
+  },
+  "required_consumed_contract": [
+    "Trusted server human sessions, password/MFA/recovery and exact-account adoption",
+    "Current workspace/company authority and revocation fences; no stale cross-company disclosure",
+    "Separate authenticated service principal create/grant/rotate/revoke and durable job authority; no credential-derived caller override",
+    "Explicit local/hosted origins/listeners/cookie profiles and no silent transport fallback"
+  ],
+  "satisfaction": "Previously accepted headless server-side components and current unchanged relevant controls plus source review; this is NOT acceptance of whole712",
+  "retained_open_duties": {
+    "712": [
+      "Current installed Tauri WebKit cookie installation/save/restore/cancel and exact server/account transitions",
+      "Actual installed OS vault binding/account lifecycle and pending-request cancellation/context behavior"
+    ],
+    "722": [
+      "Profile capabilities/reconnect/server-account-company switches under pending reads/writes",
+      "No local fallback; moved source/destination presentation and installed native validation"
+    ]
+  },
+  "all_other_gates": [
+    "All55 original scopes and acceptance criteria unchanged",
+    "Whole712 and722 OPEN; platform/accessibility678 and J01-J07 unchanged",
+    "Linux packaging/process qualification725, signing/update/release/cutover/TypeScript retirement remain separate",
+    "Final installed manual desktop acceptance LAST; no screen unlock requested"
+  ],
+  "invalidation": "Changing consumed server identity, admission, origin/profile, readiness or shutdown contracts requires proportionate renewed server qualification. Whole712 closure remains separately gated.",
+  "sourceHashes": {
+    "crates/rentemester-server/src/auth_http.rs": "022eb38c8933d7b8d778a24ac45851427fbbe390ab3231b00299a5c69c2495f8",
+    "crates/rentemester-server/src/backend.rs": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+    "crates/rentemester-server/src/main.rs": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+    "crates/rentemester-server/src/product_http.rs": "1f4ca010b1276a8b6eae7306b12b410690b422982102b5bd3001df0cd83d1b45",
+    "crates/rentemester-server/src/tests.rs": "4b3da9c0f3d9e4eedacb39a79cf0eaba0153c0d3280bc4d002fcbf271daf913d",
+    "crates/rentemester-server/src/shutdown.rs": "e5f90370a24a967d025f7350b4393c462717419896043d7a7091f881237e6104",
+    "crates/rentemester-server/src/hosted_worker.rs": "9fd17bd45eb3a119998ecc1ca6b3208c64d8ffc2c25a24e9fbe64ae0df9261c0",
+    "crates/rentemester-server/src/mail_worker.rs": "df3fe8bd25312d9696018fed60a04bfef93fdd8f9b29ff4d4556873501e60d93",
+    "crates/rentemester-server/src/product_http/workspace_inbox.rs": "ff324e3aa9c5fc4d45b10a14f864c6975182d58bd00de249c94c52151695a01a",
+    "crates/rentemester-server/tests/shutdown_unix.rs": "3c96c92be5d6a555150dd913e50d3981285d3bf1c80edecb6ebe0dc0c74f67f9",
+    "crates/rentemester-storage/src/readiness.rs": "895dac3b2ae1dca3c2d93922002d2f23475f1655335773a7519144495895c79f",
+    "crates/rentemester-host/src/readiness.rs": "f25292abcd87859a30771e172781728d9c8c04a6a0ea26505ca12c39c7a63d66"
+  },
+  "evidence": [
+    {
+      "path": "/tmp/rentemester-rust-reports/r62-server714-readiness-contracts-accepted.json",
+      "sha256": "ca4976d7dcccf60bb5e38197d05f72e4a9823df1c0fe3dfb07d076d0bdfc6b4e"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r61-server714-actual-health.json",
+      "sha256": "bcb6c4d1f8376af4d725e7ff63a0173373569758060d937ac463a9bffb148cae"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r41-identity712-component-accepted.json",
+      "sha256": "d95949983f76072a57570f73387097f4cc0c0ba420199e668d3d73c5a85b7abd"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r41-identity712-public-6fcf4fe1.json",
+      "sha256": "3042f26c05e2aab4ab44bbf0bbaad90af486abf7c2e04ad5837d2ab5e54d5975"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r44-account-security712-component-accepted.json",
+      "sha256": "32a36073b8c1dc0567113cba86c0fd02de3191e14be483bc6edd615de077efdb"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r44-712-current-owner.json",
+      "sha256": "6da022e6352c000f0bb1b3f8afe2dfa71abb5501e9be2bebc508230a86b0d3b8"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r13-last-owner685-accepted.json",
+      "sha256": "76d2a00054c6b0cd4a876d2bf948eef7deddffbcda848f188c564520c71f2dc0"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/native-context-switch92.json",
+      "sha256": "7ad644fac20a054eb500ca1596cf403d2301b8a03032dba8ef9a9aa8b6138484"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+      "sha256": "25545093ad9b62fb0ebf9bf754fb1d4ff388bcf3fb3f5abafff176defb1f61ec"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r35-jobs690-accepted.json",
+      "sha256": "26aca9cf2721ef4b8013eca46d4defb0e190a51d2e32ee7f87bdd6dac1feb5fc"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/server-shutdown104.json",
+      "sha256": "a3b1f4b46ca9c8f9001c0e06c647217929a1e5a4f407740d3b993094479e74d5"
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/local-runtime138b.json",
+      "sha256": "1cba348df36ce6908e3e932875dd713d570416fce1057ab6a41c081957c78349"
+    },
+    {
+      "path": "/tmp/rm104-shutdown-final.log",
+      "sha256": "3a718584a713bc2d27dd73c0946133f321bea94acd79587afbf3d36cf32c73b8"
+    }
+  ],
+  "criteria": [
+    {
+      "criterion": "Malformed/oversized/untrusted origin/unauthenticated cross-company refusals",
+      "evidence": [
+        "server-shutdown104.json",
+        "/tmp/rm104-shutdown-final.log",
+        "r13-last-owner685-accepted.json",
+        "native-context-switch92.json"
+      ],
+      "source": [
+        "product_http.rs origin_proof/proof; tests.rs real HTTP media/ambiguity/body cap/chunked socket",
+        "workspace_inbox.rs strict native query/body/authority gates"
+      ],
+      "finding": "Accepted actual negative controls and current source; tests/auth controls unchanged at reviewed accepted revisions."
+    },
+    {
+      "criterion": "Read-only health/readiness represents unsupported/migration without disclosure",
+      "evidence": [
+        "r62-server714-readiness-contracts-accepted.json",
+        "r61-server714-actual-health.json"
+      ],
+      "finding": "Current/setup/reopen/prefix30/newer32 actual HTTP phases, sanitized503/bodylessHEAD/no auth routes/cookies and unchanged canonical DB bytes."
+    },
+    {
+      "criterion": "Explicit loopback/hosted separation and committed-work preserving termination/restart",
+      "evidence": [
+        "r41-identity712-public-6fcf4fe1.json",
+        "r44-712-current-owner.json",
+        "local-runtime138b.json",
+        "server-shutdown104.json"
+      ],
+      "finding": "Actual HTTPS MFA/revocation/unchanged ledger restart; local peer/competing-owner/no TCP fallback; actual16MiB SIGTERM drain exit0/configured reopen/SIGINT. Four lifecycle files byte-identical; later readiness/main integration separately R61 accepted."
+    }
+  ],
+  "limits": [
+    "Actual process proof is macOS; no claim that Linux distribution725 passed",
+    "Existing service102 is present and hash verified; historical53 raw path missing, not newly reverified or replayed",
+    "No financial/provider mutation or installed GUI effects replayed"
+  ],
+  "review": "Main actual gate/config/lifecycle source review plus independent bounded full714 criterion review; no server-specific missing criterion found. This explicitly supersedes the prior whole712 sequencing gate for714 only, not scope or security controls.",
+  "scope_bindings": [
+    {
+      "scope": "Route dispatch/limits/trusted principal/supported capabilities",
+      "proof": "Current641 HTTP operations in source-bound exact1519 contract union; current product origin/cookie proof plus current company/service admission and accepted685/92/102 controls. Capabilities never confer authorization."
+    },
+    {
+      "scope": "Binary/static SPA responses",
+      "proof": "main.rs cockpit_router ServeDir/ServeFile existing React SPA; actual shared UI R41/R44 HTTPS journeys and local138 plus actual10416MiB binary in-flight drain qualify original scope. No separate desktop screens or engine."
+    },
+    {
+      "scope": "Configuration validation/graceful lifecycle/secret-free observability",
+      "proof": "Current backend cookie_profile/local runtime config validation and main startup safe configured/connected/listener output; reviewed code never logs cookie/service-key or raw request bodies. Actual R61 sanitized startup/readiness and104 shutdown/local138 restart. No promise of new telemetry framework."
+    }
+  ]
+}
