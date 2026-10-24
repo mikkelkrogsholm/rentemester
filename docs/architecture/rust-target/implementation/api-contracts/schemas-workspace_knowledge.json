@@ -103,7 +103,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/parties.rs",
-            "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
+            "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
             "needle": "defaults_json"
           }
         ]
@@ -6069,7 +6069,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/parties.rs",
-            "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
+            "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
             "needle": "defaults_json"
           }
         ]
@@ -11448,6 +11448,319 @@
             },
             "structuredContent": {
               "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CreateIdentity": {
+      "type": "object",
+      "properties": {
+        "partyId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "aliases": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identifiers": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IdentifierInputSerde"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "observedAt": {
+          "type": "string"
+        },
+        "reviewAssertion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "source",
+        "observedAt",
+        "reviewAssertion"
+      ],
+      "additionalProperties": false
+    },
+    "CreateIdentitySdk": {
+      "type": "object",
+      "properties": {
+        "partyId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "kind": {
+          "enum": [
+            "person",
+            "organization",
+            "public_authority",
+            "financial_institution"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1280
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 640
+          },
+          "maxItems": 16
+        },
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "identifier": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "identifierKind": {
+                "enum": [
+                  "dk_cvr",
+                  "eu_vat",
+                  "non_eu"
+                ]
+              }
+            },
+            "required": [
+              "country",
+              "identifierKind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewAssertion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "source",
+        "observedAt",
+        "reviewAssertion",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CreateIdentityHttp": {
+      "type": "object",
+      "properties": {
+        "partyId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "aliases": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identifiers": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IdentifierInputSerde"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "observedAt": {
+          "type": "string"
+        },
+        "reviewAssertion": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "source",
+        "observedAt",
+        "reviewAssertion",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_create_Data": {
+      "type": "object",
+      "properties": {
+        "party": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Party"
+        }
+      },
+      "required": [
+        "party"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_create_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_create_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_create_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_create_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_create_Envelope"
             }
           },
           "required": [

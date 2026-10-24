@@ -55,22 +55,22 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/parties.rs",
-      "sha256": "23a3ac94dd2effbf6342343df5e172f3198febc890605765be9a6cd149fbe2d0",
+      "sha256": "9f4932e8016914bc455b815b09cbaca273f7bf78d112f447c9714ce6be595c62",
       "needle": "pub(super) async fn handle("
     },
     {
       "path": "crates/rentemester-application/src/parties.rs",
-      "sha256": "a8169d75029d8e30e5a0d49e20fdb4534dc81adda0715b36bd95e21add9d9e4d",
+      "sha256": "db8f11d0ab6653b2295fb410d0ef8ad6b5e9eb5542af0d7598425f05941883d0",
       "needle": "pub enum Action"
     },
     {
       "path": "crates/rentemester-storage/src/parties.rs",
-      "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
+      "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
       "needle": "pub fn inspect("
     },
     {
       "path": "crates/rentemester-client/src/parties.rs",
-      "sha256": "96013be0c9ec61aa3fa96f8ecec720bd69d72c687b482fbdad2b600be95714eb",
+      "sha256": "27ff59f193f28f64df061efce99799ea96946a08d43e5d319955f69d1021fb29",
       "needle": "impl ApiClient"
     },
     {
@@ -159,22 +159,22 @@
     "sourceRefs": [
       {
         "path": "crates/rentemester-server/src/product_http/parties.rs",
-        "sha256": "23a3ac94dd2effbf6342343df5e172f3198febc890605765be9a6cd149fbe2d0",
+        "sha256": "9f4932e8016914bc455b815b09cbaca273f7bf78d112f447c9714ce6be595c62",
         "needle": "pub(super) async fn handle("
       },
       {
         "path": "crates/rentemester-application/src/parties.rs",
-        "sha256": "a8169d75029d8e30e5a0d49e20fdb4534dc81adda0715b36bd95e21add9d9e4d",
+        "sha256": "db8f11d0ab6653b2295fb410d0ef8ad6b5e9eb5542af0d7598425f05941883d0",
         "needle": "pub enum Action"
       },
       {
         "path": "crates/rentemester-storage/src/parties.rs",
-        "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
+        "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
         "needle": "pub fn merge_proposal"
       },
       {
         "path": "crates/rentemester-client/src/parties.rs",
-        "sha256": "96013be0c9ec61aa3fa96f8ecec720bd69d72c687b482fbdad2b600be95714eb",
+        "sha256": "27ff59f193f28f64df061efce99799ea96946a08d43e5d319955f69d1021fb29",
         "needle": "pub async fn mutate_workspace_party"
       }
     ],
@@ -1828,5 +1828,74 @@
     "supportedOriginalNames": 27,
     "explicitlyUnavailable": "workspace_party_create; no inferred native role",
     "remaining": "30other original names, supported identity-only create, full31workflow actual binding/annotation/reconnect proof; counts do not establish parity"
+  },
+  "r76IdentityOnly717": {
+    "source_revision": "d8e8241fc0a15810d19eac64e0a0ede9abf04716",
+    "supportedOriginalWorkspacePartyCreate": true,
+    "newHTTPRoute": "http:POST /api/companies/{slug}/workspace-parties/create-identity",
+    "previous1547RowsExplicitlyRefined": [
+      "cli:party approve-merge",
+      "cli:party propose-merge",
+      "cli:remote approve-workspace-party-merge",
+      "cli:remote assert-workspace-party-alias",
+      "cli:remote assert-workspace-party-field",
+      "cli:remote create-workspace-party",
+      "cli:remote link-workspace-party-role",
+      "cli:remote propose-workspace-party-merge",
+      "cli:remote workspace-parties",
+      "cli:remote workspace-party",
+      "http:GET /api/companies/{slug}/workspace-parties",
+      "http:GET /api/companies/{slug}/workspace-parties/{id}",
+      "http:HEAD /api/companies/{slug}/workspace-parties",
+      "http:HEAD /api/companies/{slug}/workspace-parties/{id}",
+      "http:POST /api/companies/{slug}/workspace-parties",
+      "http:POST /api/companies/{slug}/workspace-parties/create-identity",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/alias",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/approve-merge",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/assertion",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/propose-merge",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/role",
+      "mcp:approve_workspace_party_merge",
+      "mcp:assert_workspace_party_alias",
+      "mcp:assert_workspace_party_field",
+      "mcp:company_knowledge_context",
+      "mcp:company_knowledge_propose",
+      "mcp:company_knowledge_review",
+      "mcp:company_knowledge_supersede",
+      "mcp:corporate_record_download",
+      "mcp:corporate_record_enrich",
+      "mcp:corporate_record_ingest",
+      "mcp:corporate_record_inspect",
+      "mcp:corporate_record_link",
+      "mcp:corporate_record_list",
+      "mcp:corporate_record_supersede",
+      "mcp:create_workspace_party",
+      "mcp:link_workspace_party_role",
+      "mcp:ownership_graph_query",
+      "mcp:ownership_snapshot_apply",
+      "mcp:ownership_snapshot_history",
+      "mcp:ownership_snapshot_propose",
+      "mcp:ownership_snapshot_review",
+      "mcp:propose_workspace_party_merge",
+      "mcp:workspace_inbox_assign",
+      "mcp:workspace_inbox_complete",
+      "mcp:workspace_inbox_ingest",
+      "mcp:workspace_inbox_inspect",
+      "mcp:workspace_inbox_list",
+      "mcp:workspace_inbox_status",
+      "mcp:workspace_parties",
+      "mcp:workspace_party",
+      "mcp:workspace_party_approve_merge",
+      "mcp:workspace_party_create",
+      "mcp:workspace_party_inspect",
+      "mcp:workspace_party_link_role",
+      "mcp:workspace_party_propose_merge",
+      "mcp:workspace_party_search"
+    ],
+    "currentUniverse": "1548=642HTTP489CLI417MCP",
+    "nativeCreateStillRequiresRole": true,
+    "privateAnchor": "Exactcanonical linked identity_registration selected-company, never businessrole; strictsourcefreerecoverycodec",
+    "sourceReview": "Independent static GETshadow defect fixed preservingopaqueIDlookup; valid duplicate/case-equivalent aliases match canonical nativeproducer; libraryserver0 distinguishedfrom actual binary1check",
+    "limits": "Application/private scoped rollback and source-free codec checks plus real HTTP negative gates and stdio fixtures. Outer signed restore/current fullagentworkflow actualMCPserver/reconnect still require integrated qualification before whole717closure."
   }
 }

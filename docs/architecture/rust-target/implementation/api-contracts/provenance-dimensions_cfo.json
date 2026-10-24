@@ -33,7 +33,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "1f4ca010b1276a8b6eae7306b12b410690b422982102b5bd3001df0cd83d1b45",
+      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
       "needle": "fn proof("
     },
     {
