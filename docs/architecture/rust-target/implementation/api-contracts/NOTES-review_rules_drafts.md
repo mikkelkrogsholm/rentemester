@@ -26,3 +26,5 @@ Existing strict Python oracle is the structural/source-hash check. Main independ
 Executed checks: `python3 /tmp/r51-677-oracle.py review_rules_drafts` passed (55 exact IDs, source hashes and schema resolution); `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed (34009 nodes, 107681 edges). These are structural/source observations only, not semantic acceptance or live workflow proof.
 
 Lead source review: pre-fix HEAD accounting-drafts and reviewed-bank can return200 and commit draft/source/audit rows under valid body/current CompanyDraftWrite; no journal posting. Their HEAD wire body is zero; NativeDraftOutput is only the constructor schema. Posting-rules HEAD uses empty action and refuses before any lifecycle/audit INSERT. These pre-fix source facts require a method guard before external publication; no effect probe was run.
+
+Lead protocol review binds each static RPC message to its actual Session/globalguard/localparse code; a cartesian code/message enum is not promised.
