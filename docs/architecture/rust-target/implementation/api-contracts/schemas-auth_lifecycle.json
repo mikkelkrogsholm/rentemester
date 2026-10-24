@@ -1,0 +1,622 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "RequestRefused": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "request_refused"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "HTTP protocol negotiation is incompatible"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidCredentials": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid credentials"
+        },
+        "code": {
+          "const": "INVALID_CREDENTIALS"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "AuthUnconfirmed": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Authentication outcome could not be confirmed"
+        },
+        "code": {
+          "const": "AUTH_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "ResetUnconfirmed": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Reset outcome could not be confirmed"
+        },
+        "code": {
+          "const": "RESET_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidResetToken": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid token"
+        },
+        "code": {
+          "const": "INVALID_TOKEN"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordShort": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Password too short"
+        },
+        "code": {
+          "const": "PASSWORD_TOO_SHORT"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordLong": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Password too long"
+        },
+        "code": {
+          "const": "PASSWORD_TOO_LONG"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "InvalidVerificationToken": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "INVALID_TOKEN"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "VerificationUnconfirmed": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "VERIFICATION_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Status": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Verified": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "user": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "status",
+        "user"
+      ],
+      "additionalProperties": false
+    },
+    "ResetAcknowledgement": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "message": {
+          "const": "If this email exists in our system, check your email for the reset link"
+        }
+      },
+      "required": [
+        "status",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Date": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+      "minLength": 24,
+      "maxLength": 24,
+      "description": "Canonical valid UTC calendar timestamp; year 0001..9999, milliseconds always present."
+    },
+    "SessionUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "At most 4096 UTF-8 bytes, no control characters; identity fields also nonblank after trim. maxLength is a secondary code-point bound, byte check remains authoritative."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "At most 4096 UTF-8 bytes, no control characters; identity fields also nonblank after trim. maxLength is a secondary code-point bound, byte check remains authoritative."
+        },
+        "emailVerified": {
+          "const": true
+        },
+        "twoFactorEnabled": {
+          "const": true
+        },
+        "createdAt": {
+          "$ref": "schemas-auth_lifecycle.json#/$defs/Date"
+        },
+        "updatedAt": {
+          "$ref": "schemas-auth_lifecycle.json#/$defs/Date"
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "emailVerified",
+        "twoFactorEnabled",
+        "createdAt",
+        "updatedAt",
+        "image"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordChanged": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "token": {
+          "type": "null"
+        },
+        "user": {
+          "$ref": "schemas-auth_lifecycle.json#/$defs/SessionUser"
+        }
+      },
+      "required": [
+        "status",
+        "token",
+        "user"
+      ],
+      "additionalProperties": false
+    },
+    "SessionSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "At most 4096 UTF-8 bytes, no control characters; identity fields also nonblank after trim. maxLength is a secondary code-point bound, byte check remains authoritative."
+        },
+        "createdAt": {
+          "$ref": "schemas-auth_lifecycle.json#/$defs/Date"
+        },
+        "expiresAt": {
+          "$ref": "schemas-auth_lifecycle.json#/$defs/Date"
+        },
+        "current": {
+          "type": "boolean"
+        },
+        "ipAddress": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        },
+        "userAgent": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "id",
+        "createdAt",
+        "expiresAt",
+        "current",
+        "ipAddress",
+        "userAgent"
+      ],
+      "additionalProperties": false
+    },
+    "SessionList": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas-auth_lifecycle.json#/$defs/SessionSummary"
+      },
+      "maxItems": 1000,
+      "description": "All same-account unexpired sessions in createdAt DESC then binary id ASC order. Raw scanned rows including expired rows count toward 1000; no cursor or truncation. Serialized output <=1048576 bytes."
+    },
+    "GeneratedBackupCodes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "backupCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$",
+            "minLength": 11,
+            "maxLength": 11
+          },
+          "minItems": 10,
+          "maxItems": 10,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "status",
+        "backupCodes"
+      ],
+      "additionalProperties": false
+    },
+    "ViewedBackupCodes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": true
+        },
+        "backupCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$",
+            "minLength": 11,
+            "maxLength": 11
+          },
+          "minItems": 0,
+          "maxItems": 10,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "status",
+        "backupCodes"
+      ],
+      "additionalProperties": false
+    },
+    "ChangePasswordInput": {
+      "type": "object",
+      "properties": {
+        "currentPassword": {
+          "type": "string",
+          "description": "Sensitive; at most 4096 UTF-8 bytes."
+        },
+        "newPassword": {
+          "type": "string",
+          "description": "Sensitive original string; 12..128 UTF-16 code units, before NFKC KDF normalization. Not a Unicode-code-point length bound."
+        },
+        "revokeOtherSessions": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "currentPassword",
+        "newPassword"
+      ],
+      "additionalProperties": false
+    },
+    "BackupInput": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "description": "Sensitive; at most 4096 UTF-8 bytes."
+        }
+      },
+      "required": [
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeOneInput": {
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "At most 4096 UTF-8 bytes, no control characters; identity fields also nonblank after trim. maxLength is a secondary code-point bound, byte check remains authoritative."
+        }
+      },
+      "required": [
+        "sessionId"
+      ],
+      "additionalProperties": false
+    },
+    "ResetRequestInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "ASCII <=4096 bytes, no controls; lowercased by lookup_email. Local: ASCII alnum or _'+-.; nonempty, no leading dot/double-dot, final not apostrophe/dot. Domain labels start alnum and contain alnum/hyphen; final TLD >=2 ASCII letters. No trim."
+            },
+            "redirectTo": {
+              "type": "string",
+              "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+            }
+          },
+          "required": [
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "ASCII <=4096 bytes, no controls; lowercased by lookup_email. Local: ASCII alnum or _'+-.; nonempty, no leading dot/double-dot, final not apostrophe/dot. Domain labels start alnum and contain alnum/hyphen; final TLD >=2 ASCII letters. No trim."
+            },
+            {
+              "type": "string",
+              "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "object",
+                "array",
+                "number",
+                "string"
+              ]
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      ]
+    },
+    "VerificationRequestInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "ASCII <=4096 bytes, no controls; lowercased by lookup_email. Local: ASCII alnum or _'+-.; nonempty, no leading dot/double-dot, final not apostrophe/dot. Domain labels start alnum and contain alnum/hyphen; final TLD >=2 ASCII letters. No trim."
+            },
+            "callbackURL": {
+              "type": "string",
+              "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+            }
+          },
+          "required": [
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "maxLength": 4096,
+              "description": "ASCII <=4096 bytes, no controls; lowercased by lookup_email. Local: ASCII alnum or _'+-.; nonempty, no leading dot/double-dot, final not apostrophe/dot. Domain labels start alnum and contain alnum/hyphen; final TLD >=2 ASCII letters. No trim."
+            },
+            {
+              "type": "string",
+              "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "object",
+                "array",
+                "number",
+                "string"
+              ]
+            }
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      ]
+    },
+    "ResetInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9]{24}$",
+              "minLength": 24,
+              "maxLength": 24
+            },
+            "newPassword": {
+              "type": "string",
+              "description": "Sensitive original string; 12..128 UTF-16 code units, before NFKC KDF normalization. Not a Unicode-code-point length bound."
+            }
+          },
+          "required": [
+            "token",
+            "newPassword"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9]{24}$",
+              "minLength": 24,
+              "maxLength": 24
+            },
+            {
+              "type": "string",
+              "description": "Sensitive original string; 12..128 UTF-16 code units, before NFKC KDF normalization. Not a Unicode-code-point length bound."
+            }
+          ],
+          "items": {
+            "not": {
+              "type": [
+                "null",
+                "boolean",
+                "object",
+                "array",
+                "number",
+                "string"
+              ]
+            }
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "VerifyQuery": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+          "maxLength": 8192
+        },
+        "callbackURL": {
+          "type": "string",
+          "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "ResetCallbackQuery": {
+      "type": "object",
+      "properties": {
+        "callbackURL": {
+          "type": "string",
+          "description": "Optional but never JSON null. Empty allowed. Otherwise <=4096 UTF-8 bytes, no trim/control/backslash; absolute http(s) same trusted origin with no userinfo, or restricted single-slash relative path/query. RecoveryLinks::destination policy applies; server trusts only configured origin."
+        }
+      },
+      "required": [
+        "callbackURL"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
