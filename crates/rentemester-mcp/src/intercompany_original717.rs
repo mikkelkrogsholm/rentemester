@@ -12,7 +12,7 @@ pub fn accepts(name: &str) -> bool {
 }
 pub fn tools() -> Vec<Value> {
     catalogue().into_iter().map(|mut t| {
-        t["description"] = json!(format!("{} Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Supplied company must be a current admitted endpoint. Reuse normalized plan disposition and ID for proposal.", t["description"].as_str().unwrap())); t
+        t["description"] = json!(format!("{} Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.", t["description"].as_str().unwrap())); t
     }).collect()
 }
 fn op(name: &str) -> &str {
@@ -188,9 +188,9 @@ struct Link {
     principal_kind: String,
     principal_id: String,
 }
-fn state(v: &Value, company: &str) -> Option<Value> {
+fn state(v: &Value, company: &str, require_endpoint: bool) -> Option<Value> {
     let d = normalized(&v["disposition"])?;
-    if d != v["disposition"] || !endpoint(&d, company) || !hash(&v["payloadHash"]) {
+    if d != v["disposition"] || (require_endpoint && !endpoint(&d, company)) || !hash(&v["payloadHash"]) {
         return None;
     }
     let ev = events(&v["events"])?;
@@ -202,17 +202,13 @@ fn state(v: &Value, company: &str) -> Option<Value> {
     {
         return None;
     }
-    if ev.len() > 2
-        || ev.iter().skip(1).any(|e| {
-            e["event_type"] != "approved"
-                || serde_json::from_str::<Value>(e["canonical_payload"].as_str().unwrap())
-                    .ok()
-                    .is_none_or(|p| p["payloadHash"] != v["payloadHash"])
-                || (e["principal_kind"] == first["principal_kind"]
-                    && e["principal_id"] == first["principal_id"])
-        })
-    {
-        return None;
+    let mut approved = false;
+    for e in ev.iter().skip(1) {
+        let payload:Value=serde_json::from_str(e["canonical_payload"].as_str()?).ok()?;
+        if e["event_type"]=="approved" {
+            if approved || payload!=json!({"payloadHash":v["payloadHash"]}) || (e["principal_kind"]==first["principal_kind"] && e["principal_id"]==first["principal_id"]) {return None;}
+            approved=true;
+        } else if !matches!(e["event_type"].as_str(),Some("rejected"|"cancelled"|"settled"|"superseded"|"exception")) || payload.get("payloadHash").is_some_and(|h|h!=&v["payloadHash"]) {return None;}
     }
     for e in &life {
         if !matches!(
@@ -223,6 +219,14 @@ fn state(v: &Value, company: &str) -> Option<Value> {
         {
             return None;
         }
+    }
+    // Retain typed/hash-bound native receipt facts, including admitted historical events.
+    // The server remains the authority for records, current signed ledgers and write admission.
+    for e in life.iter().filter(|e| e["event_type"]=="settled") {
+        let payload:Value=serde_json::from_str(e["canonical_payload"].as_str()?).ok()?;
+        let ids:Vec<String>=serde_json::from_value(payload["settlementEvidenceRecordIds"].clone()).ok()?;
+        if ids.is_empty() || ids.len()>64 || ids.iter().any(|id|text(id,160).ok().as_ref()!=Some(id)) {return None;}
+        let mut canonical=ids.clone();canonical.sort_by(|a,b|a.encode_utf16().cmp(b.encode_utf16()));canonical.dedup();if canonical!=ids{return None;}
     }
     let links: Vec<Link> = serde_json::from_value(v["links"].clone()).ok()?;
     let mut out = vec![];
@@ -245,9 +249,12 @@ fn state(v: &Value, company: &str) -> Option<Value> {
         {
             return None;
         }
+        if !ev.iter().chain(life.iter()).any(|e| {
+            e["event_type"]=="exception" && serde_json::from_str::<Value>(e["canonical_payload"].as_str().unwrap()).ok().is_some_and(|p|p["kind"]=="one_sided_posting" && p["side"]==l.side)
+        }) {return None;}
         out.push(json!({"side":l.side,"company_slug":l.company_slug,"journal_entry_id":l.journal_entry_id,"journal_entry_no":l.journal_entry_no,"journal_entry_hash":l.journal_entry_hash,"ledger_head_hash":l.ledger_head_hash,"linked_at":l.linked_at,"actor":l.actor,"principal_kind":l.principal_kind,"principal_id":l.principal_id}));
     }
-    let mut status = if ev.len() == 2 {
+    let mut status = if approved {
         "approved"
     } else {
         "proposed"
@@ -324,62 +331,60 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !slug(company) {
         return Err("explicit bounded company slug required");
     }
-    for k in ["dispositionId", "replacementDispositionId"] {
-        if let Some(v) = args.get(k) {
-            let s = text(v.as_str().unwrap(), 80).map_err(|_| "bounded disposition ID required")?;
-            if matches!(s.as_str(), "." | "..") {
-                return Err("invalid disposition selector");
-            }
-        }
-    }
-    if let Some(v) = args.get("reason") {
-        text(v.as_str().unwrap(), 1000).map_err(|_| "bounded reason required")?;
-    }
-    if args
-        .get("asOf")
-        .is_some_and(|v| rentemester_engine::fiscal_year::Date::parse(v.as_str().unwrap()).is_err())
-    {
-        return Err("native calendar asOf required");
-    }
-    if args
-        .get("ledgerHeadHash")
-        .is_some_and(|v| !v.is_null() && !hash(v))
-    {
-        return Err("exact nullable ledger head required");
-    }
-    if let Some(a) = args["settlementEvidenceRecordIds"].as_array() {
-        if a.len() > 64 || a.iter().any(|v| text(v.as_str().unwrap(), 160).is_err()) {
-            return Err("native settlement reference bounds exceeded");
-        }
-    }
-    if matches!(op, "plan" | "propose") {
-        let mut check = args["disposition"].clone();
-        if !check.is_object() {
-            return Err("native disposition object required");
-        }
-        if check.get("dispositionId").is_none_or(|v| v == "") {
-            check["dispositionId"] = json!("validation-only");
-        }
-        if normalized(&check).is_none() {
-            return Err(
-                "unsupported disposition: native typed calendar/money/text/source grammar required; null ID/date is not safely representable by native typed parser",
-            );
-        }
-    }
-    let mut body = args.clone();
-    body.as_object_mut().unwrap().remove("company");
-    let bytes = serde_json::to_vec(&body).map_err(|_| "serialization failed")?;
-    if bytes.len() > rentemester_client::MAX_DISPOSITION_BODY {
-        return Err("native32KiB disposition bound exceeded");
-    }
     if write && args["confirm"] != true {
         return Ok(fail(
             &format!("confirm: true required for write tool {name}"),
             "CONFIRM_REQUIRED",
         ));
     }
+    for k in ["dispositionId", "replacementDispositionId"] {
+        if let Some(v) = args.get(k) {
+            let s = match text(v.as_str().unwrap(),80){Ok(s)=>s,Err(_)=>return Ok(fail("bounded disposition ID required","invalid_input"))};
+            if matches!(s.as_str(), "." | "..") {
+                return Ok(fail("invalid disposition selector","invalid_input"));
+            }
+        }
+    }
+    if let Some(v) = args.get("reason") {
+        if text(v.as_str().unwrap(),1000).is_err(){return Ok(fail("bounded reason required","invalid_input"));}
+    }
+    if args
+        .get("asOf")
+        .is_some_and(|v| rentemester_engine::fiscal_year::Date::parse(v.as_str().unwrap()).is_err())
+    {
+        return Ok(fail("native calendar asOf required","invalid_input"));
+    }
+    if args
+        .get("ledgerHeadHash")
+        .is_some_and(|v| !v.is_null() && !hash(v))
+    {
+        return Ok(fail("exact nullable ledger head required","invalid_input"));
+    }
+    if let Some(a) = args["settlementEvidenceRecordIds"].as_array() {
+        if a.len() > 64 || a.iter().any(|v| text(v.as_str().unwrap(), 160).is_err()) {
+            return Ok(fail("native settlement reference bounds exceeded","invalid_input"));
+        }
+    }
+    if matches!(op, "plan" | "propose") {
+        let mut check = args["disposition"].clone();
+        if !check.is_object() {
+            return Ok(fail("native disposition object required","invalid_input"));
+        }
+        if check.get("dispositionId").is_none_or(|v| v == "") {
+            check["dispositionId"] = json!("validation-only");
+        }
+        if normalized(&check).is_none() {
+            return Ok(fail("unsupported disposition: native typed calendar/money/text/source grammar required; null ID/date is not safely representable by native typed parser","invalid_input"));
+        }
+    }
+    let mut body = args.clone();
+    body.as_object_mut().unwrap().remove("company");
+    let bytes = serde_json::to_vec(&body).map_err(|_| "serialization failed")?;
+    if bytes.len() > rentemester_client::MAX_DISPOSITION_BODY {
+        return Ok(fail("native32KiB disposition bound exceeded","invalid_input"));
+    }
     // The global native status route has no company argument. Current company
-    // catalogue admission PLUS receipt endpoint binding preserve the original anchor.
+    // catalogue admission preserves the original anchor, which need not be an endpoint.
     if op == "status" {
         match api.companies().await {
             Ok(v)
@@ -447,7 +452,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         }
         json!({"ok":true,"mode":"dry-run","disposition":d,"payloadHash":v["payloadHash"],"ledgerEffects":[],"proposedSides":["left","right"],"warnings":v["warnings"]})
     } else {
-        let Some(d) = state(&v, company) else {
+        let Some(d) = state(&v, company, op != "status") else {
             return Ok(invalid());
         };
         d
@@ -476,17 +481,15 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 && data["links"].as_array().unwrap().iter().any(|l| {
                     l["side"] == args["side"]
                         && l["journal_entry_id"] == args["journalEntryId"]
-                        && l["ledger_head_hash"] == args["ledgerHeadHash"]
+                        // Existing same-side/same-entry replay returns the immutable head;
+                        // the server checks current links and the head precondition for NEW links.
+                        // Do not claim a replay adopted this invocation's different/null head.
                 })
         }
         "settle" => {
+            // Already-settled replay returns existing canonical evidence without consuming
+            // newly supplied IDs. A new settlement remains server-authorized and hash-bound.
             data["status"] == "settled"
-                && lifecycle_matches(
-                    &data,
-                    "settled",
-                    &args,
-                    &["payloadHash", "settlementEvidenceRecordIds"],
-                )
         }
         "supersede" => {
             data["status"] == "superseded"

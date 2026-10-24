@@ -126,8 +126,11 @@ fn receipt(op: &str) -> Value {
             vec!["left", "right"]
         } {
             links.push(json!({"side":side,"company_slug":side,"journal_entry_id":3,"journal_entry_no":"J3","journal_entry_hash":"c".repeat(64),"ledger_head_hash":"b".repeat(64),"linked_at":"2026-10-20T12:00:00.000Z","actor":"user:synthetic","principal_kind":"user","principal_id":"reviewer"}));
+            life.push(event("exception",json!({"kind":"one_sided_posting","side":side,"payloadHash":disposition_hash()})));
+
         }
     }
+    if links.len()==2 {life.push(event("exception_resolved",json!({"kind":"one_sided_posting","payloadHash":disposition_hash()})));}
     let a = args(op);
     let mut p = json!({"payloadHash":disposition_hash()});
     for k in [
@@ -176,6 +179,7 @@ fn invoke(
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
     l.set_nonblocking(true).unwrap();
+    let third_anchor = a["company"]=="unrelated";
     let t = thread::spawn(move || {
         let start = Instant::now();
         let mut last = None;
@@ -226,7 +230,7 @@ fn invoke(
                     200,
                 )
             } else if anchor {
-                (json!({"ok":true,"companies":[{"slug":if admitted{"left"}else{"unrelated"},"archived":false}],"count":1}).to_string(),200)
+                ({let slugs=if third_anchor{vec!["left","right","unrelated"]}else if admitted{vec!["left","right"]}else{vec!["unrelated"]};json!({"ok":true,"companies":slugs.iter().map(|slug|json!({"slug":slug,"archived":false})).collect::<Vec<_>>(),"count":slugs.len()}).to_string()},200)
             } else {
                 (response.to_string(), code)
             };
@@ -380,4 +384,31 @@ fn credential_refusal_and_plan_failure_are_not_unknown() {
     }
     let (r, _) = invoke("plan", args("plan"), Value::Null, 503, false, true);
     assert_ne!(envelope(&r)["code"], "outcome_unknown");
+}
+
+#[test]
+fn original_business_and_confirmation_failures() {
+ for (op,confirmed,code) in [("plan",false,"invalid_input"),("propose",true,"invalid_input"),("propose",false,"CONFIRM_REQUIRED")] {
+  let mut a=args(op);a["disposition"]=json!(false);if op=="propose"{a["confirm"]=json!(confirmed);}
+  let rows=run("http://127.0.0.1:9",vec![init(),ready(),call(op,a)]);
+  assert!(rows[1].get("error").is_none(),"business refusal not RPCparse: {:?}",rows[1]);
+  assert_eq!(envelope(&rows[1])["code"],code);
+ }
+}
+#[test]
+fn original_status_admits_current_nonendpoint_anchor() {
+ let mut a=args("status");a["company"]=json!("unrelated");let (r,w)=invoke("status",a,receipt("status"),200,false,false);assert_eq!(envelope(&r)["ok"],true,"{r}");assert_eq!(w.len(),2);
+}
+#[test]
+fn original_existing_link_and_settlement_noop_replays() {
+ let mut a=args("link");a["ledgerHeadHash"]=Value::Null;let(r,w)=invoke("link",a,receipt("link"),200,false,true);assert_eq!(envelope(&r)["ok"],true,"existing immutable link does not adopt a new head: {r}");assert_eq!(w.iter().filter(|s|s.starts_with("POST ")).count(),1);
+ let mut a=args("settle");a["settlementEvidenceRecordIds"]=json!(["new-not-consumed-on-already-settled"]);let(r,w)=invoke("settle",a,receipt("settle"),200,false,true);assert_eq!(envelope(&r)["ok"],true,"settled replay keeps old evidence: {r}");assert_eq!(w.iter().filter(|s|s.starts_with("POST ")).count(),1);
+}
+#[test]
+fn native_admitted_legacy_history_witness_projects() {
+ let mut v=receipt("link");let witness=v["lifecycleEvents"].as_array_mut().unwrap().remove(0);v["events"].as_array_mut().unwrap().push(witness);let(r,_)=invoke("link",args("link"),v,200,false,true);assert_eq!(envelope(&r)["ok"],true,"native history explicitly supports legacy exception witness: {r}");assert_eq!(envelope(&r)["data"]["events"].as_array().unwrap().len(),3);
+}
+#[test]
+fn missing_native_link_witness_is_not_a_valid_receipt() {
+ let mut v=receipt("link");v["lifecycleEvents"]=json!([]);let(r,_)=invoke("link",args("link"),v,200,false,true);assert_eq!(envelope(&r)["code"],"outcome_unknown","nativeproducer requires approved link witness: {r}");
 }
