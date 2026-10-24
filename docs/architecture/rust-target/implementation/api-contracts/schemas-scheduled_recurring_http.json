@@ -1,0 +1,1664 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "enableInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "templateHash": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "templateHash",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "pauseInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "expectedStateHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "catch-upInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "periodIndexes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "planHash",
+            "periodIndexes",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "skipInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "periodIndexes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "planHash",
+            "periodIndexes",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "dispatchInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "periodIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "planHash",
+            "periodIndex",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "reconsentInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "planHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "hosted-consentInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "serviceAccountId": {
+              "type": "string"
+            },
+            "credentialId": {
+              "type": "string"
+            },
+            "planHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "serviceAccountId",
+            "credentialId",
+            "planHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "resumeInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "expectedStateHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "cancelInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "expectedStateHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "hosted-revokeInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "expectedStateHash": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "templateId",
+            "expectedStateHash",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "Occurrence": {
+      "type": "object",
+      "properties": {
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "issueDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "periodIndex",
+        "issueDate"
+      ],
+      "additionalProperties": false
+    },
+    "RestoreConsent": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "boundaryHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "historicalOwnerUserId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "historicalQueued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+          }
+        }
+      },
+      "required": [
+        "required",
+        "boundaryHash",
+        "historicalOwnerUserId",
+        "historicalQueued"
+      ],
+      "additionalProperties": false
+    },
+    "Binding": {
+      "type": "object",
+      "properties": {
+        "serviceAccountId": {
+          "type": "string"
+        },
+        "credentialId": {
+          "type": "string"
+        },
+        "grantorUserId": {
+          "type": "string"
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy": {
+          "const": "normal_due_only"
+        }
+      },
+      "required": [
+        "serviceAccountId",
+        "credentialId",
+        "grantorUserId",
+        "authorityHash",
+        "policy"
+      ],
+      "additionalProperties": false
+    },
+    "HostedConsent": {
+      "type": "object",
+      "properties": {
+        "serviceAccountId": {
+          "type": "string"
+        },
+        "credentialId": {
+          "type": "string"
+        },
+        "grantorUserId": {
+          "type": "string"
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy": {
+          "const": "normal_due_only"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "consentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "serviceAccountId",
+        "credentialId",
+        "grantorUserId",
+        "authorityHash",
+        "policy",
+        "active",
+        "consentHash"
+      ],
+      "additionalProperties": false
+    },
+    "StoredPayloadValue": {
+      "anyOf": [
+        {
+          "type": [
+            "null",
+            "boolean",
+            "number",
+            "string"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/StoredPayloadValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/StoredPayloadValue"
+          },
+          "x-arbitrary-json": {
+            "scope": "Template.payload and its recursively stored JSON members only",
+            "rationale": "recurring_invoices::load parses historical payload_json into serde_json::Value without a closed payload-field validator; scheduled_spec returns t.payload unchanged. Native create freezes raw fields and original create strips dates from a validated caller invoice. Existing historical storage values are not normalized into the SDK invoice schema on plan/read. This is persisted producer JSON, not arbitrary top-level response data.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+                "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+                "needle": "pub fn scheduled_spec("
+              },
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+                "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+                "needle": "fn stripped("
+              }
+            ]
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Template.payload and its recursively stored JSON members only",
+        "rationale": "recurring_invoices::load parses historical payload_json into serde_json::Value without a closed payload-field validator; scheduled_spec returns t.payload unchanged. Native create freezes raw fields and original create strips dates from a validated caller invoice. Existing historical storage values are not normalized into the SDK invoice schema on plan/read. This is persisted producer JSON, not arbitrary top-level response data.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+            "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+            "needle": "pub fn scheduled_spec("
+          },
+          {
+            "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+            "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+            "needle": "fn stripped("
+          }
+        ]
+      }
+    },
+    "Template": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "firstIssueDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "deliveryPeriodMode": {
+          "enum": [
+            "issue_month",
+            "interval_window",
+            "none"
+          ]
+        },
+        "payload": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/StoredPayload"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "firstIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "template": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Template"
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "asOfDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "normalDue": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "missed": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+          },
+          "maxItems": 100
+        },
+        "missedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "queued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+          }
+        },
+        "restoreConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/RestoreConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionMode": {
+          "enum": [
+            "app",
+            "hosted"
+          ]
+        },
+        "hostedConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/HostedConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "templateId",
+        "template",
+        "templateHash",
+        "stateHash",
+        "asOfDate",
+        "normalDue",
+        "missed",
+        "missedCount",
+        "truncated",
+        "queued",
+        "restoreConsent",
+        "executionMode",
+        "hostedConsent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "HostedPlan": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "template": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Template"
+        },
+        "schedule": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Plan"
+        },
+        "executor": {
+          "type": "object",
+          "properties": {
+            "serviceAccountId": {
+              "type": "string"
+            },
+            "credentialId": {
+              "type": "string"
+            },
+            "displayName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceAccountId",
+            "credentialId",
+            "displayName"
+          ],
+          "additionalProperties": false
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy": {
+          "const": "normal_due_only"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "templateId",
+        "templateHash",
+        "stateHash",
+        "template",
+        "schedule",
+        "executor",
+        "authorityHash",
+        "policy",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "Generation": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate"
+      ],
+      "additionalProperties": false
+    },
+    "RestoredProof": {
+      "type": "object",
+      "properties": {
+        "consentKind": {
+          "const": "restored_reconsent"
+        },
+        "boundaryHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reviewedPlan": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Plan"
+        }
+      },
+      "required": [
+        "consentKind",
+        "boundaryHash",
+        "reason",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "HostedProof": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "consent",
+            "execution"
+          ]
+        },
+        "principalKind": {
+          "enum": [
+            "user",
+            "service_account"
+          ]
+        },
+        "binding": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Binding"
+        },
+        "consentHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedPlan": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/HostedPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "principalKind",
+        "binding",
+        "consentHash",
+        "reason",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "EventData": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "occurrences": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+          }
+        },
+        "generation": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Generation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedPlan": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Plan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "reason",
+        "occurrences",
+        "generation",
+        "error",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "History": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "kind": {
+          "enum": [
+            "enabled",
+            "paused",
+            "resumed",
+            "cancelled",
+            "queued",
+            "skipped",
+            "attempted",
+            "succeeded",
+            "failed"
+          ]
+        },
+        "actor": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/EventData"
+        },
+        "eventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "version": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "restoredConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/RestoredProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hosted": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/HostedProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "actor",
+        "at",
+        "data",
+        "eventHash",
+        "version",
+        "restoredConsent",
+        "hosted"
+      ],
+      "additionalProperties": false
+    },
+    "LastRun": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "periodIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "issueDate": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "status": {
+              "const": "unresolved"
+            },
+            "at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "periodIndex",
+            "issueDate",
+            "status",
+            "at"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "periodIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "issueDate": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "status": {
+              "enum": [
+                "succeeded",
+                "failed"
+              ]
+            },
+            "generation": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-scheduled_recurring_http.json#/$defs/Generation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "periodIndex",
+            "issueDate",
+            "status",
+            "generation",
+            "error",
+            "at"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Current": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "state": {
+          "enum": [
+            "disabled",
+            "enabled",
+            "paused",
+            "cancelled"
+          ]
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ownerUserId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastRun": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/LastRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nextOccurrence": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "missedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "queued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/Occurrence"
+          }
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-scheduled_recurring_http.json#/$defs/History"
+          }
+        },
+        "restoreConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/RestoreConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionMode": {
+          "enum": [
+            "app",
+            "hosted"
+          ]
+        },
+        "hostedConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/HostedConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "templateId",
+        "templateHash",
+        "state",
+        "stateHash",
+        "ownerUserId",
+        "lastRun",
+        "nextOccurrence",
+        "missedCount",
+        "queued",
+        "error",
+        "history",
+        "restoreConsent",
+        "executionMode",
+        "hostedConsent"
+      ],
+      "additionalProperties": false
+    },
+    "List": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scheduledRecurring": {
+          "type": "object",
+          "properties": {
+            "asOfDate": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "timeZone": {
+              "const": "Europe/Copenhagen"
+            },
+            "localService": {
+              "const": false
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-scheduled_recurring_http.json#/$defs/Current"
+              }
+            }
+          },
+          "required": [
+            "asOfDate",
+            "timeZone",
+            "localService",
+            "rows"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "scheduledRecurring"
+      ],
+      "additionalProperties": false
+    },
+    "CurrentEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scheduledRecurring": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Current"
+        }
+      },
+      "required": [
+        "ok",
+        "scheduledRecurring"
+      ],
+      "additionalProperties": false
+    },
+    "PlanEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/Plan"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "HostedPlanEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "hostedPlan": {
+          "$ref": "schemas-scheduled_recurring_http.json#/$defs/HostedPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "hostedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "Dispatch": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "generation": {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Generation"
+            },
+            "dispatch": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "succeeded"
+                }
+              },
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "scheduledRecurring": {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Current"
+            }
+          },
+          "required": [
+            "ok",
+            "generation",
+            "dispatch",
+            "scheduledRecurring"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "dispatch": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "failed"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            "scheduledRecurring": {
+              "$ref": "schemas-scheduled_recurring_http.json#/$defs/Current"
+            }
+          },
+          "required": [
+            "ok",
+            "dispatch",
+            "scheduledRecurring"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "DomainFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "StoredPayload": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": {
+        "$ref": "schemas-scheduled_recurring_http.json#/$defs/StoredPayloadValue"
+      },
+      "x-arbitrary-json": {
+        "scope": "Template.payload and its recursively stored JSON members only",
+        "rationale": "recurring_invoices::load parses historical payload_json into serde_json::Value without a closed payload-field validator; scheduled_spec returns t.payload unchanged. Native create freezes raw fields and original create strips dates from a validated caller invoice. Existing historical storage values are not normalized into the SDK invoice schema on plan/read. This is persisted producer JSON, not arbitrary top-level response data.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+            "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+            "needle": "pub fn scheduled_spec("
+          },
+          {
+            "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+            "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+            "needle": "fn stripped("
+          }
+        ]
+      }
+    }
+  }
+}
