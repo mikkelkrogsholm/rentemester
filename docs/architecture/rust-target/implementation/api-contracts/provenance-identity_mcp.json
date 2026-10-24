@@ -35,17 +35,17 @@
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
       "needle": "async fn handle("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
       "needle": "fn serve("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
       "needle": "fn config("
     },
     {
@@ -160,12 +160,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "sha256": "1f4ca010b1276a8b6eae7306b12b410690b422982102b5bd3001df0cd83d1b45",
       "needle": ".route(\"/api/workspace/invitations\",get(workspace_access::handle).post(workspace_access::handle))"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "sha256": "1f4ca010b1276a8b6eae7306b12b410690b422982102b5bd3001df0cd83d1b45",
       "needle": "async fn companies("
     },
     {

@@ -292,3 +292,17 @@ projection refuses absent native full projection. Native `remote ...`
 commands retain their own wrappers. Whole #716 and the default launcher
 transition remain unfinished; this profile is not a cutover or a waiver of
 remaining original compatibility/dependency requirements.
+
+## Rust explicit party merge compatibility
+
+`party propose-merge --from-party-id ID --into-party-id ID --review-assertion TEXT --confirm yes`
+and `party approve-merge --from-party-id ID --proposal-hash SHA --confirm yes`
+use the common Rust server with explicit company, private human cookie and server
+or verified local profile. Optional actor/workspace values assert the current
+credential/runtime; they grant no authority. Approval uses the exact retained
+proposal hash and keeps both identities, roles and accounting records intact.
+Both parties' full company scopes and backup checks apply. The same human may
+propose and approve. Flat original JSON/human output and0/1/2 exits are retained;
+unknown writes require explicit history reconciliation and are never retried
+automatically. Native remote CLI/MCP expose the same two operations with their
+existing wrappers. Whole716/717 and the default launcher transition remain open.

@@ -4763,7 +4763,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -4783,7 +4783,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -4939,7 +4939,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -4959,7 +4959,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -5124,7 +5124,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -5144,7 +5144,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -5305,7 +5305,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -5325,7 +5325,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -5481,7 +5481,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -5501,7 +5501,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -5657,7 +5657,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -5677,7 +5677,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -5833,7 +5833,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -5853,7 +5853,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6014,7 +6014,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6034,7 +6034,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6190,7 +6190,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6210,7 +6210,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6366,7 +6366,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6386,7 +6386,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6542,7 +6542,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6562,7 +6562,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6731,7 +6731,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6751,7 +6751,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -6920,7 +6920,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -6940,7 +6940,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -7109,7 +7109,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -7129,7 +7129,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -7298,7 +7298,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -7318,7 +7318,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -7487,7 +7487,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -7507,7 +7507,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -7676,7 +7676,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -7696,7 +7696,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -7865,7 +7865,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -7885,7 +7885,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -8054,7 +8054,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -8074,7 +8074,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -8243,7 +8243,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -8263,7 +8263,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]
@@ -8432,7 +8432,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+                "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
                 "needle": "async fn handle("
               }
             ]
@@ -8452,7 +8452,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+            "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
             "needle": "async fn handle("
           }
         ]

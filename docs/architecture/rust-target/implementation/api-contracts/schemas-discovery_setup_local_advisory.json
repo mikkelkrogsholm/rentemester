@@ -5036,6 +5036,11 @@
       "const": {
         "commands": [
           {
+            "name": "party propose-merge|approve-merge",
+            "scope": "explicit reviewed merge and exact hash approval; human cookie, both writable party scopes, no retries or identity rewrite",
+            "usage": "party --help"
+          },
+          {
             "name": "corporate-record ingest|list|inspect|download|link|enrich|supersede",
             "scope": "original legal evidence lifecycle through current credential authority, explicit company anchor and local/remote binding; no retry",
             "usage": "corporate-record --help"

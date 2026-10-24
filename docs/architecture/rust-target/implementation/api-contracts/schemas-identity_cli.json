@@ -375,7 +375,7 @@
               },
               {
                 "path": "crates/rentemester-cli/src/remote.rs",
-                "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+                "sha256": "d0597301ec891c87bf05699d733d5f55707291de6157facab205f5e7fb147cfd",
                 "needle": "Ok(json!({\"ok\":response.get"
               }
             ]
@@ -393,7 +393,7 @@
           },
           {
             "path": "crates/rentemester-cli/src/remote.rs",
-            "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+            "sha256": "d0597301ec891c87bf05699d733d5f55707291de6157facab205f5e7fb147cfd",
             "needle": "Ok(json!({\"ok\":response.get"
           }
         ]

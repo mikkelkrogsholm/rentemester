@@ -55,22 +55,22 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/parties.rs",
-      "sha256": "d5b025b850bb1b8059cfa8740394d5340254f58eaefa93d2ad4e54bc18b7cb83",
+      "sha256": "23a3ac94dd2effbf6342343df5e172f3198febc890605765be9a6cd149fbe2d0",
       "needle": "pub(super) async fn handle("
     },
     {
       "path": "crates/rentemester-application/src/parties.rs",
-      "sha256": "b0e7725efa48d47170ec4ec8566c6ce47244d4bc630ef44814e13d66310e50ba",
+      "sha256": "a8169d75029d8e30e5a0d49e20fdb4534dc81adda0715b36bd95e21add9d9e4d",
       "needle": "pub enum Action"
     },
     {
       "path": "crates/rentemester-storage/src/parties.rs",
-      "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+      "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
       "needle": "pub fn inspect("
     },
     {
       "path": "crates/rentemester-client/src/parties.rs",
-      "sha256": "5b8faf1d365977ec7b72cfd0563ba95590cd9bb3f0bd7cb867695eff2b26cf35",
+      "sha256": "96013be0c9ec61aa3fa96f8ecec720bd69d72c687b482fbdad2b600be95714eb",
       "needle": "impl ApiClient"
     },
     {
@@ -80,27 +80,27 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "96f1c9dd08bacce5104b0b316747e3514fea31ef107dcd8a5fa69b607e89d39c",
+      "sha256": "d6d6b762f3efb973de8f41bfc35472a059f9847e40684055c1c4976b52f43b2a",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "cfff195f3448e9a270d5bd60886cf46499951c03bcbb00212dc5dd7c60fd266d",
+      "sha256": "5a8de05d759c6823679e479b24ef5372111d4305e0034890c4d2bfd8f10e38cd",
       "needle": "pub fn prepare("
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "9e3542a7a322dddce5dcaaee88aec0b742068572307d60a4a2ea05fbc143c7fc",
+      "sha256": "5f74c48dbc40e2ef7a12d241e4af0206e5fba97cf218766a6455c0b772f4f548",
       "needle": "pub fn option("
     },
     {
       "path": "crates/rentemester-cli/src/remote.rs",
-      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "sha256": "d0597301ec891c87bf05699d733d5f55707291de6157facab205f5e7fb147cfd",
       "needle": "pub(crate) fn client_error("
     },
     {
       "path": "crates/rentemester-cli/src/parties.rs",
-      "sha256": "f083898be861e2cd7cc670bdc80e27542957b5b1449cb1b4090f64b2b29b8237",
+      "sha256": "daf48b0a7d5c171b26097f6468789d5c282fa180510712c7eea33ce70c5dd0ab",
       "needle": "pub fn accepts("
     },
     {
@@ -110,7 +110,7 @@
     },
     {
       "path": "crates/rentemester-mcp/src/parties.rs",
-      "sha256": "61389aaba1fbada2c35efd98170610cc9cfc76cd361155be4825ee4cf9058033",
+      "sha256": "85e4c33f137af407685b3f12d472ba59a56739c1bfea29c310df7c2fd0716aed",
       "needle": "pub fn accepts("
     },
     {
@@ -120,7 +120,7 @@
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
       "needle": "impl Session"
     },
     {
@@ -144,5 +144,183 @@
     "queryFirst": true,
     "extraction": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\"",
     "result": "completed; generated observations outside owned code"
+  },
+  "r69PartyMerge688": {
+    "new_ids": [
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/propose-merge",
+      "cli:remote propose-workspace-party-merge",
+      "mcp:propose_workspace_party_merge",
+      "cli:party propose-merge",
+      "http:POST /api/companies/{slug}/workspace-parties/{id}/approve-merge",
+      "cli:remote approve-workspace-party-merge",
+      "mcp:approve_workspace_party_merge",
+      "cli:party approve-merge"
+    ],
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-server/src/product_http/parties.rs",
+        "sha256": "23a3ac94dd2effbf6342343df5e172f3198febc890605765be9a6cd149fbe2d0",
+        "needle": "pub(super) async fn handle("
+      },
+      {
+        "path": "crates/rentemester-application/src/parties.rs",
+        "sha256": "a8169d75029d8e30e5a0d49e20fdb4534dc81adda0715b36bd95e21add9d9e4d",
+        "needle": "pub enum Action"
+      },
+      {
+        "path": "crates/rentemester-storage/src/parties.rs",
+        "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
+        "needle": "pub fn merge_proposal"
+      },
+      {
+        "path": "crates/rentemester-client/src/parties.rs",
+        "sha256": "96013be0c9ec61aa3fa96f8ecec720bd69d72c687b482fbdad2b600be95714eb",
+        "needle": "pub async fn mutate_workspace_party"
+      }
+    ],
+    "proof": {
+      "path": "/tmp/rentemester-rust-reports/r69-party-merge688-component-accepted.json",
+      "sha256": "948a60ca3f808fa9055c1a0aa4e95c4ae9f18f2707b693cc5f22c44a40ccd149"
+    },
+    "actual_passive_tools": [
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Exact native256KiB once, inner/outer confirm. Current anchor CompanyMasterData; global field/alias assertions additionally require MasterData for EVERY associated company (archived/hidden refuses). Immutable canonical identity plus source provenance; no automatic accounting/contacts updates or inferred defaults, keys or retries. Unknown outcomes require canonical workspace_party/list/history reads.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "contentMediaType": "application/json",
+              "contentSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "confirm": {
+                    "const": true
+                  },
+                  "intoPartyId": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "reviewAssertion": {
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "intoPartyId",
+                  "reviewAssertion",
+                  "confirm"
+                ],
+                "type": "object"
+              },
+              "description": "Exact UTF-8 native JSON body string, forwarded byte-for-byte; shape is specified by contentSchema. No defaults, confirmations or keys are injected.",
+              "maxLength": 262144,
+              "minLength": 2,
+              "type": "string"
+            },
+            "company": {
+              "description": "Explicit company slug from companies",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            },
+            "confirm": {
+              "const": true
+            },
+            "partyId": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "body",
+            "confirm",
+            "partyId"
+          ],
+          "type": "object"
+        },
+        "name": "propose_workspace_party_merge"
+      },
+      {
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Exact native256KiB once, inner/outer confirm. Current anchor CompanyMasterData; global field/alias assertions additionally require MasterData for EVERY associated company (archived/hidden refuses). Immutable canonical identity plus source provenance; no automatic accounting/contacts updates or inferred defaults, keys or retries. Unknown outcomes require canonical workspace_party/list/history reads.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "contentMediaType": "application/json",
+              "contentSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "confirm": {
+                    "const": true
+                  },
+                  "proposalHash": {
+                    "maxLength": 64,
+                    "minLength": 64,
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "proposalHash",
+                  "confirm"
+                ],
+                "type": "object"
+              },
+              "description": "Exact UTF-8 native JSON body string, forwarded byte-for-byte; shape is specified by contentSchema. No defaults, confirmations or keys are injected.",
+              "maxLength": 262144,
+              "minLength": 2,
+              "type": "string"
+            },
+            "company": {
+              "description": "Explicit company slug from companies",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            },
+            "confirm": {
+              "const": true
+            },
+            "partyId": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "body",
+            "confirm",
+            "partyId"
+          ],
+          "type": "object"
+        },
+        "name": "approve_workspace_party_merge"
+      }
+    ],
+    "actual_original_help": {
+      "authority": "Human cookie only. Optional --actor user:ID asserts current cookie identity; --workspace is an equality assertion only with --local-profile. Both full writable party scopes required. No stdin, inferred merge, identity rewrite, retries or generated keys/hashes. Same human may propose and approve.",
+      "commands": [
+        "party propose-merge --from-party-id ID --into-party-id ID --review-assertion TEXT --confirm yes",
+        "party approve-merge --from-party-id ID --proposal-hash SHA --confirm yes"
+      ],
+      "connection": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json"
+    },
+    "review": "Wholeoriginal688explicitproposal/exacthashapproval gap filled; no identity/ledgerrewrite, unionauthbackup/atomic2events, sameactorallowed. ActualcanonicaltrimRED/GREENrepair andcombined18compiledchecks. Full716/717andwholeepic/manualdesktoplast retained."
   }
 }

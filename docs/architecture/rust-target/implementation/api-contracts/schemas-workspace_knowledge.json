@@ -103,7 +103,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/parties.rs",
-            "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+            "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
             "needle": "defaults_json"
           }
         ]
@@ -6069,11 +6069,705 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/parties.rs",
-            "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+            "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
             "needle": "defaults_json"
           }
         ]
       }
+    },
+    "MergeProposalResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "proposalHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "proposalHash"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyHelp": {
+      "const": {
+        "authority": "Human cookie only. Optional --actor user:ID asserts current cookie identity; --workspace is an equality assertion only with --local-profile. Both full writable party scopes required. No stdin, inferred merge, identity rewrite, retries or generated keys/hashes. Same human may propose and approve.",
+        "commands": [
+          "party propose-merge --from-party-id ID --into-party-id ID --review-assertion TEXT --confirm yes",
+          "party approve-merge --from-party-id ID --proposal-hash SHA --confirm yes"
+        ],
+        "connection": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json"
+      }
+    },
+    "ProposeMergeHttp": {
+      "type": "object",
+      "properties": {
+        "intoPartyId": {
+          "type": "string"
+        },
+        "reviewAssertion": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "intoPartyId",
+        "reviewAssertion",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ProposeMergeSdk": {
+      "type": "object",
+      "properties": {
+        "intoPartyId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Server-compatible JS trimming before UTF16 bound; intoPartyId64/reviewAssertion500. Original wirebytes remain unchanged; totalbody256KiB."
+        },
+        "reviewAssertion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Server-compatible JS trimming before UTF16 bound; intoPartyId64/reviewAssertion500. Original wirebytes remain unchanged; totalbody256KiB."
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "intoPartyId",
+        "reviewAssertion",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ApproveMergeHttp": {
+      "type": "object",
+      "properties": {
+        "proposalHash": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "proposalHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ApproveMergeSdk": {
+      "type": "object",
+      "properties": {
+        "proposalHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "proposalHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "propose_workspace_party_mergeArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "partyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "propose_workspace_party_mergeCliFlags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--party-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm",
+        "--party-id"
+      ],
+      "additionalProperties": false
+    },
+    "propose_workspace_party_mergecliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/MergeProposalResult"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "propose_workspace_party_mergemcpOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/MergeProposalResult"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyProposeMergeInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party propose-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "intoPartyId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewAssertion": {
+              "type": "string",
+              "minLength": 1
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "fromPartyId",
+            "confirm",
+            "intoPartyId",
+            "reviewAssertion",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party propose-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "intoPartyId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewAssertion": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "fromPartyId",
+            "confirm",
+            "intoPartyId",
+            "reviewAssertion",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party propose-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "intoPartyId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewAssertion": {
+              "type": "string",
+              "minLength": 1
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string"
+            },
+            "localProfile": {
+              "type": "string"
+            },
+            "workspace": {
+              "type": "string"
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "approve_workspace_party_mergeArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "partyId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "approve_workspace_party_mergeCliFlags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--party-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm",
+        "--party-id"
+      ],
+      "additionalProperties": false
+    },
+    "approve_workspace_party_mergecliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/PartyResult"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "approve_workspace_party_mergemcpOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/PartyResult"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPartyApproveMergeInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party approve-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "proposalHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "fromPartyId",
+            "confirm",
+            "proposalHash",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party approve-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "proposalHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "fromPartyId",
+            "confirm",
+            "proposalHash",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "party approve-merge"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fromPartyId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 160
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "proposalHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string"
+            },
+            "localProfile": {
+              "type": "string"
+            },
+            "workspace": {
+              "type": "string"
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

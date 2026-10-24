@@ -176,7 +176,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-storage/src/parties.rs",
-                "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+                "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
                 "needle": "let defaults = i.defaults.clone().unwrap_or_default();"
               }
             ]
@@ -189,7 +189,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/parties.rs",
-            "sha256": "7f2939e39179bb10fd480ab2085ab378d9c823d82b521a6571062458547b95ca",
+            "sha256": "cc28edba7c14a16bb704240365c757461d027d41d1949327eee71e9001553782",
             "needle": "let defaults = i.defaults.clone().unwrap_or_default();"
           }
         ]

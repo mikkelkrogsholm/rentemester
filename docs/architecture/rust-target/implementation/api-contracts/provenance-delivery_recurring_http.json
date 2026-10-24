@@ -6,7 +6,7 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "sha256": "af5bc4d5eec539fb82a5b8bbf747a4b54880959033d5f55e81cd7d41172a548e",
       "needle": "/api/recurring-invoices/run-workspace"
     },
     {
@@ -16,7 +16,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "sha256": "1f4ca010b1276a8b6eae7306b12b410690b422982102b5bd3001df0cd83d1b45",
       "needle": "fn proof("
     },
     {
