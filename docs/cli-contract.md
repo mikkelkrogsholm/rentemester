@@ -270,3 +270,25 @@ their existing successful-observation contract (exit 0 can contain failed audit
 findings under `data.audit`).
 
 The offline Rust healthcheck also refuses symlink ancestors of the explicit company path before inspecting company facts. Select the actual canonical directory (for example `/private/var/...` rather than the macOS `/var` alias). This does not canonicalize or follow an untrusted selector.
+
+## Rust original registry CLI compatibility
+
+`corporate-record ingest|list|inspect|download|link|enrich|supersede` and
+`ownership query|propose|review|apply|history|projection` use the existing Rust
+server through an explicit `--company`, private human `--cookie-file` and
+`--server` or `--local-profile`. With a local profile, `--workspace` is only
+an optional equality assertion against that verified runtime; a remote call
+cannot open or select a local workspace. Service-key syntax is discoverably
+unsupported for this profile. Actor/principal arguments assert the current
+cookie user and confer no authority; the server owns independent review,
+company visibility, backup gates and exact snapshot/diff hashes.
+
+Writes require the valued `--confirm yes`. Ingest reads bounded JSON metadata
+and exact original bytes; ownership proposal reads bounded JSON facts. These
+commands preserve flat original output and JSON/human streams, with exits
+0/1/2, and never automatically retry a write. Malformed or mismatched write
+receipts remain outcome-unknown. Originaldownload verifies base64/SHA256;
+projection refuses absent native full projection. Native `remote ...`
+commands retain their own wrappers. Whole #716 and the default launcher
+transition remain unfinished; this profile is not a cutover or a waiver of
+remaining original compatibility/dependency requirements.

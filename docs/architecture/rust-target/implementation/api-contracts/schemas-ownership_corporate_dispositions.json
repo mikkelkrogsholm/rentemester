@@ -29375,6 +29375,3579 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OriginalCorporateHelp": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "const": "Human cookie only; --service-key-file unsupported. Optional write --actor user:ID asserts current user equality, never authority. --workspace PATH is only an equality assertion with --local-profile. No stdin, retry, generated identity or local fallback."
+        },
+        "commands": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "corporate-record ingest --input JSONFILE --file BYTES --confirm yes"
+            },
+            {
+              "const": "corporate-record list [--cursor 0 --limit 25]"
+            },
+            {
+              "const": "corporate-record inspect --record-id ID"
+            },
+            {
+              "const": "corporate-record download --record-id ID"
+            },
+            {
+              "const": "corporate-record link --record-id ID --link-type TYPE --link-id ID --confirm yes"
+            },
+            {
+              "const": "corporate-record enrich --record-id ID --assertion TEXT --confirm yes"
+            },
+            {
+              "const": "corporate-record supersede --record-id ID --replacement-record-id ID --reason TEXT --confirm yes"
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "connection": {
+          "const": "Explicit --company SLUG or verified local company PATH; --server ORIGIN or --local-profile ABSOLUTE_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE; --allow-loopback-http; --json or --format human|json"
+        },
+        "input": {
+          "const": "Ingest metadata uses native schema excluding bytesBase64/confirm/actor/principal/authority; exact file bytes up to16MiB. Server owns scope, sensitivity, immutable originals and history."
+        }
+      },
+      "required": [
+        "authority",
+        "commands",
+        "connection",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOwnershipHelp": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "const": "Human cookie only; --service-key-file unsupported. Optional write --actor user:ID and --principal-id ID assert current api.me identity, never choose authority. Input actor/principal assertions must match current user; input confirm/authorized/authority/bytesBase64 and unknown metadata are refused. No stdin, generated IDs/hashes, automatic review/apply or retry. Unknown write outcomes require canonical query/history before further explicit action."
+        },
+        "bodySchema": {
+          "type": "object",
+          "properties": {
+            "additionalProperties": {
+              "const": false
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "confirm": {
+                  "type": "object",
+                  "properties": {
+                    "const": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "const"
+                  ],
+                  "additionalProperties": false
+                },
+                "facts": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProperties": {
+                          "const": false
+                        },
+                        "description": {
+                          "const": "Exactly one economic exact value or interval; source dates, endpoints, evidence and graph invariants remain server-owned. No client calculation."
+                        },
+                        "oneOf": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "properties": {
+                                  "type": "object",
+                                  "properties": {
+                                    "economicBasisPoints": {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "const": "integer"
+                                        }
+                                      },
+                                      "required": [
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "economicIntervalBasisPoints": {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "const": "null"
+                                        }
+                                      },
+                                      "required": [
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "economicBasisPoints",
+                                    "economicIntervalBasisPoints"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "required": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "economicBasisPoints"
+                                    }
+                                  ],
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "properties",
+                                "required"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "properties": {
+                                  "type": "object",
+                                  "properties": {
+                                    "economicBasisPoints": {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "const": "null"
+                                        }
+                                      },
+                                      "required": [
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "economicIntervalBasisPoints": {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "const": "object"
+                                        }
+                                      },
+                                      "required": [
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "economicBasisPoints",
+                                    "economicIntervalBasisPoints"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "required": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "economicIntervalBasisPoints"
+                                    }
+                                  ],
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "properties",
+                                "required"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ],
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "controlType": {
+                              "type": "object",
+                              "properties": {
+                                "enum": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "equity"
+                                    },
+                                    {
+                                      "const": "voting"
+                                    },
+                                    {
+                                      "const": "board"
+                                    },
+                                    {
+                                      "const": "agreement"
+                                    },
+                                    {
+                                      "const": "other"
+                                    }
+                                  ],
+                                  "minItems": 5,
+                                  "maxItems": 5
+                                },
+                                "type": {
+                                  "const": "string"
+                                }
+                              },
+                              "required": [
+                                "enum",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "economicBasisPoints": {
+                              "type": "object",
+                              "properties": {
+                                "maximum": {
+                                  "const": 10000
+                                },
+                                "minimum": {
+                                  "const": 0
+                                },
+                                "type": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "integer"
+                                    },
+                                    {
+                                      "const": "null"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                }
+                              },
+                              "required": [
+                                "maximum",
+                                "minimum",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "economicIntervalBasisPoints": {
+                              "type": "object",
+                              "properties": {
+                                "additionalProperties": {
+                                  "const": false
+                                },
+                                "properties": {
+                                  "type": "object",
+                                  "properties": {
+                                    "max": {
+                                      "type": "object",
+                                      "properties": {
+                                        "maximum": {
+                                          "const": 10000
+                                        },
+                                        "minimum": {
+                                          "const": 0
+                                        },
+                                        "type": {
+                                          "const": "integer"
+                                        }
+                                      },
+                                      "required": [
+                                        "maximum",
+                                        "minimum",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "min": {
+                                      "type": "object",
+                                      "properties": {
+                                        "maximum": {
+                                          "const": 10000
+                                        },
+                                        "minimum": {
+                                          "const": 0
+                                        },
+                                        "type": {
+                                          "const": "integer"
+                                        }
+                                      },
+                                      "required": [
+                                        "maximum",
+                                        "minimum",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "max",
+                                    "min"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "required": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "min"
+                                    },
+                                    {
+                                      "const": "max"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "type": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "object"
+                                    },
+                                    {
+                                      "const": "null"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                }
+                              },
+                              "required": [
+                                "additionalProperties",
+                                "properties",
+                                "required",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "evidenceRefs": {
+                              "type": "object",
+                              "properties": {
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "maxLength": {
+                                      "const": 256
+                                    },
+                                    "minLength": {
+                                      "const": 1
+                                    },
+                                    "type": {
+                                      "const": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "maxLength",
+                                    "minLength",
+                                    "type"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "maxItems": {
+                                  "const": 32
+                                },
+                                "minItems": {
+                                  "const": 1
+                                },
+                                "type": {
+                                  "const": "array"
+                                }
+                              },
+                              "required": [
+                                "items",
+                                "maxItems",
+                                "minItems",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "jurisdiction": {
+                              "type": "object",
+                              "properties": {
+                                "maxLength": {
+                                  "const": 2
+                                },
+                                "minLength": {
+                                  "const": 2
+                                },
+                                "type": {
+                                  "const": "string"
+                                }
+                              },
+                              "required": [
+                                "maxLength",
+                                "minLength",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "ownedCompanySlug": {
+                              "type": "object",
+                              "properties": {
+                                "maxLength": {
+                                  "const": 120
+                                },
+                                "minLength": {
+                                  "const": 1
+                                },
+                                "type": {
+                                  "const": "string"
+                                }
+                              },
+                              "required": [
+                                "maxLength",
+                                "minLength",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "owner": {
+                              "type": "object",
+                              "properties": {
+                                "additionalProperties": {
+                                  "const": false
+                                },
+                                "oneOf": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "additionalProperties": {
+                                          "const": false
+                                        },
+                                        "properties": {
+                                          "type": "object",
+                                          "properties": {
+                                            "companySlug": {
+                                              "type": "object",
+                                              "properties": {
+                                                "maxLength": {
+                                                  "const": 120
+                                                },
+                                                "minLength": {
+                                                  "const": 1
+                                                },
+                                                "type": {
+                                                  "const": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "maxLength",
+                                                "minLength",
+                                                "type"
+                                              ],
+                                              "additionalProperties": false
+                                            },
+                                            "kind": {
+                                              "type": "object",
+                                              "properties": {
+                                                "const": {
+                                                  "const": "company"
+                                                }
+                                              },
+                                              "required": [
+                                                "const"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          },
+                                          "required": [
+                                            "companySlug",
+                                            "kind"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "required": {
+                                          "type": "array",
+                                          "prefixItems": [
+                                            {
+                                              "const": "kind"
+                                            },
+                                            {
+                                              "const": "companySlug"
+                                            }
+                                          ],
+                                          "minItems": 2,
+                                          "maxItems": 2
+                                        },
+                                        "type": {
+                                          "const": "object"
+                                        }
+                                      },
+                                      "required": [
+                                        "additionalProperties",
+                                        "properties",
+                                        "required",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "additionalProperties": {
+                                          "const": false
+                                        },
+                                        "properties": {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "object",
+                                              "properties": {
+                                                "const": {
+                                                  "const": "party"
+                                                }
+                                              },
+                                              "required": [
+                                                "const"
+                                              ],
+                                              "additionalProperties": false
+                                            },
+                                            "partyId": {
+                                              "type": "object",
+                                              "properties": {
+                                                "maxLength": {
+                                                  "const": 64
+                                                },
+                                                "minLength": {
+                                                  "const": 1
+                                                },
+                                                "type": {
+                                                  "const": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "maxLength",
+                                                "minLength",
+                                                "type"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "partyId"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "required": {
+                                          "type": "array",
+                                          "prefixItems": [
+                                            {
+                                              "const": "kind"
+                                            },
+                                            {
+                                              "const": "partyId"
+                                            }
+                                          ],
+                                          "minItems": 2,
+                                          "maxItems": 2
+                                        },
+                                        "type": {
+                                          "const": "object"
+                                        }
+                                      },
+                                      "required": [
+                                        "additionalProperties",
+                                        "properties",
+                                        "required",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                },
+                                "properties": {
+                                  "type": "object",
+                                  "properties": {
+                                    "companySlug": {
+                                      "type": "object",
+                                      "properties": {
+                                        "maxLength": {
+                                          "const": 120
+                                        },
+                                        "minLength": {
+                                          "const": 1
+                                        },
+                                        "type": {
+                                          "const": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "maxLength",
+                                        "minLength",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "kind": {
+                                      "type": "object",
+                                      "properties": {
+                                        "enum": {
+                                          "type": "array",
+                                          "prefixItems": [
+                                            {
+                                              "const": "company"
+                                            },
+                                            {
+                                              "const": "party"
+                                            }
+                                          ],
+                                          "minItems": 2,
+                                          "maxItems": 2
+                                        },
+                                        "type": {
+                                          "const": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "enum",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "partyId": {
+                                      "type": "object",
+                                      "properties": {
+                                        "maxLength": {
+                                          "const": 64
+                                        },
+                                        "minLength": {
+                                          "const": 1
+                                        },
+                                        "type": {
+                                          "const": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "maxLength",
+                                        "minLength",
+                                        "type"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "companySlug",
+                                    "kind",
+                                    "partyId"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "required": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "kind"
+                                    }
+                                  ],
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                },
+                                "type": {
+                                  "const": "object"
+                                }
+                              },
+                              "required": [
+                                "additionalProperties",
+                                "oneOf",
+                                "properties",
+                                "required",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "shareClass": {
+                              "type": "object",
+                              "properties": {
+                                "maxLength": {
+                                  "const": 80
+                                },
+                                "type": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "string"
+                                    },
+                                    {
+                                      "const": "null"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                }
+                              },
+                              "required": [
+                                "maxLength",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "validFrom": {
+                              "type": "object",
+                              "properties": {
+                                "minLength": {
+                                  "const": 1
+                                },
+                                "type": {
+                                  "const": "string"
+                                }
+                              },
+                              "required": [
+                                "minLength",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "validToExclusive": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "string"
+                                    },
+                                    {
+                                      "const": "null"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                }
+                              },
+                              "required": [
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "votingBasisPoints": {
+                              "type": "object",
+                              "properties": {
+                                "maximum": {
+                                  "const": 10000
+                                },
+                                "minimum": {
+                                  "const": 0
+                                },
+                                "type": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "const": "integer"
+                                    },
+                                    {
+                                      "const": "null"
+                                    }
+                                  ],
+                                  "minItems": 2,
+                                  "maxItems": 2
+                                }
+                              },
+                              "required": [
+                                "maximum",
+                                "minimum",
+                                "type"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "controlType",
+                            "economicBasisPoints",
+                            "economicIntervalBasisPoints",
+                            "evidenceRefs",
+                            "jurisdiction",
+                            "ownedCompanySlug",
+                            "owner",
+                            "shareClass",
+                            "validFrom",
+                            "validToExclusive",
+                            "votingBasisPoints"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "required": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "const": "owner"
+                            },
+                            {
+                              "const": "ownedCompanySlug"
+                            },
+                            {
+                              "const": "validFrom"
+                            },
+                            {
+                              "const": "controlType"
+                            },
+                            {
+                              "const": "jurisdiction"
+                            },
+                            {
+                              "const": "evidenceRefs"
+                            }
+                          ],
+                          "minItems": 6,
+                          "maxItems": 6
+                        },
+                        "type": {
+                          "const": "object"
+                        }
+                      },
+                      "required": [
+                        "additionalProperties",
+                        "description",
+                        "oneOf",
+                        "properties",
+                        "required",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": {
+                      "const": 2048
+                    },
+                    "minItems": {
+                      "const": 1
+                    },
+                    "type": {
+                      "const": "array"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "maxItems",
+                    "minItems",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "observedAt": {
+                  "type": "object",
+                  "properties": {
+                    "minLength": {
+                      "const": 1
+                    },
+                    "type": {
+                      "const": "string"
+                    }
+                  },
+                  "required": [
+                    "minLength",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "snapshotId": {
+                  "type": "object",
+                  "properties": {
+                    "maxLength": {
+                      "const": 80
+                    },
+                    "type": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "const": "string"
+                        },
+                        {
+                          "const": "null"
+                        }
+                      ],
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "maxLength",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "maxLength": {
+                      "const": 160
+                    },
+                    "minLength": {
+                      "const": 1
+                    },
+                    "type": {
+                      "const": "string"
+                    }
+                  },
+                  "required": [
+                    "maxLength",
+                    "minLength",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "confirm",
+                "facts",
+                "observedAt",
+                "snapshotId",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "required": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "source"
+                },
+                {
+                  "const": "observedAt"
+                },
+                {
+                  "const": "facts"
+                },
+                {
+                  "const": "confirm"
+                }
+              ],
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "type": {
+              "const": "object"
+            }
+          },
+          "required": [
+            "additionalProperties",
+            "properties",
+            "required",
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        "commands": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "ownership query --as-of YYYY-MM-DD"
+            },
+            {
+              "const": "ownership propose --input JSONFILE --confirm yes"
+            },
+            {
+              "const": "ownership review --snapshot-id ID --decision approved|rejected --confirm yes"
+            },
+            {
+              "const": "ownership apply --snapshot-id ID --snapshot-hash SHA256 --diff-hash SHA256 --confirm yes"
+            },
+            {
+              "const": "ownership history [--snapshot-id ID]"
+            },
+            {
+              "const": "ownership projection --as-of YYYY-MM-DD"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        },
+        "compatibility": {
+          "const": "Projection requires an actually present complete native projection; partial native graphs cannot establish workspace completeness."
+        },
+        "connection": {
+          "const": "Explicit --company SLUG|VERIFIED_LOCAL_PATH, --server ORIGIN or --local-profile ABSOLUTE_PRIVATE_PROFILE, --cookie-file PRIVATEFILE; --allow-loopback-http; --json or --format human|json. --workspace PATH is an optional local-profile equality assertion only."
+        }
+      },
+      "required": [
+        "authority",
+        "bodySchema",
+        "commands",
+        "compatibility",
+        "connection"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCorporateMetadata": {
+      "type": "object",
+      "properties": {
+        "recordId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "receivedAt": {
+          "type": "string"
+        },
+        "recordDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retentionUntil": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "uploader": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "links": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "filename",
+        "source",
+        "receivedAt",
+        "uploader"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOwnershipMetadata": {
+      "type": "object",
+      "properties": {
+        "snapshotId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "observedAt": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FactNativeInput"
+          }
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "principal": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "user"
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source",
+        "observedAt",
+        "facts"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOwnershipHistory": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Snapshot"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "history"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalOwnershipProjection": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "projection": {
+          "$ref": "#/$defs/Projection"
+        }
+      },
+      "required": [
+        "ok",
+        "projection"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegistryFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCorporateIngestInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "file",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "file",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record ingest"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateListInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record list"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateInspectInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "recordId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "recordId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record inspect"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateDownloadInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record download"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "recordId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record download"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "recordId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record download"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateLinkInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record link"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "linkType": {
+              "enum": [
+                "company",
+                "party",
+                "ownership",
+                "disposition",
+                "legacy_evidence_ref"
+              ]
+            },
+            "linkId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "linkType",
+            "linkId",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record link"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "linkType": {
+              "enum": [
+                "company",
+                "party",
+                "ownership",
+                "disposition",
+                "legacy_evidence_ref"
+              ]
+            },
+            "linkId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "linkType",
+            "linkId",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record link"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "linkType": {
+              "enum": [
+                "company",
+                "party",
+                "ownership",
+                "disposition",
+                "legacy_evidence_ref"
+              ]
+            },
+            "linkId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateEnrichInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record enrich"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "assertion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "assertion",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record enrich"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "assertion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "assertion",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record enrich"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "assertion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCorporateSupersedeInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record supersede"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "replacementRecordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "replacementRecordId",
+            "reason",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record supersede"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "replacementRecordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "recordId",
+            "replacementRecordId",
+            "reason",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "corporate-record supersede"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "recordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "replacementRecordId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipQueryInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership query"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "asOf",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership query"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "asOf",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership query"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipProposeInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership propose"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership propose"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "input",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership propose"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "input": {
+              "type": "string",
+              "minLength": 1
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipReviewInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership review"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "decision": {
+              "enum": [
+                "approved",
+                "rejected"
+              ]
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "snapshotId",
+            "decision",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership review"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "decision": {
+              "enum": [
+                "approved",
+                "rejected"
+              ]
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "snapshotId",
+            "decision",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership review"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "decision": {
+              "enum": [
+                "approved",
+                "rejected"
+              ]
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipApplyInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership apply"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "snapshotHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "diffHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "snapshotId",
+            "snapshotHash",
+            "diffHash",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership apply"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "snapshotHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "diffHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "confirm",
+            "snapshotId",
+            "snapshotHash",
+            "diffHash",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership apply"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": "yes"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "principalId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "snapshotHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "diffHash": {
+              "type": "string",
+              "pattern": "^[A-Fa-f0-9]{64}$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipHistoryInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership history"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership history"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership history"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalOwnershipProjectionInput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership projection"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "asOf",
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership projection"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "command",
+            "company",
+            "cookieFile",
+            "asOf",
+            "localProfile"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "ownership projection"
+            },
+            "company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "json": {
+              "const": true
+            },
+            "cookieFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "asOf": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "help": {
+              "const": true
+            },
+            "server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "localProfile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "allowLoopbackHttp": {
+              "const": true
+            }
+          },
+          "required": [
+            "command",
+            "help"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

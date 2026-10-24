@@ -156,12 +156,12 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "532cce9a41f5e418255dfda1a8f167016e97c16e8fcf2bc4cf66fcf4d1797ce3",
+      "sha256": "96f1c9dd08bacce5104b0b316747e3514fea31ef107dcd8a5fa69b607e89d39c",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "sha256": "cfff195f3448e9a270d5bd60886cf46499951c03bcbb00212dc5dd7c60fd266d",
       "needle": "pub fn prepare"
     },
     {
@@ -181,7 +181,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
-      "sha256": "05f3f2486e7c0e82d8ac394b9c1380a206aa7038224642e161a49f92db1e469f",
+      "sha256": "9e3542a7a322dddce5dcaaee88aec0b742068572307d60a4a2ea05fbc143c7fc",
       "needle": "pub fn prepare_with_output"
     },
     {
@@ -466,5 +466,53 @@
       "result": "completed: 34009 nodes, 107681 edges, no clustering",
       "generatedObservations": "Independent worker build output only; no production/generated tracked files modified."
     }
+  },
+  "originalRegistry716": {
+    "new_ids": [
+      "cli:corporate-record ingest",
+      "cli:corporate-record list",
+      "cli:corporate-record inspect",
+      "cli:corporate-record download",
+      "cli:corporate-record link",
+      "cli:corporate-record enrich",
+      "cli:corporate-record supersede",
+      "cli:ownership query",
+      "cli:ownership propose",
+      "cli:ownership review",
+      "cli:ownership apply",
+      "cli:ownership history",
+      "cli:ownership projection"
+    ],
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-cli/src/main.rs",
+        "sha256": "96f1c9dd08bacce5104b0b316747e3514fea31ef107dcd8a5fa69b607e89d39c",
+        "needle": "let registry_args"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_args.rs",
+        "sha256": "9e3542a7a322dddce5dcaaee88aec0b742068572307d60a4a2ea05fbc143c7fc",
+        "needle": "fn migrated"
+      },
+      {
+        "path": "crates/rentemester-cli/src/original_discovery.rs",
+        "sha256": "3a9704f5bfdbe2302b879e042fa191341236f1ea242ab628f0a072dfe2213e3f",
+        "needle": "pub fn help"
+      },
+      {
+        "path": "crates/rentemester-cli/src/local_binding.rs",
+        "sha256": "cfff195f3448e9a270d5bd60886cf46499951c03bcbb00212dc5dd7c60fd266d",
+        "needle": "let mut workspace_assertion"
+      }
+    ],
+    "proof": {
+      "path": "/tmp/rentemester-rust-reports/r67-original-registry716-component-accepted.json",
+      "sha256": "8b994da0270a5c7c7e8e359fc18491e0b3bcec3500567770f63110ff20e142fb"
+    },
+    "discovery_delta": {
+      "path": "/tmp/rentemester-rust-reports/r67-original-registry-discovery-delta.json",
+      "sha256": "ab38980101033b43e8f2b5657d1e41f54975f99869149115d12bcd54a6a7299e"
+    },
+    "review": "Twoisolatedadapter owners, actualdiff/source review and boundedleadrepairs. Combined10corporate7ownershipchecks and nostandinsPASS. ProseRED2/GREEN1/fullpositivewiremetadata, malformedreceiptRED0 -> safeunknown; nativeengine/SDK/backend unchanged. Full716/all55 retained."
   }
 }

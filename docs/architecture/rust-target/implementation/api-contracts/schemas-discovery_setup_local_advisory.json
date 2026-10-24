@@ -5036,6 +5036,16 @@
       "const": {
         "commands": [
           {
+            "name": "corporate-record ingest|list|inspect|download|link|enrich|supersede",
+            "scope": "original legal evidence lifecycle through current credential authority, explicit company anchor and local/remote binding; no retry",
+            "usage": "corporate-record --help"
+          },
+          {
+            "name": "ownership query|propose|review|apply|history|projection",
+            "scope": "original reviewed effective-dated ownership; current principal assertions, independent review and exact hashes; no partial graph promoted to complete projection",
+            "usage": "ownership --help"
+          },
+          {
             "name": "system healthcheck",
             "scope": "offline read-only five filesystem checks and protected snapshot schema diagnostic; remote health is aggregate-only and cannot substitute this report",
             "usage": "system healthcheck --company PATH [--json | --format json|human]"
