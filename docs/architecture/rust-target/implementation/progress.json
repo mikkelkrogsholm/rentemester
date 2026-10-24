@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R55 #677:195exact finance/knowledge contracts reviewed/repaired/integrated. Assets/accruals58,mileage43,budget/forecast33,workspace/knowledge61; fourcurrentcontractchecks and unchangedR54source/binary/log evidence accepted withoutfinancial/provider replay.",
-  "code_revision": "050782622b264a83bb093c44269b246e16b9fef2",
-  "spec_revision": "sha256:0d740c48df67aa3873f930f7fde3f079c948c0e0596664e9522b47145344584f",
-  "state": "37of55originalissuesCLOSED18OPEN.821exactcontracts accepted357HTTP250CLI214MCP. Whole677OPEN:282of639HTTP plus remainingadvertisedCLI/MCP schemas/retrymatrix. All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
+  "current_increment": "R56 #677:230exact period/VAT/report contracts reviewed/repaired/integrated. Period/opening/Dinero64,dimensions/CFO64,financialreports/audit42,VAT/annual/regulatory60; fourcurrentcontractchecks and unchangedR54source/binary/log evidence accepted withoutfinancial/provider replay.",
+  "code_revision": "c4474ddc51907b5fc98e39485afbe69978bbc132",
+  "spec_revision": "sha256:d55bfdc8ae5c11a7b46c1c437e5c10f844ab75d4b17937e748710b57db042af1",
+  "state": "37of55originalissuesCLOSED18OPEN.1051exactcontracts accepted471HTTP314CLI266MCP. Whole677OPEN:168of639HTTP plus remainingadvertisedCLI/MCP schemas/retrymatrix. All55originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Finish remaining536HTTP andotheradvertisedCLI/MCP exactcontracts fromexisting accounting userflows; reuse accepted runtime evidence.",
+    "Finish remaining168HTTP andotheradvertisedCLI/MCP exactcontracts fromexisting accounting userflows; reuse accepted runtime evidence.",
     "Close677onlywhen everyadvertisedoperation meets unchangedacceptance, then complete next existing issue from retained valid evidence.",
     "FinalinstalledmanualTauri/platform/accessibility/J01-J07/release/cutover/retirement remain last."
   ],
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R53/R54 #677:207bank/payment contracts reviewed/integrated and 11confirmed native HEADmutation handlers fixed. Existing realserver fixture58HEADcases29routes and normalGETPOSTauth,ledger/accounts/company/audit/artifacts preserved.",
+  "previous_verified_increment": "R55 #677:195exact finance/knowledge contracts reviewed/repaired/integrated. Assets/accruals58,mileage43,budget/forecast33,workspace/knowledge61; fourcurrentcontractchecks and unchangedR54source/binary/log evidence accepted withoutfinancial/provider replay.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16258,6 +16258,19 @@
       "whole_issue_accepted": false,
       "remaining": [
         "Whole677 exact282of639HTTP plus remaining advertisedCLI/MCP schemas and retrymatrix",
+        "All55 originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement preserved"
+      ]
+    },
+    "r56_period_vat_report677_component": {
+      "issue": 677,
+      "status": "230sourceboundcontracts accepted; whole677OPEN",
+      "source_revision": "c4474ddc51907b5fc98e39485afbe69978bbc132",
+      "report": "/tmp/rentemester-rust-reports/r56-period-vat-report677-component-accepted.json",
+      "sha256": "e38abec4daed1d9a6b2d59ef09734d925ab3890eb317afa53b1fab14d5e0ca3f",
+      "sgd_run": "rust-r56-period-vat-report677-contracts-20261024T062428.173622000",
+      "whole_issue_accepted": false,
+      "remaining": [
+        "Whole677 exact168of639HTTP plus remaining advertisedCLI/MCP schemas and retrymatrix",
         "All55 originalscope/J01-J07/finalmanualdesktop/release/cutover/retirement preserved"
       ]
     }
