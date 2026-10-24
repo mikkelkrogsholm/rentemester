@@ -36,3 +36,10 @@ test("remaining cookie after signout is blocked, not adopted", async () => {
   const flow = new LoginAttempts(async () => ({}), async () => ({ data: { user: { id: "late-cookie" } } }));
   flow.start("owner@example.test"); await flow.cancel(); expect(flow.snapshot()).toBe("blocked");
 });
+
+for (const data of [undefined, {}, { user: null }]) test(`malformed no-session readback ${JSON.stringify(data)} keeps credentials fenced`, async () => {
+  const flow = new LoginAttempts(async () => ({}), async () => ({ data }));
+  flow.start("owner@example.test"); await flow.cancel();
+  expect(flow.snapshot()).toBe("blocked");
+  expect(() => flow.start("other@example.test")).toThrow();
+});

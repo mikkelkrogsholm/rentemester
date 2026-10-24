@@ -57,7 +57,7 @@ export class LoginAttempts {
         const result = await this.signOut();
         if (result.error) throw new Error("Signout unconfirmed");
         const session = await this.read();
-        if (session.error || session.data?.user) throw new Error("Cookie cleanup unconfirmed");
+        if (session.error || session.data !== null) throw new Error("Cookie cleanup unconfirmed");
         this.change("idle");
       } catch { this.change("blocked"); }
       finally { this.cleanup = null; }

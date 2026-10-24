@@ -33,7 +33,8 @@ export function LoginView() {
   const adopt = async (current: LoginAttempt) => {
     loginAttempts.ready(current);
     await refresh();
-    if (loginAttempts.current(current)) { attempt.current = null; loginAttempts.finish(current); }
+    // Only AuthProvider may finish after both session and workspace identity agree.
+    if (!loginAttempts.current(current)) attempt.current = null;
   };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
