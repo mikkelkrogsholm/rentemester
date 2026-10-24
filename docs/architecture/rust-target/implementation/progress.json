@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R45 #677 exactnativeidentitycounterparts accepted:8CLI leaves+7MCPtools, reviewedglobalprivateUnixpreparation andactualSerde positionalarguments; combinedsource/schemaPASS.",
-  "code_revision": "770dfd898e4b93081dc70e51c1c32eed3e36f541",
-  "spec_revision": "sha256:ed059b805ada094ec7f4c62d937eae82cb2a452279ad8c8bfafddad2aaebcbd6",
-  "state": "37of55originalissues CLOSED,18OPEN.42identityHTTP+15nativeCLI/MCP exactcontracts accepted. Whole677everyadvertisedoperation remainscriticaldependency; next existingcustomer/invoicelifecycle74contracts inparallel. AcceptedR44sharedaccountsecurity andalloriginalfinalgates retained.",
+  "current_increment": "R46/R47 #677:74exactcustomer/invoice contracts accepted across4isolatedparts; source-discoveredHEAD->Issue correctedearly405 withactualexistingfixtureRED/GREEN; incorrectpublicMCParrayreviewclaim retracted/corrected.",
+  "code_revision": "17765f15adbd4f8d9ad0be6dbe74c3e8ff92989b",
+  "spec_revision": "sha256:b7579467fd62e6bf142190899dbbcffa985246c5172489a0f846bb2a67a63e00",
+  "state": "37of55originalissues CLOSED,18OPEN.72of639HTTPoperations haveacceptedexactcontracts plus selectednative/originalCLI/MCP. Currentinvoice74contractflow andHEADno-write fence accepted; global677 everyadvertisedoperation remainscriticaldependency. Alloriginalfinalgates andmanualdesktoplast retained.",
   "issues_closed": 37,
   "next": [
-    "Complete exactcustomer/invoice lifecycle contracts acrossnative/originalHTTP/CLI/MCP using4isolated source-onlyworkers, no financialeffect replay.",
-    "Finish everyother advertised677operation exactschemas/retry, thenclosewholeissue onlywhenallcriteria accepted.",
-    "Continue existing remainingissues fromretainedcode/evidence; finalinstalleddesktop/platform/accessibility/J01-J07/release/cutover/retirement gates remain."
+    "Finish remaining567HTTP andotheradvertisedCLI/MCP exactcontracts, next existinginvoice delivery/recurrence userflow; no financial/provider effects replay.",
+    "Close whole677 onlywhenalladvertisedoperation criteria accepted, thencontinue existingremainingproductissues fromretainedvalid evidence.",
+    "FinalinstallednativeTauri/platform/accessibility/J01-J07/release/cutover/retirement requirements remainlast."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R44 #712 existing nativeaccountsecurity +sameReactUI completeflow accepted e3c32ecd: password/recovery/sessioncontrols productionwiring, accountboundconfirmation andrequest-expiry generationrace repaired.",
+  "previous_verified_increment": "R45 #677 exactnativeidentitycounterparts accepted:8CLI leaves+7MCPtools, reviewedglobalprivateUnixpreparation andactualSerde positionalarguments; combinedsource/schemaPASS.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16142,7 +16142,7 @@
     },
     "r45_identity677_native_component": {
       "issue": 677,
-      "status": "15selectednativecontracts component accepted; whole677OPEN",
+      "status": "Historical15identitycomponent; incorrectlaterMCPpublicarrayclaim retracted andcorrectedbyR47, otherwiseacceptedCLI/output/recovery scope retained",
       "source_revision": "770dfd898e4b93081dc70e51c1c32eed3e36f541",
       "report": "/tmp/rentemester-rust-reports/r45-identity677-native-component-accepted.json",
       "sha256": "b55c5d2ef13543f2b2dc2585696f0c7886c3c53da1b11fd5e393f743b2c4c2ea",
@@ -16155,6 +16155,26 @@
       "remaining": [
         "Other597 currentHTTP operations and remainingnativeCLI/MCP exact input/success/refusal/parse-protocol/retry contracts",
         "Global677 fullscope and all55 originalissues/J01-J07/finalmanualdesktop/release/cutover/retirement gates retained"
+      ],
+      "corrected_by": "r47_invoice677_head_component"
+    },
+    "r47_invoice677_head_component": {
+      "issue": 677,
+      "status": "74selectedinvoicecontracts+HEADsafety component accepted; whole677OPEN",
+      "source_revision": "17765f15adbd4f8d9ad0be6dbe74c3e8ff92989b",
+      "report": "/tmp/rentemester-rust-reports/r47-invoice677-head-component-accepted.json",
+      "sha256": "2dd6fb870105ceb50c9751b25348ffa966569f28ff2167aa38b0d7825b616a37",
+      "sgd_run": "rust-r47-sales-head677-safety-20261024T042203.563797000",
+      "operation_counts": {
+        "invoice_native_http": 13,
+        "invoice_original_http": 17,
+        "invoice_cli": 23,
+        "invoice_mcp": 21
+      },
+      "whole_issue_accepted": false,
+      "remaining": [
+        "Other567 currentHTTP operations andremainingCLI/MCP exactinput/success/refusal/parse-protocol/retrycontracts; whole677stillOPEN",
+        "All55 originalscopes/J01-J07 andfinalmanualdesktop/platform/accessibility/release/cutover/retirement gates retained"
       ]
     }
   },
