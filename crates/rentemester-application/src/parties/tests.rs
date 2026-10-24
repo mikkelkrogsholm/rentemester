@@ -683,3 +683,427 @@ fn backup_fence_covers_shared_party_mutations_after_authorization() {
     assert_eq!(error.error.code, "access_denied");
     assert!(reject.seen.is_empty());
 }
+
+fn merge_input(target: &str) -> ProposeMerge {
+    ProposeMerge {
+        into_party_id: target.into(),
+        review_assertion: "Synthetic explicit review\nBoth records checked".into(),
+    }
+}
+fn merge_pair(c: &mut Connection, cookies: &CookieVerifier, p: &VerifiedCookie, cat: &Catalog) {
+    for (id, slug) in [("from", "a"), ("into", "b")] {
+        let mut i = create_input(id, &format!("Synthetic {id}"));
+        i.identifiers = Some(vec![rentemester_engine::parties::Identifier {
+            country: "DK".into(),
+            identifier: Some(if id == "from" { "12345678" } else { "87654321" }.into()),
+            identifier_kind: "dk_cvr".into(),
+        }]);
+        execute(c, cookies, &Fixed, p, cat, slug, Action::Create(&i)).unwrap();
+    }
+}
+fn merge_hash(
+    c: &mut Connection,
+    cookies: &CookieVerifier,
+    p: &VerifiedCookie,
+    cat: &Catalog,
+) -> ApproveMerge {
+    let value = execute(
+        c,
+        cookies,
+        &Fixed,
+        p,
+        cat,
+        "a",
+        Action::ProposeMerge("from", &merge_input("into")),
+    )
+    .unwrap();
+    ApproveMerge {
+        proposal_hash: value["proposalHash"].as_str().unwrap().into(),
+    }
+}
+fn merge_event_count(c: &Connection) -> i64 {
+    c.query_row("SELECT count(*) FROM rm_party_events WHERE event_type IN ('proposed_merge','approved_merge','superseded')",[],|r|r.get(0)).unwrap()
+}
+#[test]
+fn party_merge_lifecycle_retains_exact_payload_actor_history_and_identity() {
+    let (d, mut c, cookies, p, cat) = fixture();
+    merge_pair(&mut c, &cookies, &p, &cat);
+    let before = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Inspect("from"),
+    )
+    .unwrap();
+    let target = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Inspect("into"),
+    )
+    .unwrap();
+    let h = merge_hash(&mut c, &cookies, &p, &cat);
+    assert_eq!(h.proposal_hash.len(), 64);
+    assert_eq!(
+        merge_hash(&mut c, &cookies, &p, &cat).proposal_hash,
+        h.proposal_hash
+    );
+    assert_eq!(merge_event_count(&c), 1);
+    let approved = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::ApproveMerge("from", &h),
+    )
+    .unwrap();
+    for key in [
+        "partyId",
+        "name",
+        "identifiers",
+        "roles",
+        "aliases",
+        "assertions",
+    ] {
+        assert_eq!(before["party"][key], approved["party"][key]);
+    }
+    let history = approved["party"]["history"].as_array().unwrap();
+    assert_eq!(history.len(), 4);
+    for (entry, kind) in history[1..]
+        .iter()
+        .zip(["proposed_merge", "approved_merge", "superseded"])
+    {
+        assert_eq!(entry["event_type"], kind);
+        assert_eq!(entry["payload_hash"], h.proposal_hash);
+        assert_eq!(entry["actor"], "user:u");
+        assert_eq!(entry["created_at"], "2026-01-01T00:01:00.000Z");
+    }
+    let payloads: Vec<String> = c.prepare("SELECT canonical_payload FROM rm_party_events WHERE party_id='from' AND event_type!='created' AND event_type!='linked' ORDER BY id").unwrap().query_map([],|r|r.get(0)).unwrap().map(Result::unwrap).collect();
+    assert_eq!(payloads.len(), 3);
+    assert!(payloads.iter().all(|v| v == &payloads[0]));
+    assert_eq!(
+        payloads[0],
+        "{\"intoPartyId\":\"into\",\"reviewAssertion\":\"Synthetic explicit review\\nBoth records checked\"}"
+    );
+    assert_eq!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Inspect("into")
+        )
+        .unwrap(),
+        target
+    );
+    assert_eq!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::ApproveMerge("from", &h)
+        )
+        .unwrap(),
+        approved
+    );
+    assert_eq!(merge_event_count(&c), 3);
+    assert_eq!(
+        c.query_row("SELECT count(*) FROM rm_party_identifiers", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
+    assert_eq!(
+        Connection::open(d.path().join("ledger"))
+            .unwrap()
+            .query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+}
+#[test]
+fn party_merge_refuses_self_missing_hidden_wrong_hash_source_and_unknown_authority() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    merge_pair(&mut c, &cookies, &p, &cat);
+    for target in ["from", "missing"] {
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::ProposeMerge("from", &merge_input(target))
+            )
+            .is_err()
+        );
+    }
+    assert_eq!(merge_event_count(&c), 0);
+    let h = merge_hash(&mut c, &cookies, &p, &cat);
+    for (id, hash) in [
+        ("into", h.proposal_hash.clone()),
+        ("from", "a".repeat(64)),
+        ("from", "not-a-hash".into()),
+    ] {
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::ApproveMerge(
+                    id,
+                    &ApproveMerge {
+                        proposal_hash: hash
+                    }
+                )
+            )
+            .is_err()
+        );
+    }
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor) VALUES('u','b','revoke','user:u')",[]).unwrap();
+    assert!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::ProposeMerge("from", &merge_input("into"))
+        )
+        .is_err()
+    );
+    assert!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::ApproveMerge("from", &h)
+        )
+        .is_err()
+    );
+    c.execute("DELETE FROM session", []).unwrap();
+    assert!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::ApproveMerge("from", &h)
+        )
+        .is_err()
+    );
+    assert_eq!(merge_event_count(&c), 1);
+}
+#[test]
+fn party_merge_both_full_scopes_and_live_revocations_are_required() {
+    for shared in ["from", "into"] {
+        let (_d, mut c, cookies, p, mut cat) = fixture();
+        merge_pair(&mut c, &cookies, &p, &cat);
+        let h = merge_hash(&mut c, &cookies, &p, &cat);
+        // Give the selected party both scopes; keep its other scope readable but not writable.
+        let slug = if shared == "from" { "b" } else { "a" };
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            slug,
+            Action::Role(
+                shared,
+                &Role {
+                    role: "customer".into(),
+                    defaults: None,
+                },
+            ),
+        )
+        .unwrap();
+        c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','b','grant','reader','user:u')",[]).unwrap();
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::ProposeMerge("from", &merge_input("into"))
+            )
+            .is_err()
+        );
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::ApproveMerge("from", &h)
+            )
+            .is_err()
+        );
+        cat.companies[1].archived = true;
+        assert!(
+            execute(
+                &mut c,
+                &cookies,
+                &Fixed,
+                &p,
+                &cat,
+                "a",
+                Action::ApproveMerge("from", &h)
+            )
+            .is_err()
+        );
+        assert_eq!(merge_event_count(&c), 1);
+    }
+}
+#[test]
+fn party_merge_backup_union_includes_anchor_for_both_operations() {
+    struct Guard {
+        seen: Vec<String>,
+    }
+    impl crate::backup_status::CompanyScopes for Guard {
+        fn require(
+            &mut self,
+            _: &rusqlite::Transaction<'_>,
+            _: &dyn Clock,
+            slugs: &[String],
+        ) -> Result<(), rentemester_engine::Error> {
+            self.seen = slugs.to_vec();
+            Err(error("backup_overdue"))
+        }
+    }
+    let (_d, mut c, cookies, p, mut cat) = fixture();
+    merge_pair(&mut c, &cookies, &p, &cat);
+    cat.companies.push(RegisteredCompany {
+        slug: "anchor".into(),
+        name: "Synthetic anchor".into(),
+        archived: false,
+    });
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','anchor','grant','bookkeeper','user:u')",[]).unwrap();
+    let mut guard = Guard { seen: vec![] };
+    let e = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "anchor",
+        Action::ProposeMerge("from", &merge_input("into")),
+        &mut guard,
+    )
+    .unwrap_err();
+    assert_eq!(e.error.code, "backup_overdue");
+    assert_eq!(guard.seen, ["a", "anchor", "b"]);
+    assert_eq!(merge_event_count(&c), 0);
+    let h = merge_hash(&mut c, &cookies, &p, &cat);
+    guard.seen.clear();
+    let e = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "anchor",
+        Action::ApproveMerge("from", &h),
+        &mut guard,
+    )
+    .unwrap_err();
+    assert_eq!(e.error.code, "backup_overdue");
+    assert_eq!(guard.seen, ["a", "anchor", "b"]);
+    assert_eq!(merge_event_count(&c), 1);
+}
+#[test]
+fn party_merge_superseded_failure_rolls_back_approved_event() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    merge_pair(&mut c, &cookies, &p, &cat);
+    let h = merge_hash(&mut c, &cookies, &p, &cat);
+    c.execute_batch("CREATE TRIGGER synthetic_merge_failure BEFORE INSERT ON rm_party_events WHEN NEW.event_type='superseded' BEGIN SELECT RAISE(ABORT,'synthetic failure'); END;").unwrap();
+    let e = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::ApproveMerge("from", &h),
+    )
+    .unwrap_err();
+    assert_eq!(e.stage, FailureStage::NotCommitted);
+    assert_eq!(merge_event_count(&c), 1);
+    c.execute_batch("DROP TRIGGER synthetic_merge_failure")
+        .unwrap();
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::ApproveMerge("from", &h),
+    )
+    .unwrap();
+    assert_eq!(merge_event_count(&c), 3);
+}
+
+#[test]
+fn party_merge_transfer_fence_blocks_both_operations() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    merge_pair(&mut c, &cookies, &p, &cat);
+    let h = merge_hash(&mut c, &cookies, &p, &cat);
+    let tx = c
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    rentemester_storage::workspace_transfer::append(
+        &tx,
+        rentemester_storage::workspace_transfer::Fact::Frozen {
+            transfer_id: "a".repeat(32),
+            source_instance_id: "b".repeat(32),
+            workspace_id: "w".into(),
+            destination: "Synthetic destination".into(),
+            reason: "Synthetic explicit review".into(),
+            companies: vec![rentemester_storage::workspace_transfer::Company {
+                slug: "a".into(),
+                ledger_uuid: "c".repeat(32),
+            }],
+        },
+        "user:u",
+        "2026-01-01T00:00:00.000Z",
+    )
+    .unwrap();
+    tx.commit().unwrap();
+    for action in [
+        Action::ProposeMerge("from", &merge_input("into")),
+        Action::ApproveMerge("from", &h),
+    ] {
+        let e = execute(&mut c, &cookies, &Fixed, &p, &cat, "a", action).unwrap_err();
+        assert_eq!(e.error.code, "workspace_transfer_fenced");
+    }
+    assert_eq!(merge_event_count(&c), 1);
+}

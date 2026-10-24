@@ -2903,8 +2903,18 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/{id}/approve-merge",
+      "capability": "POST /api/companies/{slug}/workspace-parties/{id}/approve-merge"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/workspace-parties/{id}/assertion",
       "capability": "POST /api/companies/{slug}/workspace-parties/{id}/assertion"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/{id}/propose-merge",
+      "capability": "POST /api/companies/{slug}/workspace-parties/{id}/propose-merge"
     },
     {
       "method": "POST",
@@ -3202,5 +3212,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "9f25546bd4c5d69d1971baf1d90d7842adfc63f7aa73eeab1e8071397ba7e6ac"
+  "manifestId": "64a59a3fdb74a2a83f2f3d32330a8fad1e43ebd1a8615ad93151c1b07d25bab0"
 }

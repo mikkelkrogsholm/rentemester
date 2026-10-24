@@ -403,3 +403,82 @@ pub fn create(
     }
     Ok(id)
 }
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct ProposeMerge {
+    pub into_party_id: String,
+    pub review_assertion: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct ApproveMerge {
+    pub proposal_hash: String,
+}
+fn merge_payload(i: &ProposeMerge) -> Result<Value, Error> {
+    Ok(
+        json!({"intoPartyId":bounded(&i.into_party_id,64)?,"reviewAssertion":bounded(&i.review_assertion,500)?}),
+    )
+}
+/// Exact source-bound retained proposal, checked before using its target as authority.
+pub fn merge_proposal(
+    tx: &Transaction<'_>,
+    id: &str,
+    i: &ApproveMerge,
+) -> Result<ProposeMerge, Error> {
+    let h = &i.proposal_hash;
+    if h.len() != 64
+        || !h
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(refused("exact merge proposal not found"));
+    }
+    let raw: Option<String> = tx.query_row("SELECT canonical_payload FROM main.rm_party_events WHERE party_id=? AND event_type='proposed_merge' AND payload_hash=?", params![id,h], |r|r.get(0)).optional().map_err(sql)?;
+    let raw = raw.ok_or_else(|| refused("exact merge proposal not found"))?;
+    let input: ProposeMerge = serde_json::from_str(&raw).map_err(sql)?;
+    let payload = merge_payload(&input)?;
+    if canonical(&payload) != raw || hash(&payload) != *h {
+        return Err(refused("invalid merge proposal"));
+    }
+    Ok(input)
+}
+fn merge_kind(tx: &Transaction<'_>, id: &str, into: &str) -> Result<String, Error> {
+    if id == into {
+        return Err(refused("cannot merge a party into itself"));
+    }
+    if !exists(tx, id)? || !exists(tx, into)? {
+        return Err(Error::new("party_not_found", "party not found"));
+    }
+    tx.query_row(
+        "SELECT canonical_kind FROM main.rm_party_events WHERE party_id=? AND event_type='created'",
+        [id],
+        |r| r.get(0),
+    )
+    .map_err(sql)
+}
+pub fn propose_merge(
+    tx: &Transaction<'_>,
+    id: &str,
+    i: &ProposeMerge,
+    actor: &str,
+    now: &str,
+) -> Result<String, Error> {
+    let payload = merge_payload(i)?;
+    let kind = merge_kind(tx, id, payload["intoPartyId"].as_str().unwrap())?;
+    event(tx, id, &kind, "proposed_merge", &payload, actor, now)?;
+    Ok(hash(&payload))
+}
+pub fn approve_merge(
+    tx: &Transaction<'_>,
+    id: &str,
+    i: &ApproveMerge,
+    actor: &str,
+    now: &str,
+) -> Result<(), Error> {
+    let input = merge_proposal(tx, id, i)?;
+    let payload = merge_payload(&input)?;
+    let kind = merge_kind(tx, id, &input.into_party_id)?;
+    event(tx, id, &kind, "approved_merge", &payload, actor, now)?;
+    event(tx, id, &kind, "superseded", &payload, actor, now)
+}
