@@ -2,6 +2,9 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod registry_original717;
+mod knowledge_ownership_original717;
+mod inbox_original717;
 mod mileage_posting;
 mod vat_purchase_original;
 mod asset_disposal;
@@ -354,14 +357,15 @@ fn serve(api: ApiClient) -> Result<(), &'static str> {
                             | "bank_import"
                             | "ingest_document"
                             | "ingest_workspace_inbox"
+                            | "workspace_inbox_ingest"
                             | "archive_import_plan"
                             | "archive_import_apply"
                             | "dinero_import_plan"
                             | "dinero_import_apply",
                         ) => MAX_DOCUMENT_LINE,
-                        Some("ingest_corporate_record") => MAX_CORPORATE_LINE,
+                        Some("ingest_corporate_record" | "corporate_record_ingest") => MAX_CORPORATE_LINE,
                         Some("propose_consolidation_profile") => MAX_CONSOLIDATION_LINE,
-                        Some("propose_ownership") => MAX_OWNERSHIP_LINE,
+                        Some("propose_ownership" | "ownership_snapshot_propose") => MAX_OWNERSHIP_LINE,
                         _ => MAX_LINE,
                     };
                     if line.len() > frame_limit {

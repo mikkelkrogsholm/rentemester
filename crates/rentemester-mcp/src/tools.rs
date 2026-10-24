@@ -225,6 +225,9 @@ pub fn list() -> Value {
     tools.extend(crate::audit_verify::tools());
     tools.extend(crate::master_data_original::tools());
     crate::invoice_claims_original::register(&mut tools);
+    tools.extend(crate::registry_original717::tools());
+    tools.extend(crate::knowledge_ownership_original717::tools());
+    tools.extend(crate::inbox_original717::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -285,6 +288,9 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::registry_original717::accepts(name) { return crate::registry_original717::call(api,name,args).await; }
+    if crate::knowledge_ownership_original717::accepts(name) { return crate::knowledge_ownership_original717::call(api,name,args).await; }
+    if crate::inbox_original717::accepts(name) { return crate::inbox_original717::call(api,name,args).await; }
     if crate::dimensions_original::accepts(name) { return crate::dimensions_original::call(api,name,args).await; }
     if crate::vat_original::accepts(name) { return crate::vat_original::call(api,name,args).await; }
     if crate::budget_original::accepts(name) || name=="budget_vs_actual" && (args.get("from").is_some() || args.get("to").is_some()) {
