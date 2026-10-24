@@ -1,0 +1,3253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "PartyInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "address": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatOrCvr": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "eanNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "publicRecipient": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "buyerReference": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "orderReference": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "LineInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "unitCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "quantity": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "unitPriceExVat": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "taxClassification": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatRate": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reverseChargeBasis": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "SimplifiedTotalsInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "grossAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatComputationBasis": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatAmount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "netAmount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "grossAmount",
+            "vatRate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "InvoiceInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceType": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "totals": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/SimplifiedTotalsInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "deliveryDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveryPeriodStart": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveryPeriodEnd": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "unitCode": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_native_http.json#/$defs/LineInput"
+              }
+            },
+            "vatRatePercent": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatTreatment": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reverseChargeBasis": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reverseChargeNote": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "customerId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "dueDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "currency": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "fxRateToDkk": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "seller": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "buyer": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "issueDate",
+            "lines"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/SimplifiedTotalsInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_native_http.json#/$defs/LineInput"
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-invoice_native_http.json#/$defs/PartyInput"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 19,
+          "maxItems": 19
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "CustomerInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatOrCvr": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "email": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "phone": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "website": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "eanNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "paymentTermsDays": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "defaultCurrency": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "notes": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 10,
+          "maxItems": 10
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "PostInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "revenueAccountNo": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "revenueAccountNo",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "SettleInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "bankTransactionId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "bankTransactionReference": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "paymentDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "RefundInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "bankTransactionId": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "bankTransactionReference": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "refundDate": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "amount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "CreditInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "grossAmount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creditNoteNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "issueDate",
+            "reason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ],
+      "description": "Native Serde map or positional struct sequence, in declaration order. Unknown/duplicate map fields rejected; Option fields may be omitted in map or null; every sequence position required."
+    },
+    "CustomerCreated": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "cvr",
+        "country",
+        "currency",
+        "fiscalYearStartMonth",
+        "fiscalYearLabelStrategy"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerRow": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatOrCvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "website": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eanNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "defaultCurrency": {
+          "type": "string"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "openBalanceCurrency": {
+          "const": "DKK"
+        },
+        "openInvoiceCount": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "overdueCount": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "gdprErased": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "address",
+        "vatOrCvr",
+        "email",
+        "phone",
+        "website",
+        "eanNumber",
+        "notes",
+        "id",
+        "name",
+        "paymentTermsDays",
+        "defaultCurrency",
+        "openBalance",
+        "openBalanceCurrency",
+        "openInvoiceCount",
+        "overdueCount",
+        "gdprErased"
+      ],
+      "additionalProperties": false
+    },
+    "VendorRow": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatOrCvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "countryCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identifierKind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "website": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultExpenseAccount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultVatTreatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "identityStatus": {
+          "type": "string"
+        },
+        "gdprErased": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "address",
+        "vatOrCvr",
+        "countryCode",
+        "identifierKind",
+        "email",
+        "phone",
+        "website",
+        "defaultExpenseAccount",
+        "defaultVatTreatment",
+        "notes",
+        "id",
+        "name",
+        "identityStatus",
+        "gdprErased"
+      ],
+      "additionalProperties": false
+    },
+    "Contacts": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "ledgerUuid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "archivedSource": {
+          "type": "null"
+        },
+        "company": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "customers": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/CustomerRow"
+          }
+        },
+        "vendors": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/VendorRow"
+          }
+        }
+      },
+      "required": [
+        "slug",
+        "ledgerUuid",
+        "selectedYear",
+        "archived",
+        "archivedSource",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "customers",
+        "vendors"
+      ],
+      "additionalProperties": false
+    },
+    "BadDebtRow": {
+      "type": "object",
+      "properties": {
+        "grossAmount": {
+          "type": "number"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "grossAmountDkk": {
+          "type": "number"
+        },
+        "netAmountDkk": {
+          "type": "number"
+        },
+        "vatAmountDkk": {
+          "type": "number"
+        },
+        "writeOffId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "writeOffDate": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "grossAmount",
+        "netAmount",
+        "vatAmount",
+        "grossAmountDkk",
+        "netAmountDkk",
+        "vatAmountDkk",
+        "writeOffId",
+        "writeOffDate",
+        "journalEntryId",
+        "journalEntryNo"
+      ],
+      "additionalProperties": false
+    },
+    "PublicEvent": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "previousHash": {
+          "type": "string"
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "previousHash",
+        "eventType",
+        "documentId",
+        "status",
+        "actor",
+        "at"
+      ],
+      "additionalProperties": false
+    },
+    "PublicStatus": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceNumber": {
+              "type": "string"
+            },
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "const": true
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceNumber",
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "invoiceNumber": {
+              "type": "string"
+            },
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "type": "boolean"
+            },
+            "duplicate": {
+              "const": true
+            },
+            "redeliveryBlocked": {
+              "type": "boolean"
+            },
+            "providerStatus": {
+              "type": "string"
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "type": "string"
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_native_http.json#/$defs/PublicEvent"
+              }
+            }
+          },
+          "required": [
+            "invoiceNumber",
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InvoiceRow": {
+      "type": "object",
+      "properties": {
+        "totalBadDebtWrittenOff": {
+          "type": "number"
+        },
+        "totalBadDebtWrittenOffDkk": {
+          "type": "number"
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "grossAmountDkk": {
+          "type": "number"
+        },
+        "openBalanceDkk": {
+          "type": "number"
+        },
+        "creditableBalanceDkk": {
+          "type": "number"
+        },
+        "creditableBalance": {
+          "type": "number"
+        },
+        "invoiceNo": {
+          "type": "string"
+        },
+        "invoiceDate": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "badDebtWriteOffs": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/BadDebtRow"
+          }
+        },
+        "invoiceType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customerName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customerEmail": {
+          "type": "null"
+        },
+        "customerId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyerEanNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyerPublicRecipient": {
+          "type": "boolean"
+        },
+        "peppolStatus": {
+          "anyOf": [
+            {
+              "$ref": "schemas-invoice_native_http.json#/$defs/PublicStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastEmailedAt": {
+          "type": "null"
+        },
+        "lastReminderAt": {
+          "type": "null"
+        },
+        "lastReminderSequence": {
+          "const": 0
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "overpaid",
+            "written_off",
+            "refunded",
+            "credited",
+            "paid",
+            "overdue",
+            "open"
+          ]
+        },
+        "effectiveDueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overdueDays": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "posted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "totalBadDebtWrittenOff",
+        "totalBadDebtWrittenOffDkk",
+        "grossAmount",
+        "openBalance",
+        "grossAmountDkk",
+        "openBalanceDkk",
+        "creditableBalanceDkk",
+        "creditableBalance",
+        "invoiceNo",
+        "invoiceDate",
+        "currency",
+        "documentId",
+        "badDebtWriteOffs",
+        "invoiceType",
+        "customerName",
+        "customerEmail",
+        "customerId",
+        "buyerEanNumber",
+        "buyerPublicRecipient",
+        "peppolStatus",
+        "lastEmailedAt",
+        "lastReminderAt",
+        "lastReminderSequence",
+        "fxRateToDkk",
+        "status",
+        "effectiveDueDate",
+        "overdueDays",
+        "posted"
+      ],
+      "additionalProperties": false
+    },
+    "InvoiceList": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "ledgerUuid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "archivedSource": {
+          "type": "null"
+        },
+        "company": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "invoices": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/InvoiceRow"
+          }
+        },
+        "totalGross": {
+          "type": "number"
+        },
+        "totalOpen": {
+          "type": "number"
+        },
+        "totalGrossDkk": {
+          "type": "number"
+        },
+        "totalOpenDkk": {
+          "type": "number"
+        },
+        "totalsCurrency": {
+          "const": "DKK"
+        },
+        "overdueCount": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "nativeSales": {
+          "type": "object",
+          "properties": {
+            "revenueAccounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "settlementAvailable": {
+              "const": true
+            },
+            "creditAvailable": {
+              "const": true
+            },
+            "refundAvailable": {
+              "const": true
+            }
+          },
+          "required": [
+            "revenueAccounts",
+            "settlementAvailable",
+            "creditAvailable",
+            "refundAvailable"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "ledgerUuid",
+        "selectedYear",
+        "archived",
+        "archivedSource",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "invoices",
+        "totalGross",
+        "totalOpen",
+        "totalGrossDkk",
+        "totalOpenDkk",
+        "totalsCurrency",
+        "overdueCount",
+        "nativeSales"
+      ],
+      "additionalProperties": false
+    },
+    "ProducedLine": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "number"
+            },
+            "unitPriceExVat": {
+              "type": "number"
+            },
+            "lineTotalExVat": {
+              "type": "number"
+            },
+            "taxClassification": {
+              "enum": [
+                "taxable",
+                "exempt",
+                "reverse_charge"
+              ]
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatBase": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "reverseChargeBasis": {
+              "type": "string"
+            },
+            "unitCode": {
+              "type": "string"
+            },
+            "vatBaseDkk": {
+              "type": "number"
+            },
+            "vatAmountDkk": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "description",
+            "quantity",
+            "unitPriceExVat",
+            "lineTotalExVat",
+            "taxClassification",
+            "vatRate",
+            "vatBase",
+            "vatAmount"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "unitCode": {
+              "type": "string"
+            },
+            "vatBaseDkk": {
+              "type": "number"
+            },
+            "vatAmountDkk": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ProducedTotals": {
+      "type": "object",
+      "properties": {
+        "netAmount": {
+          "type": "number"
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "vatRate": {
+          "type": "number"
+        },
+        "fxRateToDkk": {
+          "type": "number"
+        },
+        "netAmountDkk": {
+          "type": "number"
+        },
+        "vatAmountDkk": {
+          "type": "number"
+        },
+        "grossAmountDkk": {
+          "type": "number"
+        },
+        "vatComputationBasis": {
+          "const": "VAT_20_OF_GROSS"
+        }
+      },
+      "required": [
+        "netAmount",
+        "grossAmount"
+      ],
+      "additionalProperties": false
+    },
+    "Issued": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceType": {
+          "enum": [
+            "full",
+            "simplified"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "totals": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/ProducedTotals"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatRate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatTreatment": {
+          "type": "string"
+        },
+        "reverseChargeBasis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reverseChargeNote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "netAmountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatAmountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/ProducedLine"
+          }
+        },
+        "deliveryDate": {
+          "type": "string"
+        },
+        "deliveryPeriodStart": {
+          "type": "string"
+        },
+        "deliveryPeriodEnd": {
+          "type": "string"
+        },
+        "unitCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentId",
+        "invoiceType",
+        "currency",
+        "totals",
+        "invoiceNumber",
+        "netAmount",
+        "vatRate",
+        "vatTreatment",
+        "reverseChargeBasis",
+        "reverseChargeNote",
+        "vatAmount",
+        "grossAmount",
+        "fxRateToDkk",
+        "netAmountDkk",
+        "vatAmountDkk",
+        "grossAmountDkk",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "Posting": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "Settlement": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "principalAmountDkk": {
+          "type": "number"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "realizedFxAmountDkk": {
+          "type": "number"
+        },
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "principalAmount": {
+          "type": "number"
+        },
+        "claimAmount": {
+          "const": 0
+        },
+        "openBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "entryId",
+        "invoiceNumber",
+        "currency",
+        "principalAmountDkk",
+        "bankAmountDkk",
+        "realizedFxAmountDkk",
+        "paymentId",
+        "principalAmount",
+        "claimAmount",
+        "openBalance"
+      ],
+      "additionalProperties": false
+    },
+    "Refund": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "principalAmountDkk": {
+          "type": "number"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "realizedFxAmountDkk": {
+          "type": "number"
+        },
+        "refundId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "remainingCreditBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "entryId",
+        "invoiceNumber",
+        "currency",
+        "principalAmountDkk",
+        "bankAmountDkk",
+        "realizedFxAmountDkk",
+        "refundId",
+        "remainingCreditBalance"
+      ],
+      "additionalProperties": false
+    },
+    "Credit": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "creditNoteNumber": {
+          "type": "string"
+        },
+        "originalInvoiceNumber": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentId",
+        "creditNoteNumber",
+        "originalInvoiceNumber",
+        "journalEntryId",
+        "journalEntryNo"
+      ],
+      "additionalProperties": false
+    },
+    "DomainFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "HTTP protocol negotiation is incompatible"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ContactsEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "contacts": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Contacts"
+            }
+          },
+          "required": [
+            "ok",
+            "contacts"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "contacts": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Contacts"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "contacts",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InvoiceListEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoices": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/InvoiceList"
+            }
+          },
+          "required": [
+            "ok",
+            "invoices"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoices": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/InvoiceList"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "invoices",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CustomerCreatedEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "customer": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/CustomerCreated"
+            }
+          },
+          "required": [
+            "ok",
+            "customer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "customer": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/CustomerCreated"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "customer",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "IssuedEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoice": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Issued"
+            }
+          },
+          "required": [
+            "ok",
+            "invoice"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "invoice": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Issued"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "invoice",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PostingEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "posting": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Posting"
+            }
+          },
+          "required": [
+            "ok",
+            "posting"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "posting": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Posting"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "posting",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SettlementEnvelope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "settlement": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Settlement"
+            }
+          },
+          "required": [
+            "ok",
+            "settlement"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "settlement": {
+              "$ref": "schemas-invoice_native_http.json#/$defs/Settlement"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "settlement",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CreditEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "creditNote": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/Credit"
+        }
+      },
+      "required": [
+        "ok",
+        "creditNote"
+      ],
+      "additionalProperties": false
+    },
+    "RefundEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "refund": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/Refund"
+        }
+      },
+      "required": [
+        "ok",
+        "refund"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
