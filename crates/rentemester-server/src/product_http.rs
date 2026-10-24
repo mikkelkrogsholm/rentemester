@@ -330,6 +330,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
         .route("/api/companies/{slug}/workspace-parties",get(parties::handle).post(parties::handle))
+        .route("/api/companies/{slug}/workspace-parties/create-identity",get(parties::handle).post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}",get(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}/role",post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}/assertion",post(parties::handle))

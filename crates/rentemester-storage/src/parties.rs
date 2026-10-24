@@ -25,6 +25,18 @@ pub struct Create {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct CreateIdentity {
+    pub party_id: Option<String>,
+    pub kind: String,
+    pub name: String,
+    pub aliases: Option<Vec<String>>,
+    pub identifiers: Option<Vec<Identifier>>,
+    pub source: String,
+    pub observed_at: String,
+    pub review_assertion: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Role {
     pub role: String,
     pub defaults: Option<serde_json::Map<String, Value>>,
@@ -96,10 +108,62 @@ pub fn scopes(tx: &Transaction<'_>, id: &str) -> Result<BTreeSet<String>, Error>
     let mut q = tx
         .prepare("SELECT DISTINCT company_slug FROM main.rm_party_company_roles WHERE party_id=?")
         .map_err(sql)?;
-    q.query_map([id], |r| r.get(0))
+    let mut scopes = q
+        .query_map([id], |r| r.get(0))
         .map_err(sql)?
         .collect::<Result<BTreeSet<_>, _>>()
-        .map_err(sql)
+        .map_err(sql)?;
+    let mut q = tx.prepare("SELECT e.canonical_payload,e.payload_hash,e.canonical_kind,c.canonical_kind,e.id,c.id FROM main.rm_party_events e JOIN main.rm_party_events c ON c.party_id=e.party_id AND c.event_type='created' WHERE e.party_id=? AND e.event_type='linked'").map_err(sql)?;
+    for row in q
+        .query_map([id], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, String>(3)?,
+                r.get::<_, i64>(4)?,
+                r.get::<_, i64>(5)?,
+            ))
+        })
+        .map_err(sql)?
+    {
+        let (raw, h, kind, created_kind, event_id, created_id) = row.map_err(sql)?;
+        let v: Value = serde_json::from_str(&raw).map_err(sql)?;
+        if v.get("scopeKind").is_some() {
+            if kind != created_kind
+                || event_id <= created_id
+                || !policy::KINDS.contains(&kind.as_str())
+            {
+                return Err(refused("invalid identity registration reference"));
+            }
+            scopes.insert(registration(&raw, &h)?);
+        }
+    }
+    Ok(scopes)
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct Registration {
+    company_slug: String,
+    scope_kind: RegistrationKind,
+}
+#[derive(Deserialize)]
+enum RegistrationKind {
+    #[serde(rename = "identity_registration")]
+    IdentityRegistration,
+}
+/// Exact typed private payload, including canonical text and hash, not a JSON authority hint.
+pub(crate) fn registration(raw: &str, h: &str) -> Result<String, Error> {
+    let r: Registration = serde_json::from_str(raw).map_err(sql)?;
+    let _ = r.scope_kind;
+    if bounded(&r.company_slug, 120)? != r.company_slug {
+        return Err(refused("noncanonical identity scope"));
+    }
+    let v = json!({"companySlug":r.company_slug,"scopeKind":"identity_registration"});
+    if canonical(&v) != raw || hash(&v) != h {
+        return Err(refused("invalid identity scope hash"));
+    }
+    Ok(r.company_slug)
 }
 pub fn visible(
     tx: &Transaction<'_>,
@@ -197,7 +261,15 @@ pub fn list(
     let query = query.map(|s| trim(s).to_lowercase());
     let mut rows = Vec::new();
     for id in ids {
-        if visible(tx, &id, companies)? {
+        let mut roles = tx
+            .prepare("SELECT company_slug FROM main.rm_party_company_roles WHERE party_id=?")
+            .map_err(sql)?;
+        let linked = roles
+            .query_map([&id], |r| r.get::<_, String>(0))
+            .map_err(sql)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(sql)?;
+        if linked.iter().any(|slug| companies.contains(slug)) {
             let p = inspect(tx, &id, companies)?;
             if query.as_ref().is_none_or(|s| {
                 p["name"]
@@ -303,6 +375,62 @@ pub fn alias(
 pub fn create(
     tx: &Transaction<'_>,
     i: &Create,
+    generated: &str,
+    actor: &str,
+    now: &str,
+) -> Result<String, Error> {
+    create_fields(
+        tx,
+        &CreateIdentity {
+            party_id: i.party_id.clone(),
+            kind: i.kind.clone(),
+            name: i.name.clone(),
+            aliases: i.aliases.clone(),
+            identifiers: i.identifiers.clone(),
+            source: i.source.clone(),
+            observed_at: i.observed_at.clone(),
+            review_assertion: i.review_assertion.clone(),
+        },
+        generated,
+        actor,
+        now,
+    )
+}
+/// Caller supplies an authorized catalog selection, never a client-supplied scope.
+pub fn create_identity(
+    tx: &Transaction<'_>,
+    i: &CreateIdentity,
+    slug: &str,
+    generated: &str,
+    actor: &str,
+    now: &str,
+) -> Result<String, Error> {
+    let slug = bounded(slug, 120)?;
+    let candidate = bounded(
+        i.party_id
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .unwrap_or(generated),
+        64,
+    )?;
+    if exists(tx, &candidate)? {
+        return Err(refused("partyId already exists"));
+    }
+    let id = create_fields(tx, i, generated, actor, now)?;
+    event(
+        tx,
+        &id,
+        &i.kind,
+        "linked",
+        &json!({"companySlug":slug,"scopeKind":"identity_registration"}),
+        actor,
+        now,
+    )?;
+    Ok(id)
+}
+fn create_fields(
+    tx: &Transaction<'_>,
+    i: &CreateIdentity,
     generated: &str,
     actor: &str,
     now: &str,
