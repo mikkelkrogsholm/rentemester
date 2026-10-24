@@ -1,0 +1,135 @@
+{
+  "issue": 677,
+  "partition": "bank_intake_accounts",
+  "operationCount": 35,
+  "method": "Graphify query first, source-only current Rust chain review; no runtime replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-application/src/bank.rs",
+      "sha256": "e895e88c5d222014cb63640926ee46b0cfe632c658aa225b9dec8f7ad93f1993",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank.rs",
+      "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+      "needle": "pub(crate) fn fingerprint("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bank.rs",
+      "sha256": "131bfeb583029c20071093c40d1fb1945f2cde78e9e22113e27a3a5f1d224cf8",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn response("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome"
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_queries.rs",
+      "sha256": "25d3069cd5e1c2f765b631c30862cfb2c38d749146b76e0bd7dcb8222d3fe443",
+      "needle": "pub fn accounts("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_accounts_original.rs",
+      "sha256": "ef1ed859a46a52ca6df1354554ec73028a9a66b5c823fedb81ce9283f2c35e83",
+      "needle": "pub fn update("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bank_accounts_original.rs",
+      "sha256": "1ead6fa551b0b90924cd59313d6f6f7180690453d8426d8a7505b9238b8d95c3",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-engine/src/bank.rs",
+      "sha256": "99b42bd0a1b842a335e23083464864bb021218b35c8ba6450f200067ff61476c",
+      "needle": "pub use bytes::decode_bytes;"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-client/src/bank_payables.rs",
+      "sha256": "0861bf173f6f8cc5a218c22d4132c35641d11c3b9abf46f695476006e3248f88",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-cli/src/bank_queries.rs",
+      "sha256": "dd12abd088af9779ca8a5248cd03ffcb6c285b3d2b1833f9b57f65a5587aceb3",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-client/src/bank_queries.rs",
+      "sha256": "3bc61ecec3268e8d571d7f552a10fc248f4cf9fbf3fca63aab8cfc9bcffb6fe5",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/bank_accounts_original.rs",
+      "sha256": "c35e13cf5ecac48fb6836ad30f54df8bba82e8a7e98a09e62997b25264495f2a",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-client/src/bank_accounts_original.rs",
+      "sha256": "ba30ca4bd52b16cbfbc03b98ed1e5feab35adf78be48a5641613190774bf0a36",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/bank_import.rs",
+      "sha256": "5c0a0105dbd0e3954c8258ef1d237daf6d1cfe43c4e97c0e0c1917c586ff2c2e",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-client/src/bank_import.rs",
+      "sha256": "4c6a146732c7470aae9729ed67281e3846f213e111f40476a8afecd5ccb47295",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bank_payables.rs",
+      "sha256": "060b8a8a21e213813c3f584d790bb09a3864d685fdd9812744d50c227901a6d2",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bank_queries.rs",
+      "sha256": "740d571d33b9b48d42de1a579a1c3c51643477a5cf14692c584cdef9049598ff",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bank_import.rs",
+      "sha256": "5a271cf9dfab3de4e0450176eef7daf899b31554a0aecbbeae56edcc836cff75",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bank_accounts_original.rs",
+      "sha256": "490306c366442e5501249a3bdd90d922cfd95916c59bd95c452476686e2a2b65",
+      "needle": "pub async fn call("
+    }
+  ],
+  "acceptance": "Strict oracle structural/source freshness only; parent independent semantic review required. Prior419/18 unchanged; whole677/all55/J01-J07/desktop/release/cutover/retirement retained.",
+  "leadCompletion": "Recovered source-bound35rows from preserved generator after correcting decode re-export needle; separated native/originalreceipt/service and decoder/semantic shapes; original failedreceipt remains."
+}
