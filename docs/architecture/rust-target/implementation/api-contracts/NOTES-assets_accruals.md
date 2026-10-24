@@ -26,3 +26,5 @@ The parent owns semantic review, integration and acceptance. This partition does
 4. Ran `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`: succeeded, 34,009 nodes and 107,681 edges, generated observations confined to the independent build output.
 
 One artifact-generation Python syntax error was corrected; no new test setup was introduced. Existing accepted runtime/user-flow proofs were not replayed. No live-provider approval is claimed.
+
+Lead source review retained existing exact original appliedRules/no-code transport/domain refusal constructors (already correct in finalworker). HEAD success/refusal/protocol schemas are explicitly pre-strip constructors with zero wire bytes. Disposal receipt read has no clockexpiry check while outcome retained; apply replay30days remains distinct. DisposalMCP SDK validates inner confirm as invalid_input, never shared CONFIRM_REQUIRED.
