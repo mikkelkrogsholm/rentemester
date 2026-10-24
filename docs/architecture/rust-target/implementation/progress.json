@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R41 #712 current sharedReact/Tauri login cancellation and explicitOS-vault component accepted at6fcf4fe1; whole712OPEN for exact677dependency and final installednativeGUI qualification.",
-  "code_revision": "6fcf4fe1f732a52974175f32dc97c791d1ea7f92",
-  "spec_revision": "sha256:f660f75899a0baaf4f20f0891884ea71725898e85f8f17f83d65d10520ca3c87",
-  "state": "37of55 original issues CLOSED,18OPEN. Accepted current sharedlogin cancellation/exactaccount plus explicitnoninteractiveOSKeychain storage component. Three realHTTPS heldreply cancel paths deny session/workspace, exactaccount andnormalMFArestart pass. No whole712closure; all55/J01-J07/release/cutover/retirement/finalmanualdesktop gates remain.",
+  "current_increment": "R43 #678 exactdesktopcompiler gap accepted f25e6952; R05 #67742identitycontracts accepted c052a73d. R42 #712candidatefcd6ae0b remainsunaccepted foractualpasswordrotation browser/session boundary.",
+  "code_revision": "f25e6952128929e77389371d7fded8898c5f104b",
+  "spec_revision": "sha256:0b1323735e5aba59fca6230973d5fca4ebf9db2f14b254c4526dae4ed58f988c",
+  "state": "37of55 originalissues CLOSED,18OPEN. Accepted42 exactcurrentidentityHTTPcontracts + deterministiccompatibledesktopcompiler component. Actual712productionwiring/notice candidate preserved, notintegrated/accepted: passwordrotation200 followedbyownerUIlogin; narrowcookiehash/bodyshape diagnostic next. Alloriginalscope andfinalmanualdesktop gates remain.",
   "issues_closed": 37,
   "next": [
-    "Complete exact auth/identity operation contracts consumed by712 as bounded necessary677subset; global677fulloperation scope remainsOPEN.",
-    "Select smallest existing necessary wholeissue after triage against retained valid evidence; close immediately when entireoriginalscope passes. No optionalpolish/acceptedfinancial replay.",
-    "OneRustmotor/server and sharedReactweb/Tauri; currentinstallednativeGUI+physicalsleep/manualdesktop acceptance last."
+    "Diagnose sharedUI auth-revalidation/late401 generation boundary only; rawserver/browsercookie path proven valid. Preservefcdcandidate, no blindwholeflow replay.",
+    "Complete original677 everyadvertisedoperation exactschema/retry scope; reuseaccepted42identitycontracts andexistingprotocol proof.",
+    "Finalinstalleddesktop/nativeOSvault/currentaccount/cancel/platform/accessibility andalloriginalJ01-J07/release/cutover/retirement gates remainlast."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R39 #711 full configured DigiSense/onboarding/send/receive/status and CVR/VIES/EAN scope accepted and actually closed at c351c1f6. Next original issue selected by whole-scope triage; no replay of accepted financial/provider work.",
+  "previous_verified_increment": "R41 #712 current sharedReact/Tauri login cancellation and explicitOS-vault component accepted at6fcf4fe1; whole712OPEN for exact677dependency and final installednativeGUI qualification.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16078,6 +16078,49 @@
         "Current installed Tauri WebKit save/restore/cancel/exactaccount/OSvault UI qualification remains finalmanualdesktopgate; headlessweb+purehooks+actualOSAPI are explicitly separate proofs",
         "Retain all original712 MFA/recovery/revocation/origin/rate/concurrency/stableidentity/revokedjobs/fullRust-runtime scope and existing earlier accepted receipts; no wholeclosure solely on thiscomponent"
       ]
+    },
+    "r05_identity677_current_http_component": {
+      "issue": 677,
+      "status": "component accepted; wholeissue OPEN",
+      "source_revision": "c052a73d630886c3b966700fa30e1699dcf3cb99",
+      "report": "/tmp/rentemester-rust-reports/r05-identity677-contracts-component-accepted.json",
+      "sha256": "878b3e1d820c173a7f47ddb2e68c68ca8c16ec96c78cbd67ae976bacb344a3c0",
+      "scope": "42HTTP identities only, allotherHTTP/CLI/MCP full677 remains",
+      "whole_issue_accepted": false
+    },
+    "r43_desktop678_exact_compiler_component": {
+      "issue": 678,
+      "status": "component accepted; wholeissue OPEN",
+      "source_revision": "f25e6952128929e77389371d7fded8898c5f104b",
+      "report": "/tmp/rentemester-rust-reports/r43-desktop678-compiler-component-accepted.json",
+      "sha256": "76a96290159233b515d4471a061e61c3c831564f823f752618f2197cda1d1e65",
+      "scope": "Exactcompatibledesktop1.99.1 compiler pin only; finalmanual/platformqualification remains",
+      "whole_issue_accepted": false
+    },
+    "r42_account_security712_unaccepted_candidate": {
+      "issue": 712,
+      "status": "unaccepted candidate preserved; actualbrowser/session blocker",
+      "source_revision": "fcd6ae0b742a0a787c8d15ef2e018f04e78612ce",
+      "snapshot_ref": "refs/rentemester/sgd-snapshots/r42-712-account-security/unaccepted-reviewed-candidate",
+      "report": "/private/tmp/rentemester-r34-708-clean/.sgd/observations/r42-712-blocked-candidate.json",
+      "whole_issue_accepted": false,
+      "component_accepted": false,
+      "valid_partial": "guardedserverbuild,69frontend/types, isolatednoticeregession RED/GREEN; actualbackupview/regenerate/list passedbeforefailedbroadattempt, not wholePASS",
+      "blocker": "Rawbrowser passwordrotation cookie boundary nowproven valid: emitted newcookie hash==browserjar==nextrequest; get-session actualsession/user andexactowner. SharedReactUI stillreturnslogin; frontendSDK/revalidation/generation/late401 cause remainsunresolved. No furtherbroadfixture retry.",
+      "preserved_failed_receipts": [
+        "/tmp/rentemester-rust-reports/r42-security712-public-d48e0a2d-attempt1-failed.json",
+        "/tmp/rentemester-rust-reports/r42-security712-public-d48e0a2d.json",
+        "/tmp/rentemester-rust-reports/r42-security712-owner-fcd6ae0b.json"
+      ],
+      "candidate_binary_separation": "/private/tmp/rentemester-r34-708-clean/.sgd/observations/r42-712-binary-separation.json",
+      "narrow_diagnostic": {
+        "report": "/tmp/rentemester-rust-reports/r42-712-cookie-boundary-diagnostic.json",
+        "sha256": "3c387d1254044371e9c4ad7592b7a90582f96b89a6e51a48f6b79e891f139567",
+        "diagnostic_only": true,
+        "candidate_revision": "fcd6ae0b742a0a787c8d15ef2e018f04e78612ce",
+        "raw_cookie_boundary_passed": true,
+        "wholeOrComponentAccepted": false
+      }
     }
   },
   "verified_history": [
