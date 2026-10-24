@@ -1,12 +1,12 @@
-# #677 bank intake/accounts — incomplete worker handoff
+# #677 bank intake/accounts — source contracts after lead repair
 
 ## Scope and evidence
 
 Graphify query was run first (`bank import bank accounts reconciliation`). Current Rust application, HTTP handlers, storage producers, SDK transports, CLI global/leaf parsing and MCP global/leaf dispatch were read. No Cargo, server, network, financial, provider, HEAD probe or accepted-proof replay was performed. Production and prior accepted partitions were not edited.
 
-The schema and initial provenance files contain partial source-derived work only. **This is not an accepted or completed contract partition.** Parent review/integration/acceptance remains required; whole #677/all55/J01–J07/final desktop/release/cutover/retirement scope remains unchanged.
+Lead repair now supplies all35 selected operation rows and corrects the source-bound receipt/service/decoder differences below. Parent semantic review/integration/acceptance remains required; whole #677/all55/J01–J07/final desktop/release/cutover/retirement scope remains unchanged.
 
-## Exact delivery blocker
+## Historical worker blocker (superseded by lead completion)
 
 Stopped generation after the two permitted setup failures, per work-package stop rule:
 
@@ -25,6 +25,10 @@ Preserved partial `schemas-bank_intake_accounts.json` and `provenance-bank_intak
 - Original import file adapter keeps exact bytes; nonempty MCP csvPath wins without inline fallback even if unreadable. Generic UTF8/BOM and declared danske-bank Windows1252/DMY differ from a generic upload receipt. Source publication precedes SQL import commit.
 - Selected SDK non2xx responses discard bank-family422 bodies. Write5xx/lost/malformed success remains outcome_unknown. Original HTTP200 businessfalse is retained; native CLI/MCP preserve nested core data rather than standardizing to original envelopes. No automatic retries/caller keys.
 
-## Partial-schema cautions
+## Historical partial-schema cautions
 
 The partial schema is not semantically frozen. Import full positional parse versus semantic exclusivity, original Wire default tuple tails, raw ID versus SDK projections, exact reachable partition RPC messages, native statement status `known` (not `available`), per-status header/body correlations and actual CLI streams still require completion. Do not treat structurally present partial definitions as successful exact-contract acceptance.
+
+## Lead completion
+
+The original incomplete worker receipt above is preserved. Lead recovered the intended35 operation rows by fixing the exact engine decode re-export anchor, not restarting a model. Source status is known; original import omits null account/profile keys and has a separate receipt. Native service create/PATCH success is not advertised; read usage permits not_committed or committed and CLI/MCP retain supported service envelopes. Original Wire decoder sequences are distinguished from later command/null/selector validation. Strict checks and semantic review are required before integration; no runtime/provider/financial effects were replayed.

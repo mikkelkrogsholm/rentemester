@@ -698,7 +698,7 @@
             "none",
             "no-balance-column",
             "unavailable",
-            "available"
+            "known"
           ]
         },
         "bankStatementProblem": {
@@ -1300,7 +1300,7 @@
           "const": true
         },
         "data": {
-          "$ref": "schemas-bank_intake_accounts.json#/$defs/Receipt"
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ReceiptOriginal"
         },
         "errors": {
           "type": "array",
@@ -1343,7 +1343,10 @@
           "$ref": "schemas-bank_intake_accounts.json#/$defs/Accounts"
         },
         "usage": {
-          "const": "committed"
+          "enum": [
+            "not_committed",
+            "committed"
+          ]
         },
         "business": {
           "const": "committed"
@@ -1383,7 +1386,10 @@
           "$ref": "schemas-bank_intake_accounts.json#/$defs/Bank"
         },
         "usage": {
-          "const": "committed"
+          "enum": [
+            "not_committed",
+            "committed"
+          ]
         },
         "business": {
           "const": "committed"
@@ -3531,6 +3537,2153 @@
     },
     "NativeToolFailure": {
       "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+    },
+    "ImportDeserialize": {
+      "oneOf": [
+        {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportHttpObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "AccountWireDeserialize": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "account": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "slug": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bankName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "registrationNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "accountNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "iban": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "bic": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "accountOwner": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "customerNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ledgerAccountNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "active": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 14
+        }
+      ]
+    },
+    "AccountsRemote": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "AccountsMcpValue": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "BankRemote": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/BankNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/BankNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "BankMcpValue": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/BankNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/BankNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CreatedRemote": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/CreatedNative"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CreatedMcpValue": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/CreatedNative"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedRemote": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedMcpValue": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "UpdatedRemote": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/UpdatedNative"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "UpdatedMcpValue": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/UpdatedNative"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/UpdatedNativeService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "AccountsTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsMcpValue"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountsMcpValue"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "BankTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/BankMcpValue"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/BankMcpValue"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "CreatedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/CreatedMcpValue"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/CreatedMcpValue"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedMcpValue"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportedMcpValue"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "ListOriginalTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/ListOriginal"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ListOriginal"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "ReportOriginalTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/ReportOriginal"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ReportOriginal"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "AccountListOriginalTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountListOriginal"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountListOriginal"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "AccountOriginalTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountOriginal"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountOriginal"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "ImportOriginalTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportOriginal"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportOriginal"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailureTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "oneOf": [
+                    {
+                      "$ref": "schemas-bank_intake_accounts.json#/$defs/BusinessFailure"
+                    },
+                    {
+                      "$ref": "schemas-bank_intake_accounts.json#/$defs/ReportBusinessFailure"
+                    },
+                    {
+                      "$ref": "schemas-bank_intake_accounts.json#/$defs/AdapterFailure"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "oneOf": [
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/BusinessFailure"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/ReportBusinessFailure"
+            },
+            {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/AdapterFailure"
+            }
+          ]
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailureTool": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-bank_intake_accounts.json#/$defs/NativeToolFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/NativeToolFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags16": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--vat-or-cvr": {
+          "type": "string"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--include-proposed": {
+          "type": "string"
+        },
+        "--include-archived": {
+          "type": "string"
+        },
+        "--party-id": {
+          "type": "string"
+        },
+        "--source-id": {
+          "type": "string"
+        },
+        "--output": {
+          "type": "string"
+        },
+        "--record-id": {
+          "type": "string"
+        },
+        "--snapshot-id": {
+          "type": "string"
+        },
+        "--query": {
+          "type": "string"
+        },
+        "--cursor": {
+          "type": "string"
+        },
+        "--limit": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags17": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--vat-or-cvr": {
+          "type": "string"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--include-proposed": {
+          "type": "string"
+        },
+        "--include-archived": {
+          "type": "string"
+        },
+        "--party-id": {
+          "type": "string"
+        },
+        "--source-id": {
+          "type": "string"
+        },
+        "--output": {
+          "type": "string"
+        },
+        "--record-id": {
+          "type": "string"
+        },
+        "--snapshot-id": {
+          "type": "string"
+        },
+        "--query": {
+          "type": "string"
+        },
+        "--cursor": {
+          "type": "string"
+        },
+        "--limit": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags18": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--vat-or-cvr": {
+          "type": "string"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--include-proposed": {
+          "type": "string"
+        },
+        "--include-archived": {
+          "type": "string"
+        },
+        "--party-id": {
+          "type": "string"
+        },
+        "--source-id": {
+          "type": "string"
+        },
+        "--output": {
+          "type": "string"
+        },
+        "--record-id": {
+          "type": "string"
+        },
+        "--snapshot-id": {
+          "type": "string"
+        },
+        "--query": {
+          "type": "string"
+        },
+        "--cursor": {
+          "type": "string"
+        },
+        "--limit": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags19": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--vat-or-cvr": {
+          "type": "string"
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--include-proposed": {
+          "type": "string"
+        },
+        "--include-archived": {
+          "type": "string"
+        },
+        "--party-id": {
+          "type": "string"
+        },
+        "--source-id": {
+          "type": "string"
+        },
+        "--output": {
+          "type": "string"
+        },
+        "--record-id": {
+          "type": "string"
+        },
+        "--snapshot-id": {
+          "type": "string"
+        },
+        "--query": {
+          "type": "string"
+        },
+        "--cursor": {
+          "type": "string"
+        },
+        "--limit": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags20": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--text-match": {
+          "type": "string"
+        },
+        "--amount": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput20": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/QueryRow"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "rows",
+        "count",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags21": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--text-match": {
+          "type": "string"
+        },
+        "--amount": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--from",
+        "--to"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput21": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "matchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unmatchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "matchedAmountTotal": {
+          "type": "number"
+        },
+        "unmatchedAmountTotal": {
+          "type": "number"
+        },
+        "matched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "transactionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "journalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "bankTransactionId",
+              "transactionDate",
+              "text",
+              "amount",
+              "journalEntryId",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "transactionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "importBatchId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "bankTransactionId",
+              "transactionDate",
+              "text",
+              "amount",
+              "importBatchId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-RECONCILIATION-001"
+          ]
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "matchedCount",
+        "unmatchedCount",
+        "matchedAmountTotal",
+        "unmatchedAmountTotal",
+        "matched",
+        "unmatched",
+        "ok",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags22": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput22": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+          }
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "count",
+        "accounts",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags23": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--bank-name": {
+          "type": "string"
+        },
+        "--registration-no": {
+          "type": "string"
+        },
+        "--account-no": {
+          "type": "string"
+        },
+        "--iban": {
+          "type": "string"
+        },
+        "--bic": {
+          "type": "string"
+        },
+        "--account-owner": {
+          "type": "string"
+        },
+        "--customer-no": {
+          "type": "string"
+        },
+        "--currency": {
+          "type": "string"
+        },
+        "--ledger-account": {
+          "type": "string"
+        },
+        "--slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--name"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput23": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "account",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags24": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--bank-name": {
+          "type": "string"
+        },
+        "--registration-no": {
+          "type": "string"
+        },
+        "--account-no": {
+          "type": "string"
+        },
+        "--iban": {
+          "type": "string"
+        },
+        "--bic": {
+          "type": "string"
+        },
+        "--account-owner": {
+          "type": "string"
+        },
+        "--customer-no": {
+          "type": "string"
+        },
+        "--currency": {
+          "type": "string"
+        },
+        "--ledger-account": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--active": {
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "required": [
+        "--company",
+        "--account"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput24": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "account",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFlags25": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--file": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--file"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput25": {
+      "type": "object",
+      "properties": {
+        "importBatchId": {
+          "type": "string"
+        },
+        "sourceFileHash": {
+          "type": "string"
+        },
+        "bankAccountId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "imported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicateRows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bankAccountSlug": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "balanceWarnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstBalance": {
+          "type": "number"
+        },
+        "lastBalance": {
+          "type": "number"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "importBatchId",
+        "sourceFileHash",
+        "imported",
+        "skippedDuplicates",
+        "skippedDuplicateRows",
+        "balanceWarnings",
+        "exceptionsCreated",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments26": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments27": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments28": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments29": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments30": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "textMatch": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "matched",
+            "unmatched"
+          ]
+        },
+        "amount": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments31": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "textMatch": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "matched",
+            "unmatched"
+          ]
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments32": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "includeInactive": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments33": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "csvPath": {
+          "type": "string"
+        },
+        "csvContent": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "profile": {
+          "const": "danske-bank"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpArguments34": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": "string"
+        },
+        "registrationNo": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "bic": {
+          "type": "string"
+        },
+        "accountOwner": {
+          "type": "string"
+        },
+        "customerNo": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "ledgerAccountNo": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "AccountListHttpQuery": {
+      "type": "object",
+      "properties": {
+        "includeInactive": {
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ReceiptOriginal": {
+      "type": "object",
+      "properties": {
+        "importBatchId": {
+          "type": "string"
+        },
+        "sourceFileHash": {
+          "type": "string"
+        },
+        "bankAccountId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "imported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicateRows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bankAccountSlug": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "balanceWarnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstBalance": {
+          "type": "number"
+        },
+        "lastBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "importBatchId",
+        "sourceFileHash",
+        "imported",
+        "skippedDuplicates",
+        "skippedDuplicateRows",
+        "balanceWarnings",
+        "exceptionsCreated"
+      ],
+      "additionalProperties": false
     }
   }
 }
