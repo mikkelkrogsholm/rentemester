@@ -1,0 +1,5550 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ManualCreateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "interval": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "intervalCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 120
+        },
+        "deliveryChannel": {
+          "enum": [
+            "manual",
+            null
+          ]
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "deliveryPeriodMode": {
+          "enum": [
+            "none",
+            "interval_window",
+            "issue_month",
+            null
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "vatRatePercent": {
+          "type": "number"
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "customerId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyer": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 4096
+                },
+                "address": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 4096
+                },
+                "vatOrCvr": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 4096
+                },
+                "eanNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 1024
+                },
+                "publicRecipient": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "buyerReference": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 1024
+                },
+                "orderReference": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 1024
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "unitPriceExVat": {
+                "type": "number",
+                "minimum": 0
+              },
+              "unitCode": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "maxLength": 32
+              },
+              "taxClassification": {
+                "enum": [
+                  "taxable",
+                  "exempt",
+                  "reverse_charge",
+                  null
+                ]
+              },
+              "vatRate": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reverseChargeBasis": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "name",
+        "interval",
+        "firstIssueDate",
+        "paymentTermsDays",
+        "vatRatePercent",
+        "lines",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ManualGenerateBody": {
+      "type": "object",
+      "properties": {
+        "asOfDate": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "asOfDate",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ManualRetireBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "EmailSendBody": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder",
+            null
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "to",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "EmailRetryBody": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "pattern": "^<[0-9a-f]{32}@rentemester\\.local>$",
+          "maxLength": 128
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "messageId",
+        "expectedStateHash",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "EmailReconcileBody": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "pattern": "^<[0-9a-f]{32}@rentemester\\.local>$",
+          "maxLength": 128
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "resolution": {
+          "enum": [
+            "accepted",
+            "not_accepted"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "messageId",
+        "expectedStateHash",
+        "reason",
+        "confirm",
+        "resolution",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "enableBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "templateId",
+        "templateHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "pauseBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nonblank ECMAScript-trimmed <=1000 UTF16 units; SDK only reconsent checks the trimmed bound explicitly."
+        }
+      },
+      "required": [
+        "templateId",
+        "expectedStateHash",
+        "confirm",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "resumeBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nonblank ECMAScript-trimmed <=1000 UTF16 units; SDK only reconsent checks the trimmed bound explicitly."
+        }
+      },
+      "required": [
+        "templateId",
+        "expectedStateHash",
+        "confirm",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "cancelBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nonblank ECMAScript-trimmed <=1000 UTF16 units; SDK only reconsent checks the trimmed bound explicitly."
+        }
+      },
+      "required": [
+        "templateId",
+        "expectedStateHash",
+        "confirm",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "catch-upBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "periodIndexes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "templateId",
+        "planHash",
+        "confirm",
+        "periodIndexes"
+      ],
+      "additionalProperties": false
+    },
+    "skipBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "periodIndexes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nonblank ECMAScript-trimmed <=1000 UTF16 units; SDK only reconsent checks the trimmed bound explicitly."
+        }
+      },
+      "required": [
+        "templateId",
+        "planHash",
+        "confirm",
+        "periodIndexes",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "dispatchBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "templateId",
+        "planHash",
+        "confirm",
+        "periodIndex"
+      ],
+      "additionalProperties": false
+    },
+    "reconsentBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nonblank ECMAScript-trimmed <=1000 UTF16 units; SDK only reconsent checks the trimmed bound explicitly."
+        }
+      },
+      "required": [
+        "templateId",
+        "planHash",
+        "confirm",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "HostedConsentBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "serviceAccountId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "templateId",
+        "reason",
+        "confirm",
+        "planHash",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false
+    },
+    "HostedRevokeBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedStateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "templateId",
+        "reason",
+        "confirm",
+        "expectedStateHash"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalInvoiceInput": {
+      "type": "object",
+      "properties": {
+        "invoiceType": {
+          "enum": [
+            "full",
+            "simplified"
+          ]
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "domestic_reverse_charge",
+            "foreign_reverse_charge"
+          ]
+        },
+        "seller": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "vatOrCvr": {
+              "type": "string"
+            },
+            "eanNumber": {
+              "type": "string"
+            },
+            "buyerReference": {
+              "type": "string"
+            },
+            "orderReference": {
+              "type": "string"
+            },
+            "publicRecipient": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "buyer": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "vatOrCvr": {
+              "type": "string"
+            },
+            "eanNumber": {
+              "type": "string"
+            },
+            "buyerReference": {
+              "type": "string"
+            },
+            "orderReference": {
+              "type": "string"
+            },
+            "publicRecipient": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "unitCode": {
+                "type": "string"
+              },
+              "taxClassification": {
+                "type": "string"
+              },
+              "reverseChargeBasis": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "unitPriceExVat": {
+                "type": "number"
+              },
+              "lineTotalExVat": {
+                "type": "number"
+              },
+              "vatRate": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "netAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "grossAmount": {
+              "type": "number"
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "netAmountDkk": {
+              "type": "number"
+            },
+            "vatAmountDkk": {
+              "type": "number"
+            },
+            "grossAmountDkk": {
+              "type": "number"
+            },
+            "vatComputationBasis": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "reverseChargeBasis": {
+          "type": "string"
+        },
+        "reverseChargeNote": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "unitCode": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "deliveryDate": {
+          "type": "string"
+        },
+        "deliveryPeriodStart": {
+          "type": "string"
+        },
+        "deliveryPeriodEnd": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoiceType"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCreateInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "deliveryChannel": {
+          "enum": [
+            "manual",
+            "email",
+            "digisense"
+          ]
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "invoice": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalInvoiceInput"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "deliveryPeriodMode": {
+          "enum": [
+            "issue_month",
+            "interval_window",
+            "none"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "interval",
+        "firstIssueDate",
+        "invoice"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCreateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "deliveryChannel": {
+          "enum": [
+            "manual",
+            "email",
+            "digisense"
+          ]
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "invoice": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalInvoiceInput"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "deliveryPeriodMode": {
+          "enum": [
+            "issue_month",
+            "interval_window",
+            "none"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "name",
+        "interval",
+        "firstIssueDate",
+        "invoice",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalGenerateBody": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "templateId",
+        "asOfDate",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceBody": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asOfDate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maxGenerations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "workspace",
+        "asOfDate",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Generation": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate",
+        "deliveryPeriodStart",
+        "deliveryPeriodEnd"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalGeneration": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodStart": {
+          "type": "string"
+        },
+        "deliveryPeriodEnd": {
+          "type": "string"
+        },
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate",
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "GenerationRead": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "deliveryPeriodStart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodEnd": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "deliveryPeriodStart",
+        "deliveryPeriodEnd"
+      ],
+      "additionalProperties": false
+    },
+    "Template": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "deliveryChannel": {
+          "type": "string"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "nextIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deliveryPeriodMode": {
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "generations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/GenerationRead"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "deliveryChannel",
+        "firstIssueDate",
+        "nextIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "notes",
+        "active",
+        "createdAt",
+        "generations"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "deliveryChannel": {
+          "type": "string"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "nextIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deliveryPeriodMode": {
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "deliveryChannel",
+        "firstIssueDate",
+        "nextIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "notes",
+        "active",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "ManualList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "recurringInvoices": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "nativeRecurring": {
+              "const": true
+            },
+            "templates": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-delivery_recurring_cli.json#/$defs/Template"
+              }
+            }
+          },
+          "required": [
+            "slug",
+            "nativeRecurring",
+            "templates"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "recurringInvoices"
+      ],
+      "additionalProperties": false
+    },
+    "ManualCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "name": {
+              "type": "string"
+            },
+            "interval": {
+              "type": "string"
+            },
+            "intervalCount": {
+              "type": "integer"
+            },
+            "deliveryChannel": {
+              "const": "manual"
+            },
+            "firstIssueDate": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "templateId",
+            "name",
+            "interval",
+            "intervalCount",
+            "deliveryChannel",
+            "firstIssueDate"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "template"
+      ],
+      "additionalProperties": false
+    },
+    "ManualRetired": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "retired": {
+              "const": true
+            }
+          },
+          "required": [
+            "id",
+            "retired"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "template"
+      ],
+      "additionalProperties": false
+    },
+    "ManualGenerated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "generation": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Generation"
+            },
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/BareOriginalGeneration"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "generation"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "templateId",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalTemplate"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Sender": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "fromAddress": {
+          "type": "string"
+        },
+        "fromName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "fromAddress",
+        "fromName"
+      ],
+      "additionalProperties": false
+    },
+    "EmailHistory": {
+      "type": "object",
+      "properties": {
+        "eventType": {
+          "enum": [
+            "reserved",
+            "accepted",
+            "refused",
+            "unknown",
+            "reconciled"
+          ]
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "attemptIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "at": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolution": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "jsonSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "senderIdentity": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Sender"
+        }
+      },
+      "required": [
+        "eventType",
+        "attemptId",
+        "attemptIndex",
+        "at",
+        "actor",
+        "stateHash",
+        "reason",
+        "evidence",
+        "resolution",
+        "jsonSha256",
+        "pdfSha256",
+        "bodySha256",
+        "senderIdentity"
+      ],
+      "additionalProperties": false
+    },
+    "EmailDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "refused",
+            "unknown"
+          ]
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailHistory"
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "null"
+        },
+        "state": {
+          "const": "accepted"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "attemptId": {
+          "type": "null"
+        },
+        "humanResolution": {
+          "const": false
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "const": "legacy_accepted"
+              },
+              "sendLogId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "at": {
+                "type": "string"
+              },
+              "transportReceiptAvailable": {
+                "const": false
+              },
+              "historicalPdfHashAvailable": {
+                "const": false
+              }
+            },
+            "required": [
+              "eventType",
+              "sendLogId",
+              "at",
+              "transportReceiptAvailable",
+              "historicalPdfHashAvailable"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "legacy": {
+          "const": true
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "legacy"
+      ],
+      "additionalProperties": false
+    },
+    "EmailStatus": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invoiceEmail": {
+          "type": "object",
+          "properties": {
+            "configured": {
+              "type": "boolean"
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailDelivery"
+                  },
+                  {
+                    "$ref": "schemas-delivery_recurring_cli.json#/$defs/LegacyDelivery"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "configured",
+            "rows"
+          ],
+          "additionalProperties": false
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "invoiceEmail"
+      ],
+      "additionalProperties": false
+    },
+    "EmailReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "delivery": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailDelivery"
+            },
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/LegacyDelivery"
+            }
+          ]
+        },
+        "code": {
+          "enum": [
+            "delivery_unknown",
+            "delivery_refused"
+          ]
+        },
+        "message": {
+          "enum": [
+            "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg.",
+            "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
+          ]
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenNativePayload": {
+      "type": "object",
+      "properties": {
+        "vatRatePercent": {
+          "type": "number"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customerId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyer": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenBuyer"
+        },
+        "seller": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenSeller"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "quantity": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "unitPriceExVat": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "description",
+              "quantity",
+              "unitPriceExVat"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "vatRatePercent",
+        "currency",
+        "customerId",
+        "buyer",
+        "seller",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "Specification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "intervalCount": {
+          "type": "integer"
+        },
+        "firstIssueDate": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deliveryPeriodMode": {
+          "type": "string"
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenNativePayload"
+            },
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenOriginalPayload"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "interval",
+        "intervalCount",
+        "firstIssueDate",
+        "paymentTermsDays",
+        "deliveryPeriodMode",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "Occurrence": {
+      "type": "object",
+      "properties": {
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "issueDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "periodIndex",
+        "issueDate"
+      ],
+      "additionalProperties": false
+    },
+    "RestoreConsent": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "boundaryHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "historicalOwnerUserId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "historicalQueued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+          }
+        }
+      },
+      "required": [
+        "required",
+        "boundaryHash",
+        "historicalOwnerUserId",
+        "historicalQueued"
+      ],
+      "additionalProperties": false
+    },
+    "HostedDescriptor": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "serviceAccountId": {
+          "type": "string"
+        },
+        "credentialId": {
+          "type": "string"
+        },
+        "grantorUserId": {
+          "type": "string"
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "policy": {
+          "const": "normal_due_only"
+        },
+        "consentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "active",
+        "serviceAccountId",
+        "credentialId",
+        "grantorUserId",
+        "authorityHash",
+        "policy",
+        "consentHash"
+      ],
+      "additionalProperties": false
+    },
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "template": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Specification"
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "normalDue": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "missed": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+          },
+          "maxItems": 100
+        },
+        "missedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "queued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+          }
+        },
+        "restoreConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/RestoreConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionMode": {
+          "enum": [
+            "app",
+            "hosted"
+          ]
+        },
+        "hostedConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedDescriptor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "templateId",
+        "template",
+        "templateHash",
+        "stateHash",
+        "asOfDate",
+        "normalDue",
+        "missed",
+        "missedCount",
+        "truncated",
+        "queued",
+        "restoreConsent",
+        "executionMode",
+        "hostedConsent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "HostedPlan": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "template": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Specification"
+        },
+        "schedule": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Plan"
+        },
+        "executor": {
+          "type": "object",
+          "properties": {
+            "serviceAccountId": {
+              "type": "string"
+            },
+            "credentialId": {
+              "type": "string"
+            },
+            "displayName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceAccountId",
+            "credentialId",
+            "displayName"
+          ],
+          "additionalProperties": false
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "policy": {
+          "const": "normal_due_only"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "templateId",
+        "templateHash",
+        "stateHash",
+        "template",
+        "schedule",
+        "executor",
+        "authorityHash",
+        "policy",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "HostedBinding": {
+      "type": "object",
+      "properties": {
+        "serviceAccountId": {
+          "type": "string"
+        },
+        "credentialId": {
+          "type": "string"
+        },
+        "grantorUserId": {
+          "type": "string"
+        },
+        "authorityHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "policy": {
+          "const": "normal_due_only"
+        }
+      },
+      "required": [
+        "serviceAccountId",
+        "credentialId",
+        "grantorUserId",
+        "authorityHash",
+        "policy"
+      ],
+      "additionalProperties": false
+    },
+    "HostedProof": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "consent",
+            "execution"
+          ]
+        },
+        "principalKind": {
+          "enum": [
+            "user",
+            "service_account"
+          ]
+        },
+        "binding": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedBinding"
+        },
+        "consentHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedPlan": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "principalKind",
+        "binding",
+        "consentHash",
+        "reason",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "ReconsentProof": {
+      "type": "object",
+      "properties": {
+        "consentKind": {
+          "const": "restored_reconsent"
+        },
+        "boundaryHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reviewedPlan": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Plan"
+        }
+      },
+      "required": [
+        "consentKind",
+        "boundaryHash",
+        "reason",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "EventData": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "occurrences": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+          }
+        },
+        "generation": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-delivery_recurring_cli.json#/$defs/Generation"
+                },
+                {
+                  "$ref": "schemas-delivery_recurring_cli.json#/$defs/BareOriginalGeneration"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedPlan": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Plan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "reason",
+        "occurrences",
+        "generation",
+        "error",
+        "reviewedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "ScheduleHistory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "kind": {
+          "enum": [
+            "enabled",
+            "paused",
+            "resumed",
+            "cancelled",
+            "queued",
+            "skipped",
+            "attempted",
+            "succeeded",
+            "failed"
+          ]
+        },
+        "actor": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EventData"
+        },
+        "eventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "version": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "restoredConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/ReconsentProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hosted": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "actor",
+        "at",
+        "data",
+        "eventHash",
+        "version",
+        "restoredConsent",
+        "hosted"
+      ],
+      "additionalProperties": false
+    },
+    "LastRun": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "periodIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "status": {
+              "const": "unresolved"
+            },
+            "at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "periodIndex",
+            "issueDate",
+            "status",
+            "at"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "periodIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "issueDate": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "succeeded",
+                "failed"
+              ]
+            },
+            "generation": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-delivery_recurring_cli.json#/$defs/Generation"
+                    },
+                    {
+                      "$ref": "schemas-delivery_recurring_cli.json#/$defs/BareOriginalGeneration"
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "periodIndex",
+            "issueDate",
+            "status",
+            "generation",
+            "error",
+            "at"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Schedule": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "templateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "enum": [
+            "disabled",
+            "enabled",
+            "paused",
+            "cancelled"
+          ]
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "ownerUserId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastRun": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/LastRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nextOccurrence": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "missedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "queued": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/Occurrence"
+          }
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduleHistory"
+          }
+        },
+        "restoreConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/RestoreConsent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionMode": {
+          "enum": [
+            "app",
+            "hosted"
+          ]
+        },
+        "hostedConsent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedDescriptor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "templateId",
+        "templateHash",
+        "state",
+        "stateHash",
+        "ownerUserId",
+        "lastRun",
+        "nextOccurrence",
+        "missedCount",
+        "queued",
+        "error",
+        "history",
+        "restoreConsent",
+        "executionMode",
+        "hostedConsent"
+      ],
+      "additionalProperties": false
+    },
+    "ScheduledList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scheduledRecurring": {
+          "type": "object",
+          "properties": {
+            "asOfDate": {
+              "type": "string"
+            },
+            "timeZone": {
+              "const": "Europe/Copenhagen"
+            },
+            "localService": {
+              "const": false
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-delivery_recurring_cli.json#/$defs/Schedule"
+              }
+            }
+          },
+          "required": [
+            "asOfDate",
+            "timeZone",
+            "localService",
+            "rows"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "scheduledRecurring"
+      ],
+      "additionalProperties": false
+    },
+    "ScheduledPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Plan"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "HostedPlanEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "hostedPlan": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "hostedPlan"
+      ],
+      "additionalProperties": false
+    },
+    "ScheduledMutation": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scheduledRecurring": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/Schedule"
+        }
+      },
+      "required": [
+        "ok",
+        "scheduledRecurring"
+      ],
+      "additionalProperties": false
+    },
+    "ScheduledDispatch": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scheduledRecurring": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Schedule"
+            },
+            "generation": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-delivery_recurring_cli.json#/$defs/Generation"
+                },
+                {
+                  "$ref": "schemas-delivery_recurring_cli.json#/$defs/BareOriginalGeneration"
+                }
+              ]
+            },
+            "dispatch": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "succeeded"
+                }
+              },
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "scheduledRecurring",
+            "generation",
+            "dispatch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scheduledRecurring": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/Schedule"
+            },
+            "dispatch": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "failed"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "scheduledRecurring",
+            "dispatch"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WorkspaceCompany": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "status": {
+              "const": "skipped"
+            },
+            "reason": {
+              "enum": [
+                "archived",
+                "not initialized"
+              ]
+            }
+          },
+          "required": [
+            "slug",
+            "status",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "processed",
+                "failed"
+              ]
+            },
+            "generated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attempted": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "remainingGenerations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "const": "run failed"
+            },
+            "continuation": {
+              "type": "object",
+              "properties": {
+                "remainingGenerations": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "remainingGenerations"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "slug",
+            "status",
+            "generated",
+            "attempted",
+            "hasMore",
+            "remainingGenerations"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WorkspaceResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/WorkspaceCompany"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "remainingGenerations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "continuation": {
+          "type": "object",
+          "properties": {
+            "remainingGenerations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "remainingGenerations": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "slug",
+                  "remainingGenerations"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "remainingGenerations",
+            "companies"
+          ],
+          "additionalProperties": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        }
+      },
+      "required": [
+        "ok",
+        "companies",
+        "errors",
+        "hasMore",
+        "remainingGenerations"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_invoice-email-status": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote invoice-email-status"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--company"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_invoice-email-status": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailStatus"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_invoice-email-send": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote invoice-email-send"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailSendBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_invoice-email-send": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_invoice-email-reconcile": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote invoice-email-reconcile"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReconcileBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_invoice-email-reconcile": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_invoice-email-retry": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote invoice-email-retry"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailRetryBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_invoice-email-retry": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_recurring-invoices": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote recurring-invoices"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_recurring-invoices": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualList"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_create-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote create-recurring-invoice"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualCreateBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_create-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualCreated"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_generate-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote generate-recurring-invoice"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            },
+            "--id": {
+              "type": "string",
+              "description": "parse i64 positive <=9007199254740991"
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm",
+            "--id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualGenerateBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_generate-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualGenerated"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_retire-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote retire-recurring-invoice"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            },
+            "--id": {
+              "type": "string",
+              "description": "parse i64 positive <=9007199254740991"
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm",
+            "--id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualRetireBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_retire-recurring-invoice": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ManualRetired"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_recurring-invoice_create": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "recurring-invoice create"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--json": {
+              "const": true
+            },
+            "--input": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--input"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalCreateInput"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_recurring-invoice_create": {
+      "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalCreated"
+    },
+    "Input_recurring-invoice_generate": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "recurring-invoice generate"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--json": {
+              "const": true
+            },
+            "--template-id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--as-of": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--template-id",
+            "--as-of"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_recurring-invoice_generate": {
+      "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalGeneration"
+    },
+    "Input_recurring-invoice_list": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "recurring-invoice list"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--json": {
+              "const": true
+            },
+            "--include-inactive": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_recurring-invoice_list": {
+      "$ref": "schemas-delivery_recurring_cli.json#/$defs/OriginalList"
+    },
+    "Input_recurring-invoice_run-workspace": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "recurring-invoice run-workspace"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--json": {
+              "const": true
+            },
+            "--workspace": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--as-of": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--max-generations": {
+              "type": "string",
+              "description": "parse u32 1..5000; omitted native default500/company"
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--workspace",
+            "--as-of",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_recurring-invoice_run-workspace": {
+      "$ref": "schemas-delivery_recurring_cli.json#/$defs/WorkspaceResult"
+    },
+    "Input_remote_hosted-recurring-plan": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote hosted-recurring-plan"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--id": {
+              "type": "string",
+              "description": "parse i64 positive <=9007199254740991"
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_hosted-recurring-plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedPlanEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_consent-hosted-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote consent-hosted-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedConsentBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_consent-hosted-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_revoke-hosted-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote revoke-hosted-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/HostedRevokeBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_revoke-hosted-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledList"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_scheduled-recurring-plan": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote scheduled-recurring-plan"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--id": {
+              "type": "string",
+              "description": "parse i64 positive <=9007199254740991"
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_scheduled-recurring-plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_enable-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote enable-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/enableBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_enable-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_pause-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote pause-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/pauseBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_pause-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_resume-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote resume-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/resumeBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_resume-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_cancel-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote cancel-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/cancelBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_cancel-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_catch-up-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote catch-up-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/catch-upBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_catch-up-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_skip-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote skip-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/skipBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_skip-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_dispatch-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote dispatch-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/dispatchBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_dispatch-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledDispatch"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Input_remote_reconsent-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote reconsent-scheduled-recurring"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--company": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--company",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/reconsentBody"
+        },
+        "positionals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin",
+        "positionals"
+      ],
+      "additionalProperties": false
+    },
+    "Output_remote_reconsent-scheduled-recurring": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/ScheduledMutation"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenSeller": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "vatOrCvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "vatOrCvr"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenBuyer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "vatOrCvr": {
+          "type": "string"
+        },
+        "eanNumber": {
+          "type": "string"
+        },
+        "buyerReference": {
+          "type": "string"
+        },
+        "orderReference": {
+          "type": "string"
+        },
+        "publicRecipient": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "publicRecipient"
+      ],
+      "additionalProperties": false
+    },
+    "BareOriginalGeneration": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "boolean"
+        },
+        "templateId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deliveryPeriodStart": {
+          "type": "string"
+        },
+        "deliveryPeriodEnd": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "created",
+        "templateId",
+        "periodIndex",
+        "documentId",
+        "invoiceNumber",
+        "issueDate",
+        "dueDate"
+      ],
+      "additionalProperties": false
+    },
+    "FrozenOriginalPayload": {
+      "type": "object",
+      "properties": {
+        "invoiceType": {
+          "enum": [
+            "full",
+            "simplified"
+          ]
+        },
+        "vatTreatment": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "reverseChargeBasis": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "reverseChargeNote": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "currency": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "unitCode": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "seller": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "buyer": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "eanNumber": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "publicRecipient": {
+              "type": "boolean"
+            },
+            "buyerReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "orderReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "unitCode": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "unitPriceExVat": {
+                "type": "number"
+              },
+              "taxClassification": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "vatRate": {
+                "type": "number"
+              },
+              "reverseChargeBasis": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "lineTotalExVat": {
+                "type": "number"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "maxItems": 200
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "netAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "grossAmount": {
+              "type": "number"
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "netAmountDkk": {
+              "type": "number"
+            },
+            "vatAmountDkk": {
+              "type": "number"
+            },
+            "grossAmountDkk": {
+              "type": "number"
+            },
+            "vatComputationBasis": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "invoiceType"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
