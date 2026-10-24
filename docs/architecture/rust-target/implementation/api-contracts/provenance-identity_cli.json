@@ -358,6 +358,21 @@
       "path": "crates/rentemester-server/src/main.rs",
       "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
       "needle": "protocol::install(router, connected)"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+      "needle": "pub fn load(profile:"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "let args = match local_binding::prepare(args)"
     }
   ],
   "method": "Graphify query first; current advertisement/parser/dispatcher, SDK and native receipt/error producers inspected. Exact native payload refs reuse accepted HTTP schemas only underneath distinct CLI data envelope. No authentication/provider/business effects replayed.",
@@ -365,5 +380,10 @@
     "sharedIdentityFlow": "#712",
     "productionAccountSecurityR44": "32a36073b8c1dc0567113cba86c0fd02de3191e14be483bc6edd615de077efdb"
   },
-  "limits": "Eight CLI leaves only; no global #677 closure or full epic #672/55/J01-J07 completion claim; legacy R01 inventories are not authoritative for additions."
+  "limits": "Eight CLI leaves only; no global #677 closure or full epic #672/55/J01-J07 completion claim; legacy R01 inventories are not authoritative for additions.",
+  "leadRepair": {
+    "rejectedCommit": "81be2af5c6ee36747887feb170948f551eb22328",
+    "diagnosis": "main local_binding stage supports explicit local-profile before remote parsing, and context reads ignore --vat-or-cvr; public and normalized schemas now separate.",
+    "newModelAttempt": false
+  }
 }

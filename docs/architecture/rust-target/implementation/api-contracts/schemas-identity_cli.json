@@ -580,6 +580,11 @@
               "type": "string",
               "minLength": 1,
               "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--vat-or-cvr": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
             }
           },
           "required": [
@@ -718,6 +723,11 @@
               "type": "string",
               "minLength": 1,
               "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--vat-or-cvr": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
             }
           },
           "required": [
@@ -1061,6 +1071,1146 @@
       ],
       "additionalProperties": false,
       "description": "Native SDK pre-dispatch shape. Exact JSON bytes <=8192; forwarded unchanged. Server strict parser additionally refuses duplicate fields. UTF8 byte bounds and trim/control constraints are enforced in SDK code, not JSON Schema character counts."
+    },
+    "loginPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote login"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--email": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "At most4096 UTF8 bytes; no email syntax check in CLI/SDK."
+                },
+                "--factor": {
+                  "enum": [
+                    "totp",
+                    "backup"
+                  ]
+                },
+                "--session-out": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "--server",
+                "--email",
+                "--factor",
+                "--session-out"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Password:1..4096 UTF8 bytes, newline terminated."
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Factor code:1..4096 UTF8 bytes, newline terminated; read only after pending challenge."
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "Logical secret lines; actual input is plaintext UTF8 pipe, not a JSON array. LF required, optional preceding CR stripped; terminal refused. Extra trailing input not consumed."
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote login"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--email": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "At most4096 UTF8 bytes; no email syntax check in CLI/SDK."
+                },
+                "--factor": {
+                  "enum": [
+                    "totp",
+                    "backup"
+                  ]
+                },
+                "--session-out": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--email",
+                "--factor",
+                "--session-out",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Password:1..4096 UTF8 bytes, newline terminated."
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Factor code:1..4096 UTF8 bytes, newline terminated; read only after pending challenge."
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "Logical secret lines; actual input is plaintext UTF8 pipe, not a JSON array. LF required, optional preceding CR stripped; terminal refused. Extra trailing input not consumed."
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "mePublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote me"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--service-key-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--cursor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--limit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-proposed": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-archived": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--party-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--source-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--output": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--record-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--snapshot-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--run-key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--vat-or-cvr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
+                }
+              },
+              "required": [
+                "--server"
+              ],
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "--cookie-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--service-key-file"
+                    ]
+                  }
+                },
+                {
+                  "required": [
+                    "--service-key-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--cookie-file"
+                    ]
+                  }
+                }
+              ]
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote me"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--service-key-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--cursor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--limit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-proposed": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-archived": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--party-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--source-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--output": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--record-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--snapshot-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--run-key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--vat-or-cvr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--local-profile"
+              ],
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "--cookie-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--service-key-file"
+                    ]
+                  }
+                },
+                {
+                  "required": [
+                    "--service-key-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--cookie-file"
+                    ]
+                  }
+                }
+              ]
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "companiesPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote companies"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--service-key-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--cursor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--limit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-proposed": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-archived": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--party-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--source-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--output": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--record-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--snapshot-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--run-key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--vat-or-cvr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
+                }
+              },
+              "required": [
+                "--server"
+              ],
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "--cookie-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--service-key-file"
+                    ]
+                  }
+                },
+                {
+                  "required": [
+                    "--service-key-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--cookie-file"
+                    ]
+                  }
+                }
+              ]
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote companies"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--service-key-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--cursor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--limit": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-proposed": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--include-archived": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--party-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--source-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--output": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--record-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--snapshot-id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--run-key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--accounting-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-from": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--bank-to": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+                },
+                "--vat-or-cvr": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Accepted generic value flag, ignored by this context read; not an HTTP filter."
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--local-profile"
+              ],
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "--cookie-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--service-key-file"
+                    ]
+                  }
+                },
+                {
+                  "required": [
+                    "--service-key-file"
+                  ],
+                  "not": {
+                    "required": [
+                      "--cookie-file"
+                    ]
+                  }
+                }
+              ]
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "service-principalsPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote service-principals"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "--server",
+                "--cookie-file"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote service-principals"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--cookie-file",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "create-service-principalPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote create-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                }
+              },
+              "required": [
+                "--server",
+                "--cookie-file",
+                "--confirm"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeCreateBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote create-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--cookie-file",
+                "--confirm",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeCreateBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "rotate-service-principalPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote rotate-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                }
+              },
+              "required": [
+                "--server",
+                "--cookie-file",
+                "--confirm"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRotateBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote rotate-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--cookie-file",
+                "--confirm",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRotateBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "revoke-service-principalPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote revoke-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                }
+              },
+              "required": [
+                "--server",
+                "--cookie-file",
+                "--confirm"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRevokeBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote revoke-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--cookie-file",
+                "--confirm",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRevokeBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
+    },
+    "recover-service-principalPublicInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote recover-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--server": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--allow-loopback-http": {
+                  "const": true
+                },
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                }
+              },
+              "required": [
+                "--server",
+                "--cookie-file",
+                "--confirm"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRecoverBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "command": {
+              "const": "remote recover-service-principal"
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "--cookie-file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "--confirm": {
+                  "const": true
+                },
+                "--local-profile": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Explicit canonical absolute private owned local runtime profile; accepted split or attached = syntax by global preprocessor."
+                }
+              },
+              "required": [
+                "--cookie-file",
+                "--confirm",
+                "--local-profile"
+              ],
+              "additionalProperties": false
+            },
+            "stdin": {
+              "$ref": "schemas-identity_cli.json#/$defs/NativeRecoverBody"
+            }
+          },
+          "required": [
+            "command",
+            "flags",
+            "stdin"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Logical caller invocation before local_binding preparation; source-bound lexical syntax and profile checks stated in operation contract."
     }
   }
 }
