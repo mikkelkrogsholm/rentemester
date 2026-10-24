@@ -404,3 +404,6 @@ mod tests {
         tx.rollback().unwrap();
     }
 }
+
+/// Validate ordinary intake schema before classifying terminal inbound content.
+pub fn validate_intake(db: &rusqlite::Connection) -> Result<(), Error> { crate::validate(db) }

@@ -114,6 +114,7 @@ impl<G> Drop for Held<G> {
 /// }
 /// ```
 pub struct Owner {
+    received_epoch: std::sync::Arc<()>,
     held: Held<NamespaceGuard>,
     workspace: String,
     root: std::path::PathBuf,
@@ -276,6 +277,7 @@ impl Owner {
         guard: NamespaceGuard,
     ) -> Result<Self, OwnerError> {
         let mut owner = Self {
+            received_epoch: std::sync::Arc::new(()),
             held: Held(Some(Slots {
                 control: None,
                 company: None,
@@ -1486,3 +1488,5 @@ mod accounting_draft_original;
 mod compliance;
 
 mod mileage_posting;
+
+pub mod digisense_received;
