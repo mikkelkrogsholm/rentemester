@@ -25,3 +25,6 @@ Graphify query preceded source inspection. The existing strict Python oracle pas
 ## Validation interpretation
 
 `python3 /tmp/r57-677-oracle.py backup_transfer_restore` checks frozen selected IDs and source hashes, schema/reference structure and eight-section/retry presence. It does not prove providers, legal compliance, runtime atomicity or the complete #677 scope. All those acceptance boundaries remain with main.
+
+## Lead source-review repair
+Lead source review: admitted destination/remote403 failures retain exact engine message plus required outcomeUnknown:false, separate from proof failures. Six documents::outcome-backed operations include503 outcome_unknown, including their bodyless HEAD projections. No restore/backup/authority stage weakened or effect replayed.
