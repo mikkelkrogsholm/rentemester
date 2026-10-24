@@ -2887,6 +2887,11 @@
       "capability": "POST /api/companies/{slug}/workspace-parties"
     },
     {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/create-identity",
+      "capability": "POST /api/companies/{slug}/workspace-parties/create-identity"
+    },
+    {
       "method": "GET",
       "path": "/api/companies/{slug}/workspace-parties/{id}",
       "capability": "GET /api/companies/{slug}/workspace-parties/{id}"
