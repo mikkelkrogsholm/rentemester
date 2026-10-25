@@ -273,6 +273,26 @@
     },
     {
       "method": "GET",
+      "path": "/api/companies/{slug}/agent-suggestions",
+      "capability": "GET /api/companies/{slug}/agent-suggestions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/agent-suggestions",
+      "capability": "HEAD /api/companies/{slug}/agent-suggestions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/agent-suggestions/{id}/approve",
+      "capability": "POST /api/companies/{slug}/agent-suggestions/{id}/approve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/agent-suggestions/{id}/reject",
+      "capability": "POST /api/companies/{slug}/agent-suggestions/{id}/reject"
+    },
+    {
+      "method": "GET",
       "path": "/api/companies/{slug}/annual-exports",
       "capability": "GET /api/companies/{slug}/annual-exports"
     },
@@ -3237,5 +3257,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "70871a97bc5f88dd111b21cc60c3d0adacc7977820a22055ac6cb47407b813d9"
+  "manifestId": "b09969b26a49fc31e8a7703e83c628c81f48f18e465e1ea2621d41f866dd4fc2"
 }

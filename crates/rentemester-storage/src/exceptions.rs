@@ -103,6 +103,151 @@ pub fn list_with_archived(
         json!({"slug":slug,"company":crate::company_setup::profile(tx)?,"status":status,"rows":rows,"count":rows.len(),"bySeverity":{"high":counts[0],"medium":counts[1],"low":counts[2]}}),
     )
 }
+/// Consumer projection only: native producers are not supplied by this flow.
+pub fn agent_suggestions(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
+    crate::validate(tx)?;
+    let mut rows = vec![];
+    for row in rows_with_archived(tx, "open", true)? {
+        let kind = row["type"].as_str().unwrap_or("");
+        if !kind.starts_with("AGENT_") {
+            continue;
+        }
+        let (label, link) = match kind {
+            "AGENT_PAYABLE_OVERDUE" => ("Overforfalden kreditorpost", Some("leverandoerfaktura")),
+            "AGENT_ACCRUAL_RECOGNITION_DUE" => {
+                ("Periodeafgrænsning klar til bogføring", Some("posteringer"))
+            }
+            "AGENT_TAX_RETURN_NEEDS_REVIEW" => ("Oplysningsskema kræver gennemgang", None),
+            "AGENT_POSSIBLE_FIXED_ASSET" => ("Muligt anlæg — bør kapitaliseres", Some("anlaeg")),
+            _ => ("Agent-forslag", None),
+        };
+        let severity = match row["severity"].as_str() {
+            Some("high") => "high",
+            Some("medium") => "medium",
+            _ => "low",
+        };
+        // Retain genuine audit attribution, including nullable provenance. As in the
+        // original LEFT JOIN, each matching audit record is a correlated row.
+        let mut q = tx.prepare("SELECT actor,event_type FROM audit_log WHERE entity_type='exception' AND entity_id=?1 ORDER BY id").map_err(invalid)?;
+        let mut provenance = q
+            .query_map([row["id"].to_string()], |r| {
+                Ok((
+                    r.get::<_, Option<String>>(0)?,
+                    r.get::<_, Option<String>>(1)?,
+                ))
+            })
+            .map_err(invalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(invalid)?;
+        if provenance.is_empty() {
+            provenance.push((None, None));
+        }
+        let (evidence, preview): (Option<String>, Option<String>) = tx
+            .query_row(
+                "SELECT source_evidence,posting_preview FROM exceptions WHERE id=?1",
+                [row["id"].as_i64().unwrap()],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .map_err(invalid)?;
+        let source_parse = |raw: Option<String>| parsed(raw.filter(|s| !s.is_empty()));
+        let evidence = source_parse(evidence);
+        let preview = source_parse(preview);
+        for (actor, program) in provenance {
+            rows.push(json!({"exceptionId":row["id"],"type":kind,"kindLabel":label,"severity":severity,"rationale":row["message"],"requiredAction":row["requiredAction"],"ruleId":evidence.get("rule").and_then(Value::as_str),"sourceEvidence":evidence,"postingPreview":preview,"agentActor":actor,"agentProgram":program,"createdAt":row["createdAt"],"relatedDocumentId":row["relatedDocumentId"],"relatedBankTransactionId":row["relatedBankTransactionId"],"link":link}));
+        }
+    }
+    let rank = |r: &Value| match r["severity"].as_str() {
+        Some("high") => 2,
+        Some("medium") => 1,
+        _ => 0,
+    };
+    rows.sort_by(|a, b| {
+        rank(b)
+            .cmp(&rank(a))
+            .then_with(|| b["exceptionId"].as_i64().cmp(&a["exceptionId"].as_i64()))
+    });
+    let mut counts = [0; 3];
+    for row in &rows {
+        counts[rank(row)] += 1;
+    }
+    let profile = crate::company_setup::profile(tx)?;
+    let company = json!({"name":profile["name"],"cvr":profile["cvr"],"country":profile["country"],"currency":profile["currency"],"fiscalYearStartMonth":profile["fiscalYearStartMonth"],"fiscalYearLabelStrategy":profile["fiscalYearLabelStrategy"]});
+    Ok(
+        json!({"slug":slug,"company":company,"count":rows.len(),"rows":rows,"bySeverity":{"high":counts[2],"medium":counts[1],"low":counts[0]}}),
+    )
+}
+#[derive(Clone, Copy)]
+pub enum AgentDecision {
+    Approve,
+    Reject,
+}
+impl AgentDecision {
+    pub fn note(self, note: Option<&str>) -> Result<String, Error> {
+        let prefix = match self {
+            Self::Approve => "Godkendt af ejer i cockpit",
+            Self::Reject => "Afvist af ejer i cockpit",
+        };
+        let note = note.unwrap_or("").trim();
+        let note = if note.is_empty() {
+            prefix.to_owned()
+        } else {
+            format!("{prefix}: {note}")
+        };
+        if note.len() > 4096 {
+            return Err(Error::new(
+                "agent_suggestion_invalid",
+                "note including decision prefix must not exceed 4096 bytes",
+            ));
+        }
+        Ok(note)
+    }
+}
+pub fn decide_agent_suggestion(
+    tx: &Transaction<'_>,
+    id: i64,
+    decision: AgentDecision,
+    note: Option<&str>,
+    principal: Principal<'_>,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    if !(1..=9_007_199_254_740_991).contains(&id) {
+        return Err(Error::new(
+            "agent_suggestion_invalid",
+            "positive safe exception id required",
+        ));
+    }
+    let note = decision.note(note)?;
+    let row: Option<(String, String)> = tx
+        .query_row(
+            "SELECT status,type FROM exceptions WHERE id=?1",
+            [id],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()
+        .map_err(invalid)?;
+    let Some((status, kind)) = row else {
+        return Err(Error::new(
+            "agent_suggestion_stale",
+            "suggestion absent or no longer open",
+        ));
+    };
+    if status != "open" {
+        return Err(Error::new(
+            "agent_suggestion_stale",
+            "suggestion absent or no longer open",
+        ));
+    }
+    if !kind.starts_with("AGENT_") {
+        return Err(Error::new(
+            "agent_suggestion_wrong_type",
+            "exception is not an Agent suggestion",
+        ));
+    }
+    resolve_principal(tx, id, &Resolve { note: Some(note) }, principal)?;
+    Ok(
+        json!({"id":id,"decision":match decision { AgentDecision::Approve => "approved", AgentDecision::Reject => "rejected" },"resolved":true}),
+    )
+}
 pub fn resolve(
     tx: &Transaction<'_>,
     id: i64,
@@ -171,6 +316,139 @@ mod tests {
         crate::fresh::initialize_empty_pair(&mut c, &mut l, "Synthetic Exceptions").unwrap();
         l.execute_batch("INSERT INTO exceptions(id,type,severity,message,required_action,source_evidence,posting_preview) VALUES(1,'SYNTHETIC_REVIEW_REQUIRED','high','Synthetic exception review fixture','Review only; underlying posting is separate','{\"source\":\"synthetic\"}','{\"noPosting\":true}'),(2,'SYNTHETIC_OPTIONAL_NOTE','medium','Synthetic optional note',NULL,NULL,NULL);").unwrap();
         (c, l)
+    }
+    #[test]
+    fn agent_suggestions_projection_archived_unknown_provenance_and_review_only() {
+        let (_c, mut l) = fixture();
+        l.execute_batch("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency) VALUES(1,'2026-01-01','Synthetic archived evidence',1,'DKK'); INSERT INTO accounting_periods(id,period_start,period_end,kind,status) VALUES(1,'2026-01-01','2026-01-31','custom','closed'); INSERT INTO exceptions(id,type,severity,message,source_evidence,posting_preview,related_bank_transaction_id) VALUES(3,'AGENT_PAYABLE_OVERDUE','high','Synthetic agent fixture','{\"rule\":\"SYNTHETIC-RULE\"}','{\"noPosting\":true}',1),(4,'AGENT_UNKNOWN','medium','Synthetic unknown','invalid json','',NULL),(5,'AGENT_POSSIBLE_FIXED_ASSET','low','Synthetic low','{\"rule\":3}',NULL,NULL),(6,'AGENTX_FALSE','high','Not literal prefix',NULL,NULL,NULL); INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('synthetic_agent_record','exception','3','Synthetic provenance','system:synthetic-agent');").unwrap();
+        let tx = l
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let changes = tx.total_changes();
+        let listed = agent_suggestions(&tx, "synthetic").unwrap();
+        assert_eq!(tx.total_changes(), changes);
+        assert_eq!(listed["count"], 3);
+        assert_eq!(listed["bySeverity"], json!({"high":1,"medium":1,"low":1}));
+        let rows = listed["rows"].as_array().unwrap();
+        assert_eq!(rows[0]["exceptionId"], 3);
+        assert_eq!(rows[0]["ruleId"], "SYNTHETIC-RULE");
+        assert_eq!(rows[0]["agentActor"], "system:synthetic-agent");
+        assert_eq!(rows[0]["agentProgram"], "synthetic_agent_record");
+        assert_eq!(rows[0]["link"], "leverandoerfaktura");
+        assert_eq!(rows[0].as_object().unwrap().len(), 15);
+        assert_eq!(rows[1]["kindLabel"], "Agent-forslag");
+        assert_eq!(rows[1]["sourceEvidence"], "invalid json");
+        assert!(rows[1]["postingPreview"].is_null());
+        assert!(rows[1]["agentActor"].is_null());
+        assert!(rows[1]["link"].is_null());
+        assert!(rows[2]["ruleId"].is_null());
+        // Snapshot every existing non-review table: decisions must not touch any
+        // journal, bank, VAT, payable, provider or other business state.
+        let snapshot = || {
+            let mut q = tx.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('exceptions','audit_log','sqlite_sequence') ORDER BY name").unwrap();
+            let names = q
+                .query_map([], |r| r.get::<_, String>(0))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
+            names
+                .into_iter()
+                .map(|name| {
+                    let mut q = tx
+                        .prepare(&format!("SELECT * FROM \"{}\"", name.replace('"', "\"\"")))
+                        .unwrap();
+                    let columns = q.column_count();
+                    let rows = q
+                        .query_map([], |r| {
+                            (0..columns)
+                                .map(|i| r.get::<_, rusqlite::types::Value>(i))
+                                .collect::<Result<Vec<_>, _>>()
+                        })
+                        .unwrap()
+                        .collect::<Result<Vec<_>, _>>()
+                        .unwrap();
+                    (name, rows)
+                })
+                .collect::<Vec<_>>()
+        };
+        let facts = snapshot();
+        assert_eq!(
+            decide_agent_suggestion(
+                &tx,
+                3,
+                AgentDecision::Approve,
+                Some("  Synthetic accepted  "),
+                Principal::Human("actual-human")
+            )
+            .unwrap(),
+            json!({"id":3,"decision":"approved","resolved":true})
+        );
+        assert_eq!(
+            decide_agent_suggestion(
+                &tx,
+                4,
+                AgentDecision::Reject,
+                None,
+                Principal::ServiceAccount("actual-service")
+            )
+            .unwrap()["decision"],
+            "rejected"
+        );
+        let changes = tx.total_changes();
+        for (id, code) in [
+            (3, "agent_suggestion_stale"),
+            (999, "agent_suggestion_stale"),
+            (1, "agent_suggestion_wrong_type"),
+        ] {
+            assert_eq!(
+                decide_agent_suggestion(
+                    &tx,
+                    id,
+                    AgentDecision::Reject,
+                    None,
+                    Principal::Human("other")
+                )
+                .unwrap_err()
+                .code,
+                code
+            );
+        }
+        assert!(
+            AgentDecision::Approve
+                .note(Some(&"x".repeat(4096)))
+                .is_err()
+        );
+        assert_eq!(tx.total_changes(), changes);
+        let audit: String = tx.query_row("SELECT message FROM audit_log WHERE event_type='exception_resolve' AND entity_id='3' AND actor='user:actual-human'", [], |r| r.get(0)).unwrap();
+        let audit: Value = serde_json::from_str(&audit).unwrap();
+        assert_eq!(
+            audit["note"],
+            "Godkendt af ejer i cockpit: Synthetic accepted"
+        );
+        assert_eq!(audit["effect"], "review_only_no_posting");
+        assert_eq!(tx.query_row("SELECT resolution_note FROM exceptions WHERE id=4 AND resolved_by='service-account:actual-service'", [], |r| r.get::<_,String>(0)).unwrap(), "Afvist af ejer i cockpit");
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM audit_log WHERE event_type='exception_resolve'",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            2
+        );
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+        assert_eq!(snapshot(), facts);
+        assert_eq!(
+            tx.query_row("SELECT amount FROM bank_transactions WHERE id=1", [], |r| r
+                .get::<_, f64>(0))
+                .unwrap(),
+            1.0
+        );
     }
     #[test]
     fn review_preserves_facts_first_actor_optional_note_and_immutable_audit_without_posting() {
