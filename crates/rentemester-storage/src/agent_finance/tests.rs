@@ -158,3 +158,31 @@ fn agent_finance_equal_confidence_chooses_first_canonical_document() {
     let reversed = rows.into_iter().rev().collect::<Vec<_>>();
     assert_eq!(best_purchase(&reversed).unwrap()["documentId"], 1);
 }
+#[test]
+fn agent_finance_statement_binding_requires_unique_explicit_role_and_currency() {
+    let mut control = Connection::open_in_memory().unwrap();
+    let mut db = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic binding").unwrap();
+    let tx = db.transaction().unwrap();
+    setup(&tx, 125, "Synthetic supplier SYN-1");
+    let csv = "date;text;amount\n2026-10-18;Synthetic;-125\n";
+    assert_eq!(
+        import_account(&tx, csv).unwrap_err().code,
+        "agent_bank_account_unresolved"
+    );
+    tx.execute_batch("INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by)VALUES('bank','A','confirmed',1,'synthetic')").unwrap();
+    assert_eq!(import_account(&tx, csv).unwrap(), "synthetic");
+    tx.execute_batch("UPDATE bank_accounts SET currency='EUR'")
+        .unwrap();
+    assert_eq!(
+        import_account(&tx, csv).unwrap_err().code,
+        "agent_bank_currency_mismatch"
+    );
+    tx.execute_batch("UPDATE bank_accounts SET currency='DKK'")
+        .unwrap();
+    tx.execute_batch("INSERT INTO bank_accounts(slug,name,ledger_account_no)VALUES('second','Synthetic second','A')").unwrap();
+    assert_eq!(
+        import_account(&tx, csv).unwrap_err().code,
+        "agent_bank_account_unresolved"
+    );
+}

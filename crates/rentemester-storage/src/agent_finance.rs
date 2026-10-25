@@ -304,3 +304,34 @@ pub fn plan_payables(
 
 #[cfg(test)]
 mod tests;
+
+/// Original AgentRun has no caller account selector. Bind its statement only to
+/// the company's explicitly confirmed bank role and one active physical account.
+pub fn import_account(tx: &Transaction<'_>, csv: &str) -> Result<String, Error> {
+    let unresolved = || {
+        Error::new(
+            "agent_bank_account_unresolved",
+            "Configure the confirmed 'bank' account role and exactly one active bank account mapped to it before importing an AgentRun statement.",
+        )
+    };
+    let mut q=tx.prepare("SELECT b.slug,b.currency FROM bank_accounts b JOIN accounts a ON a.account_no=b.ledger_account_no JOIN account_role_mappings m ON m.account_no=a.account_no AND m.role='bank' AND m.status='confirmed' WHERE b.active=1 AND a.active=1 AND a.type='asset' AND a.normal_balance='debit' ORDER BY b.id").map_err(|_|unresolved())?;
+    let candidates = q
+        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
+        .map_err(|_| unresolved())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| unresolved())?;
+    if candidates.len() != 1 {
+        return Err(unresolved());
+    }
+    let (slug, currency) = candidates.into_iter().next().ok_or_else(unresolved)?;
+    rentemester_engine::currency::Currency::parse(&currency)?;
+    let rows = rentemester_engine::bank::parse(csv)
+        .map_err(|e| Error::new("bank_import_invalid_csv", e.message))?;
+    if rows.iter().any(|r| r.currency != currency) {
+        return Err(Error::new(
+            "agent_bank_currency_mismatch",
+            "Every statement row must use the currency of the bank account explicitly mapped to the confirmed 'bank' role.",
+        ));
+    }
+    Ok(slug)
+}

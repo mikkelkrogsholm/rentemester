@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod agent_run;
 mod budget_original;
 mod master_data_original;
 mod backup_status;
@@ -131,6 +132,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/agent/original/run", post(agent_run::handle))
         .route("/api/companies/{slug}/original/dimensions/define", post(dimensions_original::handle))
         .route("/api/companies/{slug}/original/dimensions/member", post(dimensions_original::handle))
         .route("/api/companies/{slug}/original/dimensions/definition-lifecycle", post(dimensions_original::handle))

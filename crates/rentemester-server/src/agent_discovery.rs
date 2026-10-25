@@ -101,6 +101,9 @@ async fn handle(State(connected): State<bool>, request: Request) -> Response {
 }
 fn resolve(mut result: Value, connected: bool) -> Value {
     result["workspaceConnected"] = json!(connected);
+    if result["serverName"] == "rentemester" {
+        result["originalAgentRun"] = json!({"surface":"http","method":"POST","pattern":"/api/companies/:slug/agent/original/run","resolved":connected,"cli":"agent run","requiresConfirmation":true,"policy":"Trusted per-company agentPolicies; empty supplier rules by default","actor":"Current authenticated user or service account","phases":rentemester_engine::agent_run::PHASES,"retryClass":"unsafe-read-back","canonicalReadBack":["documents","bank transactions","journal entries","payables","exceptions"],"scope":"Existing original explicit bookkeeping run; no background job or automatic retry"});
+    }
     // Only concrete registrations from product_http::router are attested.
     // Accounting requests still require their ordinary current authority.
     if let Some(steps) = result
@@ -132,7 +135,8 @@ fn resolve(mut result: Value, connected: bool) -> Value {
                         | (
                             Some("POST"),
                             Some(
-                                "/api/companies/:slug/bank/import"
+                                "/api/companies/:slug/agent/original/run"
+                                    | "/api/companies/:slug/bank/import"
                                     | "/api/companies/:slug/bookkeeping-batch/persist"
                                     | "/api/companies/:slug/bookkeeping-batch/approve"
                                     | "/api/companies/:slug/bookkeeping-batch/apply"

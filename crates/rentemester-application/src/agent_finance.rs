@@ -273,7 +273,9 @@ fn write(
                 kind,
                 clock,
             )?;
-            summary.journal_entry_no = result["journalEntryId"].as_i64().map(|id| id.to_string());
+            summary.journal_entry_no = result["data"]["journalEntryId"]
+                .as_i64()
+                .map(|id| id.to_string());
             Ok(serde_json::json!({"result":result,"payable":summary}))
         }
     }
