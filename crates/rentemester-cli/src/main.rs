@@ -1,3 +1,4 @@
+mod agent_original;
 mod import_original;
 mod group_original;
 mod company_original;
@@ -323,6 +324,10 @@ fn main() -> ExitCode {
     let raw = if raw.first().is_some_and(|s| mileage_posting::accepts(s)) {
         std::iter::once("remote".to_owned()).chain(raw).collect()
     } else { raw };
+    if let Some(args) = agent_original::prepare(&raw) {
+        let o = agent_original::execute(&args);
+        print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
     let args = match original_args::prepare_with_output(
         raw,
         std::io::IsTerminal::is_terminal(&std::io::stdout()),
