@@ -54,29 +54,35 @@ async fn original123_http_public_inert_errors_and_native_preserved() {
             .await
             .unwrap();
         assert_eq!(response.status().as_u16(), status, "{path}");
-        let body: Value = response.json().await.unwrap();
+        let body: Value = serde_json::from_slice(&response.bytes().await.unwrap()).unwrap();
         if status == 404 {
             assert_eq!(body["code"], "UNKNOWN_WORKFLOW");
         }
     }
-    let original: Value = client
-        .get(format!("http://{addr}/api/original/agent-about"))
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
+    let original: Value = serde_json::from_slice(
+        &client
+            .get(format!("http://{addr}/api/original/agent-about"))
+            .send()
+            .await
+            .unwrap()
+            .bytes()
+            .await
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(original["catalogue"]["workflowCount"], 31);
     assert_eq!(original["workspaceConnected"], false);
-    let native: Value = client
-        .get(format!("http://{addr}/api/agent-about"))
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
+    let native: Value = serde_json::from_slice(
+        &client
+            .get(format!("http://{addr}/api/agent-about"))
+            .send()
+            .await
+            .unwrap()
+            .bytes()
+            .await
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(native["catalogue"]["workflowCount"], 2);
     assert_eq!(
         client
