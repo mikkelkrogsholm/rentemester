@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R116 original company_add and bookkeeping_workbench over existing common Rust producers accepted:25selected SDK/MCP tests, actual434catalogue and1618source-bound typed contracts. Whole717 remains open.",
-  "code_revision": "305cfbf9f36eb85873430c13fb856bc8325b8dac",
+  "current_increment": "R117 shared original file selection corrected: pending/replaced/failed/cleared reads cannot submit stale original;19modal cases incl5new races and webbuild pass. Actual retained-browser guards pass; new fullupload blocked beforedispatch by diagnosed helper field, no effects or setup growth. Full718 remains open.",
+  "code_revision": "9454e4ad39275d10fd22c797c8ef588241404555",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_first_use717_component_accepted",
+  "state": "selected_original718_component_accepted",
   "issues_closed": 41,
-  "next": "Close next necessary existing717 original producer gap;13original tool names/29workflow descriptions and classified ABI/full per-operation acceptance remain. Keep real bookkeeping/cutover and final installed desktop last as outcome.",
+  "next": "Continue necessary full issue acceptance; retain R117 partial-browser evidence and exact missing fullupload/canonical readback. Original717 diagnostic/backup/mail and workflow/ABI gaps, full718/cutover/desktop final remain.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -15,7 +15,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R115 actual retained normalMFA/shared company setup→first reviewed bank/equity posting→report→independently verified signed snapshot→Rustrestart/freshMFA/exact readback accepted. Prior accepted effects not repeated; full718/all55 remain.",
+  "previous_verified_increment": "R116 original company_add and bookkeeping_workbench over existing common Rust producers accepted:25selected SDK/MCP tests, actual434catalogue and1618source-bound typed contracts. Whole717 remains open.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16670,6 +16670,12 @@
       "path": "/tmp/rentemester-rust-reports/r116-original-first-use717-component-accepted.json",
       "sha256": "91354d4d8db0e207ebad1023bbb044e5b0e8e7b08bc85c544c24b7407214de25",
       "wholeIssueAccepted": false
+    },
+    "r117_selected_original718": {
+      "path": "/tmp/rentemester-rust-reports/r117-selected-original718-component-accepted.json",
+      "sha256": "8f4af4c591bab58d49623a6a6ed744c385599d4fcd615807965a9294df4a7fe0",
+      "wholeIssueAccepted": false,
+      "freshCompleteUploadAccepted": false
     }
   },
   "verified_history": [
@@ -19107,7 +19113,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 717,
+    "current_issue": 718,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
