@@ -252,3 +252,39 @@ describe("native purchase VAT owner review", () => {
     expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
   });
 });
+
+
+describe("native bound internal vouchers retain their existing exemption flow", () => {
+  const conflict = { ...NATIVE_NEEDED, classification: "CONFLICT", derivedRegion: "CONFLICT", requiredValidation: null, wouldCallProvider: false, applyWouldCallProvider: false, errors: ["documented supplier evidence is incomplete or conflicting; human resolution is required"] };
+  function fixture(bound: number | null) {
+    mockFetch({
+      "GET /api/companies/acme-aps/documents/1/booking-options": { options: { ...BOOKING_OPTIONS, document: { ...BOOKING_OPTIONS.document, documentType: "internal_voucher", sourceBankTransactionId: bound, vatAmount: 0, supplierName: null, supplierVatOrCvr: null, supplierCountryCode: null, supplierIdentifierKind: null, supplierIdentityStatus: null } } },
+      [`GET ${NATIVE_PATH}`]: conflict,
+      "POST /api/companies/acme-aps/documents/book-expense": { booking: { entryId: 81, grossAmount: 1250, grossAmountDkk: 1250, netAmount: 1250, netAmountDkk: 1250, vatAmount: 0, vatAmountDkk: 0 } },
+    });
+  }
+  test("a source-bound internal voucher books only its bound bank row with exempt treatment, without supplier validation", async () => {
+    sessionStorage.clear(); fixture(1); render(<NativeForm />);
+    await screen.findByRole("option", { name: "3000 · Kontorartikler" });
+    await userEvent.selectOptions(screen.getByLabelText("Udgiftskonto"), "3000");
+    const book = screen.getByRole("button", { name: "Bogfør" });
+    await waitFor(() => expect(book).toBeEnabled());
+    expect(screen.getByLabelText(/Banktransaktion/)).toHaveValue("1");
+    expect(screen.getByLabelText(/Moms-behandling/)).toHaveValue("exempt");
+    await userEvent.click(book);
+    await screen.findByText(/Bilaget blev bogført som journalpost/);
+    const calls = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.filter(([url]) => String(url) === NATIVE_PATH)).toHaveLength(0);
+    const writes = calls.filter(([url, init]) => String(url).endsWith("/documents/book-expense") && init?.method === "POST");
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0]![1]?.body))).toMatchObject({ documentId: 1, bankTransactionId: 1, vatTreatment: "exempt", confirm: true });
+  });
+  for (const bound of [null, 2]) test(`an internal voucher without an available bound bank row stays blocked: ${bound}`, async () => {
+    sessionStorage.clear(); fixture(bound); render(<NativeForm />);
+    await screen.findByRole("option", { name: "3000 · Kontorartikler" });
+    await userEvent.selectOptions(screen.getByLabelText("Udgiftskonto"), "3000");
+    expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
+    const calls = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+  });
+});

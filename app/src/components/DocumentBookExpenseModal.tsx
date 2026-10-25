@@ -91,6 +91,12 @@ export function DocumentBookExpenseForm({
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const options = optionsState.data;
   const loadError = optionsState.error;
+  // Internal vouchers already use the server's bound-bank/date/exempt contract;
+  // they do not have an external supplier identity to validate.
+  const nativeInternalVoucher = native && options?.document.documentType === "internal_voucher";
+  const nativeBoundInternalVoucher = nativeInternalVoucher && Number.isSafeInteger(options?.document.sourceBankTransactionId)
+    && (options?.document.sourceBankTransactionId ?? 0) > 0
+    && options?.unmatchedOutgoingBank.some(row => row.id === options.document.sourceBankTransactionId) === true;
   const [expenseAccountNo, setExpenseAccountNo] = useState<string>("");
   const [bankTransactionId, setBankTransactionId] = useState<number | "">(initialBankTransactionId ?? "");
   const [vatTreatment, setVatTreatment] = useState<ExpenseVatTreatment | "">(
@@ -139,7 +145,10 @@ export function DocumentBookExpenseForm({
   const [preflightLoading, setPreflightLoading] = useState(true);
   const [preflightError, setPreflightError] = useState<string | null>(null);
   const [preflightContext, setPreflightContext] = useState<object | null>(null);
-  const visiblePreflight = preflightContext === currentContext ? preflight : null;
+  const visiblePreflight = !nativeInternalVoucher && preflightContext === currentContext ? preflight : null;
+  const nativeValidationBlocked = native && (nativeInternalVoucher
+    ? !nativeBoundInternalVoucher || bankTransactionId !== options?.document.sourceBankTransactionId || vatTreatment !== "exempt"
+    : !visiblePreflight?.ok || preflightLoading);
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -147,6 +156,10 @@ export function DocumentBookExpenseForm({
     setPreflight(null);
     setPreflightLoading(true);
     setPreflightError(null);
+    if (native && (!options || nativeInternalVoucher)) {
+      setPreflightLoading(!options);
+      return () => { cancelled = true; controller.abort(); };
+    }
     const read = native ? api.nativeDocumentVatPreflight : api.documentVatPreflight;
     read(slug, documentId, { signal: controller.signal }).then((result) => {
       if (!cancelled && latest.current.currentContext === currentContext) {
@@ -190,7 +203,7 @@ export function DocumentBookExpenseForm({
 
 
   async function handleBook() {
-    if (submitRef.current || done || outcome.isBlocked() || providerBlock.isBlocked() || preflightBusy || (native && (!visiblePreflight?.ok || preflightLoading))) return;
+    if (submitRef.current || done || outcome.isBlocked() || providerBlock.isBlocked() || preflightBusy || nativeValidationBlocked) return;
     if (!expenseAccountNo) {
       setError("Vælg en udgiftskonto.");
       return;
@@ -277,6 +290,8 @@ export function DocumentBookExpenseForm({
               {options === null && !loadError && (
                 <p className="muted">Henter bogføringsdata…</p>
               )}
+              {nativeInternalVoucher && <p role="status">Internt bilag: ekstern leverandørmoms valideres ikke. Serveren kontrollerer fortsat det bundne bankbilag, bankdatoen og momsfri behandling.</p>}
+              {nativeInternalVoucher && !nativeBoundInternalVoucher && <p role="alert">Det bundne bankbilag er ikke tilgængeligt. Opdatér bilag og bank, før du bogfører.</p>}
               {preflightLoading && <p role="status">Henter momsvalidering…</p>}
               {preflightError && <Banner kind="error">{preflightError} <Button variant="secondary" onClick={() => setPreflightReload(n => n + 1)}>Prøv momsvalidering igen</Button></Banner>}
               {providerBlock.blocked && !preflightBusy && !review && <UnknownMutationNotice onRefresh={() => setPreflightReload(n => n + 1)} onRelease={providerBlock.release} persistent={providerBlock.persistent} verifyPersistence={providerBlock.verifyPersistence} />}
@@ -416,7 +431,7 @@ export function DocumentBookExpenseForm({
                   )
                 }
                 disabled={
-                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || (native && (!visiblePreflight || preflightLoading)) ||
+                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || nativeValidationBlocked ||
                   options === null ||
                   doc?.documentType === "internal_voucher"
                 }
@@ -447,7 +462,7 @@ export function DocumentBookExpenseForm({
                 className="btn"
                 requiredPermission="company.ledger.post" onClick={handleBook}
                 disabled={
-                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || (native && (!visiblePreflight || preflightLoading)) ||
+                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || nativeValidationBlocked ||
                   options === null ||
                   noneToMatch ||
                   noAccounts ||
