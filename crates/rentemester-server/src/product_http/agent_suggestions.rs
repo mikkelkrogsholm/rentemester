@@ -12,6 +12,13 @@ struct ResolveWire {
 fn note<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
     String::deserialize(d).map(Some)
 }
+fn parse_wire(bytes: &[u8]) -> Result<ResolveWire, serde_json::Error> {
+    // Serde structs also accept positional sequences; the public decision wire is an object.
+    if bytes.iter().copied().find(|b| !b.is_ascii_whitespace()) != Some(b'{') {
+        return Err(<serde_json::Error as serde::de::Error>::custom("JSON object required"));
+    }
+    serde_json::from_slice(bytes)
+}
 fn success(value: Value, mutation: bool) -> Response {
     response(
         StatusCode::OK,
@@ -103,7 +110,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 16 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
         };
-        let Ok(wire) = serde_json::from_slice::<ResolveWire>(&bytes) else {
+        let Ok(wire) = parse_wire(&bytes) else {
             return refused(StatusCode::BAD_REQUEST, "invalid_input");
         };
         if wire
@@ -213,6 +220,8 @@ mod tests {
     #[test]
     fn agent_suggestions_strict_note_wire_and_known_refusals() {
         for body in [
+            r#"[]"#,
+            r#"["positional note"]"#,
             r#"{"note":null}"#,
             r#"{"actor":"user:x"}"#,
             r#"{"confirm":true}"#,
@@ -220,16 +229,16 @@ mod tests {
             r#"{"note":"a","note":"b"}"#,
             r#"{"expectedActor":"x"}"#,
         ] {
-            assert!(serde_json::from_str::<ResolveWire>(body).is_err(), "{body}");
+            assert!(parse_wire(body.as_bytes()).is_err(), "{body}");
         }
         assert!(
-            serde_json::from_str::<ResolveWire>("{}")
+            parse_wire(b"{}")
                 .unwrap()
                 .note
                 .is_none()
         );
         assert_eq!(
-            serde_json::from_str::<ResolveWire>(r#"{"note":"hello"}"#)
+            parse_wire(br#"{"note":"hello"}"#)
                 .unwrap()
                 .note
                 .as_deref(),
