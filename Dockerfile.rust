@@ -30,6 +30,10 @@ WORKDIR /source
 COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
 COPY .cargo/ ./.cargo/
 COPY crates/ ./crates/
+# Compile-time native protocol and regulatory corpus are part of the binary.
+COPY protocol/ ./protocol/
+COPY rules/dk/ ./rules/dk/
+COPY sources/ ./sources/
 COPY vendor/ ./vendor/
 COPY src/core/migrations/ ./src/core/migrations/
 COPY src/core/workspace-migrations/ ./src/core/workspace-migrations/
