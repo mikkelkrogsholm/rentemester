@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 mod bank;
+pub mod original123;
 
 const SCHEMA: &str = "rentemester-agent-discovery-v1";
 const WORKFLOW: &str = "supplier-payable-handling";
