@@ -10,6 +10,8 @@ COPY package.json bun.lock bunfig.toml ./
 COPY app/package.json app/bunfig.toml ./app/
 RUN bun install --frozen-lockfile
 COPY app/ ./app/
+# The cockpit typecheck also consumes the shared native protocol fixtures.
+COPY protocol/ ./protocol/
 COPY DESIGN.md ./
 COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
 COPY src/design ./src/design
