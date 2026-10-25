@@ -8313,6 +8313,42 @@
           "additionalProperties": false
         }
       ]
+    },
+    "OriginalAnalytics110Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "analytics": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "analytics"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAnalytics110Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

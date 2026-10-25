@@ -375,3 +375,15 @@ in the source or is invented here.
 This accepts this original user flow only. Full716, remaining original commands,
 all55/J01–J07, cutover and final installed desktop acceptance remain open. The
 legacy default entrypoint and live company workspaces are unchanged.
+
+### Original `report analytics` on the Rust runtime
+
+`report analytics --workspace ROOT_OR_ID --scope company|portfolio|group
+--from DATE --to DATE --local-profile ABSOLUTE_PRIVATE_PROFILE --cookie-file FILE`
+uses the existing authoritative CFO producer. Original comma-list selectors and
+`{ok:true,analytics}` output are retained; money strings, provenance and partial or
+blocked states are preserved. Human success is `✔ report-analytics`. The workspace
+assertion must exactly match the verified local profile root or ID. Original remote
+workspace assertions remain unavailable; `remote cfo-analytics` stays remote-capable.
+No local ledger reads, inferred workspace, client calculations or automatic retries.
+This closes one command gap in #716; full CLI parity and cutover remain open.
