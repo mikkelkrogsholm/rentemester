@@ -193,3 +193,256 @@ mod tests {
     }
 }
 pub(crate) use physical::observe_retained;
+
+impl NamespaceGuard {
+    fn original716_company_directory(&mut self) -> Result<File, Error> {
+        self.ensure_current()?;
+        let (_, root) = walk(&self.root, self.uid, true)?;
+        let company = File::from(
+            openat(&root, self.slug.as_str(), DIRECTORY, Mode::empty())
+                .map_err(|_| Error::Invalid)?,
+        );
+        let st = fstat(&company).map_err(|_| Error::Invalid)?;
+        if st.st_uid != self.uid || st.st_mode & 0o7777 != 0o700 {
+            return Err(Error::Invalid);
+        }
+        acl_walk_fd(&company, false)?;
+        Ok(company)
+    }
+    /// Fixed source PEM pair only. Partial or mismatched custody fails closed; no repair/retry.
+    pub fn original716_signing_key(
+        &mut self,
+        generate: bool,
+    ) -> Result<crate::original716::custody::CompanyKey, Error> {
+        use crate::original716::custody::{CompanyKey, PRIVATE};
+        let company = self.original716_company_directory()?;
+        let config = self
+            .original717_config_directory(true)?
+            .ok_or(Error::Invalid)?;
+        let private = read(&company, self.uid, PRIVATE)?.map(zeroize::Zeroizing::new);
+        let public = read(&config, self.uid, "backup-manifest.pub")?;
+        let key = match (private, public) {
+            (Some(private), Some(public)) => {
+                CompanyKey::load(&private, &public).map_err(|_| Error::Invalid)?
+            }
+            (None, None) if generate => {
+                let key = CompanyKey::generate().map_err(|_| Error::Invalid)?;
+                // Both names were checked absent under the one admitted Owner. Each write uses
+                // EXCL staging and checked identity. A failed second write stays visibly partial.
+                write(&company, self.uid, PRIVATE, key.private_pem())?;
+                write(
+                    &config,
+                    self.uid,
+                    "backup-manifest.pub",
+                    key.public_pem().as_bytes(),
+                )?;
+                key
+            }
+            _ => return Err(Error::Invalid),
+        };
+        self.ensure_current()?;
+        Ok(key)
+    }
+    pub fn original716_public_key(&mut self) -> Result<Option<Vec<u8>>, Error> {
+        let value = self.read_original717_config("backup-manifest.pub")?;
+        if let Some(v) = &value {
+            crate::backup_artifact::original717::parse_public_key(v).map_err(|_| Error::Invalid)?;
+        }
+        Ok(value)
+    }
+    /// Old pair remains recoverable under source timestamp/fingerprint names before replacing
+    /// live files. On any failure callers must expose outcome-unknown and must not retry.
+    pub fn original716_rotate_key(&mut self, at: &str) -> Result<serde_json::Value, Error> {
+        use crate::original716::custody::{CompanyKey, PRIVATE};
+        if chrono::DateTime::parse_from_rfc3339(at).is_err() {
+            return Err(Error::Invalid);
+        }
+        let old = self.original716_signing_key(false)?;
+        let new = CompanyKey::generate().map_err(|_| Error::Invalid)?;
+        let company = self.original716_company_directory()?;
+        let config = self
+            .original717_config_directory(false)?
+            .ok_or(Error::Invalid)?;
+        match mkdirat(&company, "backup-keys-archive", Mode::from_raw_mode(0o700)) {
+            Ok(()) => company.sync_all().map_err(|_| Error::Invalid)?,
+            Err(rustix::io::Errno::EXIST) => {}
+            Err(_) => return Err(Error::Invalid),
+        }
+        let archive = File::from(
+            openat(&company, "backup-keys-archive", DIRECTORY, Mode::empty())
+                .map_err(|_| Error::Invalid)?,
+        );
+        let st = fstat(&archive).map_err(|_| Error::Invalid)?;
+        if st.st_uid != self.uid || st.st_mode & 0o7777 != 0o700 {
+            return Err(Error::Invalid);
+        }
+        acl_walk_fd(&archive, false)?;
+        let stamp: String = at.chars().filter(char::is_ascii_alphanumeric).collect();
+        let stem = format!("{stamp}-{}", old.hint());
+        let priv_name = format!("{stem}.key.pem");
+        let pub_name = format!("{stem}.pub.pem");
+        if checked_stat(&archive, self.uid, &priv_name)?.is_some()
+            || checked_stat(&archive, self.uid, &pub_name)?.is_some()
+        {
+            return Err(Error::Exists);
+        }
+        write(&archive, self.uid, &priv_name, old.private_pem())?;
+        write(&archive, self.uid, &pub_name, old.public_pem().as_bytes())?;
+        write(&company, self.uid, PRIVATE, new.private_pem())?;
+        write(
+            &config,
+            self.uid,
+            "backup-manifest.pub",
+            new.public_pem().as_bytes(),
+        )?;
+        self.ensure_current()?;
+        let root = self.root.join(&self.slug);
+        Ok(
+            serde_json::json!({"ok":true,"errors":[],"oldPublicKeyHint":old.hint(),"newPublicKeyHint":new.hint(),"archivedPrivateKeyPath":root.join("backup-keys-archive").join(priv_name),"archivedPublicKeyPath":root.join("backup-keys-archive").join(pub_name),"newPrivateKeyPath":root.join(PRIVATE),"newPublicKeyPath":root.join("config/backup-manifest.pub")}),
+        )
+    }
+}
+
+#[cfg(test)]
+mod custody_original716_tests {
+    use super::*;
+    #[test]
+    fn original716_private_pem_modes_partial_symlink_and_archival_bytes() {
+        use crate::original716::custody::CompanyKey;
+        let temp = tempfile::tempdir().unwrap();
+        let directory = File::open(temp.path()).unwrap();
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+        let uid = directory.metadata().unwrap().uid();
+        let key = CompanyKey::generate().unwrap();
+        write(
+            &directory,
+            uid,
+            ".backup-signing-key.pem",
+            key.private_pem(),
+        )
+        .unwrap();
+        assert_eq!(directory.metadata().unwrap().uid(), uid);
+        assert_eq!(
+            temp.path()
+                .join(".backup-signing-key.pem")
+                .metadata()
+                .unwrap()
+                .mode()
+                & 0o7777,
+            0o600
+        );
+        let private = read(&directory, uid, ".backup-signing-key.pem")
+            .unwrap()
+            .unwrap();
+        assert!(CompanyKey::load(&private, b"missing public key").is_err());
+        let archived = format!("20260101T000000000Z-{}.key.pem", key.hint());
+        write(&directory, uid, &archived, &private).unwrap();
+        assert_eq!(read(&directory, uid, &archived).unwrap().unwrap(), private);
+        std::fs::hard_link(temp.path().join(&archived), temp.path().join("alias")).unwrap();
+        assert!(read(&directory, uid, &archived).is_err());
+        std::fs::remove_file(temp.path().join("alias")).unwrap();
+        std::fs::set_permissions(
+            temp.path().join(&archived),
+            std::fs::Permissions::from_mode(0o644),
+        )
+        .unwrap();
+        assert!(read(&directory, uid, &archived).is_err());
+        std::os::unix::fs::symlink("absent", temp.path().join("backup-manifest.pub")).unwrap();
+        assert!(read(&directory, uid, "backup-manifest.pub").is_err());
+    }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod admitted_custody_original716_tests {
+    use super::*;
+    #[test]
+    #[ignore = "qualified subprocess"]
+    fn original716_custody_child() {
+        use crate::backup_artifact::original717 as codec;
+        use crate::original716::custody;
+        let base = std::path::PathBuf::from(std::env::var("RM_CUSTODY716_ROOT").unwrap());
+        let uid =
+            libproc::proc_pid::pidinfo::<libproc::bsd_info::BSDInfo>(std::process::id() as i32, 0)
+                .unwrap()
+                .pbi_uid;
+        let mut guard = NamespaceGuard::create_fresh_with_profile(
+            &base.join("workspace"),
+            uid,
+            "synthetic-workspace",
+            "synthetic",
+            "Synthetic",
+            "2026-01-01",
+            crate::namespace::NamespaceProfile::LocalUserMacos,
+        )
+        .unwrap();
+        assert!(guard.original716_signing_key(false).is_err());
+        let key = guard.original716_signing_key(true).unwrap();
+        let public = guard.original716_public_key().unwrap().unwrap();
+        assert_eq!(public, key.public_pem().as_bytes());
+        assert_eq!(
+            guard.original716_signing_key(true).unwrap().hint(),
+            key.hint()
+        );
+        let hmac = guard.original717_manifest_key().unwrap();
+        let (mut files, _) = codec::tests::fixture();
+        let mut manifest: codec::Manifest =
+            serde_json::from_slice(&files["manifest.json"]).unwrap();
+        manifest.manifest_signature.key_hint = codec::sha256(&hmac)[..16].to_owned();
+        files.insert(custody::PUBLIC.into(), public.clone());
+        manifest.copied_files.config.push(codec::File {
+            path: custody::PUBLIC.into(),
+            sha256: codec::sha256(&public),
+            size_bytes: public.len() as u64,
+        });
+        let proof = codec::seal_original716(files, manifest, &hmac, Some(&key)).unwrap();
+        let path = guard.retain_original717_directory(&proof).unwrap();
+        guard.pack_original717(&proof, None, None).unwrap();
+        assert_eq!(
+            custody::verify(proof.files(), Some(&public), None)["ok"],
+            true
+        );
+        let result = guard
+            .original716_rotate_key("2026-01-02T00:00:00.000Z")
+            .unwrap();
+        assert_ne!(result["oldPublicKeyHint"], result["newPublicKeyHint"]);
+        assert_eq!(
+            std::fs::read(result["archivedPublicKeyPath"].as_str().unwrap()).unwrap(),
+            public
+        );
+        use std::os::unix::fs::MetadataExt;
+        assert_eq!(
+            std::fs::metadata(result["archivedPrivateKeyPath"].as_str().unwrap())
+                .unwrap()
+                .mode()
+                & 0o7777,
+            0o600
+        );
+        let old_public = std::path::Path::new(result["archivedPublicKeyPath"].as_str().unwrap());
+        assert_eq!(
+            custody::verify_local(&path, Some(old_public), None, &base.join("workspace"), uid)
+                .unwrap()["ok"],
+            true
+        );
+        assert!(
+            guard
+                .load_original717(Some(&proof.manifest().backup_id), Some(&public))
+                .is_ok()
+        );
+        // Removing one half never bootstraps a new key over the retained identity.
+        std::fs::remove_file(base.join("workspace/synthetic/.backup-signing-key.pem")).unwrap();
+        assert!(guard.original716_signing_key(true).is_err());
+    }
+    #[test]
+    fn original716_admitted_sign_verify_export_rotate_old_signature() {
+        let base = tempfile::tempdir().unwrap();
+        let output = std::process::Command::new("/bin/sh").args(["-c","umask 077; exec \"$@\"","original716-custody-test"])
+            .arg(std::env::current_exe().unwrap()).args(["--ignored","--exact","namespace::linux::original717::admitted_custody_original716_tests::original716_custody_child","--nocapture"])
+            .env("RM_CUSTODY716_ROOT",base.path().canonicalize().unwrap()).output().unwrap();
+        assert!(
+            output.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
