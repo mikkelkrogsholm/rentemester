@@ -36,6 +36,8 @@ COPY crates/ ./crates/
 COPY protocol/ ./protocol/
 COPY rules/dk/ ./rules/dk/
 COPY sources/ ./sources/
+COPY examples/import-synthetic.csv ./examples/import-synthetic.csv
+COPY docs/architecture/rust-target/implementation/baseline/inventory.json ./docs/architecture/rust-target/implementation/baseline/inventory.json
 COPY vendor/ ./vendor/
 COPY src/core/migrations/ ./src/core/migrations/
 COPY src/core/workspace-migrations/ ./src/core/workspace-migrations/
