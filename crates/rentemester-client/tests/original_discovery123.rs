@@ -30,14 +30,14 @@ async fn invoke(kind: &str, selector: &str, status: u16, body: Value) -> (Result
 
 #[tokio::test]
 async fn original123_sdk_exact_routes_queries_and_raw_core() {
-    let core = json!({"catalogue":{"fullCoverage":false},"items":[],"count":0,"cursor":u64::MAX,"nextCursor":null});
+    let core=search_core();
     let (result,wire) = invoke("search","😀 &?=",200,core.clone()).await;
     assert_eq!(result.unwrap(),core);
     let target = wire.lines().next().unwrap().split_whitespace().nth(1).unwrap();
     let url = reqwest::Url::parse(&format!("http://localhost{target}")).unwrap();
     assert_eq!(url.path(),"/api/original/agent-capabilities");
     assert_eq!(url.query_pairs().collect::<Vec<_>>(),vec![("query".into(),"😀 &?=".into()),("cursor".into(),u64::MAX.to_string().into()),("limit".into(),"50".into())]);
-    let (result,wire) = invoke("about","",200,json!({"serverName":"rentemester-mcp"})).await;
+    let (result,wire) = invoke("about","",200,about_core()).await;
     assert_eq!(result.unwrap()["serverName"],"rentemester-mcp");
     assert!(wire.starts_with("GET /api/original/agent-about HTTP/1.1"));
     let (result,wire) = invoke("workflow","unknown/../?x#%😀",404,json!({"code":"UNKNOWN_WORKFLOW"})).await;
@@ -64,4 +64,17 @@ async fn original123_sdk_typed_refusals_do_not_retry() {
     for status in [401,403,429,503] {
         assert!(matches!(invoke("search","",status,json!({})).await.0,Err(Error::Refused{status:s}) if s==status));
     }
+}
+
+fn catalogue()->Value{json!({"schemaVersion":"rentemester-agent-discovery-v1","hash":"a".repeat(64),"capabilityCount":26,"workflowCount":31,"fullCoverage":false})}
+fn search_core()->Value{json!({"catalogue":catalogue(),"workspaceConnected":true,"items":[],"total":26,"count":0,"cursor":u64::MAX,"limit":50,"hasMore":false,"nextCursor":null})}
+fn about_core()->Value{json!({"catalogue":catalogue(),"workspaceConnected":true,"serverName":"rentemester-mcp","serverVersion":"0.2.0","toolCount":null,"contractDocs":["docs/mcp-agent-contract.md"]})}
+#[tokio::test]
+async fn original123_malformed_success_is_protocol_before_metadata_decoration(){
+ for kind in ["about","search","workflow"]{
+  for bad in [json!({}),json!([]),json!({"catalogue":catalogue(),"workspaceConnected":true,"workflow":{"id":"synthetic","live":true,"steps":[null]}})]{
+   assert!(matches!(invoke(kind,"synthetic",200,bad).await.0,Err(Error::Protocol)));
+  }
+ }
+ let mut bad=search_core();bad["items"]=json!([null]);bad["count"]=json!(1);assert!(matches!(invoke("search","",200,bad).await.0,Err(Error::Protocol)));
 }

@@ -52,6 +52,11 @@ pub(crate) fn success(mut core: Value, name: &str, tools: &[Value]) -> Value {
 
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
     if !valid(name, &args) { return Ok(invalid(name)); }
+    // Original describeWorkflow performs a local exact lookup before any transport.
+    // Unknown IDs carry no authority and never need URL or filesystem interpretation.
+    if name=="agent_workflow_describe" && original123::describe(args["id"].as_str().unwrap(),&[],false).is_none(){
+        return Ok(crate::diagnostics_original118::result(json!({"ok":false,"errors":["UNKNOWN_WORKFLOW"]})));
+    }
     let core = match name {
         "meta_about" => api.original_agent_about123().await,
         "agent_capability_search" => api.original_agent_capabilities123(
