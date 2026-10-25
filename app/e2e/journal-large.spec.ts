@@ -63,7 +63,11 @@ test("10,000 entries / 20,000 lines: bounded DOM, dynamic rows, drafts, keyboard
   await expect(last.locator(".entry-summary")).toBeFocused();
   await page.keyboard.press("PageUp");
   await expect(page.locator(".entry-summary:focus")).toHaveCount(1);
-  await last.locator(".entry-summary").click();
+  // PageUp legitimately unmounts the last collapsed row. Navigate back to it
+  // through the supported keyboard path before expanding, never click a stale locator.
+  await page.keyboard.press("End");
+  await expect(last.locator(".entry-summary")).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(last.locator("table tbody tr")).toHaveCount(2);
   start = performance.now();
   await viewport.evaluate(element => { element.scrollTop = 0; });
