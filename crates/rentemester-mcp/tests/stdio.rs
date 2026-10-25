@@ -4,7 +4,7 @@ mod protocol_common;
 
 
 // Registry includes the required bookkeeping_batch_dry_run alias.
-const EXPECTED_NATIVE_TOOLS: usize = 434;
+const EXPECTED_NATIVE_TOOLS: usize = 436;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2278,3 +2278,6 @@ mod accounts_original;
 
 #[path = "stdio/company_creation_original116.rs"]
 mod company_creation_original116;
+
+#[path = "stdio/diagnostics_original118.rs"]
+mod diagnostics_original118;

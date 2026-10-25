@@ -477,3 +477,5 @@ mod document_party_original;
 mod posting_rules_original;
 
 mod dimensions_original;
+
+mod diagnostics_original118;
