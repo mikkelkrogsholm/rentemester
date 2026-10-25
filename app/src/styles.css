@@ -1788,3 +1788,15 @@ table.statement-table td.num.muted {
     .kpi-link, .status-card-link, .company-areas button, .company-destinations a { transition: none; }
   }
 }
+
+/* Large journals retain the existing rows, with a bounded measured viewport. */
+.journal-virtual-viewport {
+  height: 65vh;
+  min-height: 280px;
+  overflow: auto;
+  overflow-anchor: none;
+}
+.journal-virtual-list {
+  position: relative;
+  display: block;
+}
