@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "sourceCommit": "a44baa66c7e3e9153ce67100e1d5fcd83bee7006",
+  "sourceTree": "806a232d92344882e580abd01bda47fed0c43588",
+  "webDirectory": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/dist",
+  "webIndexSha256": "062b96ebc91723644f9342d9b79deadca1aeebc10f0c524603b5fef875a35785",
+  "browserReport": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/journal720/large720-playwright.json",
+  "browserReportSha256": "c4368763736ff4e504183f93dde9ef8788b0569eea9a47841dacfe3325c18806",
+  "scope": "Existing Playwright Chromium production React renderer on synthetic journal projection only; realRustreader composition and installed native/VoiceOver/platform whole720 remain separate."
+}

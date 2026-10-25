@@ -1,0 +1,186 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.9.0/bin/node",
+      "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/node_modules/.bin/playwright",
+      "test",
+      "e2e/journal-large.spec.ts",
+      "--project=chromium",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/playwright.config.ts",
+    "rootDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core-workflows.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "bun scripts/browser-test-server.ts",
+      "url": "http://127.0.0.1:5397/__browser_test_ready",
+      "reuseExistingServer": false,
+      "gracefulShutdown": {
+        "signal": "SIGTERM",
+        "timeout": 1000
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "journal-large.spec.ts",
+      "file": "journal-large.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "10,000 entries / 20,000 lines: bounded DOM, dynamic rows, drafts, keyboard and filters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1020,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-25T23:16:54.456Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-browser-timings",
+                      "contentType": "application/json",
+                      "body": "ewogICJlbnRyaWVzIjogMTAwMDAsCiAgImxpbmVzIjogMjAwMDAsCiAgIm1vdW50ZWRTdW1tYXJ5TGltaXQiOiA0MCwKICAidGltaW5ncyI6IHsKICAgICJyZW5kZXJNcyI6IDQxMS41NjM5OTk5OTk5OTk5NiwKICAgICJzY3JvbGxFbmRNcyI6IDQyLjg5MjcwNzk5OTk5OTg2LAogICAgInNjcm9sbEJhY2tNcyI6IDIyLjc5MTA0MjAwMDAwMDA2LAogICAgImZpbHRlck1zIjogMzcuNDkwMzc0OTk5OTk5ODYsCiAgICAiY2xlYXJNcyI6IDUxLjM2Njc1MDAwMDAwMDE0CiAgfQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e872878214c1f9369d15-d29bc85258e5f954a654",
+          "file": "journal-large.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "identity changes reset the window; late year and failed foreign reads never leak rows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1097,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-25T23:16:55.586Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-identity-timing",
+                      "contentType": "application/json",
+                      "body": "eyJlbGFwc2VkTXMiOjEwMDguNjIwMjA5MDAwMDAwMn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e872878214c1f9369d15-4fe68a0be2c46e2b66c7",
+          "file": "journal-large.spec.ts",
+          "line": 99,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-25T23:16:53.992Z",
+    "duration": 2729.491,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

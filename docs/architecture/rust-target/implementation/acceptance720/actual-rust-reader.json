@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "scope": "Actual shared React journal reader against preserved ordinary MFA-owner Rust fixture; browser large projection measurements are separate; no installed Tauri/VoiceOver qualification.",
+  "entryCount": 1,
+  "firstEntryLines": 102,
+  "journalSha256": "2d11731ba0f8e9786fbd979d2cc1b76f66dcfe61821198c1cdbd7cbf3e7cedac",
+  "journalUnchanged": true,
+  "noBusinessWrites": true,
+  "canonicalEntrySummaryLinesAndSearchVerified": true,
+  "reactSource": "a44baa66c7e3e9153ce67100e1d5fcd83bee7006",
+  "webIndexSha256": "062b96ebc91723644f9342d9b79deadca1aeebc10f0c524603b5fef875a35785",
+  "serverSource": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+  "serverSha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+  "normalMfaOwnerReused": true,
+  "oldFinancialEffectsNotReplayed": true
+}

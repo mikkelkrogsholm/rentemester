@@ -1,0 +1,34 @@
+bun install v1.4.0 (34cbb9a40)
+
+Checked 252 installs across 271 packages (no changes) [15.00ms]
+bun test v1.4.0 (34cbb9a40)
+
+src/views/JournalView.test.tsx:
+(pass) JournalView — Posteringer > lists the posted journal entries [32.50ms]
+(pass) JournalView — Posteringer > clicking an entry drills into its debit/credit lines [22.91ms]
+(pass) JournalView — Posteringer > shows approved dimensions with provenance and requires a hash-bound review before correction [44.38ms]
+(pass) JournalView — Posteringer > initial allocation requires a validated hash, explicit review and confirmation [100.25ms]
+(pass) JournalView — Posteringer > the company sub-nav exposes the new tabs [5.31ms]
+(pass) JournalView — Posteringer > the fiscal-year selector reloads for the chosen year [14.21ms]
+(pass) JournalView — Posteringer > an archived year renders the archived entries under a read-only banner [4.67ms]
+(pass) JournalView — Posteringer > an ?account= filter fetches the filtered journal and names the account [4.76ms]
+(pass) JournalView — #396 filter-bar > a filter-bar with fritekstsøgning, datointerval and beløb is rendered [5.03ms]
+(pass) JournalView — #396 filter-bar > fritekstsøgning matches entry text [25.80ms]
+(pass) JournalView — #396 filter-bar > fritekstsøgning matches the bilagsnummer (entryNo) [25.32ms]
+(pass) JournalView — #396 filter-bar > fritekstsøgning matches line text (HP LaserJet) [28.17ms]
+(pass) JournalView — #396 filter-bar > datointerval skærer korrekt: fra=2026-02-01 fjerner januar-entry [27.06ms]
+(pass) JournalView — #396 filter-bar > datointerval skærer korrekt: til=2026-06-30 fjerner juli-entry [27.46ms]
+(pass) JournalView — #396 filter-bar > beløbsspand filtrerer på total [34.75ms]
+(pass) JournalView — #396 filter-bar > tomt resultat vises pænt [64.25ms]
+(pass) JournalView — #396 filter-bar > filtre læses fra URL-params ved første render (q + datointerval) [6.21ms]
+(pass) JournalView — #396 filter-bar > #379 — en entry med documentId viser et 'Åbn bilag'-link der peger på file-routen [14.75ms]
+(pass) JournalView — #396 filter-bar > #379 — en entry uden documentId viser 'Intet bilag' og intet klikbart link [12.68ms]
+(pass) JournalView — #396 filter-bar > #379 — arkiveret år crasher ikke og viser 'Intet bilag' selv hvis documentId er sat [12.23ms]
+(pass) JournalView — #396 filter-bar > Ryd filtre-knap nulstiller alle filtre [30.77ms]
+
+ 21 pass
+ 0 fail
+ 72 expect() calls
+Ran 21 tests across 1 file. [941.00ms]
+$ bun run design:check && tsc --noEmit && bun run scripts/build.ts
+$ bun run ../scripts/design-tokens.ts --check

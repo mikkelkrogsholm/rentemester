@@ -1,0 +1,99 @@
+{
+  "issue": 720,
+  "whole_issue_accepted": false,
+  "large_shared_journal_portion_accepted": true,
+  "checkedAt": "2026-10-25T23:19:38.590150+00:00",
+  "source_revision": "7de349dcc1c4a5509921bd05896742cb59375826",
+  "tested_source_revision": "a44baa66c7e3e9153ce67100e1d5fcd83bee7006",
+  "tested_source_tree": "806a232d92344882e580abd01bda47fed0c43588",
+  "web_index_sha256": "062b96ebc91723644f9342d9b79deadca1aeebc10f0c524603b5fef875a35785",
+  "sgdRun": "issue720-journal-window-20261025T230648.723700000",
+  "sgdPhase": "done",
+  "proofs": {
+    "failed-window-fixture.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance720/failed-window-fixture.json",
+      "sha256": "effb7df3cf5c1c08f0e4667041187faa35252450ce2a1af078f5e67633e42f73"
+    },
+    "actual-rust-reader.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance720/actual-rust-reader.json",
+      "sha256": "c2b8d55aae6ce12184651a615b9ceda4157ef55af9065027bb90350a565d8cb2"
+    },
+    "journal.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance720/journal.json",
+      "sha256": "e225033946c61205044cc0660ca7fc1c1a65798cfc8bc13b4ba12f281f1c0476"
+    },
+    "browser.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance720/browser.json",
+      "sha256": "c4368763736ff4e504183f93dde9ef8788b0569eea9a47841dacfe3325c18806"
+    },
+    "focused.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance720/focused.log",
+      "sha256": "5a2092e889ca10e0a45aff679930ef135b6796593fb71f880c5c2a01367dded4"
+    }
+  },
+  "measurements": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "browser": "Headless Chromium through existing Playwright1.63;1440x900 viewport",
+    "syntheticProjection": true,
+    "realRustBulkLedger": false,
+    "nativeTauri": false,
+    "synthetic-browser-timings": {
+      "entries": 10000,
+      "lines": 20000,
+      "mountedSummaryLimit": 40,
+      "timings": {
+        "renderMs": 411.56399999999996,
+        "scrollEndMs": 42.89270799999986,
+        "scrollBackMs": 22.79104200000006,
+        "filterMs": 37.49037499999986,
+        "clearMs": 51.36675000000014
+      }
+    },
+    "synthetic-identity-timing": {
+      "elapsedMs": 1008.6202090000002
+    },
+    "limits": "Only10,000entries/20,000lines renderer tested; less than40mounted summaries in observed states including expanded/focusedrows. This is a measured component limit, not all claimedplatforms, nativeWebKit/VoiceOver or unlimited Rustledger performance."
+  },
+  "review": "Main reviewed actual6file diff: existing journal reader branch>200 reuses83linefocused MITTanStackReact18adapter, stableidentity, measuredvariableheight, expanded/focusedrowpinning, keyboardnavigation and truthfulsetsize/positions. Smalllists, exactmoney/filter/source/evidence/export/dimension/reversal flows unchanged. One focused adapter dependency, no newengine/framework/testplatform.",
+  "accepted": [
+    "21unchanged original JournalView tests/72assertions, designcheck, appTypeScript/productionbuild and e2eTypeScript passed.",
+    "2actualChromium productionReact renderer cases:10,000entries/20,000lines, boundedDOM/dynamicexpansion/bilaglink/retainedunsaveddimensiondraft andfocus while scrolling, Home/End/Page/arrows, filter/clear/refilter, lateyear/foreigncompany/error/reset/no businesswrites.",
+    "Separate actual currentRustserver/sharedproductionUI readonlycheck reused ordinaryMFAowner and preservedledger:1entry/102lines exactcanonicalsummary/linecount/search/empty/clear, journalunchanged, zero businessPOST, ownedserverExit0. This does not pretend the synthetic10k browserprojection is a realRustbulkledger.",
+    "Combined SGD acceptance compares identical actuallytested candidate Git tree and builtUIindex hash; old financial/provider effects are not replayed."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "disposition": "shared_browser_reads_retained_current_journal_verified_final_native_pending",
+      "missing": "Whole original desktopentrypoint/equivalentresult mapping against installed Tauri; accepted718browser and priornativepartialreceipts retained."
+    },
+    {
+      "criterion": 2,
+      "disposition": "Chromium_renderer_limit_accepted_final_claimedplatform_pending",
+      "missing": "Actual current installed native WebKit/claimedplatform limits; no physicalOS or unlimitedledger performance inferred."
+    },
+    {
+      "criterion": 3,
+      "disposition": "current_Chromium_keyboard_scope_error_component_accepted_final_native_pending",
+      "missing": "Installed native keyboard/screenreader/VoiceOver and native connection/cookie/profile switch acceptance; no staleforeignrows in focused browsercase."
+    },
+    {
+      "criterion": 4,
+      "disposition": "retained_accepted_689_718_shared_task_semantics_final_native_pending",
+      "missing": "Final original installed statutory/VAT J04 state/source/blocker/nextaction observation; current VatTaskPanel unchanged, no new legal guarantee."
+    },
+    {
+      "criterion": 5,
+      "disposition": "retained_accepted_707_725_backup_recovery_semantics_final_native_pending",
+      "missing": "Final installed backupstatus/destination/access/recoverypoint and J05 ownerdevice acceptance. Current725signedfreshserver recovery is retained, not relabeled native."
+    }
+  ],
+  "preservedFailures": [
+    "Initial testprotocol setup and dirtydraft navigation refusal are preserved in worker agent log. Existing protocol and discard gates remain unchanged.",
+    "Formal browserfixture incorrectly clicked lastcollapsed row immediately after PageUp unmounted it; exacttrace/JSON/screenshot preserved. Scoped testonlyrepair uses End, assertsfocus, Enter expands; isolated testPASS1.1s then fullfocusedreceiptPASS. No new model/platform or weakened productcontrol."
+  ],
+  "wholeIssueClosureBlocker": "Original final installedTauri/preview/VoiceOver/claimedplatform and #678/#719 qualification remain; userplacesmanualdesktopLAST.",
+  "closed55OriginalIssues": 43,
+  "remaining55OriginalIssues": 12
+}

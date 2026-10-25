@@ -4195,3 +4195,15 @@ og frigiver workspace-ejerskabet. Almindelig serverdrift har ingen stdin-monitor
 konkurrerende ejer, servercrash, optaget port og SIGKILL af Managed-ejeren.
 Det er komponentaccept; installeret offline/J01/J02/J07- og fysisk sleepaccept
 ligger fortsat i den afsluttende nativeprøve.
+
+### Store journaler i det fælles UI
+
+Journaler over200posteringer bruger nu målte virtuelle rækker. Den eksisterende
+søgning, datofiltre, beløb, bilagslinks og dimensioner er bevaret; åbne/fokuserede
+rækker bliver monteret, så scrolling ikke sletter en kladde. Piletaster,
+PageUp/PageDown og Home/End navigerer mellem posteringer. Chromiumprøven
+med10.000posteringer/20.000linjer holdt sig under40monterede resuméer;
+den målte søgning tog37,5ms og første visning411,6ms på den dokumenterede vært.
+Det er målinger af denne browserkomponent, ingen garanti for andre platforme
+eller ubegrænset ledgerstørrelse. Installeret WebKit/VoiceOver kvalificeres sidst.
+Se `architecture/rust-target/implementation/issue720-evidence.json`.

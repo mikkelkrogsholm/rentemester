@@ -1,0 +1,212 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/25.9.0/bin/node",
+      "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/node_modules/.bin/playwright",
+      "test",
+      "e2e/journal-large.spec.ts",
+      "--project=chromium",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/playwright.config.ts",
+    "rootDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core-workflows.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "bun scripts/browser-test-server.ts",
+      "url": "http://127.0.0.1:5397/__browser_test_ready",
+      "reuseExistingServer": false,
+      "gracefulShutdown": {
+        "signal": "SIGTERM",
+        "timeout": 1000
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "journal-large.spec.ts",
+      "file": "journal-large.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "10,000 entries / 20,000 lines: bounded DOM, dynamic rows, drafts, keyboard and filters",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 30164,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/journal-large.spec.ts",
+                        "column": 40,
+                        "line": 66
+                      },
+                      "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.entry-item[aria-posinset=\"10000\"]').locator('.entry-summary')\u001b[22m\n\n\n  64 |   await page.keyboard.press(\"PageUp\");\n  65 |   await expect(page.locator(\".entry-summary:focus\")).toHaveCount(1);\n> 66 |   await last.locator(\".entry-summary\").click();\n     |                                        ^\n  67 |   await expect(last.locator(\"table tbody tr\")).toHaveCount(2);\n  68 |   start = performance.now();\n  69 |   await viewport.evaluate(element => { element.scrollTop = 0; });\n    at /Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/journal-large.spec.ts:66:40"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-25T23:13:05.353Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results/journal-large-10-000-entri-4f6c1-drafts-keyboard-and-filters-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results/journal-large-10-000-entri-4f6c1-drafts-keyboard-and-filters-chromium/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue720-journal-window-20261025T230648.723700000/journal720/app/e2e/artifacts/results/journal-large-10-000-entri-4f6c1-drafts-keyboard-and-filters-chromium/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "e872878214c1f9369d15-d29bc85258e5f954a654",
+          "file": "journal-large.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "identity changes reset the window; late year and failed foreign reads never leak rows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1116,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-25T23:13:36.110Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-identity-timing",
+                      "contentType": "application/json",
+                      "body": "eyJlbGFwc2VkTXMiOjEwMTcuNDM3NTgzfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e872878214c1f9369d15-4fe68a0be2c46e2b66c7",
+          "file": "journal-large.spec.ts",
+          "line": 95,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-25T23:13:04.903Z",
+    "duration": 32483.817000000003,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
