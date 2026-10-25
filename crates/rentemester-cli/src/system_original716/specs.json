@@ -1,0 +1,917 @@
+[
+  {
+    "key": "system backup",
+    "usage": "system backup --company <path> [--at <ISO-8601>] [--sign-with-ed25519] [--archive]",
+    "description": "Opretter en revisionsklar backup. Med --sign-with-ed25519 tilføjes en asymmetrisk signatur som 3.-part kan verificere uafhængigt. Med --archive pakkes backuppen straks til én .tar-fil klar til off-site placering.",
+    "allowedFlags": [
+      "--company",
+      "--at",
+      "--sign-with-ed25519",
+      "--archive"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--at",
+      "--sign-with-ed25519",
+      "--archive",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-status",
+    "usage": "system backup-status --company <path> [--as-of <ISO-8601>]",
+    "description": "Viser om backup-pligten er opfyldt.",
+    "allowedFlags": [
+      "--company",
+      "--as-of"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--as-of",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": false,
+    "sideEffecting": false,
+    "classification": "read",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system restore-backup",
+    "usage": "system restore-backup --backup-dir <dir-eller-.tar> --target-company <path> --confirm yes [--verify-key <path>] [--public-key <path>]",
+    "description": "DESTRUKTIV: gendanner en backup til --target-company. Sletter ingen filer på source, men OVERSKRIVER eksisterende filer i --target-company. Kræver --confirm yes — uden den afvises kommandoen uden at røre filsystemet. --backup-dir kan pege på enten en backup-mappe eller et .tar-arkiv (kræver typisk --verify-key for et arkiv).",
+    "allowedFlags": [
+      "--backup-dir",
+      "--target-company",
+      "--confirm",
+      "--verify-key",
+      "--public-key"
+    ],
+    "inputNotes": [
+      "--confirm yes er påkrævet: restore kan overskrive filer i --target-company",
+      "Restore rører aldrig backup-kilden — kun --target-company skrives",
+      "--verify-key peger på den symmetriske HMAC-nøgle, der godtgør backuppens ægthed (manifestets HMAC-tag). Kræves typisk for et .tar-arkiv; for en backup-mappe udledes nøglen ellers fra virksomhedens backups-mappe.",
+      "--public-key peger på den asymmetriske ed25519-offentlige nøgle, der verificerer backuppens ed25519-signatur — den signatur 'system backup --sign-with-ed25519' tilføjer, så en uafhængig 3.-part kan bekræfte ægtheden uden at kende HMAC-nøglen. Den adskiller sig fra --verify-key: --verify-key er den symmetriske HMAC-nøgle, --public-key den asymmetriske ed25519-nøgle. Se docs/backup-security.md.",
+      "MCP-ækvivalenten system_restore_backup kræver confirm:true + confirmText='RESTORE <targetCompany>'"
+    ],
+    "acceptedFlags": [
+      "--backup-dir",
+      "--target-company",
+      "--confirm",
+      "--verify-key",
+      "--public-key",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-archive",
+    "usage": "system backup-archive --company <path> [--backup-id <id>] [--out <file.tar>]",
+    "description": "Pakker en eksisterende backup til én deterministisk .tar-fil (+ .sha256-sidecar) klar til at flytte off-site. Uden --backup-id pakkes den nyeste backup.",
+    "allowedFlags": [
+      "--company",
+      "--backup-id",
+      "--out"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--backup-id",
+      "--out",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-governance",
+    "usage": "system backup-governance --company <path> [--as-of <ISO-8601>]",
+    "description": "Viser den samlede backup-status: forfald, bogførings-lås, destinationer og om seneste backup er placeret sikkert i EU/EØS.",
+    "allowedFlags": [
+      "--company",
+      "--as-of"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--as-of",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": false,
+    "sideEffecting": false,
+    "classification": "read",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-destinations",
+    "usage": "system backup-destinations --company <path>",
+    "description": "Lister konfigurerede backup-destinationer med deres EU/EØS- og it-sikkerheds-attestering.",
+    "allowedFlags": [
+      "--company"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": false,
+    "sideEffecting": false,
+    "classification": "read",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-add-destination",
+    "usage": "system backup-add-destination --company <path> --label <text> --kind local-folder|dropbox|google-drive|ssh|other --location <path|uri> --region-eu true|false --attested-by <actor> [--region-country <kode>] [--region-note <text>] [--non-related true|false] [--it-security true|false] [--it-security-note <text>] [--at <ISO-8601>]",
+    "description": "Tilføjer en backup-destination. Du attesterer som menneske om destinationen ligger på en server i EU/EØS, jf. BEK 205/2024 § 4, stk. 2 — Rentemester kan ikke selv vide det.",
+    "allowedFlags": [
+      "--company",
+      "--label",
+      "--kind",
+      "--location",
+      "--region-eu",
+      "--attested-by",
+      "--region-country",
+      "--region-note",
+      "--non-related",
+      "--it-security",
+      "--it-security-note",
+      "--at"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--label",
+      "--kind",
+      "--location",
+      "--region-eu",
+      "--attested-by",
+      "--region-country",
+      "--region-note",
+      "--non-related",
+      "--it-security",
+      "--it-security-note",
+      "--at",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-remove-destination",
+    "usage": "system backup-remove-destination --company <path> --id <dest-id>",
+    "description": "Fjerner en konfigureret backup-destination.",
+    "allowedFlags": [
+      "--company",
+      "--id"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--id",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-place",
+    "usage": "system backup-place --company <path> --archive-file <file.tar> --destination <dest-id> [--actor-kind human|agent] [--at <ISO-8601>] [--note <text>]",
+    "description": "Kopierer et backup-arkiv til en destination med en lokal/synkroniseret mappe (fx en Dropbox- eller Google Drive-desktopmappe) og verificerer kopien med sha256.",
+    "allowedFlags": [
+      "--company",
+      "--archive-file",
+      "--destination",
+      "--actor-kind",
+      "--at",
+      "--note"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--archive-file",
+      "--destination",
+      "--actor-kind",
+      "--at",
+      "--note",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-confirm-placement",
+    "usage": "system backup-confirm-placement --company <path> --destination <dest-id> --backup-id <id> --archive-sha256 <hex> [--archive-size <bytes>] [--actor-kind human|agent] [--at <ISO-8601>] [--note <text>]",
+    "description": "Registrerer en backup-placering foretaget uden for Rentemester — fx en agent der har pushet arkivet til Dropbox/Drive/SSH med egne værktøjer. Verificeres med sha256 hvis destinationen er læsbar.",
+    "allowedFlags": [
+      "--company",
+      "--destination",
+      "--backup-id",
+      "--archive-sha256",
+      "--archive-size",
+      "--actor-kind",
+      "--at",
+      "--note"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--destination",
+      "--backup-id",
+      "--archive-sha256",
+      "--archive-size",
+      "--actor-kind",
+      "--at",
+      "--note",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-verify-remote-placement",
+    "usage": "system backup-verify-remote-placement --company <path> --destination <dest-id> --backup-id <id> --remote-object-id <id> [--max-metadata-age-ms <ms>] [--actor-kind human|agent] [--at <ISO-8601>] [--note <text>]",
+    "description": "Verificerer en ekstern backup med en injiceret provider-adapter: objekt-id, navn, parent, størrelse, checksum og downloadet indhold skal matche. Uden en konfigureret adapter afvises kaldet; declared evidence opgraderes aldrig.",
+    "allowedFlags": [
+      "--company",
+      "--destination",
+      "--backup-id",
+      "--remote-object-id",
+      "--max-metadata-age-ms",
+      "--actor-kind",
+      "--at",
+      "--note"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--destination",
+      "--backup-id",
+      "--remote-object-id",
+      "--max-metadata-age-ms",
+      "--actor-kind",
+      "--at",
+      "--note",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-lock",
+    "usage": "system backup-lock --company <path> [--enforce true|false] [--grace-days <n>] [--at <ISO-8601>]",
+    "description": "Konfigurerer den frivillige bogførings-lås. Når den er slået til, blokeres ny bogføring hvis den ugentlige backup (BEK 205/2024 § 4) er forsømt ud over en eventuel grace-periode. system-, backup- og restore-kommandoer blokeres aldrig.",
+    "allowedFlags": [
+      "--company",
+      "--enforce",
+      "--grace-days",
+      "--at"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--enforce",
+      "--grace-days",
+      "--at",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": true,
+    "sideEffecting": false,
+    "classification": "actor-gated-mutation",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system backup-guide",
+    "usage": "system backup-guide --company <path> --out <file.html> [--as-of <ISO-8601>]",
+    "description": "Genererer en HTML-side der forklarer backup-reglerne (bogføringsloven § 12/§ 15, BEK 205/2024 § 4) og viser virksomhedens aktuelle backup-status.",
+    "allowedFlags": [
+      "--company",
+      "--out",
+      "--as-of"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--out",
+      "--as-of",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": false,
+    "sideEffecting": false,
+    "classification": "read",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  },
+  {
+    "key": "system export-public-key",
+    "usage": "system export-public-key --company <path> --out <file>",
+    "description": "Eksporterer virksomhedens ed25519 backup-public-key til en fil (deles med revisor/myndighed).",
+    "allowedFlags": [
+      "--company",
+      "--out"
+    ],
+    "acceptedFlags": [
+      "--company",
+      "--out",
+      "--help",
+      "--format",
+      "--json",
+      "--actor",
+      "--actor-via"
+    ],
+    "mutation": false,
+    "sideEffecting": false,
+    "classification": "read",
+    "migrationOwner": "R44",
+    "inputSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "successSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "parseFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "evidence": [
+      {
+        "path": "src/cli-meta.ts",
+        "sha256": "cf48c6141bd12c25dc8b934204945b5be560f0a063c12fc613b25da941c51515"
+      },
+      {
+        "path": "src/cli-meta/_shared.ts",
+        "sha256": "e5fb5ce70ddd34ac3fe5eafd85369e344931c49705d9b4e76482279dcde6c549"
+      },
+      {
+        "path": "src/cli-actor.ts",
+        "sha256": "f34b9451c7e74dc49e980a2c62475838884b75db2c772c5d65361a0971ea5f26"
+      },
+      {
+        "path": "src/cli-meta/system-specs.ts",
+        "sha256": "3e567a49ff297207162f7b602f4ff5597cc786673c6b02b15fc7908bdb25b433"
+      }
+    ]
+  }
+]
