@@ -170,6 +170,21 @@ fn original_payable_dated_filters_receipts_partial_full_and_historical_creditor(
     );
     assert_eq!(tx.query_row("SELECT count(*) FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE a.account_no='C2'",[],|r|r.get::<_,i64>(0)).unwrap(),0);
     assert!(crate::journal_hash::verify(&tx).unwrap().ok);
+    // The same explicit principal kind must survive every financial and receipt path.
+    assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='service_account:service_synthetic' AND created_by_program='service-principal'",[],|r|r.get(0)).unwrap(),3);
+    assert_eq!(
+        tx.query_row::<i64, _, _>(
+            "SELECT count(*) FROM journal_entries WHERE created_by='user:human'",
+            [],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        1
+    );
+    assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE entity_type='idempotency_receipt' AND actor LIKE 'user:service_synthetic%'",[],|r|r.get(0)).unwrap(),0);
+    assert!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE entity_type='idempotency_receipt' AND actor='service_account:service_synthetic via rentemester-original-payable'",[],|r|r.get(0)).unwrap()>=3);
+    assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM mutation_idempotency_tombstones WHERE principal_kind='service-account' AND principal_subject_id='service_synthetic'",[],|r|r.get(0)).unwrap(),3);
+
     let mut changed = partial;
     changed.note = Some("Different valid intent".into());
     assert_eq!(

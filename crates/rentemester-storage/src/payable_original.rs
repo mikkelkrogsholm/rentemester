@@ -222,7 +222,13 @@ pub fn mutate(
     let Some(key) = key else {
         return write(tx).map(envelope);
     };
-    let actor = format!("user:{subject}");
+    let actor = format!(
+        "{}:{subject}",
+        match kind {
+            PrincipalKind::User => "user",
+            PrincipalKind::ServiceAccount => "service_account",
+        }
+    );
     match idempotency::execute(
         tx,
         idempotency::Input {

@@ -63,7 +63,13 @@ fn post(
         &crate::journal_preview::manual_journal_rule_version()?,
         latest,
         crate::journal_post::Actor {
-            subject: &format!("user:{actor}"),
+            subject: &format!(
+                "{}:{actor}",
+                match principal {
+                    PrincipalKind::User => "user",
+                    PrincipalKind::ServiceAccount => "service_account",
+                }
+            ),
             program: match principal {
                 PrincipalKind::User => "rentemester-rust",
                 PrincipalKind::ServiceAccount => "service-principal",
@@ -756,11 +762,11 @@ mod tests {
             PrincipalKind::User => "rentemester-rust",
             PrincipalKind::ServiceAccount => "service-principal",
         };
-        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='user:synthetic' AND created_by_program=?1",[program],|r|r.get(0)).unwrap(),3);
         let actor = match principal {
             PrincipalKind::User => "user:synthetic",
             PrincipalKind::ServiceAccount => "service_account:synthetic",
         };
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by=?1 AND created_by_program=?2",[actor,program],|r|r.get(0)).unwrap(),3);
         assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type IN ('payable_register','payable_payment_apply') AND actor=?1",[actor],|r|r.get(0)).unwrap(),3);
         for entry in [
             result["entryId"].as_i64().unwrap(),

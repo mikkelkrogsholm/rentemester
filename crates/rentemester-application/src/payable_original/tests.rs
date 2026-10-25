@@ -213,6 +213,20 @@ fn original_payable_service_current_sources_receipts_and_revocation() {
     );
     assert_eq!(f.count("journal_entries"), 2);
     assert_eq!(f.count("payable_payments"), 1);
+    let actor = format!("service_account:{}", f.subject);
+    assert_eq!(
+        f.company
+            .query_row::<i64, _, _>(
+                "SELECT count(*) FROM journal_entries WHERE created_by=?1",
+                [&actor],
+                |r| r.get(0)
+            )
+            .unwrap(),
+        2
+    );
+    let receipt_actor = format!("{actor} via rentemester-original-payable");
+    assert_eq!(f.company.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE entity_type='idempotency_receipt' AND actor=?1",[&receipt_actor],|r|r.get(0)).unwrap(),4);
+
     let root = f._dir.path().canonicalize().unwrap().join("workspace/a");
     let hash: String = f
         .company
