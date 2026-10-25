@@ -208,8 +208,11 @@ pub fn validate_image(
     }
     let mut file = tempfile::NamedTempFile::new().map_err(|_| invalid())?;
     file.write_all(bytes).map_err(|_| invalid())?;
+    // macOS exposes its private temp directory through /var -> /private/var.
+    // Resolve our own temporary file before SQLITE_OPEN_NOFOLLOW, retaining the guard.
+    let image_path = file.path().canonicalize().map_err(|_| invalid())?;
     let mut db = Connection::open_with_flags(
-        file.path(),
+        image_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
     )
     .map_err(|_| invalid())?;
