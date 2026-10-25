@@ -40,7 +40,7 @@ function signalAuthExpired(observationGeneration: number): void {
   }
 }
 
-type ApiRequestOptions = RequestInit & { readOnly?: boolean; decodeRefusal422?: (body: unknown) => ApiError | undefined };
+type ApiRequestOptions = RequestInit & { readOnly?: boolean; decodeRefusal422?: (body: unknown) => ApiError | undefined; acceptDomainFalse?: (body: unknown) => boolean };
 
 function isWrite(init?: ApiRequestOptions): boolean {
   return !init?.readOnly && init?.method !== undefined && !["GET", "HEAD"].includes(init.method.toUpperCase());
@@ -48,7 +48,7 @@ function isWrite(init?: ApiRequestOptions): boolean {
 
 async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Response> {
   if (!ordinaryWorkspaceWriteAllowed(path, init?.method ?? "GET", init?.readOnly)) throw new ApiError("workspace_not_active", "Workspace er skrivebeskyttet. Kontrollér flytningens aktuelle tilstand.", 423);
-  const { readOnly, decodeRefusal422, ...fetchOptions } = init ?? {};
+  const { readOnly, decodeRefusal422, acceptDomainFalse, ...fetchOptions } = init ?? {};
   let admission: Record<string, string>;
   try {
     admission = await protocolHeaders(path, init?.method ?? "GET", init?.signal);
@@ -110,7 +110,7 @@ export async function request<T>(path: string, init?: ApiRequestOptions): Promis
     const refusal = init?.decodeRefusal422?.(body);
     if (refusal) throw refusal;
   }
-  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.", observationGeneration);
+  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false && !(res.ok && init?.acceptDomainFalse?.(body) === true)) throw responseError(res, body, "Ukendt serverfejl.", observationGeneration);
   if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`, observationGeneration);
   return body as T;
 }

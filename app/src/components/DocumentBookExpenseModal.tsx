@@ -30,6 +30,12 @@ import { Button, Select, Dialog } from "./ui";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import { useAsync } from "../lib/useAsync";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useOptionalAuth } from "../lib/auth-context";
+import { useCapabilities } from "../lib/useCapabilities";
+import { useMutationBlock } from "../lib/mutation-memory";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { UnknownMutationNotice } from "./UnknownMutationNotice";
+import type { NativeDocumentVatPreflight } from "../lib/api/documents";
 import type { DocumentRow } from "../lib/types";
 
 export type DocumentBookExpenseModalProps = {
@@ -62,6 +68,27 @@ export function DocumentBookExpenseForm({
   presentation = "dialog",
 }: DocumentBookExpenseModalProps & { presentation?: "dialog" | "page" }) {
   const optionsState = useAsync<DocumentBookingOptions>((signal) => api.documentBookingOptions(slug, documentId, { signal }), [slug, documentId]);
+  const auth = useOptionalAuth();
+  const native = auth?.backend === "rust";
+  const capabilities = useCapabilities(slug);
+  const allowed = capabilities.can("company.ledger.post") && capabilities.can("company.external-lookup");
+  const providerTitle = "Hent momsvalidering";
+  const providerScope = `purchase-vat:${slug}:${documentId}`;
+  // Identical to ConfirmDialog's canonical key, independent of modal/page route.
+  const providerBlock = useMutationBlock(`${providerScope}:${providerTitle}:provider`);
+  const [review, setReview] = useState<{ context: object; body: React.ReactNode; preflight: DocumentVatPreflight } | null>(null);
+  const contextRef = useRef<object>({});
+  const previousContext = useRef<unknown[]>([]);
+  const contextParts = [slug, documentId, native, auth?.session, auth?.currentSessionId, auth?.context, auth?.loading, allowed, optionsState.data];
+  if (contextParts.some((part, i) => part !== previousContext.current[i])) {
+    contextRef.current = {};
+    previousContext.current = contextParts;
+  }
+  const currentContext = contextRef.current;
+  const latest = useRef({ allowed, currentContext });
+  latest.current = { allowed, currentContext };
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const options = optionsState.data;
   const loadError = optionsState.error;
   const [expenseAccountNo, setExpenseAccountNo] = useState<string>("");
@@ -82,7 +109,7 @@ export function DocumentBookExpenseForm({
     const documents = await api.documents(slug);
     setReadBack(documents.documents.filter(document => document.id === documentId));
   }, `book-document:${slug}:${documentId}`);
-  const uncertain = outcome.blocked;
+  const uncertain = outcome.blocked || providerBlock.blocked;
   const submitRef = useRef(false);
   const guard = useDiscardGuard(dirty && !done, onClose);
 
@@ -108,30 +135,62 @@ export function DocumentBookExpenseForm({
     }
   }, [options]);
 
+  const [preflightReload, setPreflightReload] = useState(0);
+  const [preflightLoading, setPreflightLoading] = useState(true);
+  const [preflightError, setPreflightError] = useState<string | null>(null);
+  const [preflightContext, setPreflightContext] = useState<object | null>(null);
+  const visiblePreflight = preflightContext === currentContext ? preflight : null;
   useEffect(() => {
     let cancelled = false;
-    api.documentVatPreflight(slug, documentId).then((result) => {
-      if (!cancelled) setPreflight(result);
-    }).catch(() => { /* Booking remains available; its core boundary still fails closed. */ });
-    return () => { cancelled = true; };
-  }, [slug, documentId]);
+    const controller = new AbortController();
+    setReview(null);
+    setPreflight(null);
+    setPreflightLoading(true);
+    setPreflightError(null);
+    const read = native ? api.nativeDocumentVatPreflight : api.documentVatPreflight;
+    read(slug, documentId, { signal: controller.signal }).then((result) => {
+      if (!cancelled && latest.current.currentContext === currentContext) {
+        setPreflight(result); setPreflightContext(currentContext);
+      }
+    }).catch((err) => {
+      if (!cancelled && latest.current.currentContext === currentContext) setPreflightError((err as MaybeApiError)?.message ?? "Momsvalideringen kunne ikke hentes.");
+    }).finally(() => { if (!cancelled) setPreflightLoading(false); });
+    return () => { cancelled = true; controller.abort(); };
+  }, [slug, documentId, native, currentContext, preflightReload]);
+
+  function reviewPreflight() {
+    if (!allowed || providerBlock.isBlocked() || preflightBusy || busy || !visiblePreflight || !options) return;
+    setReview({ context: currentContext, preflight: visiblePreflight, body: <>
+      <p>Virksomhed: {slug} · Bilag {documentId} · {options.document.documentNo ?? "—"} · Faktura {options.document.invoiceNo ?? "—"}</p>
+      <p>Leverandør: {options.document.supplierName ?? "—"} · {options.document.supplierVatOrCvr ?? "—"} · {options.document.supplierCountryCode ?? "—"}</p>
+      <p>{options.document.invoiceDate ?? "—"} · {formatKroner(options.document.amountIncVat ?? 0, options.document.currency)}</p>
+      <p>Momsstatus: {visiblePreflight.derivedRegion} · {visiblePreflight.requiredValidation ?? "Ingen ekstern validering kræves"} · {visiblePreflight.errors.join(" · ")} · Evidens gyldig til {visiblePreflight.cache.freshUntil ?? "—"}</p>
+      <p>Hent momsvalidering fra den eksterne udbyder for dette bilag. Handlingen kan gemme evidens eller en undtagelse; den bogfører ikke bilaget.</p>
+    </> });
+  }
 
   async function applyPreflight() {
-    if (outcome.isBlocked() || preflightBusy) return;
+    // ConfirmDialog already persisted the ONE shared operation barrier before entry.
+    if (!review || review.context !== latest.current.currentContext || !latest.current.allowed || preflightBusy) {
+      throw new ApiError("access_denied", "Adgang eller bilagskontekst er ændret. Gennemgå bilaget igen.", 403);
+    }
+    const selection = review;
     setPreflightBusy(true);
-    setError(null);
     try {
-      setPreflight(await api.applyDocumentVatPreflight(slug, documentId).catch(outcome.reject));
-    } catch (err) {
-      setError((err as MaybeApiError)?.message ?? "Momsvalideringen kunne ikke gennemføres.");
+      const result = native
+        ? await api.applyNativeDocumentVatPreflight(slug, documentId, { confirm: true })
+        : await api.applyDocumentVatPreflight(slug, documentId);
+      if (mounted.current && latest.current.currentContext === selection.context && latest.current.allowed) {
+        setPreflight(result); setPreflightContext(selection.context); setPreflightError(null);
+      }
     } finally {
-      setPreflightBusy(false);
+      if (mounted.current) setPreflightBusy(false);
     }
   }
 
 
   async function handleBook() {
-    if (submitRef.current || done || outcome.isBlocked()) return;
+    if (submitRef.current || done || outcome.isBlocked() || providerBlock.isBlocked() || preflightBusy || (native && (!visiblePreflight?.ok || preflightLoading))) return;
     if (!expenseAccountNo) {
       setError("Vælg en udgiftskonto.");
       return;
@@ -218,6 +277,9 @@ export function DocumentBookExpenseForm({
               {options === null && !loadError && (
                 <p className="muted">Henter bogføringsdata…</p>
               )}
+              {preflightLoading && <p role="status">Henter momsvalidering…</p>}
+              {preflightError && <Banner kind="error">{preflightError} <Button variant="secondary" onClick={() => setPreflightReload(n => n + 1)}>Prøv momsvalidering igen</Button></Banner>}
+              {providerBlock.blocked && !preflightBusy && !review && <UnknownMutationNotice onRefresh={() => setPreflightReload(n => n + 1)} onRelease={providerBlock.release} persistent={providerBlock.persistent} verifyPersistence={providerBlock.verifyPersistence} />}
               {doc && (
                 <>
                   <p>
@@ -251,14 +313,17 @@ export function DocumentBookExpenseForm({
                       Momsfordeling: {doc.purchaseVatLines.map((line) => `${line.classification}: ${formatKroner(line.netAmount, currency)} + ${formatKroner(line.vatAmount ?? 0, currency)}`).join(" · ")}
                     </div>
                   )}
-                  {preflight && (
+                  {visiblePreflight && (
                     <div className="muted" role="status">
-                      Momsvalidering: {{ DK: "Danmark", EU: "EU", NON_EU: "Uden for EU", CONFLICT: "Modstridende landeoplysninger" }[preflight.derivedRegion]}
-                      {preflight.requiredValidation ? ` · kræver ${preflight.requiredValidation}` : " · ingen ekstern validering kræves"}
-                      {preflight.cache.freshUntil ? ` · evidens gyldig til ${preflight.cache.freshUntil}` : ""}.
-                      {preflight.errors[0] ? ` ${preflight.errors[0]}` : preflight.ok ? " Momsoplysningerne er valideret." : " Momsoplysningerne skal afklares før bogføring."}
-                      {preflight.applyWouldCallProvider && (
-                        <Button type="button" className="btn btn-secondary" disabled={busy || preflightBusy} requiredPermission="company.external-lookup" onClick={() => void applyPreflight() }>
+                      Momsvalidering: {{ DK: "Danmark", EU: "EU", NON_EU: "Uden for EU", CONFLICT: "Modstridende landeoplysninger" }[visiblePreflight.derivedRegion]}
+                      {visiblePreflight.requiredValidation ? ` · kræver ${visiblePreflight.requiredValidation}` : " · ingen ekstern validering kræves"}
+                      {visiblePreflight.cache.freshUntil ? ` · evidens gyldig til ${visiblePreflight.cache.freshUntil}` : ""}.
+                      {visiblePreflight.errors.length ? ` ${visiblePreflight.errors.join(" · ")}` : visiblePreflight.ok ? " Momsoplysningerne er valideret." : " Momsoplysningerne skal afklares før bogføring."}
+                      <p>Cache: {visiblePreflight.cache.reused ? "genbrugt" : "ikke genbrugt"} · Status: {visiblePreflight.ok ? "godkendt" : "kræver afklaring"}</p>
+                      {visiblePreflight.exception && <p>Undtagelse ({visiblePreflight.exception.status}): {visiblePreflight.exception.message} {visiblePreflight.exception.requiredAction}</p>}
+                      {"evidence" in visiblePreflight && (visiblePreflight as NativeDocumentVatPreflight).evidence.map(row => <p key={row.id}>{row.event_type} · {row.provider_status} · {row.created_at}</p>)}
+                      {visiblePreflight.applyWouldCallProvider && (
+                        <Button type="button" className="btn btn-secondary" disabled={busy || uncertain || preflightBusy || !allowed} requiredPermission="company.external-lookup" onClick={reviewPreflight}>
                           {preflightBusy ? "Validerer…" : "Hent momsvalidering"}
                         </Button>
                       )}
@@ -351,7 +416,7 @@ export function DocumentBookExpenseForm({
                   )
                 }
                 disabled={
-                  busy || uncertain || preflight?.ok === false || preflightBusy ||
+                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || (native && (!visiblePreflight || preflightLoading)) ||
                   options === null ||
                   doc?.documentType === "internal_voucher"
                 }
@@ -382,7 +447,7 @@ export function DocumentBookExpenseForm({
                 className="btn"
                 requiredPermission="company.ledger.post" onClick={handleBook}
                 disabled={
-                  busy || uncertain || preflight?.ok === false || preflightBusy ||
+                  busy || uncertain || visiblePreflight?.ok === false || preflightBusy || (native && (!visiblePreflight || preflightLoading)) ||
                   options === null ||
                   noneToMatch ||
                   noAccounts ||
@@ -396,6 +461,7 @@ export function DocumentBookExpenseForm({
           </>
         )}
       </div>
+      {review && review.context === currentContext && <ConfirmDialog title={providerTitle} body={review.body} confirmLabel="Hent momsvalidering" operationScope={providerScope} operationKey="provider" confirmDisabled={!allowed || review.preflight !== visiblePreflight} onConfirm={applyPreflight} onClose={() => setReview(null)} onRefresh={() => setPreflightReload(n => n + 1)} />}
       {guard.confirmation}
     </Dialog>
   );
