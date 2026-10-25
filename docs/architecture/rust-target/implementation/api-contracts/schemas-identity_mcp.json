@@ -73,12 +73,12 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-client/src/lib.rs",
-                "sha256": "5cef9c1437035ee17e572159291467fe421e5be605ab191f51e89e588091e1f9",
+                "sha256": "b77032010990adfff464fe55a2a378e81b834e2faf5176efc8b01f96bf45b60c",
                 "needle": "serde_json::from_slice(&bytes)"
               },
               {
                 "path": "crates/rentemester-mcp/src/tools.rs",
-                "sha256": "08ddd4bc7643df5efd93757a6d6da2880757f8aac4f37f7eab2aa52092855f7f",
+                "sha256": "8a68dfaf9e05112fa3ed5c72f64949ca97625580899c1506c48c86e19e0cf46e",
                 "needle": "Ok(data) =>"
               }
             ]

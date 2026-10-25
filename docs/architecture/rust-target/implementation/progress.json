@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R117 shared original file selection corrected: pending/replaced/failed/cleared reads cannot submit stale original;19modal cases incl5new races and webbuild pass. Actual retained-browser guards pass; new fullupload blocked beforedispatch by diagnosed helper field, no effects or setup growth. Full718 remains open.",
-  "code_revision": "9454e4ad39275d10fd22c797c8ef588241404555",
+  "current_increment": "R118 original retention/health diagnostics integrated;18 actual cases and generated protocol pass, exact436tools/1624typed operations. Native original directory provisioning gap remains; full717 open.",
+  "code_revision": "43d904d6a16a5c2813d253f8c8e1961ac3cbec0f",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "selected_original718_component_accepted",
+  "state": "original_diagnostics717_component_accepted",
   "issues_closed": 41,
-  "next": "Continue necessary full issue acceptance; retain R117 partial-browser evidence and exact missing fullupload/canonical readback. Original717 diagnostic/backup/mail and workflow/ABI gaps, full718/cutover/desktop final remain.",
+  "next": "Prioritize usable daily bookkeeping: protected original-compatible fresh-company layout, then shared-UI original upload/bookkeeping/readback with retained valid evidence. Full55/final desktop LAST retained.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -19095,6 +19095,20 @@
         "This snapshot signature/fullinventory verified, no newsourcefreerestore; retained valid prior707/Backup117 recovery proof not replayed",
         "Full55/J01-J07/migration/release/cutover/finalinstalleddesktop LAST remain;41closed14open"
       ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "43d904d6a16a5c2813d253f8c8e1961ac3cbec0f",
+      "report": "/tmp/rentemester-rust-reports/r118-original-diagnostics717-component-accepted.json",
+      "sha256": "b5e2dca7991a0bc96337bc065d4a94716833f10fe2f0152fc78985e692fdb3c3",
+      "scope": "Original retention_status and system_healthcheck SDK/MCP plus protected common Rust HTTP; explicit business date read, current human/service fence, broken registered secondary diagnostics and original envelopes.",
+      "remaining": [
+        "Full717 original ABI/workflow descriptions/remaining11names and operation acceptance; no whole closure.",
+        "Fresh native company minimum SQL namespace lacks original config/documents/inbox layout; inspector truthfully refuses healthy. Requires protected compatible provisioning next.",
+        "No new actual normal-MFA live diagnostic journey or qualified server rebuild. Current retained qualified binary remains R109; no runtime/browser setup growth after diagnosed setup faults.",
+        "All55 original scope/J01-J07/release/cutover and final installed desktop LAST remain."
+      ]
     }
   ],
   "scope_clarifications": [
@@ -19113,7 +19127,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 718,
+    "current_issue": 717,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
