@@ -293,6 +293,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if name == "company_add" { return crate::company_creation::call_original(api,args).await; }
     if crate::invoice_public_original717::accepts(name) { return crate::invoice_public_original717::call(api,name,args).await; }
     if crate::profile_original89::accepts(name) { return crate::profile_original89::call(api,name,args).await; }
     if crate::archives_original89::accepts(name) { return crate::archives_original89::call(api,name,args).await; }
