@@ -164,26 +164,92 @@ fn destinations_uses_passive_protocol_then_source_flat_route() {
     );
 }
 #[test]
-fn literal_values_are_not_rewritten_into_commands_and_unsupported_signing_is_honest() {
-    let o = call(&[
-        "--company=synthetic",
-        "system",
-        "backup",
-        "--sign-with-ed25519",
-        "--json",
-    ]);
-    assert_eq!(o.status.code(), Some(1));
-    let v: Value = serde_json::from_slice(&o.stdout).unwrap();
-    assert!(v["errors"][0].as_str().unwrap().contains("signWithEd25519"));
-    let o = call(&[
-        "system",
-        "backup-add-destination",
-        "--label=--backup=a=b",
-        "--region-eu=false",
-        "--actor=user:forged",
-        "--json",
-    ]);
-    assert_eq!(o.status.code(), Some(1));
-    let v: Value = serde_json::from_slice(&o.stdout).unwrap();
-    assert!(v["errors"][0].as_str().unwrap().contains("expectedActor"));
+fn literal_values_are_not_rewritten_and_missing_transport_remains_usage() {
+    for args in [
+        vec![
+            "--company=synthetic",
+            "system",
+            "backup",
+            "--sign-with-ed25519",
+            "--json",
+        ],
+        vec![
+            "system",
+            "backup-add-destination",
+            "--label=--backup=a=b",
+            "--region-eu=false",
+            "--actor=user:forged",
+            "--json",
+        ],
+    ] {
+        let o = call(&args);
+        assert_eq!(o.status.code(), Some(2));
+        assert!(o.stdout.is_empty());
+        assert!(
+            String::from_utf8_lossy(&o.stderr).contains("--server or --local-profile required")
+        );
+    }
+}
+#[test]
+fn signed_backup_and_public_key_export_use_common_source_routes() {
+    for (cmd, extra, suffix, result) in [
+        (
+            "backup",
+            vec!["--sign-with-ed25519"],
+            "original-system-backup-signed",
+            json!({"ok":true,"backupId":"synthetic","backupDir":"backups/synthetic","manifestPath":"backups/synthetic/manifest.json","dbSnapshotPath":"backups/synthetic/ledger.sqlite"}),
+        ),
+        (
+            "export-public-key",
+            vec!["--out=/synthetic/public.pem"],
+            "original-system-export-public-key",
+            json!({"ok":true,"out":"/synthetic/public.pem"}),
+        ),
+    ] {
+        let listener = common::TcpListener::bind("127.0.0.1:0").unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        let cookie =
+            std::env::temp_dir().join(format!("backup716-key-cookie-{}-{cmd}", std::process::id()));
+        std::fs::write(&cookie, "session=synthetic").unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&cookie, std::fs::Permissions::from_mode(0o600)).unwrap();
+        }
+        let expected = result.clone();
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let (h, b) = read_request(&mut stream);
+            assert!(
+                h.starts_with(&format!("POST /api/companies/synthetic/{suffix} HTTP/1.1")),
+                "{h}"
+            );
+            if cmd == "backup" {
+                assert_eq!(b["signWithEd25519"], true);
+                assert_eq!(b["confirm"], true);
+            }
+            assert!(b.get("privateKey").is_none());
+            let response = json!({"ok":true,"result":result}).to_string();
+            write!(stream,"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{response}",response.len()).unwrap();
+        });
+        let mut args = vec!["system", cmd];
+        args.extend(extra);
+        args.extend([
+            "--company=synthetic",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--cookie-file",
+            cookie.to_str().unwrap(),
+            "--json",
+        ]);
+        let o = call(&args);
+        server.join().unwrap();
+        std::fs::remove_file(cookie).unwrap();
+        assert!(o.status.success(), "{o:?}");
+        assert_eq!(
+            serde_json::from_slice::<Value>(&o.stdout).unwrap(),
+            expected
+        );
+    }
 }

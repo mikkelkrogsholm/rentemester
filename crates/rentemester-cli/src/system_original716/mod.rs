@@ -266,28 +266,6 @@ async fn run(args: &[String]) -> Output {
             "system restore-backup is destructive: it can overwrite files in --target-company. Re-run with --confirm yes to proceed.",
         );
     }
-    // These missing admitted contracts must not be replaced by raw company-file reads.
-    if command == "export-public-key" {
-        return fail(
-            command,
-            &f,
-            "Admitted source Ed25519 public-key export is unavailable; no private key or native-artifact key has been exported.",
-        );
-    }
-    if f.contains_key("--sign-with-ed25519") {
-        return fail(
-            command,
-            &f,
-            "The admitted original717 system_backup SDK schema has no signWithEd25519 field; source signing was not performed.",
-        );
-    }
-    if f.contains_key("--actor") {
-        return fail(
-            command,
-            &f,
-            "Backup SDK operations do not yet support an expectedActor assertion; --actor cannot grant or forge authority.",
-        );
-    }
     let mut local = None;
     if let Some(profile) = f.get("--local-profile") {
         local = match LocalRuntime::load(Path::new(profile)) {
@@ -326,6 +304,23 @@ async fn run(args: &[String]) -> Output {
         .get("--company")
         .map(|s| s.to_string())
         .or_else(|| std::env::var("RENTEMESTER_COMPANY").ok());
+    if let Some(actor) = f.get("--actor") {
+        if f.contains_key("--service-key-file") {
+            return usage(
+                "--actor assertion requires a current human cookie; service credentials determine their own principal",
+            );
+        }
+        let me = match api.me().await {
+            Ok(v) => v,
+            Err(e) => return fail(command, &f, e),
+        };
+        if me["user"]["id"]
+            .as_str()
+            .is_none_or(|id| *actor != format!("user:{id}"))
+        {
+            return fail(command, &f, "actor differs from current cookie user");
+        }
+    }
     let company = if command == "restore-backup" {
         String::new()
     } else {
@@ -346,6 +341,16 @@ async fn run(args: &[String]) -> Output {
         body["actorKind"] = json!("human");
     }
     let result = match command.as_str() {
+        "export-public-key" => {
+            body["company"] = json!(company);
+            api.original716_system(command, &body).await
+        }
+        "backup" if f.contains_key("--sign-with-ed25519") => {
+            body["company"] = json!(company);
+            body["confirm"] = json!(true);
+            body["signWithEd25519"] = json!(true);
+            api.original716_system(command, &body).await
+        }
         "backup-status" => {
             api.system_backup_status_original122(&company, f.get("--as-of").copied())
                 .await
