@@ -11721,6 +11721,929 @@
       },
       "required": [],
       "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_Arguments": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        "bankAccountId": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "cursor": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "dimension": {
+          "maxLength": 160,
+          "minLength": 3,
+          "type": "string"
+        },
+        "documentQuality": {
+          "enum": [
+            "matched",
+            "missing"
+          ],
+          "type": "string"
+        },
+        "from": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "type": "string"
+        },
+        "limit": {
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "partyId": {
+          "maxLength": 64,
+          "minLength": 3,
+          "type": "string"
+        },
+        "search": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "suggestedMatch",
+            "missingDocument",
+            "partyUnresolved",
+            "accountingDecisionRequired",
+            "vatEvidenceRequired",
+            "dimensionEvidenceRequired",
+            "stalePlan",
+            "applyFailed"
+          ],
+          "type": "string"
+        },
+        "to": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "type": "string"
+        },
+        "vatTreatment": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "company"
+      ],
+      "type": "object"
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "workbench": {
+              "$ref": "schemas-review_batch_dashboard.json#/$defs/WorkbenchHttp/properties/workbench"
+            }
+          },
+          "required": [
+            "workbench"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_SuccessEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_SuccessEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_FailureEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_FailureEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_InputValidationFailure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "const": "MCP error -32602: Input validation error: Invalid arguments for tool bookkeeping_workbench"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "isError",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFirstUse116_bookkeeping_workbench_Parse": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid or oversized newline-delimited message"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid JSON"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "expected one JSON-RPC object"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "invalid JSON-RPC request"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "request id already used"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "already initialized"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32000
+                    },
+                    "message": {
+                      "const": "session request limit reached; reconnect"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected params object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "initialize requires protocolVersion, capabilities and clientInfo"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32002
+                    },
+                    "message": {
+                      "const": "initialize and notifications/initialized required"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "task execution not supported"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "tool name required"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32601
+                    },
+                    "message": {
+                      "const": "method not found"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected arguments object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "schemas-review_batch_dashboard.json#/$defs/OriginalFirstUse116_bookkeeping_workbench_InputValidationFailure"
+        }
+      ]
     }
   }
 }
