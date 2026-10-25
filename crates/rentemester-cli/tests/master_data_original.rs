@@ -1,7 +1,9 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::Command,
     sync::{
         Arc,
@@ -200,7 +202,7 @@ fn master_data_original_sdk_schema_usage_is_stderr_before_http() {
         .unwrap()
         .write_all(b"session=synthetic")
         .unwrap();
-    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     listener.set_nonblocking(true).unwrap();
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let out = Command::new(BIN)

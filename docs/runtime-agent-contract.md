@@ -278,3 +278,13 @@ in the source or is invented here.
 This accepts this original user flow only. Full716, remaining original commands,
 all55/J01–J07, cutover and final installed desktop acceptance remain open. The
 legacy default entrypoint and live company workspaces are unchanged.
+
+## CLI launcher
+
+The default `bin/rentemester` executes the packaged sibling `rentemester-rust`,
+then PATH when no sibling exists; `RENTEMESTER_RUST_CLI` explicitly selects an
+artifact. It never builds or retries a failed operation using another engine.
+The historical Bun CLI is available only by explicit `RENTEMESTER_LEGACY_CLI=1`.
+Private bootstrap and stopped-server schema operations retain common Rust Owner
+admission and private operator allowlists; command actor/path assertions do not
+grant authority. Uncertain effects must be reconciled, not automatically retried.

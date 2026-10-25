@@ -1,3 +1,14 @@
-#!/usr/bin/env bun
-
-import "../src/cli.ts";
+#!/bin/sh
+# Rust is the product entry point. Legacy TypeScript requires an explicit opt-in.
+set -eu
+if [ "${RENTEMESTER_LEGACY_CLI:-}" = "1" ]; then
+    root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+    exec bun "$root/src/cli.ts" "$@"
+fi
+if [ -n "${RENTEMESTER_RUST_CLI:-}" ]; then
+    exec "$RENTEMESTER_RUST_CLI" "$@"
+fi
+if [ -x "$(dirname -- "$0")/rentemester-rust" ]; then
+    exec "$(dirname -- "$0")/rentemester-rust" "$@"
+fi
+exec rentemester-rust "$@"

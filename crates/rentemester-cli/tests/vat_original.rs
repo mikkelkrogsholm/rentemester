@@ -1,3 +1,6 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use std::process::Command;
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
 #[test]
@@ -47,7 +50,6 @@ fn five_source_commands_require_dates_before_http_and_reject_write_flags() {
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},

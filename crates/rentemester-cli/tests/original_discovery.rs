@@ -118,7 +118,14 @@ fn catalogue_includes_implemented_families_and_retains_scope_boundaries() {
     }
     let binding = help["localBinding"].as_str().unwrap();
     assert!(binding.contains("RENTEMESTER_COMPANY"));
-    assert!(binding.contains("default launcher is unchanged"));
+    assert!(binding.contains("default launcher is Rust"));
+    assert!(binding.contains("RENTEMESTER_LEGACY_CLI=1"));
+    let registry = &help["currentCli"]["commands"];
+    assert_eq!(registry.as_array().unwrap().len(), 265);
+    let keys: std::collections::BTreeSet<_> = registry.as_array().unwrap().iter()
+        .map(|c| c["key"].as_str().unwrap()).collect();
+    assert_eq!(keys.len(), 265);
+    assert!(registry.as_array().unwrap().iter().all(|c| c["help"].is_string()));
     assert!(binding.contains("Whole-product parity is unfinished"));
     assert!(!binding.contains("environment-default or launcher parity"));
 }

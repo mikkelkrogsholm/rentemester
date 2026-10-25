@@ -1,4 +1,6 @@
 //! Original structure overview only. No operator file or arbitrary-path endpoint.
+pub(crate) mod custody;
+pub(crate) mod report;
 use super::*;
 /// Register GET /api/group/overview; human current-session authorization is Owner-owned.
 pub(super) async fn group_overview(State(state): State<Product>, request: Request) -> Response {

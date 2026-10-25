@@ -1,4 +1,5 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
+mod original716_cli;
 mod agent_discovery;
 mod auth_delivery;
 mod backend;
@@ -31,6 +32,38 @@ use tower_http::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if let Some(code) = original716_cli::bootstrap::execute(&arguments).await {
+        std::process::exit(code);
+    }
+    if arguments.first().map(String::as_str) == Some("--original716-schema") {
+        let operation = arguments.get(1).ok_or("schema operation required")?;
+        let repair = match operation.as_str() {
+            "migrate" => false,
+            "repair-schema-views" => true,
+            _ => return Err("unknown schema operation".into()),
+        };
+        let mut flags = std::collections::BTreeMap::new();
+        let mut i = 2;
+        while i < arguments.len() {
+            let key = arguments[i].as_str();
+            if !matches!(key, "--config" | "--company" | "--apply" | "--reason") || flags.contains_key(key) {
+                return Err("invalid or duplicate schema flag".into());
+            }
+            let value = arguments.get(i + 1).ok_or("schema flag requires value")?;
+            flags.insert(key, value.as_str());
+            i += 2;
+        }
+        let apply = match flags.get("--apply") {
+            None => false, Some(&"yes") => true, _ => return Err("--apply must be yes".into()),
+        };
+        let result = backend::original716_schema::execute(
+            std::path::Path::new(flags.get("--config").ok_or("--config required")?),
+            flags.get("--company").ok_or("--company required")?, repair, apply,
+            flags.get("--reason").copied(),
+        )?;
+        println!("{}", serde_json::to_string(&result)?);
+        return Ok(());
+    }
     if arguments.iter().any(|arg| arg == "--build-info") {
         if arguments != ["--build-info"] {
             return Err("--build-info must be the only argument".into());

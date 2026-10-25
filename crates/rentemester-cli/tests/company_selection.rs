@@ -1,4 +1,6 @@
 #![cfg(unix)]
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -10,7 +12,7 @@ use std::{
     path::PathBuf,
     process::{Command, Output, Stdio},
     thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
 struct Fixture {
@@ -77,20 +79,11 @@ impl Fixture {
         let listener = self.listener.try_clone().unwrap();
         let status = status.to_owned();
         thread::spawn(move || {
-            let start = Instant::now();
-            let mut socket = loop {
-                match listener.accept() {
-                    Ok((socket, _)) => break socket,
-                    Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                        assert!(
-                            start.elapsed() < Duration::from_secs(10),
-                            "expected request"
-                        );
-                        thread::sleep(Duration::from_millis(5));
-                    }
-                    Err(e) => panic!("{e}"),
-                }
-            };
+            // Pair protocol and business accepts on a blocking listener. Otherwise the
+            // second accept may race the client and the next loop consumes business as discovery.
+            listener.set_nonblocking(false).unwrap();
+            let (mut socket, _) = common::unix_accept(&listener).unwrap();
+            listener.set_nonblocking(true).unwrap();
             socket.set_nonblocking(false).unwrap();
             socket
                 .set_read_timeout(Some(Duration::from_secs(5)))

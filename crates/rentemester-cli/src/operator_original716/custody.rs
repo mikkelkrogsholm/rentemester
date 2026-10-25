@@ -136,7 +136,7 @@ async fn run(args: &[String]) -> Output {
         Ok(v) => v,
         Err(e) => return usage(&e.to_string()),
     };
-    if let Err(e) = local.install_process() {
+    if let Err(e) = local.clone().install_process() {
         return usage(&e.to_string());
     }
     let api = match crate::remote::credential_client(local.origin(), true, &flags, false) {

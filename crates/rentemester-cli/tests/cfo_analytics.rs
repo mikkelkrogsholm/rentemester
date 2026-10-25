@@ -1,3 +1,6 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use serde_json::{Value, json};
 use std::process::Command;
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
@@ -38,8 +41,7 @@ fn cfo_discovery_and_mutating_or_mixed_selector_refusals() {
 fn cfo_actual_cli_dispatch_admits_every_documented_filter_before_other_command_guards() {
     use std::{
         io::{Read, Write},
-        net::TcpListener,
-        thread,
+            thread,
     };
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", listener.local_addr().unwrap());

@@ -1,8 +1,10 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use serde_json::{Value, json};
 use std::{
     fs,
     io::{Read, Write},
-    net::TcpListener,
     path::PathBuf,
     process::{Command, Output},
     sync::atomic::{AtomicU64, Ordering},
@@ -306,7 +308,7 @@ fn every_owned_family_help_and_malformed_arguments_are_offline() {
         ["system", "export-authority"],
         ["system", "export-accountant"],
     ] {
-        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         listener.set_nonblocking(true).unwrap();
         let origin = format!("http://{}", listener.local_addr().unwrap());
         // A help-looking token after the terminator is literal data. These

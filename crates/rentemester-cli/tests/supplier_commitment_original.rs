@@ -1,3 +1,6 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use std::process::Command;
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
 #[test]
@@ -80,8 +83,7 @@ fn explicit_human_mode_summarizes_and_routes_failures_to_stderr() {
     use serde_json::json;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
-    };
+        };
     let file = std::env::temp_dir().join(format!("commitment-human-cookie-{}", std::process::id()));
     std::fs::write(&file, "session=synthetic").unwrap();
     #[cfg(unix)]

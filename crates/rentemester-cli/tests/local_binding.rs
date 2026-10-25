@@ -1,4 +1,6 @@
 #![cfg(unix)]
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -41,7 +43,7 @@ fn serve(listener: UnixListener, replies: Vec<String>) -> thread::JoinHandle<Vec
     thread::spawn(move || {
         let mut requests = vec![];
         for reply in replies {
-            let (mut s, _) = listener.accept().unwrap();
+            let (mut s, _) = common::unix_accept(&listener).unwrap();
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             let mut request = vec![];
