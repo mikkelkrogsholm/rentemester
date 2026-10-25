@@ -1,3 +1,4 @@
+import { VirtualJournalList, journalEntryKey, type VirtualJournalRowProps } from "../components/VirtualJournalList";
 import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
@@ -251,6 +252,16 @@ export function JournalView() {
                 : "Ingen posteringer i året."}
           </p>
         </div>
+      ) : j.entries.length > 200 ? (
+        <VirtualJournalList
+          key={JSON.stringify([slug, year, source, account])}
+          entries={filteredEntries}
+          renderEntry={(entry, virtualProps, onOpenChange) => <EntryRow
+            key={journalEntryKey(entry)} entry={entry} currency={currency} slug={slug}
+            archived={j.archived} reversalRuleVersion={j.nativePosting?.ruleVersion}
+            onChanged={state.reload} virtualProps={virtualProps} onOpenChange={onOpenChange}
+          />}
+        />
       ) : (
         <ul className="entry-list">
           {filteredEntries.map((entry) => (
@@ -288,7 +299,11 @@ function EntryRow({
   archived,
   reversalRuleVersion,
   onChanged,
+  virtualProps,
+  onOpenChange,
 }: {
+  virtualProps?: VirtualJournalRowProps;
+  onOpenChange?: (open: boolean) => void;
   reversalRuleVersion?: string;
   onChanged?: () => void;
   entry: CompanyJournal["entries"][number];
@@ -308,12 +323,12 @@ function EntryRow({
   // Arkiverede år vises altid som "Intet bilag" (filen er ikke i `documents`).
   const hasDocument = !archived && entry.documentId !== null;
   return (
-    <li className={`entry-item${open ? " open" : ""}`}>
+    <li {...virtualProps} className={`entry-item${open ? " open" : ""}`}>
       <Button
         type="button"
         className="entry-summary"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => { setOpen(!open); onOpenChange?.(!open || reversing); }}
       >
         <span className="entry-caret" aria-hidden="true">
           {open ? "▾" : "▸"}
