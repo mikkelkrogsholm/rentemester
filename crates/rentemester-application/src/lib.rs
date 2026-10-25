@@ -192,3 +192,5 @@ pub mod digisense_received;
 pub mod agent_finance;
 
 pub mod agent_run;
+
+pub mod diagnostics_original118;
