@@ -165,6 +165,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let path = request.uri().path().to_owned();
     let slug = path.split('/').nth(3).unwrap_or("").to_owned();
     let read = request.method() == axum::http::Method::GET;
+    if (path.ends_with("/original-efaktura-registrer-test-gln")
+        || path.ends_with("/original-efaktura-registrer-test-afsender"))
+        && request.method() != axum::http::Method::POST
+    {
+        return refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+    }
     let cookie = match proof(&state, &request, !read) {
         Ok(c) => c,
         Err(r) => return *r,
@@ -176,6 +182,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         return refused(StatusCode::BAD_REQUEST, "invalid_input");
     }
     let original = path.contains("/invoices/original/");
+    let test_registration = path.ends_with("/original-efaktura-registrer-test-gln")
+        || path.ends_with("/original-efaktura-registrer-test-afsender");
     let mut artifact = None;
     let intent = if read {
         match to_bytes(request.into_body(), 1).await {
@@ -195,7 +203,27 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(body) = serde_json::from_slice::<Value>(&bytes) else {
             return refused(StatusCode::BAD_REQUEST, "invalid_input");
         };
-        if original {
+        if test_registration {
+            let sender = path.ends_with("registrer-test-afsender");
+            if !body.as_object().is_some_and(|o| {
+                o.keys()
+                    .all(|k| k == "confirm" || !sender && k == "network")
+            }) || body["confirm"] != true
+                || body
+                    .get("network")
+                    .is_some_and(|v| v != "nemhandel" && v != "peppol")
+            {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
+            }
+            Some(Intent::Original716TestRegistration {
+                sender,
+                network: if body["network"] == "peppol" {
+                    provider::Network::Peppol
+                } else {
+                    provider::Network::Nemhandel
+                },
+            })
+        } else if original {
             let action = path.rsplit('/').next().unwrap_or("");
             if !valid_original(action, &body) {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
@@ -296,7 +324,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         match drive(&state, &slug, &cookie, intent) {
             Ok(value) => response(
                 StatusCode::OK,
-                if path.ends_with("/original/status-digisense") {
+                if test_registration {
+                    json!({"ok":true,"result":value})
+                } else if path.ends_with("/original/status-digisense") {
                     original_status_result(value)
                 } else if original {
                     original_result(value)
@@ -371,11 +401,10 @@ pub(super) fn drive(
     for _ in 0..9 {
         if original717::secret(state, slug, cookie)? != saved
             || (saved.is_none()
-                && state
-                    .native
-                    .public_einvoice
-                    .get(slug)
-                    .is_none_or(|c| c.credential_generation() != generation))
+                && !original716_generation_current(
+                    state.native.public_einvoice.get(slug),
+                    generation,
+                ))
         {
             return Err(driver_refusal(
                 StatusCode::UNPROCESSABLE_ENTITY,
@@ -388,8 +417,23 @@ pub(super) fn drive(
             }
             Next::Pending(a) => *a,
         };
+        let test_effect = matches!(
+            admission.request(),
+            app::Request::Original716TestRegistration { .. }
+        );
         let outcome = match admission.request() {
             app::Request::Auth => Outcome::Auth(client.validate_auth().ok()),
+            app::Request::Original716TestRegistration {
+                authorization,
+                company_key,
+                sender_cvr,
+                network,
+            } => Outcome::Original716TestRegistration(
+                client
+                    .original716_test_registration(authorization, company_key, sender_cvr, network)
+                    .ok()
+                    .map(|v| v.webhook_registered),
+            ),
             app::Request::FindDirection {
                 cvr,
                 name,
@@ -478,17 +522,30 @@ pub(super) fn drive(
                 document_id,
             } => Outcome::Observed(client.status(company_key, document_id).ok().map(observed)),
         };
-        if original717::secret(state, slug, cookie)? != saved
+        if original717::secret(state, slug, cookie).map_err(|failure| {
+            if test_effect {
+                driver_refusal(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown")
+            } else {
+                failure
+            }
+        })? != saved
             || (saved.is_none()
-                && state
-                    .native
-                    .public_einvoice
-                    .get(slug)
-                    .is_none_or(|c| c.credential_generation() != generation))
+                && !original716_generation_current(
+                    state.native.public_einvoice.get(slug),
+                    generation,
+                ))
         {
             return Err(driver_refusal(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                "public_einvoice_refused",
+                if test_effect {
+                    StatusCode::SERVICE_UNAVAILABLE
+                } else {
+                    StatusCode::UNPROCESSABLE_ENTITY
+                },
+                if test_effect {
+                    "outcome_unknown"
+                } else {
+                    "public_einvoice_refused"
+                },
             ));
         }
         let attempt = {
@@ -612,3 +669,9 @@ mod original_tests_status {
 
 pub(super) mod original717;
 pub(super) use original717::handle as original717;
+
+fn original716_generation_current(client: Option<&provider::Client>, generation: [u8; 32]) -> bool {
+    client.is_some_and(|c| c.credential_generation() == generation)
+}
+#[cfg(test)]
+mod original716_tests;

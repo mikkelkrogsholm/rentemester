@@ -351,3 +351,47 @@ mod boundary_tests {
         assert!(matches!(result, Err(Error::InvalidInput(_))));
     }
 }
+
+impl ApiClient {
+    /// Source CLI intake shares the existing schema, file admission and one-shot transport.
+    pub async fn original716_intake(&self, name: &str, args: &Value) -> Result<Value, Error> {
+        if !matches!(name, "mail_intake_ingest" | "imap_intake_poll") {
+            return Err(Error::InvalidInput("unknown original716 intake"));
+        }
+        self.original717(name, args).await
+    }
+}
+
+#[cfg(test)]
+mod original716_tests {
+    use super::*;
+    #[test]
+    fn original716_intake_source_metadata_and_override_schema_remains_frozen() {
+        for (name, args) in [
+            (
+                "mail_intake_ingest",
+                json!({"company":"synthetic","source":"synthetic.eml","confirm":true,"metadataPerMessage":{"<synthetic@example.invalid>":{"invoiceNo":"SYN-1","sourceExtension":true}}}),
+            ),
+            (
+                "imap_intake_poll",
+                json!({"company":"synthetic","confirm":true,"imapHost":"imap.example.invalid","imapPort":993,"imapUsername":"synthetic","imapMailbox":"Receipts","sinceUid":0,"metadataPerMessage":{"<synthetic@example.invalid>":{"currency":"DKK"}}}),
+            ),
+        ] {
+            assert!(validate_original717(name, &args).is_ok());
+        }
+        for args in [
+            json!({"company":"synthetic","imapPassword":"not-admitted"}),
+            json!({"company":"synthetic","imapPort":1.5}),
+            json!({"company":"synthetic","metadataPerMessage":{"<x>":[]}}),
+            json!({"company":"synthetic","sinceUid":-1}),
+            json!({"company":"synthetic","actor":"user:forged"}),
+        ] {
+            assert!(validate_original717("imap_intake_poll", &args).is_err());
+        }
+        assert!(
+            !original717_tools()
+                .iter()
+                .any(|v| v["name"].as_str().unwrap().contains("registrer-test"))
+        );
+    }
+}
