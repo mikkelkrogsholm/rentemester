@@ -79,10 +79,14 @@ def free_port():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--server-binary', required=True, type=Path)
-    parser.add_argument('--web-dir', required=True, type=Path)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--server-binary', type=Path)
+    mode.add_argument('--image')
+    parser.add_argument('--web-dir', type=Path)
     parser.add_argument('--evidence', required=True, type=Path)
     args = parser.parse_args()
+    if bool(args.server_binary) != bool(args.web_dir):
+        parser.error('--server-binary requires --web-dir; --image excludes --web-dir')
     if args.evidence.exists():
         parser.error('Evidence path must be new')
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
@@ -94,9 +98,10 @@ def main():
     identity = work.stat()
     binary = work / 'rentemester-server'
     web = work / 'web'
-    shutil.copyfile(args.server_binary.resolve(strict=True), binary)
-    binary.chmod(0o700)
-    shutil.copytree(args.web_dir.resolve(strict=True), web)
+    if not args.image:
+        shutil.copyfile(args.server_binary.resolve(strict=True), binary)
+        binary.chmod(0o700)
+        shutil.copytree(args.web_dir.resolve(strict=True), web)
     mail_dir = work / 'mail'
     mail_dir.mkdir(mode=0o700)
     cert, private, ca = work / 'tls.pem', work / 'tls.key', work / 'ca.pem'
@@ -113,7 +118,17 @@ def main():
         raise RuntimeError('Distinct owned ports required; no automatic restart')
     origin = f'https://localhost:{proxy_port}'
     authority = f'localhost:{proxy_port}'
-    report = {'ok': False, 'sourceRevision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(), 'runnerSha256': digest(Path(__file__)), 'browserHelperSha256': hashlib.sha256(BROWSER.encode()).hexdigest(), 'serverSha256': digest(binary), 'webFiles': {str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()}, 'canonicalOrigin': origin, 'noOfflineIdentityFixture': True, 'ordinaryMacOsUser': True, 'ownedProfile': str(work), 'externalMailDelivered': False}
+    report = {'ok': False, 'sourceRevision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(), 'runnerSha256': digest(Path(__file__)), 'browserHelperSha256': hashlib.sha256(BROWSER.encode()).hexdigest(), 'canonicalOrigin': origin, 'noOfflineIdentityFixture': True, 'ordinaryMacOsUser': True, 'ownedProfile': str(work), 'externalMailDelivered': False}
+
+    container = 'rm-hosted-auth-' + uuid.uuid4().hex[:12]
+    volumes = [container + '-state', container + '-config']
+    created_volumes = []
+    container_created = False
+    image_id = None
+
+    def docker(*argv, **kwargs):
+        return subprocess.run(['docker', *argv], check=True, capture_output=True,
+                              timeout=kwargs.pop('timeout', 75), **kwargs).stdout
 
     class QuietServer(http.server.ThreadingHTTPServer):
         daemon_threads = True
@@ -193,15 +208,52 @@ def main():
         do_GET = do_POST = do_HEAD = forward
 
     def write_config(config):
-        (work / 'server.json').write_text(json.dumps(config))
+        encoded = json.dumps(config).encode()
+        (work / 'server.json').write_bytes(encoded)
+        if args.image:
+            # Operator-only initialization, never a product startup privilege.
+            docker('run', '--rm', '-i', '--network', 'none', '--user', '0:0',
+                   '--mount', f'type=volume,src={volumes[0]},dst=/state',
+                   '--mount', f'type=volume,src={volumes[1]},dst=/config',
+                   '--entrypoint', 'sh', image_id, '-c',
+                   'umask 077; cat > /config/server.json; '
+                   'chown 10001:10001 /state /config /config/server.json; '
+                   'chmod 0700 /state /config; chmod 0600 /config/server.json', input=encoded)
 
     def start(create=False):
-        nonlocal child, log
-        log = (work / 'server.log').open('ab')
-        child = subprocess.Popen([str(binary), '--config', str(work / 'server.json'), '--web-dir', str(web), '--listen', f'127.0.0.1:{backend_port}', '--origin', origin] + (['--create'] if create else []), cwd=REPO, stdout=log, stderr=log)
-        report.setdefault('serverPids', []).append(child.pid)
+        nonlocal child, log, container_created
+        if args.image:
+            docker('run', '--detach', '--name', container, '--user', '10001:10001',
+                   '--read-only', '--memory', '1g', '--pids-limit', '128',
+                   '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true',
+                   '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m',
+                   '--publish', f'127.0.0.1:{backend_port}:4319',
+                   '--env', 'RENTEMESTER_ORIGIN=' + origin,
+                   '--env', 'RENTEMESTER_CONFIG=/config/server.json',
+                   '--mount', f'type=volume,src={volumes[0]},dst=/state',
+                   '--mount', f'type=volume,src={volumes[1]},dst=/config,readonly',
+                   image_id, *(['--create'] if create else []))
+            container_created = True
+            actual = json.loads(docker('inspect', container))[0]
+            host = actual['HostConfig']
+            if (actual['Image'] != image_id or actual['Config']['User'] != '10001:10001'
+                    or not host['ReadonlyRootfs'] or host['Memory'] != 1024 ** 3
+                    or host['PidsLimit'] != 128 or host['CapDrop'] != ['ALL']
+                    or 'no-new-privileges:true' not in host['SecurityOpt']
+                    or host['PortBindings'].get('4319/tcp') != [
+                        {'HostIp': '127.0.0.1', 'HostPort': str(backend_port)}]
+                    or not any(m['Destination'] == '/config' and not m['RW']
+                               for m in actual['Mounts'])):
+                raise RuntimeError('Actual packaged container isolation/pin mismatch')
+            report['containerIsolationVerified'] = True
+        else:
+            start_host(create)
         for _ in range(300):
-            if child.poll() is not None:
+            if args.image:
+                state = json.loads(docker('inspect', container))[0]['State']
+                if not state['Running']:
+                    raise RuntimeError('Packaged server exited before readiness; private logs retained')
+            elif child.poll() is not None:
                 raise RuntimeError('Owned native server exited before readiness')
             conn = http.client.HTTPConnection('127.0.0.1', backend_port, timeout=.3)
             try:
@@ -216,8 +268,28 @@ def main():
             time.sleep(.1)
         raise RuntimeError('Owned server readiness deadline')
 
-    def stop():
+    def start_host(create):
         nonlocal child, log
+        log = (work / 'server.log').open('ab')
+        child = subprocess.Popen([str(binary), '--config', str(work / 'server.json'), '--web-dir', str(web), '--listen', f'127.0.0.1:{backend_port}', '--origin', origin] + (['--create'] if create else []), cwd=REPO, stdout=log, stderr=log)
+        report.setdefault('serverPids', []).append(child.pid)
+
+    def stop(remove=True):
+        nonlocal child, log, container_created
+        if args.image and container_created:
+            state = json.loads(docker('inspect', container))[0]['State']
+            if state['Running']:
+                docker('stop', '--time', '60', container)
+            with (work / 'server.log').open('ab') as output:
+                output.write(docker('logs', container))
+            state = json.loads(docker('inspect', container))[0]['State']
+            report.setdefault('containerStops', []).append(
+                {'exitCode': state['ExitCode'], 'oomKilled': state['OOMKilled']})
+            if remove:
+                if state['ExitCode'] != 0 or state['OOMKilled']:
+                    raise RuntimeError('Packaged server did not stop cleanly')
+                docker('rm', container)
+                container_created = False
         if child is not None:
             if child.poll() is None:
                 child.terminate()
@@ -254,13 +326,31 @@ def main():
         return value['value']
 
     try:
+        if args.image:
+            image = json.loads(docker('image', 'inspect', args.image))[0]
+            image_id = image['Id']
+            labels = image['Config'].get('Labels') or {}
+            report.update(imageId=image_id, architecture=image['Architecture'],
+                          imageUser=image['Config']['User'], imageLabels=labels,
+                          controllerPlatform='ordinary-macOS-DockerDesktop',
+                          ownedContainer=container, ownedVolumes=volumes)
+            if (not image_id.startswith('sha256:') or image.get('Os') != 'linux'
+                    or image['Config']['User'] != '10001:10001'
+                    or labels.get('org.rentemester.runtime') != 'rust'):
+                raise RuntimeError('Expected pinned Linux Rust image with user 10001:10001')
+            for volume in volumes:
+                docker('volume', 'create', volume)
+                created_volumes.append(volume)
+        else:
+            report.update(serverSha256=digest(binary), webFiles={
+                str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()})
         # Independent local CA, exact localhost leaf; no system trust changes.
         tls_log = (work / 'openssl.log').open('wb')
         commands = [
             ['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', str(work / 'ca.key'), '-out', str(ca), '-days', '1', '-subj', '/CN=Synthetic Auth Fixture CA', '-addext', 'basicConstraints=critical,CA:TRUE', '-addext', 'keyUsage=critical,keyCertSign,cRLSign'],
             ['openssl', 'req', '-new', '-newkey', 'rsa:2048', '-nodes', '-keyout', str(private), '-out', str(work / 'tls.csr'), '-subj', '/CN=localhost'],
         ]
-        (work / 'tls.ext').write_text('basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n')
+        (work / 'tls.ext').write_text('basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1\n')
         commands.append(['openssl', 'x509', '-req', '-in', str(work / 'tls.csr'), '-CA', str(ca), '-CAkey', str(work / 'ca.key'), '-CAcreateserial', '-out', str(cert), '-days', '1', '-extfile', str(work / 'tls.ext')])
         try:
             for command in commands:
@@ -273,14 +363,34 @@ def main():
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(cert, private)
         for port, handler in [(proxy_port, Proxy), (mail_port, Gateway)]:
-            server = QuietServer(('127.0.0.1', port), handler)
+            # Docker Desktop routes host.docker.internal to the host listener, not container loopback.
+            bind = '0.0.0.0' if args.image and handler is Gateway else '127.0.0.1'
+            server = QuietServer((bind, port), handler)
             server.socket = tls.wrap_socket(server.socket, server_side=True)
             threading.Thread(target=server.serve_forever, daemon=True).start()
             servers.append(server)
         key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
         config = {'runtimeProfile': 'local-user-macos', 'root': str(work / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-hosted-auth', 'companySlug': 'synthetic', 'companyName': 'Synthetic Hosted Authentication', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'accounts': [], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid', 'name': 'Synthetic Owner', 'password': 'synthetic-owner-password-123'}, 'authMail': {'endpoint': f'https://127.0.0.1:{mail_port}/mail', 'bearerToken': bearer, 'from': 'auth@example.invalid', 'idempotencySecret': secrets.token_urlsafe(32), 'trustedCaFile': str(ca)}}
+        if args.image:
+            config.update(runtimeProfile='dedicated-linux', root='/state/workspace', brokerUid=10001)
+            config['authMail'].update(endpoint=f'https://host.docker.internal:{mail_port}/mail',
+                                      trustedCaFile='/config/ca.pem')
+            docker('run', '--rm', '-i', '--network', 'none', '--user', '0:0',
+                   '--mount', f'type=volume,src={volumes[1]},dst=/config',
+                   '--entrypoint', 'sh', image_id, '-c',
+                   'umask 077; cat > /config/ca.pem; chown 10001:10001 /config/ca.pem; '
+                   'chmod 0600 /config/ca.pem', input=ca.read_bytes())
         write_config(config)
         start(True)
+        if args.image:
+            # One bounded diagnosis using the actual native TLS mail sender, no alternate DNS/platform.
+            deadline = time.monotonic() + 12
+            while not gateway_rows and time.monotonic() < deadline:
+                time.sleep(.1)
+            if not gateway_rows:
+                report['hostGatewayDiagnosis'] = 'No native verification receipt at TLS host.docker.internal gateway; inspect preserved server.log for DNS/connect/TLS refusal. No retry or network workaround.'
+                raise RuntimeError('Docker Desktop host TLS gateway receipt unavailable')
+            report['hostGatewayReachableWithPrivateCa'] = True
         helper = work / 'browser.mjs'
         helper.write_text(BROWSER)
         env = {**os.environ, 'RM_AUTH_BASE': origin, 'RM_AUTH_WORK': str(work), 'RM_AUTH_SPKI': spki, 'RM_AUTH_PLAYWRIGHT': str(REPO / 'node_modules/@playwright/test/index.mjs')}
@@ -292,6 +402,36 @@ def main():
         write_config(config)
         start()
         report.update(phase('reopen', 120))
+        # No challenge/cookie: the first three admissions fail before native MFA dispatch.
+        # The fourth must hit the same TCP-peer bucket despite rotating claimed identities.
+        # This is last, so no account or financial fixture is locked out.
+        rate = []
+        rate_started = time.monotonic()
+        for n in range(4):
+            connection = http.client.HTTPSConnection('localhost', proxy_port, timeout=10,
+                                                    context=ssl.create_default_context(cafile=str(ca)))
+            try:
+                connection.request('POST', '/api/auth/two-factor/verify-totp',
+                                   json.dumps({'code': '123456'}),
+                                   {'host': authority, 'origin': origin, 'content-type': 'application/json',
+                                    'x-forwarded-for': f'192.0.2.{n + 1}',
+                                    'user-agent': f'synthetic-rate-{n}'})
+                response = connection.getresponse()
+                body = json.loads(response.read())
+                expected = 401 if n < 3 else 429
+                if (response.status != expected or response.getheader('set-cookie') is not None
+                        or (n < 3 and response.getheader('retry-after') is not None)
+                        or (n == 3 and (response.getheader('retry-after') != '60'
+                                        or body.get('code') != 'request_refused'))):
+                    raise RuntimeError('Fixed factor TCP-peer rate bucket assertion')
+                rate.append({'status': response.status, 'retryAfter': response.getheader('retry-after')})
+            finally:
+                connection.close()
+        if time.monotonic() - rate_started >= 10:
+            raise RuntimeError('Factor rate proof exceeded fixed ten-second window')
+        report['clientIpRate'] = {'sameTcpPeerDespiteRotatingForwardedIpAndUserAgent': True,
+                                  'noAccountMfaAttempts': True, 'responses': rate}
+        report['httpsProxyExactHost'] = True
         phase('finish', 20)
         controller.stdin.close()
         controller.wait(timeout=10)
@@ -305,6 +445,10 @@ def main():
         print('PASS: HTTPS ordinary owner/invitation/MFA, timeout-accepted password reset, refusal and restart')
     except Exception as error:
         report['failure'] = type(error).__name__
+        if args.image and not gateway_rows:
+            report['hostGatewayDiagnosis'] = ('No native verification receipt at controlled TLS '
+                'host.docker.internal gateway; inspect preserved server.log for startup/DNS/connect/'
+                'TLS refusal. No retry or alternate network attempted.')
         raise
     finally:
         if controller is not None and controller.poll() is None:
@@ -314,12 +458,26 @@ def main():
             except subprocess.TimeoutExpired:
                 os.killpg(controller.pid, signal.SIGKILL)
                 controller.wait(timeout=5)
-        stop()
+        try:
+            stop(remove=not args.image or report['ok'])
+        except Exception as cleanup_error:
+            report['stopFailure'] = type(cleanup_error).__name__
+            report['ok'] = False
+        if args.image and report['ok']:
+            try:
+                for volume in created_volumes:
+                    docker('volume', 'rm', volume)
+                report['ownedContainerAndVolumesRemoved'] = True
+            except Exception as cleanup_error:
+                report['cleanupFailure'] = type(cleanup_error).__name__
+                report['ok'] = False
+        if args.image and not report['ok']:
+            report['privateFailureFixturePreserved'] = True
         for server in servers:
             server.shutdown()
             server.server_close()
         same = work.exists() and (work.stat().st_dev, work.stat().st_ino, work.stat().st_uid) == (identity.st_dev, identity.st_ino, os.getuid())
-        if same and work.parent == parent and work.name.startswith(PREFIX):
+        if (not args.image or report['ok']) and same and work.parent == parent and work.name.startswith(PREFIX):
             shutil.rmtree(work)
             report['ownedRuntimeCleaned'] = True
         else:
@@ -327,6 +485,8 @@ def main():
         args.evidence.parent.mkdir(parents=True, exist_ok=True)
         with args.evidence.open('x') as output:
             json.dump(report, output, indent=2)
+        if report.get('stopFailure') or report.get('cleanupFailure'):
+            raise RuntimeError('Owned packaged cleanup failed; see sanitized evidence and preserved fixture')
 
 
 if __name__ == '__main__':
