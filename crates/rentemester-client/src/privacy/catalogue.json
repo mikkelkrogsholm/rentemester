@@ -1,0 +1,319 @@
+[
+  {
+    "name": "gdpr_discover",
+    "title": "GDPR subject discovery",
+    "description": "Find alle rækker i Rentemester der indeholder persondata om en given registreret (kunde, leverandør, banktransaktion). Selve subject-data læses kun, men hvert opslag append-only audit-logges med MCP-actor og kræver derfor confirm:true. write-irreversible.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cvr": {
+          "description": "CVR / VAT-nummer for den registrerede",
+          "type": "string"
+        },
+        "name": {
+          "description": "Navn på den registrerede (bruges hvis CVR ikke er kendt)",
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."
+        },
+        "data": {
+          "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {}
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."
+        },
+        "appliedRules": {
+          "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "exactSuccessDataSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "protocolFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "migrationOwner": "R45",
+    "evidence": [
+      {
+        "path": "src/mcp/registry.ts",
+        "sha256": "98e898529c433a6f688719e13c981675d5267ebc88c6389b911e0012b8e51e11"
+      },
+      {
+        "path": "src/mcp/tools/gdpr.ts",
+        "sha256": "a0018b9fca58a99128585c040b0eb8be412cbd67fbd20a919b8407fbdcbaf278"
+      }
+    ]
+  },
+  {
+    "name": "gdpr_export",
+    "title": "GDPR data-subject export",
+    "description": "Byg en komplet indsigtsrapport for en registreret: alle persondata Rentemester opbevarer, annoteret med opbevaringsfrister og eventuelle tidligere sletninger. Svarer til en data-subject access request (DSAR). Eksporten append-only audit-logges med MCP-actor og kræver confirm:true. write-irreversible.",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cvr": {
+          "description": "CVR / VAT-nummer for den registrerede",
+          "type": "string"
+        },
+        "name": {
+          "description": "Navn på den registrerede",
+          "type": "string"
+        },
+        "asOf": {
+          "description": "Evalueringsdato (ISO). Default: dags dato",
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."
+        },
+        "data": {
+          "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {}
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."
+        },
+        "appliedRules": {
+          "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "exactSuccessDataSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "protocolFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "UNKNOWN",
+      "basis": "No exact operation entry in exposed retry registry. Do not infer safe retries from annotation alone."
+    },
+    "migrationOwner": "R45",
+    "evidence": [
+      {
+        "path": "src/mcp/registry.ts",
+        "sha256": "98e898529c433a6f688719e13c981675d5267ebc88c6389b911e0012b8e51e11"
+      },
+      {
+        "path": "src/mcp/tools/gdpr.ts",
+        "sha256": "a0018b9fca58a99128585c040b0eb8be412cbd67fbd20a919b8407fbdcbaf278"
+      }
+    ]
+  },
+  {
+    "name": "gdpr_audit_log",
+    "title": "GDPR audit log export",
+    "description": "Eksportér alle GDPR-relaterede hændelser fra audit-loggen (discover, export, erasure). Kan filtreres på datointerval. Bruges til dokumentation overfor Datatilsynet.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "since": {
+          "description": "Fra-dato (ISO) — kun hændelser efter denne dato",
+          "type": "string"
+        },
+        "until": {
+          "description": "Til-dato (ISO) — kun hændelser før denne dato",
+          "type": "string"
+        },
+        "asOf": {
+          "description": "Evalueringsdato (ISO). Default: dags dato",
+          "type": "string"
+        },
+        "signWithEd25519": {
+          "description": "Signér eksporten med virksomhedens eksisterende backup-Ed25519-nøgle.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."
+        },
+        "data": {
+          "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {}
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."
+        },
+        "appliedRules": {
+          "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "exactSuccessDataSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "refusalSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "protocolFailureSchema": {
+      "status": "UNKNOWN",
+      "reason": "Not exposed as a complete typed per-operation wire schema by this registry; handler/fixture verification is required."
+    },
+    "retry": {
+      "classification": "safe-read",
+      "basis": "INFERRED from read-only registry classification; not independently behavior-verified"
+    },
+    "migrationOwner": "R45",
+    "evidence": [
+      {
+        "path": "src/mcp/registry.ts",
+        "sha256": "98e898529c433a6f688719e13c981675d5267ebc88c6389b911e0012b8e51e11"
+      },
+      {
+        "path": "src/mcp/tools/gdpr.ts",
+        "sha256": "a0018b9fca58a99128585c040b0eb8be412cbd67fbd20a919b8407fbdcbaf278"
+      }
+    ]
+  }
+]

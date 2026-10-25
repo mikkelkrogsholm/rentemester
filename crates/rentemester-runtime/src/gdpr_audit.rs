@@ -88,3 +88,5 @@ mod tests {
         assert_eq!(seal(&payload, &key).unwrap(), envelope);
     }
 }
+
+pub mod original717;

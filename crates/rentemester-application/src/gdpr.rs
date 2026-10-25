@@ -9,6 +9,14 @@ use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
     Retention,
+    OriginalSubject(
+        &'a rentemester_storage::gdpr::original717::SubjectInput,
+        bool,
+    ),
+    OriginalAudit(
+        &'a rentemester_storage::gdpr::original717::AuditInput,
+        Option<&'a rentemester_runtime::backup_artifact::SigningKey>,
+    ),
     Export(&'a Input),
     Erase(&'a Input),
     Discover(&'a Input),
@@ -28,13 +36,15 @@ pub fn execute(
 ) -> Result<Committed<Value>, Failure> {
     let permission = match action {
         Action::Retention => Permission::CompanyRead,
-        Action::Export(_) | Action::Discover(_) | Action::AuditLog(_, _) => {
-            Permission::CompanyExport
-        }
+        Action::OriginalSubject(_, _)
+        | Action::OriginalAudit(_, _)
+        | Action::Export(_)
+        | Action::Discover(_)
+        | Action::AuditLog(_, _) => Permission::CompanyExport,
         Action::Erase(_) | Action::Forget(_) | Action::LegalHold(_) => Permission::CompanyAdmin,
     };
     let slug = context.selection.slug;
-    control_fence::execute_cookie_subject(
+    control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -44,7 +54,22 @@ pub fn execute(
         },
         context.selection,
         permission,
+        matches!(action, Action::OriginalAudit(_, _)),
         |tx, actor| match action {
+            Action::OriginalSubject(i, discovery) => {
+                rentemester_storage::gdpr::original717::subject(
+                    tx, slug, i, today, actor, discovery,
+                )
+            }
+            Action::OriginalAudit(i, key) => {
+                let payload = rentemester_storage::gdpr::original717::audit_events(tx, i, today)?;
+                rentemester_runtime::gdpr_audit::original717::seal(
+                    &payload,
+                    i.sign_with_ed25519,
+                    key,
+                )
+                .map_err(|e| rentemester_engine::Error::new("gdpr_refused", e))
+            }
             Action::Retention => rentemester_storage::retention::read(tx, slug, today),
             Action::Export(i) => rentemester_storage::gdpr::export(tx, slug, i, today, actor),
             Action::Erase(i) => rentemester_storage::gdpr::erase(tx, i, today, actor),
@@ -226,6 +251,44 @@ mod tests {
             )
             .is_err()
         );
+        let original: rentemester_storage::gdpr::original717::SubjectInput =
+            serde_json::from_value(json!({"cvr":"SYN-GDPR","confirm":true})).unwrap();
+        let original_audit: rentemester_storage::gdpr::original717::AuditInput =
+            serde_json::from_value(json!({})).unwrap();
+        for discovery in [true, false] {
+            assert!(
+                execute(
+                    &mut c,
+                    &mut l,
+                    context("a"),
+                    "2026-01-01",
+                    Action::OriginalSubject(&original, discovery)
+                )
+                .is_ok()
+            );
+        }
+        let before_audit = l.total_changes();
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                "2026-01-01",
+                Action::OriginalAudit(&original_audit, None)
+            )
+            .is_ok()
+        );
+        assert_eq!(l.total_changes(), before_audit);
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("other"),
+                "2026-01-01",
+                Action::OriginalAudit(&original_audit, None)
+            )
+            .is_err()
+        );
         let before = l.total_changes();
         c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'agent:synthetic');").unwrap();
         assert!(
@@ -265,6 +328,28 @@ mod tests {
                 context("a"),
                 "2026-01-01",
                 Action::LegalHold(&held)
+            )
+            .is_err()
+        );
+        for discovery in [true, false] {
+            assert!(
+                execute(
+                    &mut c,
+                    &mut l,
+                    context("a"),
+                    "2026-01-01",
+                    Action::OriginalSubject(&original, discovery)
+                )
+                .is_err()
+            );
+        }
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                "2026-01-01",
+                Action::OriginalAudit(&original_audit, None)
             )
             .is_err()
         );

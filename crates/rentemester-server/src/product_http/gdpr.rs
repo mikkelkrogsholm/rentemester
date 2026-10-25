@@ -137,3 +137,108 @@ fn valid_input(operation: &str, v: &Value) -> bool {
 #[cfg(test)]
 #[path = "gdpr_tests.rs"]
 mod tests;
+
+/// Source GDPR is separate from the preserved audited, always-signed native API.
+pub(super) async fn original717(State(state): State<Product>, request: Request) -> Response {
+    let slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
+    let op = request
+        .uri()
+        .path()
+        .rsplit('/')
+        .next()
+        .unwrap_or("")
+        .to_owned();
+    let audit = op == "original-gdpr-audit-log";
+    if request.method() != axum::http::Method::POST
+        || !matches!(
+            op.as_str(),
+            "original-gdpr-discover" | "original-gdpr-export" | "original-gdpr-audit-log"
+        )
+    {
+        return refused(StatusCode::METHOD_NOT_ALLOWED, "invalid_method");
+    }
+    let cookie = match proof(&state, &request, !audit) {
+        Ok(c) => c,
+        Err(r) => return *r,
+    };
+    if !selected(&state, &request) {
+        return refused(StatusCode::NOT_FOUND, "company_not_found");
+    }
+    if request.uri().query().is_some()
+        || request.headers().contains_key("content-encoding")
+        || !one(request.headers(), "content-type")
+            .is_some_and(|s| s.eq_ignore_ascii_case("application/json"))
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    let Ok(bytes) = to_bytes(request.into_body(), 16 * 1024).await else {
+        return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
+    };
+    let Ok(v) = serde_json::from_slice::<Value>(&bytes) else {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    };
+    let allowed: &[&str] = if audit {
+        &["since", "until", "asOf", "signWithEd25519"]
+    } else if op == "original-gdpr-discover" {
+        &["cvr", "name", "confirm"]
+    } else {
+        &["cvr", "name", "asOf", "confirm"]
+    };
+    if !v.as_object().is_some_and(|o| {
+        o.iter().all(|(k, v)| {
+            allowed.contains(&k.as_str())
+                && if matches!(k.as_str(), "confirm" | "signWithEd25519") {
+                    v.is_boolean()
+                } else {
+                    v.is_string()
+                }
+        })
+    }) {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    if !audit && v["confirm"] != true {
+        return response(
+            StatusCode::OK,
+            json!({"ok":true,"result":{"ok":false,"errors":["confirmation required"],"code":"CONFIRM_REQUIRED"}}),
+        );
+    }
+    let Ok(now) = rentemester_runtime::auth::Clock::now_unix_ms(&SystemClock) else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "clock_unavailable");
+    };
+    let Ok(today) = rentemester_runtime::posting_time::latest_date(now, 0) else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "clock_unavailable");
+    };
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
+        let subject;
+        let input;
+        let action = if audit {
+            input = serde_json::from_value(v).map_err(|_| ())?;
+            Action::OriginalAudit(&input, state.native.backup_signer.as_ref())
+        } else {
+            subject = serde_json::from_value(v).map_err(|_| ())?;
+            Action::OriginalSubject(&subject, op == "original-gdpr-discover")
+        };
+        owner
+            .gdpr(&cookie, &SystemClock, &today, action)
+            .map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
+            Ok(v) => response(StatusCode::OK, json!({"ok":true,"result":v})),
+            Err(r) => *r,
+        },
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
