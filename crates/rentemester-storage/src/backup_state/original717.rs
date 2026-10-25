@@ -3,7 +3,7 @@ use super::*;
 use rusqlite::Connection;
 use sha2::{Digest, Sha256};
 pub fn provenance(company: &Connection) -> Result<Value, Error> {
-    let (version,baseline):(u64,String)=company.query_row("SELECT max(id),(SELECT checksum FROM schema_migrations WHERE id=1) FROM schema_migrations",[],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|_|invalid())?;
+    let (version,baseline):(i64,String)=company.query_row("SELECT max(id),(SELECT checksum FROM schema_migrations WHERE id=1) FROM schema_migrations",[],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|_|invalid())?;
     let mut hash = Sha256::new();
     let bytes = include_bytes!("../../../../rules/dk/annual-report.yaml");
     hash.update(b"rules/dk/annual-report.yaml\0");

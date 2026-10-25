@@ -522,7 +522,7 @@ pub fn read_original717_restore(
         );
         crate::namespace::backup_file_acl(&file).map_err(|_| "restore_unsafe_source")?;
         let m = file.metadata().map_err(|_| "restore_source_unavailable")?;
-        if m.dev() != before.st_dev || m.ino() != before.st_ino {
+        if m.dev() != before.st_dev as u64 || m.ino() != before.st_ino as u64 {
             return Err("restore_source_changed");
         }
         let mut bytes = Vec::new();

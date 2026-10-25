@@ -92,7 +92,7 @@ fn apply(
             };
             let count = |table: &str| {
                 l.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| {
-                    r.get::<_, u64>(0)
+                    r.get::<_, i64>(0)
                 })
                 .map_err(|_| invalid())
             };
@@ -117,9 +117,9 @@ fn apply(
                     config: category("config/"),
                 },
                 ledger_stats: codec::LedgerStats {
-                    journal_entries: count("journal_entries")?,
-                    documents: count("documents")?,
-                    bank_transactions: count("bank_transactions")?,
+                    journal_entries: u64::try_from(count("journal_entries")?).map_err(|_| invalid())?,
+                    documents: u64::try_from(count("documents")?).map_err(|_| invalid())?,
+                    bank_transactions: u64::try_from(count("bank_transactions")?).map_err(|_| invalid())?,
                 },
             };
             let mut text = serde_json::to_vec_pretty(&manifest).map_err(|_| invalid())?;
