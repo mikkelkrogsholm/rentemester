@@ -9,6 +9,10 @@ pub enum Action {Read,Configure{enforced:bool,grace_days:u32}}
 fn timestamp(ms:i64)->Result<String,Error>{rentemester_runtime::backup_keys::timestamp(ms).map_err(|_|invalid())}
 pub(crate) fn data(control:&Transaction<'_>,company:&Transaction<'_>,workspace:&str,slug:&str,clock:&dyn Clock,all:bool)->Result<Value,Error>{
  let now=clock.now_unix_ms().map_err(|_|invalid())?;
+ data_at(control,company,workspace,slug,now,all)
+}
+/// Observation time is independent of the credential/write enforcement clock.
+pub(crate) fn data_at(control:&Transaction<'_>,company:&Transaction<'_>,workspace:&str,slug:&str,now:i64,all:bool)->Result<Value,Error>{
  let settings=rentemester_storage::backup_state::settings(control,company)?;
  let activity=rentemester_storage::backup_state::activity(company)?;
  let uuid:String=company.query_row("SELECT ledger_uuid FROM ledger_identity WHERE id=1",[],|r|r.get(0)).map_err(|_|invalid())?;

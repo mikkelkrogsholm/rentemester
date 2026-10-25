@@ -2817,6 +2817,21 @@
       "capability": "POST /api/companies/{slug}/sync-cvr"
     },
     {
+      "method": "POST",
+      "path": "/api/companies/{slug}/system-backup-lock",
+      "capability": "POST /api/companies/{slug}/system-backup-lock"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/system-backup-status",
+      "capability": "GET /api/companies/{slug}/system-backup-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/system-backup-status",
+      "capability": "HEAD /api/companies/{slug}/system-backup-status"
+    },
+    {
       "method": "GET",
       "path": "/api/companies/{slug}/system-healthcheck",
       "capability": "GET /api/companies/{slug}/system-healthcheck"
@@ -3282,5 +3297,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "117fae1d14ddac6333678a1b7550c5a6b68ab0546291a76370827b1e0524b227"
+  "manifestId": "bf7d7d4d753ca514bfa092b095c90908b886a064ba15840834bb34f3de43768a"
 }
