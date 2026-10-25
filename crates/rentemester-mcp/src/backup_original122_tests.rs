@@ -74,7 +74,7 @@ async fn backup_original122_missing_confirm_is_source_envelope_without_request()
     }
 }
 #[tokio::test]
-async fn backup_original122_structural_args_are_rpc_invalid_params() {
+async fn backup_original122_structural_args_are_original_sdk_tool_errors() {
     for (name, args) in [
         (
             "system_backup_status",
@@ -102,14 +102,18 @@ async fn backup_original122_structural_args_are_rpc_invalid_params() {
             json!({"company":"synthetic","body":"{}"}),
         ),
     ] {
-        assert!(call(&api(), name, args.clone()).await.is_err());
+        let invalid = call(&api(), name, args.clone()).await.unwrap();
+        assert_eq!(invalid["isError"], true);
+        assert!(invalid.get("structuredContent").is_none());
+        assert_eq!(invalid["content"][0]["text"],format!("MCP error -32602: Input validation error: Invalid arguments for tool {name}"));
         let mut session = crate::Session {
             initialized: true,
             ready: true,
             ..Default::default()
         };
         let response = session.handle(json!({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":name,"arguments":args}}),&api()).await.unwrap();
-        assert_eq!(response["error"]["code"], -32602);
+        assert_eq!(response["result"], invalid);
+        assert!(response.get("error").is_none());
     }
 }
 #[test]
@@ -128,4 +132,11 @@ fn backup_original122_wrap_removes_core_fields_and_omits_false_data() {
             assert!(e.get("data").is_none());
         }
     }
+}
+
+#[test]
+fn backup_original122_due_status_preserves_original_false_empty_errors() {
+ let result=wrap(json!({"ok":false,"errors":[],"appliedRules":["DK-BOOKKEEPING-BACKUP-001"],"backupDue":true}));
+ assert_eq!(envelope(&result),&json!({"ok":false,"errors":[],"appliedRules":["DK-BOOKKEEPING-BACKUP-001"]}));
+ assert!(result["structuredContent"].get("data").is_none());
 }

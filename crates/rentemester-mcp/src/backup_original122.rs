@@ -46,7 +46,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             })
     });
     if !valid {
-        return Err("invalid original backup tool arguments");
+        return Ok(json!({"isError":true,"content":[{"type":"text","text":format!("MCP error -32602: Input validation error: Invalid arguments for tool {name}")}]}));
     }
     if lock && args["confirm"] != true {
         return Ok(result(

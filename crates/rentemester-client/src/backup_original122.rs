@@ -23,7 +23,7 @@ fn valid_core(core: &Value, lock: bool) -> bool {
     if core["appliedRules"] != json!(["DK-BOOKKEEPING-BACKUP-001"])
         || !core["errors"]
             .as_array()
-            .is_some_and(|a| a.iter().all(Value::is_string) && (a.is_empty() == ok))
+            .is_some_and(|a| a.iter().all(Value::is_string) && (!ok || a.is_empty()) && (!lock || ok || !a.is_empty()))
     {
         return false;
     }

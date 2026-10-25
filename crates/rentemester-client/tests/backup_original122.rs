@@ -328,3 +328,12 @@ async fn backup_original122_verified_local_selectors_use_unix_and_reverify_root(
     ));
     fs::remove_dir_all(root).unwrap();
 }
+
+#[tokio::test]
+async fn backup_original122_overdue_business_false_with_empty_errors_is_real_status() {
+ let mut core=status_core();core["ok"]=json!(false);core["backupDue"]=json!(true);core["hasActivitySinceBackup"]=json!(true);core["errors"]=json!([]);
+ for service in [false,true] {
+  let (got,_)=invoke(false,None,vec![],200,json!({"ok":true,"backupStatus":core}),service).await;
+  assert_eq!(got.unwrap(),core);
+ }
+}
