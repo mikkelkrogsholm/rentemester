@@ -541,3 +541,40 @@ pub fn parse_public_key(bytes: &[u8]) -> Result<[u8; 32], Error> {
     der[12..].try_into().map_err(|_| Error::InvalidKey)
 }
 mod provenance;
+
+/// Finish exactly one source backup inventory with optional company Ed25519 custody. The
+/// caller must resolve custody BEFORE snapshotting config, and retain this proof only once.
+/// HMAC retains its source key hint, sidecar, exact final manifest text and trailing LF.
+pub fn seal_original716(
+    mut files: Files,
+    mut manifest: Manifest,
+    hmac_key: &[u8],
+    signing: Option<&crate::original716::custody::CompanyKey>,
+) -> Result<VerifiedOriginal717, Error> {
+    if let Some(key) = signing {
+        if files
+            .get(crate::original716::custody::PUBLIC)
+            .map(Vec::as_slice)
+            != Some(key.public_pem().as_bytes())
+        {
+            return Err(Error::InvalidKey);
+        }
+        key.decorate(&mut manifest);
+    } else if manifest.asymmetric_signature.is_some() {
+        return Err(Error::InvalidKey);
+    }
+    let mut text = serde_json::to_vec_pretty(&manifest).map_err(|_| Error::Malformed)?;
+    text.push(b'\n');
+    files.insert(
+        "manifest.json.hmac".into(),
+        format!("{}\n", sign(&text, hmac_key)?).into_bytes(),
+    );
+    if let Some(key) = signing {
+        files.insert(
+            crate::original716::custody::SIGNATURE.into(),
+            key.sign(&text)?,
+        );
+    }
+    files.insert("manifest.json".into(), text);
+    verify(&files, hmac_key, signing.map(|s| s.public_pem().as_bytes()))
+}
