@@ -18,6 +18,7 @@ mod protocol;
 mod report_export;
 mod setup_http;
 mod shutdown;
+mod managed_parent;
 use axum::{
     Router,
     http::{HeaderValue, StatusCode},
@@ -90,6 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut config = None;
     let mut local_runtime_dir = None;
     let mut create = false;
+    let mut managed_parent_stdin = false;
     let mut public_origin: Option<String> = None;
     let mut restore_archive = None;
     let mut trusted_backup_key = None;
@@ -115,6 +117,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             "--local-runtime-dir" => local_runtime_dir = Some(PathBuf::from(args.next().ok_or("--local-runtime-dir requires private profile")?)),
             "--create" => create = true,
+            "--managed-parent-stdin" => managed_parent_stdin = true,
             "--adopt-legacy" => adopt_legacy = Some(PathBuf::from(args.next().ok_or("--adopt-legacy requires source workspace")?)),
             "--legacy-source-stopped" => legacy_source_stopped = true,
             "--upgrade-mail-schema" => upgrade_mail_schema = true,
@@ -181,6 +184,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
+    managed_parent::validate_flags(managed_parent_stdin, local_runtime_dir.is_some(), scheduled_stdin || mail_stdin)?;
     if let Some(profile) = &local_runtime_dir {
         if adopt_legacy.is_some()
             || upgrade_mail_schema
@@ -325,6 +329,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|_| "invalid identity HTTP configuration")?;
     let app = cockpit_router(web, identity, native.clone(), storage_failure);
     let mut shutdown = shutdown::Shutdown::new()?;
+    let parent_lost = managed_parent::monitor(managed_parent_stdin)?;
     let mut local = if let Some(profile) = &local_runtime_dir {
         Some(
             local_runtime::Runtime::bind(
@@ -393,7 +398,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
     let control = async move {
-        tokio::select! {_=shutdown.wait()=>{},_=local_runtime::stopped(stopped)=>{}}
+        tokio::select! {_=shutdown.wait()=>{},_=managed_parent::lost(parent_lost)=>{},_=local_runtime::stopped(stopped)=>{}}
         let _ = stop.send(true);
         if let Some(stop) = mail_stop {
             let _ = stop.send(());
