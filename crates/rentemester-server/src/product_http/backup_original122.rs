@@ -31,3 +31,5 @@ pub(super) async fn handle(State(state):State<Product>,request:Request)->Respons
  match result {Ok(Ok(core))=>response(StatusCode::OK,json!({"ok":true,(if mutation{"backupLock"}else{"backupStatus"}):core})),Ok(Err(r))=>*r,Err(_)=>refused(StatusCode::SERVICE_UNAVAILABLE,"outcome_unconfirmed")}
 }
 #[cfg(test)]#[path="backup_original122_tests.rs"]mod tests;
+#[path="backup_original122/original717.rs"]mod artifact717;
+pub(super) async fn original717(state:State<Product>,request:Request)->Response{artifact717::handle(state,request).await}
