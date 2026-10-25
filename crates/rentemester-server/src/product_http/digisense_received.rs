@@ -104,12 +104,8 @@ fn prepare(
     slug: &str,
     cookie: &VerifiedCookie,
     assertion: Option<&str>,
+    client: &provider::Client,
 ) -> Result<Admission, &'static str> {
-    let client = state
-        .native
-        .public_einvoice
-        .get(slug)
-        .ok_or("public_einvoice_config_required")?;
     let mut owner = state
         .native
         .lock_company(slug)
@@ -121,13 +117,6 @@ fn prepare(
         client.credential_generation(),
         assertion,
     ))
-}
-fn client<'a>(state: &'a Product, slug: &str) -> Result<&'a provider::Client, &'static str> {
-    state
-        .native
-        .public_einvoice
-        .get(slug)
-        .ok_or("public_einvoice_config_required")
 }
 fn batch_error(result: &mut Value, code: &str) {
     result["ok"] = json!(false);
@@ -157,6 +146,27 @@ fn add(result: &mut Value, document: Value) {
 fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> Value {
     let mut result = json!({"ok":true,"pagesFetched":0,"documentsListed":0,"documentsIngested":0,"documentsSkipped":0,"documentsQuarantined":0,"documents":[],"errors":[]});
     let run = (|| -> Result<(), &'static str> {
+        let saved = super::public_einvoice::original717::secret(state, slug, cookie)
+            .map_err(|_| "receive_authority_unavailable")?;
+        let owned = saved
+            .as_ref()
+            .map(|bytes| provider::original717::client_from_admitted_secret(&bytes.0))
+            .transpose()
+            .map_err(|_| "public_einvoice_config_required")?;
+        let client = owned
+            .as_ref()
+            .or_else(|| state.native.public_einvoice.get(slug))
+            .ok_or("public_einvoice_config_required")?;
+        let current = || -> Result<(), &'static str> {
+            if super::public_einvoice::original717::secret(state, slug, cookie)
+                .map_err(|_| "receive_authority_unavailable")?
+                != saved
+            {
+                return Err("receive_authority_unavailable");
+            }
+            Ok(())
+        };
+
         let mut admission;
         let mut offset = 0;
         let limit = input.limit.unwrap_or(100);
@@ -164,8 +174,9 @@ fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> 
         let mut seen = std::collections::HashSet::new();
         for _ in 0..input.max_pages.unwrap_or(100) {
             // Fresh current authorization precedes every listing, including empty pages.
-            admission = prepare(state, slug, cookie, input.company_key.as_deref())?;
-            let page = client(state, slug)?
+            current()?;
+            admission = prepare(state, slug, cookie, input.company_key.as_deref(), client)?;
+            let page = client
                 .list_received_documents(
                     admission.company_key(),
                     limit,
@@ -180,7 +191,7 @@ fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> 
             for record in page.documents {
                 let id = record.internal_id().to_owned();
                 let checked = {
-                    let client = client(state, slug)?;
+                    current()?;
                     let mut owner = state
                         .native
                         .lock_company(slug)
@@ -204,18 +215,21 @@ fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> 
                 }
                 if !seen.insert(id.clone()) {
                     // Drop the record-bound admission; no attempt to reuse it for another ID.
-                    admission = prepare(state, slug, cookie, input.company_key.as_deref())?;
+                    current()?;
+                    admission = prepare(state, slug, cookie, input.company_key.as_deref(), client)?;
                     add(
                         &mut result,
                         json!({"internalId":id,"status":"skipped-duplicate"}),
                     );
                     continue;
                 }
-                let xml = match client(state, slug)?.download_received_document(&record) {
+                let xml = match client.download_received_document(&record) {
                     Ok(bytes) => bytes,
                     Err(_) => {
                         drop(admission);
-                        admission = prepare(state, slug, cookie, input.company_key.as_deref())?;
+                        current()?;
+                        admission =
+                            prepare(state, slug, cookie, input.company_key.as_deref(), client)?;
                         add(
                             &mut result,
                             json!({"internalId":id,"status":"error","errors":["receive_download_failed"]}),
@@ -224,7 +238,7 @@ fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> 
                     }
                 };
                 let finished = {
-                    let client = client(state, slug)?;
+                    current()?;
                     let mut owner = state
                         .native
                         .lock_company(slug)

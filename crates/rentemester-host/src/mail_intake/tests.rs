@@ -379,3 +379,113 @@ fn bounded_unparseable_mail_retains_exact_original_before_advancing_cursor() {
         .value;
     assert_eq!(next.cursor().unwrap().last_uid, 1);
 }
+
+fn original717_input(metadata: Option<Value>) -> app::original717::Input {
+    app::original717::Input {
+        messages: vec![app::original717::Message {
+            source: "/MCP-local-only/synthetic.eml".into(),
+            base64: imap::original717::encode_eml(&batch(1).messages[0].raw),
+        }],
+        metadata,
+        metadata_per_message: None,
+        force: false,
+        confirm: true,
+    }
+}
+#[test]
+fn original717_mail_intake_ingest_happy_metadata_duplicate_exception_and_refusal() {
+    let (_dir, mut owner, cookies, proof, _) = setup();
+    let mut input = original717_input(None);
+    let run = |o: &mut Owner, i: &app::original717::Input| {
+        o.original717_mail_intake_ingest(&cookies, &proof, &Fixed(NOW), i)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+    };
+    assert_eq!(run(&mut owner, &input)["exceptionsCreated"], 1);
+    assert_eq!(run(&mut owner, &input)["exceptionsCreated"], 0);
+    input.metadata = Some(
+        json!({"documentType":"cash_register_receipt","issueDate":"2026-01-01","amountIncVat":125,"vatAmount":25,"currency":"DKK","deliveryDescription":"Synthetic purchase","sender":{"name":"Synthetic vendor","vatOrCvr":"DK12345678","countryCode":"DK","identifierKind":"dk_cvr"},"futureMetadata":"accepted"}),
+    );
+    let happy = run(&mut owner, &input);
+    assert_eq!(happy["attachmentsIngested"], 1);
+    assert_eq!(happy["messagesProcessed"], 1);
+    assert!(
+        happy["documents"][0]["documentNo"]
+            .as_str()
+            .unwrap()
+            .starts_with("DOC-")
+    );
+    assert_eq!(run(&mut owner, &input)["attachmentsSkipped"], 1);
+    input.confirm = false;
+    assert_eq!(run(&mut owner, &input)["ok"], false);
+    assert_eq!(
+        source_count(&owner),
+        0,
+        "source immediate ingest must not populate configured native review queue"
+    );
+}
+#[test]
+fn original717_imap_intake_poll_fake_happy_duplicate_and_revoked_finish() {
+    use rentemester_runtime::imap::Client;
+    struct Fake;
+    impl Client for Fake {
+        fn fetch(
+            &mut self,
+            _: &imap::Config,
+            _: Option<imap::Cursor>,
+        ) -> Result<Batch, imap::Failure> {
+            Ok(batch(1))
+        }
+    }
+    let (_dir, mut owner, cookies, proof, _) = setup();
+    let config = || {
+        imap::original717::resolve(&Default::default(), |k| match k {
+            "RENTEMESTER_IMAP_HOST" => Some("mail.example.invalid".into()),
+            "RENTEMESTER_IMAP_USERNAME" => Some("synthetic".into()),
+            "RENTEMESTER_IMAP_PASSWORD" => Some("synthetic-secret".into()),
+            _ => None,
+        })
+        .ok()
+        .unwrap()
+    };
+    for expected in [1, 0] {
+        let admission = owner
+            .original717_prepare_imap_intake_poll(&cookies, &proof, &Fixed(NOW), config())
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        let outcome = Fake.fetch(admission.config(), None).unwrap();
+        let mut input = original717_input(None);
+        input.messages[0].base64 = imap::original717::encode_eml(&outcome.messages[0].raw);
+        let value = owner
+            .original717_finish_imap_intake_poll(&cookies, &proof, &Fixed(NOW), admission, &input)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        assert_eq!(value["exceptionsCreated"], expected);
+    }
+    let admission = owner
+        .original717_prepare_imap_intake_poll(&cookies, &proof, &Fixed(NOW), config())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')",[]).unwrap();
+    assert!(
+        owner
+            .original717_finish_imap_intake_poll(
+                &cookies,
+                &proof,
+                &Fixed(NOW),
+                admission,
+                &original717_input(None)
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}

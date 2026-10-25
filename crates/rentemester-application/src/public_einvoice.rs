@@ -804,3 +804,5 @@ fn check_pair(tx: &Connection, a: &Admission, i: &Identity, key: &str) -> Result
     }
     Ok(())
 }
+
+pub mod original717;

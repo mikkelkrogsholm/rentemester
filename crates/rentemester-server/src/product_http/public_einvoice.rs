@@ -326,12 +326,26 @@ pub(super) fn drive(
     cookie: &rentemester_runtime::auth::VerifiedCookie,
     intent: Intent,
 ) -> Result<Value, Box<Response>> {
-    let Some(client) = state.native.public_einvoice.get(slug) else {
-        return Err(driver_refusal(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            "public_einvoice_config_required",
-        ));
-    };
+    let saved = original717::secret(state, slug, cookie)?;
+    let owned_client = saved
+        .as_ref()
+        .map(|bytes| provider::original717::client_from_admitted_secret(&bytes.0))
+        .transpose()
+        .map_err(|_| {
+            driver_refusal(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "public_einvoice_config_required",
+            )
+        })?;
+    let client = owned_client
+        .as_ref()
+        .or_else(|| state.native.public_einvoice.get(slug))
+        .ok_or_else(|| {
+            driver_refusal(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "public_einvoice_config_required",
+            )
+        })?;
     let initial = {
         let Ok(mut owner) = state.native.lock_company(slug) else {
             return Err(driver_refusal(
@@ -355,11 +369,13 @@ pub(super) fn drive(
     // Send uses validation + delivery; status is one read. Never retry a phase.
     let generation = client.credential_generation();
     for _ in 0..9 {
-        if state
-            .native
-            .public_einvoice
-            .get(slug)
-            .is_none_or(|c| c.credential_generation() != generation)
+        if original717::secret(state, slug, cookie)? != saved
+            || (saved.is_none()
+                && state
+                    .native
+                    .public_einvoice
+                    .get(slug)
+                    .is_none_or(|c| c.credential_generation() != generation))
         {
             return Err(driver_refusal(
                 StatusCode::UNPROCESSABLE_ENTITY,
@@ -462,11 +478,13 @@ pub(super) fn drive(
                 document_id,
             } => Outcome::Observed(client.status(company_key, document_id).ok().map(observed)),
         };
-        if state
-            .native
-            .public_einvoice
-            .get(slug)
-            .is_none_or(|c| c.credential_generation() != generation)
+        if original717::secret(state, slug, cookie)? != saved
+            || (saved.is_none()
+                && state
+                    .native
+                    .public_einvoice
+                    .get(slug)
+                    .is_none_or(|c| c.credential_generation() != generation))
         {
             return Err(driver_refusal(
                 StatusCode::UNPROCESSABLE_ENTITY,
@@ -591,3 +609,6 @@ mod original_tests_status {
         }
     }
 }
+
+pub(super) mod original717;
+pub(super) use original717::handle as original717;
