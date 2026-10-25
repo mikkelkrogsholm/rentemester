@@ -1,6 +1,7 @@
 //! Physical current-role checks between provider discovery and registration.
 //! Synthetic unit fixture only; no provider I/O or ordinary-login qualification.
 use super::*;
+use serde_json::json;
 use app::{Discovery, Request};
 use rentemester_runtime::auth::{AuthError, CookieProfile, CookieVerifier};
 struct Fixed(i64);
