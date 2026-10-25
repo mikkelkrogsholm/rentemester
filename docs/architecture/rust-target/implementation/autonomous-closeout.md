@@ -57,3 +57,5 @@ review. Stop the autonomous series when only those unavailable gates remain or
 the user stops it; do not keep polling an unchanged blocker.
 
 Browserdelen af #718 er nu accepteret med kilde- og binærbundet bevis i `issue718-evidence.json`: faktisk lovgrundlag, filer, tastatur, fejl, CFO-koncern/paginering og de manglende metadatahandlinger. Hele issuet holdes åbent for den oprindelige J03-nativeaccept og #712; installeret Tauri-accept ligger fortsat sidst. Næste udførbare arbejde er #725s uafhængige serverpakkeaccept mod den accepterede web/server-kontrakt; dette ophæver ingen GitHub-afhængighed eller menneskelig/provider-promotiongate.
+
+Den aktuelle LinuxARM64-serverpakke i #725 har nu faktisk bestået pakkeidentitet, isoleret bogføring/filer/genstart, HTTPS/MFA/password recovery og signeret gendannelse til frisk server. `issue725-evidence.json` bevarer de konkrete resterende AMD64-/reproducerbarheds-/registry-/review-/promotionkrav og nativeafhængigheder; ingen produktionspromotion er foretaget. Næste uafhængige produktforløb triageres fra #719.

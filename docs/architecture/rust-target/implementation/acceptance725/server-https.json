@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "sourceRevision": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+  "runnerSha256": "d33a606c837d224e30fb9725ff2f0c07a299cb0714222e5a0c49a313ccb2a76e",
+  "browserHelperSha256": "a6d5ddd76b1cce3aa837c2ffca67d227f570722239c9bf4405fc247dfff201f1",
+  "canonicalOrigin": "https://localhost:51508",
+  "noOfflineIdentityFixture": true,
+  "ordinaryMacOsUser": true,
+  "ownedProfile": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-HostedAuth-6e5aa83458e44d54afc8932ec944d04f",
+  "externalMailDelivered": false,
+  "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "architecture": "arm64",
+  "imageUser": "10001:10001",
+  "imageLabels": {
+    "org.opencontainers.image.revision": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+    "org.opencontainers.image.source": "https://github.com/mikkelkrogsholm/rentemester",
+    "org.opencontainers.image.title": "Rentemester Rust candidate",
+    "org.opencontainers.image.version": "0.2.0",
+    "org.rentemester.runtime": "rust",
+    "org.rentemester.runtime.rust.version": "1.94.1",
+    "org.rentemester.source.dirty": "false"
+  },
+  "controllerPlatform": "ordinary-macOS-DockerDesktop",
+  "ownedContainer": "rm-hosted-auth-c082b76b8b2a",
+  "ownedVolumes": [
+    "rm-hosted-auth-c082b76b8b2a-state",
+    "rm-hosted-auth-c082b76b8b2a-config"
+  ],
+  "containerIsolationVerified": true,
+  "hostGatewayReachableWithPrivateCa": true,
+  "browserControllerPid": 52051,
+  "ownerId": "vKJWS5CX549oRm-YYWVRmnBkTfJIb9WYgH1j7UeWedc",
+  "memberId": "U5JvJWB4rC7t5luqo0wdSKzwj7SvJZwdqoCf2EaVpts",
+  "invitationId": "8c1c23e4-fa89-43e7-a72d-44593671410c",
+  "ledgerUuid": "19a63bb8b366bd9afcd3c7994ba17c36",
+  "normalEmailVerification": true,
+  "ordinaryInvitationClaim": true,
+  "distinctNormalMfaUsers": true,
+  "secureHttpOnlyCookie": true,
+  "resetRequestDidNotRevokeSession": true,
+  "timeoutAcceptedResetLinkUsable": true,
+  "oldSessionRefused": true,
+  "oldPasswordRefused": true,
+  "replayedResetTokenRefused": true,
+  "newPasswordWithExistingMfa": true,
+  "noResetSession": true,
+  "containerStops": [
+    {
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "restartVerified": true,
+  "existingMfaAfterRestart": true,
+  "canonicalReadbackUnchanged": true,
+  "clientIpRate": {
+    "sameTcpPeerDespiteRotatingForwardedIpAndUserAgent": true,
+    "noAccountMfaAttempts": true,
+    "responses": [
+      {
+        "status": 401,
+        "retryAfter": null
+      },
+      {
+        "status": 401,
+        "retryAfter": null
+      },
+      {
+        "status": 401,
+        "retryAfter": null
+      },
+      {
+        "status": 429,
+        "retryAfter": "60"
+      }
+    ]
+  },
+  "httpsProxyExactHost": true,
+  "gateway": {
+    "https": true,
+    "trustedCaSha256": "1b1bee9747cb9a36f8fa6f6afc644c80f41269c815c4dac6d0c3f1b47194c2b2",
+    "acceptedMessages": 4,
+    "requests": [
+      {
+        "kind": "verification",
+        "idempotencyHash": "e71e79e989dbd653fcf8052162e36b60c14eff4d617ca26cdb4b001cea3dc429",
+        "timeoutAfterAcceptance": false
+      },
+      {
+        "kind": "workspace-invitation",
+        "idempotencyHash": "2d3bd7fe62176a494ba44b24673770d04d87328b09029df713bae25a45610cb5",
+        "timeoutAfterAcceptance": false
+      },
+      {
+        "kind": "verification",
+        "idempotencyHash": "35c7aaea82a6e01835c1d83a47357b318ac71599a209146682d36ba4cbd56627",
+        "timeoutAfterAcceptance": false
+      },
+      {
+        "kind": "password-reset",
+        "idempotencyHash": "acca90857b6f8198006c654754ac50fb5397ea66a4a5e9e21ccb7dadd3165735",
+        "timeoutAfterAcceptance": true
+      }
+    ],
+    "timeoutAfterAcceptanceCount": 1
+  },
+  "ownedContainerAndVolumesRemoved": true,
+  "ownedRuntimeCleaned": true
+}

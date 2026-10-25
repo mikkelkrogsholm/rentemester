@@ -1,0 +1,85 @@
+{
+  "issue": 725,
+  "whole_issue_accepted": false,
+  "technical_portion_accepted": true,
+  "checkedAt": "2026-10-25T22:27:05.134103+00:00",
+  "source_revision": "ab7a4cf1f0ad923258539f64e0aeeb284a40c8e2",
+  "artifact_source_revision": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+  "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "architecture": "linux/arm64",
+  "sgdRun": "issue725-container-gates-20261025T220136.036481000",
+  "sgdPhase": "done",
+  "proofs": {
+    "image": {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/image.json",
+      "sha256": "12fdfff36ccc9cf5831ecc543b8f5b23d2a9fc93ed8414f004a8bbdeb945be72"
+    },
+    "package": {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/package.json",
+      "sha256": "b0854992112839c3723835c647ef3c590bc2379f04674b068b519a65a1819851",
+      "durableCopy": "docs/architecture/rust-target/implementation/acceptance725/package.json"
+    },
+    "webAndSignedRecovery": {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web-key-v2.json",
+      "sha256": "f5f7c2c1e0dbc3d6c07eca27737d2954c929def9bab6c22a37a21e6afd947121",
+      "durableCopy": "docs/architecture/rust-target/implementation/acceptance725/server-web-key-v2.json"
+    },
+    "httpsProxyIdentityRecovery": {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-https.json",
+      "sha256": "d52d07d3e422cbbeed94c31cb2e2843e9b7b5cddc7c702f008c639e5886aad29",
+      "durableCopy": "docs/architecture/rust-target/implementation/acceptance725/server-https.json"
+    }
+  },
+  "artifactVsHarness": "Actual immutable image was compiled from clean6ffe5703. Only later change is uncompiled restore-test PKCS8 fixture encoding; gitdiff6ffe..ab7 contains only check-native-container-restore.ts, which Docker does not copy. Native bytes/package/HTTPS receipts retained and checked; no repeated build/provider/financial effects to refresh reports.",
+  "accepted": [
+    "Pinned non-root UID10001 Linux image with same built React assets, readonly root/no capabilities/no-new-privileges/resource limits; no Bun/Node/Python/Cargo/Rust compiler runtime. Current package39exactfiles/modes/livebinaries/discovery448tool identity passed.",
+    "Fresh-volume ordinary installer, emailverification/MFA, one balanced synthetic125.50journal, actual CSV/PDF/original uploads/refusals, source stop/restart/exact existingreceipt idempotency; all new/private syntheticdata.",
+    "Actual signed workspace backup through current ordinary MFA owner; independently established external Ed25519 trust key; exact packaged verify; sourceExit0 before source-unavailable restore into genuinelyfreshvolume/root; new verifiedowner/MFA, oldcookie refused, exact journal/lines/reports/originalbytes readback, no financial/providerPOST afterrestore.",
+    "Actual pinned container behind canonicalHTTPS proxy/privateCA; normal two-userverification/invite/MFA, Secure/HttpOnlycookie, timeoutaccepted controlledmail resetlink, oldsession/password and consumedtoken refused, normalnewpassword witholdMFA and restart; sameTCPpeer MFA bucket yields401/401/401/429 despite rotating forwardedIP/useragent. No externalmail."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "disposition": "accepted_current_LinuxARM64_candidate",
+      "scope": "Actual freshvolume/restart/read-only/resource/noJS runtime and synthetic document/financial smoke."
+    },
+    {
+      "criterion": 2,
+      "disposition": "accepted_current_LinuxARM64_candidate",
+      "scope": "Actual HTTPS/Securecookie/realpeerIP/refusal/readiness/signedfreshrecovery/ordinaryMFA/cleanstop."
+    },
+    {
+      "criterion": 3,
+      "disposition": "pending_original_external_gates",
+      "scope": "Independent productionreview/same-approved-registrydigest promotion, fullcoldreproducibility/SBOM/registryattestation and originalproviderapproval remain. Implementation proof retained fromR113; no selfattested productionpromotion."
+    }
+  ],
+  "preservedFailures": [
+    {
+      "run": "issue725-current-package-20261025T214610.222628000",
+      "state": "cancelled_after_terminal_failure",
+      "reason": "Missing sharedprotocol inwebstage; nativecompilecancelled, notPASS."
+    },
+    {
+      "run": "issue725-current-package-20261025T215054.868388000",
+      "state": "cancelled_after_terminal_failure",
+      "reason": "CLIembeddedexample missing. Then complete productioninclude inventory also identified frozenMCPdiscovery JSON; exactrequiredfiles added together, no repeatedunchangedbuild."
+    },
+    {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web.json",
+      "sha256": "f5807c2f35a609e6a8f193d520d12b6c2ed330b4198dc150da8831760ee4ca47",
+      "reason": "Strict native signingkey parser refused fixture PKCS8v1; samepair standardized v2 fixture repaired throughSGDsubmit-repair. No nativekey-parser weakening. Failedfixture/container/volumes retained."
+    }
+  ],
+  "remaining": [
+    "Actual LinuxAMD64/independent no-cache reproducibility, registrySPDX/SBOM/attestation and current-main candidate qualification. Rustacceptance workflow currentlybranch-only, dispatch404ondefaultmain confirmed; original main-source/promote guards not bypassed.",
+    "Independent reviewed productionpromotion of exact approved immutable registrydigest, originalDigiSense/providerapproval boundaries. No productionpromotion or review-selfattestation authorized/performed.",
+    "Original #712/#718 nativeJ03 dependencies, installedmanualTauri LAST andalloriginal55/J01-J07/release/cutover/retirement requirements unchanged."
+  ],
+  "source_sha256": {
+    "Dockerfile.rust": "8168de35c6fb075ade92373875d7a9d05785eeb84643fbec11173b77cc137e6a",
+    "scripts/rust/run-hosted-auth.py": "d33a606c837d224e30fb9725ff2f0c07a299cb0714222e5a0c49a313ccb2a76e",
+    "scripts/rust/run-rust-container.py": "271167bc9b9a8eb404950752391e172f43c8a582279f994333122eeb18dea73f",
+    "scripts/rust/check-native-container-restore.ts": "00c00115f856b6a9895ceb6314682ba298a001a29f644bbcea949e21eb2b32ab"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "architecture": "arm64",
+  "identityRawSha256": "29191c8740b210f5e3187a7bba55d9a80a673937784380d532a92a4641447503",
+  "version": "0.2.0",
+  "gitCommit": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+  "sourceDirty": false,
+  "fileCount": 39,
+  "mcpToolCount": 448,
+  "checks": {
+    "exactInventoryAndModes": true,
+    "liveBinaryMetadata": true,
+    "entrypointHash": true
+  },
+  "limits": [
+    "Interface identity is not full CLI/MCP/HTTP parity",
+    "No SBOM, registry attestation, promotion or desktop GUI acceptance"
+  ]
+}

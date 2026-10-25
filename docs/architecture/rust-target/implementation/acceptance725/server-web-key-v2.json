@@ -1,0 +1,123 @@
+{
+  "status": "passed",
+  "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "architecture": "arm64",
+  "imageLabels": {
+    "org.opencontainers.image.revision": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+    "org.opencontainers.image.source": "https://github.com/mikkelkrogsholm/rentemester",
+    "org.opencontainers.image.title": "Rentemester Rust candidate",
+    "org.opencontainers.image.version": "0.2.0",
+    "org.rentemester.runtime": "rust",
+    "org.rentemester.runtime.rust.version": "1.94.1",
+    "org.rentemester.source.dirty": "false"
+  },
+  "checks": {
+    "backupRecovery": {
+      "status": "passed",
+      "fixturePrefix": "rm-native-web-b908212fa805",
+      "privateFixture": "/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rm-native-web-b908212fa805wlnjddxs",
+      "archiveSha256": "55b60f864de112cb63337aa70c6bb228069d080ec4de7c47fc0f70ca46f26453",
+      "trustedKeySha256": "07507251f8e80bf060ba24fbb40ba9a8a397ede68843505ddda23102b40270fb",
+      "sourceCheckpointSha256": "6e6181568cd35ace876a93972b8290873090817d0793a9a1af7af112c3ecac03",
+      "helperSha256": "00c00115f856b6a9895ceb6314682ba298a001a29f644bbcea949e21eb2b32ab",
+      "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+      "packagedBuildIdentitySha256": "29191c8740b210f5e3187a7bba55d9a80a673937784380d532a92a4641447503",
+      "sourceRevision": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+      "independentPackagedVerification": {
+        "ok": true,
+        "format": "rentemester-native-backup/1",
+        "companies": 1,
+        "scope": "signed_inventory_current_schema_integrity_journal_chain_and_originals"
+      },
+      "sourceStopExit": 0,
+      "freshTargetHealth": {
+        "authRequired": true,
+        "backend": "rust",
+        "deploymentProfile": "hosted",
+        "ok": true,
+        "readiness": {
+          "code": "current",
+          "status": "ready"
+        },
+        "service": "rentemester",
+        "setupRequired": false,
+        "workspaceReady": true
+      },
+      "freshIdentityVerificationMfa": true,
+      "ordinaryPasswordUnusedRecoveryLogin": true,
+      "oldSessionRefused": true,
+      "exactJournalLinesAmountsReportsAndOriginalBytes": true,
+      "noFinancialOrProviderPost": true,
+      "originalSha256": [
+        "185726cd1c2a3205e6db631193e5369f2a2db48d83802028b9acb31600c203f0"
+      ],
+      "checkpointSha256": "6e6181568cd35ace876a93972b8290873090817d0793a9a1af7af112c3ecac03",
+      "targetStopExit": 0,
+      "terminalCleanup": true
+    },
+    "freshHealth": {
+      "authRequired": true,
+      "backend": "rust",
+      "deploymentProfile": "hosted",
+      "ok": true,
+      "readiness": {
+        "code": "setup_required",
+        "status": "not_ready"
+      },
+      "service": "rentemester",
+      "setupRequired": true,
+      "workspaceReady": true
+    },
+    "dedicatedNonrootReadOnlyNoCapabilitiesNoJsRuntime": true,
+    "packagedClientHelp": true,
+    "packagedPdfParse": {
+      "status": "ok",
+      "inputSha256": "617222dad7e66cdafa49f4f534578c6fb1b0050a039c98e66bb38a6402044769",
+      "provenance": {
+        "adapterVersion": "1",
+        "artifactSha256": "ee7f7b7d5468958336a818c1cd580bdd20972846b7377b13f9a923d92d1d4674",
+        "bindingVersion": "0.9.4",
+        "layoutConvention": "pdfium-character-loose-box-bottom-left-v1",
+        "librarySha256": "6252fce3da45e7f0dc5b27f4d4e1a1456ca3f7734cdb04f927967df772127478",
+        "limits": {
+          "addressSpaceBytes": 536870912,
+          "cpuSeconds": 15,
+          "macMemoryEnforcementQualified": false,
+          "wallSeconds": 15
+        },
+        "parserId": "pdfium",
+        "parserVersion": "151.0.7881.0+binding0.9.4.adapter1.6252fce3da45e7f0"
+      }
+    },
+    "normalOwnerMfaPost125_50BalancedReportsExactReceipt": true,
+    "firstStopExit": 0,
+    "reopenHealth": {
+      "authRequired": true,
+      "backend": "rust",
+      "deploymentProfile": "hosted",
+      "ok": true,
+      "readiness": {
+        "code": "current",
+        "status": "ready"
+      },
+      "service": "rentemester",
+      "setupRequired": false,
+      "workspaceReady": true
+    },
+    "normalMfaReopenPersistedJournalOriginalIdempotentReplay": true
+  },
+  "limits": [
+    "Loopback HTTP candidate; HTTPS proxy/provider/release qualification remains open",
+    "Packaged CLI/MCP help only; their authenticated business parity is not claimed here",
+    "No installed desktop GUI or production deployment",
+    "No independent no-cache reproducibility or registry attestation qualification"
+  ],
+  "ownedContainerAndVolumesRemoved": true,
+  "runnerSha256": "271167bc9b9a8eb404950752391e172f43c8a582279f994333122eeb18dea73f",
+  "screenshotsSha256": {
+    "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web-key-v2.json.assets/reopen.png": "74d2256bb7772c537efc93730ed8bf6b8b783fdb219c0e89c8d077dabf6ed221",
+    "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web-key-v2.json.assets/first.png": "7ecd86194531a73fde625e1db35c39b38bfc5ce300f97015a62c2cdc61b2faf4",
+    "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web-key-v2.json.assets/reopen-original.png": "888ebf9b59bf5d3dfde9a3a715d9999aca2cda2d0e8b0870e45c44427765e7b3",
+    "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue725/issue725-container-gates-20261025T220136.036481000/server-web-key-v2.json.assets/first-original.png": "7ecd86194531a73fde625e1db35c39b38bfc5ce300f97015a62c2cdc61b2faf4"
+  }
+}

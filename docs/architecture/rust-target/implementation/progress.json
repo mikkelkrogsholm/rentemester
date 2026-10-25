@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original718 browser portion accepted: actual rules/CFO/files/keyboard/action recovery complete; whole original718 pending final nativeJ03 dependency712.",
+  "current_increment": "Original725 current LinuxARM64 package/HTTPS/signedrestore technical portion accepted; whole725 stays open for AMD64/reproducibility/registry/independentpromotion and native dependencies.",
   "code_revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original718_browser_accepted_final_native_dependency_pending",
+  "state": "original725_technical_accepted_original_external_gates_pending",
   "issues_closed": 43,
-  "next": "Publish current718 browser result, retain precise original nativeJ03/712 gate for installeddesktopLAST; begin only independent725 serverpackage restaccept, preserve original dependencies and human/provider promotion gates.",
+  "next": "Publish accepted725technicalscope with exact remaining original gates; choose next independent719desktop lifecycle restaccept from existingissues. No further server/testplatform polish, no productionpromotion.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -19280,6 +19280,15 @@
       "actualBrowser": "normal owner/reviewer MFA; current legal metadata/list/search; original/413/cancel; approvedgroup/CFO100+2UIpaging; rule disable; draft revision/rejection/correction; GDPRholdrelease",
       "remaining": "Original J03 native/Tauri proof via #712 and final installed desktop gate, deliberately LAST. Browser completion does not close whole718 or waive dependencies.",
       "browserPortionAccepted": true
+    },
+    "current725TechnicalResult": {
+      "evidence": "issue725-evidence.json",
+      "wholeIssueAccepted": false,
+      "technicalPortionAccepted": true,
+      "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+      "runtimeSource": "6ffe5703",
+      "harnessSource": "ab7a4cf1",
+      "remaining": "OriginalAMD64/reproducibility/registry/independenthuman/providerpromotion plus native712/718LAST dependencies"
     }
   }
 }
