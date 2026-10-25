@@ -20,6 +20,12 @@ RUN bun run cockpit:build
 FROM ${RUST_IMAGE} AS rust-toolchain
 FROM rust-toolchain AS rust-build
 ARG TARGETARCH
+ARG RUST_BUILD_CACHE_ID
+ARG CARGO_BUILD_JOBS=2
+ARG RENTEMESTER_GIT_COMMIT
+ARG RENTEMESTER_VERSION
+ARG SOURCE_DATE_EPOCH
+ARG RENTEMESTER_SOURCE_DIRTY=true
 WORKDIR /source
 COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
 COPY .cargo/ ./.cargo/
@@ -29,10 +35,16 @@ COPY src/core/migrations/ ./src/core/migrations/
 COPY src/core/workspace-migrations/ ./src/core/workspace-migrations/
 COPY scripts/rust/cargo-guard.sh scripts/rust/cargo-guard.py ./scripts/rust/
 COPY scripts/rust/pdf-worker/artifacts.json ./scripts/rust/pdf-worker/artifacts.json
-ENV CARGO_HOME=/build/cargo-home CARGO_TARGET_DIR=/build/target RENTEMESTER_CARGO_CACHE=/build/target CARGO_INCREMENTAL=0
-# One serialized, guarded cache per target architecture.
-RUN --mount=type=cache,id=rentemester-rust-1.94.1-${TARGETARCH},target=/build,sharing=locked \
-    umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker \
+ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS} CARGO_HOME=/build/cargo-home CARGO_TARGET_DIR=/build/target RENTEMESTER_CARGO_CACHE=/build/target CARGO_INCREMENTAL=0
+# Each run/attempt/build variant supplies its own guarded cache; no global queue.
+RUN --mount=type=cache,id=${RUST_BUILD_CACHE_ID}-${TARGETARCH},target=/build,sharing=private \
+    test -n "$RUST_BUILD_CACHE_ID" && test -n "$SOURCE_DATE_EPOCH" \
+    && test "$CARGO_BUILD_JOBS" = 2 \
+    && case "$RENTEMESTER_SOURCE_DIRTY" in true|false) ;; *) exit 2 ;; esac \
+    && printf '%s' "$RENTEMESTER_GIT_COMMIT" | grep -Eq '^[0-9a-f]{40}$' \
+    && test -n "$RENTEMESTER_VERSION" \
+    && export RENTEMESTER_BUILD_REVISION="$RENTEMESTER_GIT_COMMIT" \
+    && umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker \
     && mkdir /out \
     && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/ \
     && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
