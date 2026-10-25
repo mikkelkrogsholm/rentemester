@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R104/R105 bounded owner VAT UI binding accepted:75cases/properbuild/actualproviderfailure-recovery-onejournal, unchangedruntime-barrierreuse; fresh fullmacro FAILED/stopped and whole718 open",
-  "code_revision": "55df1c9516ea4ecda553d961b5ff20ca5e6f9c6a",
+  "current_increment": "R106native boundinternalvoucher UIregression repaired;37targetedUI/API/build, unchanged Rustbank/date/exemptcontrols;R105actualgaps/whole718open",
+  "code_revision": "b64ad37470bf772fee56fa390d25b480da844ab2",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "owner_purchase_vat718_binding_accepted_actual_gaps_retained",
+  "state": "owner_internal_voucher718_regression_repaired",
   "issues_closed": 41,
   "next": [
-    "718: fresh providerloss/reader/restart-restorematrix gap retained exactly above, plus full original41company+13static screens/files/local-hosted/keyboard/errors/J03/J04 coverage. Agent-forslag is next concrete unbound originalread/decision route; reuse existing exceptions semantics, no newagentengine.",
-    "All55originalissues/J01-J07/release/cutover/finalinstalleddesktop remain.41closed14open; no live/defaultlauncher/installedapp switch."
+    "All R105 fresh actual providerloss/reader/restart/restore gaps retained, no fullmacroPASS.",
+    "Whole718 original41company+13static screens/files/error/keyboard/local-hosted/J03/J04 still open. Next originalAgent-forslag adapters missing.",
+    "All55originalissues/release/cutover/finalmanualdesktop remain; no liveworkspace switched."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R102/R103 owner immediate-writeoff in shared React/Rust accepted; actual2journals4lines/source refusal/lost accepted reply lock/restart/signed recovery; whole718 remains",
+  "previous_verified_increment": "R104/R105 bounded owner VAT UI binding accepted:75cases/properbuild/actualproviderfailure-recovery-onejournal, unchangedruntime-barrierreuse; fresh fullmacro FAILED/stopped and whole718 open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16644,6 +16645,10 @@
     "r105_owner_purchase_vat718": {
       "path": "/private/tmp/rentemester-rust-reports/r105-owner-purchase-vat718-current-contracts-qualified.json",
       "sha256": "770e746a75ba817982671063d27b0576b2227a2b30bd0dc80002af870522d3aa"
+    },
+    "r106_internal_voucher718": {
+      "path": "/private/tmp/rentemester-rust-reports/r106-bound-internal-voucher718-accepted.json",
+      "sha256": "719378a7c34062b6625b461c01fc812a00557e1aa9cb85af59d01e31caa848c1"
     }
   },
   "verified_history": [
@@ -18966,6 +18971,19 @@
       "remaining": [
         "718: fresh providerloss/reader/restart-restorematrix gap retained exactly above, plus full original41company+13static screens/files/local-hosted/keyboard/errors/J03/J04 coverage. Agent-forslag is next concrete unbound originalread/decision route; reuse existing exceptions semantics, no newagentengine.",
         "All55originalissues/J01-J07/release/cutover/finalinstalleddesktop remain.41closed14open; no live/defaultlauncher/installedapp switch."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "b64ad37470bf772fee56fa390d25b480da844ab2",
+      "report": "/tmp/rentemester-rust-reports/r106-bound-internal-voucher718-accepted.json",
+      "sha256": "719378a7c34062b6625b461c01fc812a00557e1aa9cb85af59d01e31caa848c1",
+      "scope": "Correct native purchase-preflight UI regression: source-bound internal_voucher has no external supplier; skip supplier preflight only for that existing typed workflow. Require source bank ID to be safe/positive/present among current outgoing options; preserve bank/date/exempt Rust checks. Missing/unavailable source bank stays blocked. Purchase/provider/unknown controls remain and all previous UI/API cases pass.",
+      "remaining": [
+        "All R105 fresh actual providerloss/reader/restart/restore gaps retained, no fullmacroPASS.",
+        "Whole718 original41company+13static screens/files/error/keyboard/local-hosted/J03/J04 still open. Next originalAgent-forslag adapters missing.",
+        "All55originalissues/release/cutover/finalmanualdesktop remain; no liveworkspace switched."
       ]
     }
   ],

@@ -98,3 +98,21 @@ The next concrete source gap is Agent-forslag: the existing React read/decision
 URLs are not registered in Rust. Reuse existing exceptions semantics; approval
 is an audited human decision, never automatic posting or a new agent engine.
 All55 scopes and release/cutover/final manual installed desktop gates remain.
+
+## 2026-10-25 — Preserve bound internal vouchers
+
+A focused regression showed that the new native supplier-preflight gate blocked
+existing internal_voucher booking because these documents intentionally have
+no external supplier identity. The shared form now waits for source booking
+options and distinguishes this existing workflow. It performs no external
+supplier preflight for native internal vouchers; it requires a positive safe
+source bank ID present in the current outgoing options, the same selected bank
+and exempt treatment. Missing/unavailable source bank remains blocked.
+
+The Rust writer still checks its immutable internal-voucher evidence, bound
+bank row, bank date and exempt treatment. No engine, route, VAT calculation or
+permission changed. A reproduced failed positive case now passes with both
+missing/unavailable-bank negative controls; all37 relevant UI/API cases and
+proper design/TypeScript/bundler build pass. No new full actual setup or
+financial replay was performed. R105's explicitly missing fresh actuals and
+all original whole718/55/release/cutover/final-desktop requirements remain.
