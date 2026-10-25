@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "scope": "Actual current common Rust/sharedReact visibleorigin only; final installed remote vault/WebKit/J03/J06 remains.",
+  "activeOrigin": "http://127.0.0.1:61929",
+  "company": "synthetic",
+  "canonicalVisibleOrigin": true,
+  "companyContextRetained": true,
+  "journalUnchanged": true,
+  "noBusinessWrites": true,
+  "normalMfaOwnerReused": true,
+  "browserVersion": "153.0.8010.12",
+  "journalSha256": "2d11731ba0f8e9786fbd979d2cc1b76f66dcfe61821198c1cdbd7cbf3e7cedac",
+  "sourceCommit": "d0420fbbacd55c0795844f9e857da85bdc45f851",
+  "sourceTree": "72a46aaa98483266550335654e126ebc1f667ea1",
+  "webIndexSha256": "29ad18494e1d74099eb0b4c8a78bf3a97aa288353ec6fe14db3e12a35571efc0",
+  "webDirectory": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue722-active-server-20261025T233611.651158000/integration/app/dist",
+  "serverSource": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+  "serverSha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+  "unitTests": "4PASS including canonical loopback/HTTPS/no URLuserinfo-path-query-fragment"
+}

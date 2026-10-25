@@ -1,0 +1,60 @@
+{
+  "issue": 722,
+  "whole_issue_accepted": false,
+  "active_server_display_accepted": true,
+  "checkedAt": "2026-10-25T23:43:36.185507+00:00",
+  "source_revision": "d0420fbbacd55c0795844f9e857da85bdc45f851",
+  "sgdRun": "issue722-active-server-20261025T233611.651158000",
+  "sgdPhase": "done",
+  "proofs": {
+    "actual-origin.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance722/actual-origin.json",
+      "sha256": "97bf728ee82ca1f405bc783ab26630a5d93ee31382e092918617ace6001a0596"
+    },
+    "unit.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance722/unit.log",
+      "sha256": "ed74bcfad1f423616af66c91b8f981c7e4a6359b7ca050d0c195cc9dd0ace50f"
+    }
+  },
+  "review": "Main reviewed3file product/test diff: one connectedheader label uses current browsercanonicalorigin; existing company/account context retained, responsivewrapping only. No newstate/cache/network/profilemanager/auth/authority/localfallback or accounting effect.",
+  "accepted": [
+    "4App unitcases/12assertions and production design/type/build PASS; loopback and HTTPS canonicalorigin keeps scheme/host/port and excludes URLuserinfo/path/query/fragment.",
+    "ActualcurrentRust5642bf46 + currentproductionReactUI ordinaryMFAowner: exact visiblecurrentorigin61929 and correct syntheticcompany, unchangedjournal, zero businesswrites; ownedserver stoppedExit0.",
+    "Existing per-server account/vault/capability/readback/transfer source contracts and95/98/99/R41/R44 evidence retained; no native qualification inferred from this label."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "disposition": "retained_server_and_prior_partial_native_proof_final_J03_pending",
+      "missing": "Current installed web/native sameledger after permittedwrites and original678/712/719/720 qualification."
+    },
+    {
+      "criterion": 2,
+      "disposition": "current_server_identity_accepted_existing_context_isolation_retained_final_native_pending",
+      "missing": "Current installed account/server/company pendingread/write revocation, vault/WebKit/profile switching; existing scopedread/cancellation source unchanged."
+    },
+    {
+      "criterion": 3,
+      "disposition": "retained_R05_716_717_operation_specific_receipt_readback_final_native_pending",
+      "missing": "Final installed native lostresponse/reconnect/serverunavailability observation; no offline mutationqueue or localfallback introduced."
+    },
+    {
+      "criterion": 4,
+      "disposition": "retained_transfer95_98_99_and_current_moved_banner_final_J06_pending",
+      "missing": "Final installed native verifiedmove source/destination/oldsource refusal; current WorkspaceTransferProvider remains unchanged."
+    }
+  ],
+  "preservedFailures": [
+    {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue722/issue722-active-server-20261025T233611.651158000/first-unit-protocol-failure.log",
+      "reason": "Existing bare /help fixture lacked requiredprotocol; reused existing mockFetch({}) adapter without changing productiongate,4tests nowPASS."
+    },
+    {
+      "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue722/issue722-active-server-20261025T233611.651158000/unready-model-input.json",
+      "reason": "GDD irrelevant-risk records omitted required empty scenarios arrays; corrected from bundledschema before any execution. No code/accepted effects replayed."
+    }
+  ],
+  "wholeIssueClosureBlocker": "Original current installed nativeJ03/J06/vault/WebKit/account/connection and678/712/719/720 gates remainLAST; all4originalcriteria retained.",
+  "closed55OriginalIssues": 43,
+  "remaining55OriginalIssues": 12
+}

@@ -16740,6 +16740,14 @@
       "report": "docs/architecture/rust-target/implementation/issue720-evidence.json",
       "status": "10k/20k Chromium virtualjournal and actualRustsmallreader accepted; fulloriginalnative/platform gates remain",
       "sgdRun": "issue720-journal-window-20261025T230648.723700000"
+    },
+    "issue722_active_server": {
+      "issue": 722,
+      "whole_issue_accepted": false,
+      "source_revision": "d0420fbbacd55c0795844f9e857da85bdc45f851",
+      "report": "docs/architecture/rust-target/implementation/issue722-evidence.json",
+      "status": "Current canonicalvisibleorigin/currentcompany actualRustMFAreader accepted; originalfinalnativeJ03J06 gates retained",
+      "sgdRun": "issue722-active-server-20261025T233611.651158000"
     }
   },
   "verified_history": [

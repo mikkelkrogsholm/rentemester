@@ -1,0 +1,12 @@
+bun test v1.4.0 (34cbb9a40)
+
+src/App.test.tsx:
+(pass) App topbar > topbar contains a help/support link reachable from any route [35.11ms]
+(pass) App topbar > the /help route renders a help page with docs, contact and feedback links [8.77ms]
+(pass) connected header names only the active canonical server http://127.0.0.1:63811 [5.80ms]
+(pass) connected header names only the active canonical server https://accounts.example.invalid:8443 [4.54ms]
+
+ 4 pass
+ 0 fail
+ 12 expect() calls
+Ran 4 tests across 1 file. [663.00ms]
