@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Whole original716 CLI/local launcher/machine-readable contracts accepted and GitHub CLOSED/flow:done;265 original identities and all4 original criteria preserved.",
+  "current_increment": "Original718 browser parity active under user-authorized sequential autonomous closeout. Required known413 upload guidance repaired; unit/no-retry/unknown-lock proof passes; actual original-file/keyboard/fresh ordinary MFA and full coverage remain.",
   "code_revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original716_whole_issue_closed",
+  "state": "original718_developing",
   "issues_closed": 43,
-  "next": "Focused716 round complete. Select the next smallest necessary whole existing issue in subsequent authorized work;12 original issues and all release/cutover/final installed desktop requirements remain.",
+  "next": "Continue same718 full original accept: reuse R111/R121 and accepted auth backend; use existing fresh ordinary owner/MFA adapter for actual file/keyboard/error check, not repeated401retained session. Then proceed per autonomous-closeout.md only as original acceptance/dependencies permit.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -15,7 +15,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R122 original backup status and atomic opt-in lock accepted:19actual targeted tests, same common engine/current auth/signed-artifact producer, exact438-tool catalogue/1629operation contracts. Full717 remains open.",
+  "previous_verified_increment": "Whole original716 CLI/local launcher/machine-readable contracts accepted and GitHub CLOSED/flow:done;265 original identities and all4 original criteria preserved.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -19226,7 +19226,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": null,
+    "current_issue": 718,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
@@ -19264,5 +19264,14 @@
       "mcp": 448
     },
     "remaining": []
+  },
+  "autonomous_closeout": {
+    "userAuthorized": true,
+    "plan": "autonomous-closeout.md",
+    "oneActiveIssue": true,
+    "heartbeat": "rentemester-luk-resterende-rust-issues",
+    "manualDesktopLast": true,
+    "currentEvidence": "issue718-evidence.json",
+    "allOriginalScopesRetained": true
   }
 }

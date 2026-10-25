@@ -84,7 +84,9 @@ function responseError(res: Response, body: unknown, fallback: string, observati
   if (code === "unauthorized") signalAuthExpired(observationGeneration);
   const message = res.status === 403 && ["access_denied", "forbidden", "internal"].includes(code)
     ? "Du har ikke adgang til denne handling. Bed workspace-ejeren kontrollere dine rettigheder."
-    : errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback);
+    : res.status === 413 && code === "upload_too_large"
+      ? "Filen er for stor. Vælg en mindre fil, og prøv igen."
+      : errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback);
   return new ApiError(code, message, res.status);
 }
 

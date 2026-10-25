@@ -68,3 +68,26 @@ describe("current company access refusal", () => {
     await expect(request("/api/account")).rejects.toMatchObject({ code: "mfa_required", status: 403, message: "Bekræft din identitet igen." });
   });
 });
+
+
+describe("oversized document upload refusal", () => {
+  it("explains the native size refusal and does not retry the write", async () => {
+    const fetchMock = vi.fn(withProtocol(
+      async () => new Response(JSON.stringify({ ok: false, code: "upload_too_large" }), { status: 413 }),
+      [["POST", "/api/companies/{company}/documents/ingest"]],
+    ));
+    stubGlobal("fetch", fetchMock);
+    await expect(request("/api/companies/synthetic/documents/ingest", { method: "POST", body: "{}" })).rejects.toMatchObject({
+      code: "upload_too_large", status: 413, message: "Filen er for stor. Vælg en mindre fil, og prøv igen.",
+    });
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+  });
+
+  it("retains unknown-outcome protection for an unrelated server failure", async () => {
+    stubGlobal("fetch", vi.fn(withProtocol(
+      async () => new Response(JSON.stringify({ ok: false, code: "internal" }), { status: 500 }),
+      [["POST", "/api/companies/{company}/documents/ingest"]],
+    )));
+    await expect(request("/api/companies/synthetic/documents/ingest", { method: "POST", body: "{}" })).rejects.toMatchObject({ code: "internal", status: 500, message: "Ukendt serverfejl." });
+  });
+});

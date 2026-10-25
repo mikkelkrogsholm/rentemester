@@ -1,0 +1,57 @@
+# Autonomous closeout after #716
+
+User mandate: finish the remaining work without repeated “continue” messages, one
+existing issue at a time, and close whole issues immediately when accepted. GitHub
+remains delivery authority; this is a dependency/acceptance plan, not an executable
+queue. SGD owns only the current finite increment.43 of55 original issues are
+confirmed closed at6b784b41; all55 scopes and acceptance criteria remain binding.
+
+## Next order
+
+| Order | Existing issue | Work that can proceed without the user | Closure boundary |
+| --- | --- | --- | --- |
+| 1 | #718 React cockpit | Reuse accepted actual browser journeys; finish missing original screens/file/error/accessibility journeys against the existing Rust server. | All4 original browser criteria; mocked API or React unit tests alone cannot qualify it. |
+| 2 | #725 server package | Reconcile existing image/provenance evidence; finish only missing fresh-volume, proxy, constrained runtime and recovery proof. | Exact reviewed bytes and existing human/provider promotion gates remain binding; no production promotion is inferred. |
+| 3 | #719 desktop lifecycle | Finish any remaining Rust/Tauri lifecycle, explicit workspace/onboarding and recoverable sidecar failure paths using the same React UI. | Installed offline/native acceptance remains in the final desktop pass. |
+| 4 | #720 desktop readers | Finish missing shared read entrypoints, data limits, safe switching and backup/status/error semantics. | Real Tauri accessibility/preview/installed parity at the final desktop pass. |
+| 5 | #722 remote desktop | Finish any remaining profile switch, cancellation, moved-source and operation-specific reconnect/read-back behavior. | Same installed Tauri client/server ledger and native profile/cookie validation at the final desktop pass. |
+| 6 | #721 desktop writes/admin | Finish remaining shared React setup/review/bookkeeping/invoice/VAT/backup paths and stale/unknown/refusal handling. | Complete installed J01/J02/J05 without JSON/CLI; never substitute old GPUI or mocked proof. |
+| 7 | #724 packages/updates | Prepare exact package manifests, compatibility/update interruption and signature-refusal checks. | Real available signing/notarization and claimed-platform install tests; unavailable credentials remain an explicit blocker. |
+| 8 | #723 cross-interface parity | Compose valid operation/scenario proofs; run only missing full-year/restart/restore/concurrency negatives. | J01–J07, genuine qualified-platform proof and required human/independent/provider reviews. |
+| 9 | #726 cutover rehearsal | Synthetic source fencing, transfer, corrupt/failed activation, restore and rollback rehearsal; preserve uncertain effects. | No live switch; all upstream gates plus measured recoverability and full original criteria. |
+| 10 | #727 retirement/support | Prepare accurate runtime/install/recovery/support documentation. Remove the legacy backend only after the original coverage/cutover/release gates permit it. | No permanent hidden TypeScript runtime; no premature deletion or cutover. |
+
+#678 (selected Tauri host/platform/accessibility qualification) and #712 (final
+Tauri auth integration) are retained as explicit final desktop gates. Current
+#712 auth backend is accepted and used by the web/server; its remaining exact
+Keychain→WebKit/menu/close→reopen/cancel proof is not a missing backend to rewrite.
+This accepted backend contract enables independent web/server work; the original
+GitHub dependency and native acceptance are not removed or falsely closed.
+
+## How the series advances
+
+Keep one product flow active. Before every SGD transition identify the missing
+original criterion, its smallest necessary action, and whether the issue can now
+close. A passing whole issue is reviewed, published and closed in the same round.
+A solely manual/external final gate is recorded precisely while preserving the
+completed code/proof; continue only work independent of that unavailable gate.
+Never mark a partial issue done to unlock the next label. Re-evaluate this order
+when concrete evidence changes which whole issue is closest to closure.
+
+Reuse existing fixtures, binaries and source-bound evidence. At15minutes of test
+setup or two setup failures, stop growing the setup, diagnose one cause and choose
+a simpler valid proof or record the precise external blocker. No new harness,
+extra manager, repeated broad tests or optional polish. The same common Rust
+motor/server serves web and local/remote Rust/Tauri with the same React UI.
+
+The source/output30GiB compiler guard remains binding. Only this mission’s idle,
+rebuildable output and finished worktrees may be removed after preserving code,
+receipts and reports. Do not clear another project’s active builds or user data.
+
+Use the existing thread heartbeat as recovery while this authorized series runs.
+It must reconcile actual Git/SGD/processes/receipts before acting, preserve stops
+and accepted effects, and notify only for a completed whole issue, meaningful
+change, actual blocker or necessary user action. No unattended manual-desktop
+requests, production promotion, live migration or self-certification of external
+review. Stop the autonomous series when only those unavailable gates remain or
+the user stops it; do not keep polling an unchanged blocker.

@@ -1,0 +1,29 @@
+{
+  "issue": 718,
+  "whole_issue_accepted": false,
+  "accepted_component": "Exact known native413 actionable guidance; no retry, status/code and unknown-write guards retained.",
+  "source_base": "6b784b41164fe989b524ece809515c18b3915894",
+  "source_sha256": {
+    "app/src/lib/api/_shared.ts": "95491a85a30a180c2ffb60ed1eb92440a7772e75e1f5aa2deebe5a5afdfbc4f2",
+    "app/src/lib/api/_shared.test.ts": "d5ff09c38d43e3c1d02f7642b94fbbd9ac5eb149901cdaf583cf03c10f8ffb3a"
+  },
+  "scope": "Original718 criterion2 only; full718 remains developing.",
+  "proof": {
+    "red": {
+      "path": "/tmp/issue718-upload-proven-red.log",
+      "expected": "7pass1fail on actual pre-fix generic413message",
+      "sha256": "f6c5e5de979173530f1d640f93cd3a9cbf4e0c5a13364ed04fe547e5afe41c49"
+    },
+    "green": {
+      "path": "/tmp/issue718-upload-proven-green.log",
+      "expected": "10pass0fail including uncertain-write remount/persistence guard",
+      "sha256": "e6d76b69f7cb51fa3ed0aa208fba68ce096fef1fbc8e8e63cf1b9dc0daadd8e8"
+    }
+  },
+  "remaining": [
+    "Full original screen/capability browser proof and local/hosted/J03/J04 criteria.",
+    "Original/file keyboard/cancel/large-file actual Rust browser proof with fresh ordinary owner/MFA; preserved401fixture route stopped, no offline identity seeds."
+  ],
+  "series": "autonomous-closeout.md",
+  "automatic_followup": "rentemester-luk-resterende-rust-issues"
+}
