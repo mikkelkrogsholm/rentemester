@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -24,7 +25,9 @@ class Rules(unittest.TestCase):
         w.transition('acceptance', 'developing', 'defect at boundary', None)
         w.transition('done', 'developing', 'regression', None)
         for old in ('developing', 'acceptance'):
-            w.transition(old, 'backlog', 'remaining launcher dependency; retain accepted report', 'report.json')
+            w.transition(old, 'backlog', 'remaining launcher dependency; retain accepted report', 'report.json', 'dependency')
+            with self.assertRaises(ValueError):
+                w.transition(old, 'backlog', 'component passed; start another issue', 'report.json')
             with self.assertRaises(ValueError):
                 w.transition(old, 'backlog', 'remaining dependency', None)
         for old, new in [('backlog', 'done'), ('ready', 'acceptance'), ('done', 'ready')]:
@@ -35,6 +38,9 @@ class Rules(unittest.TestCase):
                 w.transition(w.STATES[w.STATES.index(new) - 1], new, 'reason', '  ')
         with self.assertRaises(ValueError):
             w.transition('backlog', 'ready', ' ', None)
+        with self.assertRaises(ValueError):
+            w.transition('ready', 'developing', 'reason', None, 'user-stop')
+        w.transition('integrating', 'backlog', 'user stopped execution', 'snapshot.json', 'user-stop')
 
     def test_remote(self):
         w.validate_remote([issue(1, 'developing'), issue(2, 'done', True)], 1)
@@ -106,26 +112,79 @@ class Rules(unittest.TestCase):
 
 class MoveTests(unittest.TestCase):
     def test_parking_retains_open_issue_and_other_labels(self):
-        target = issue(2, 'acceptance')
+        target = issue(2, 'acceptance', blocked=True, body='Flow-Blocked: dependency #3')
         target['labels'].append({'name': 'domain:money'})
         writes = self.invoke({1: issue(1), 2: target, 3: issue(3)},
                              ['move', '2', 'backlog', '--reason', 'pending launcher dependency',
-                              '--evidence', 'accepted-report.json'])
+                              '--evidence', 'accepted-report.json', '--interrupt', 'dependency'])
         self.assertIn('accepted-report.json', writes[0][2]['body'])
-        self.assertEqual(writes[1][2], {'labels': ['domain:money', 'flow:backlog'], 'state': 'open'})
+        self.assertEqual(writes[1][2], {'labels': ['flow:blocked', 'domain:money', 'flow:backlog'], 'state': 'open'})
 
-    def invoke(self, records, args):
+    def test_partial_delivery_cannot_release_wip_without_a_recorded_blocker(self):
+        records = {1: issue(1), 2: issue(2, 'developing'), 3: issue(3)}
+        for extra in ([], ['--interrupt', 'dependency'], ['--interrupt', 'external-blocker']):
+            with self.assertRaises(ValueError):
+                self.invoke(records, ['move', '2', 'backlog', '--reason', 'component passed',
+                                      '--evidence', 'report.json', *extra])
+        self.invoke(records, ['move', '2', 'backlog', '--reason', 'user stopped execution',
+                              '--evidence', 'snapshot.json', '--interrupt', 'user-stop'])
+
+    def invoke(self, records, args, published=True, confirm=True):
         writes = []
         def fake_gh(repo, endpoint, method='GET', payload=None):
             if method == 'GET':
+                if endpoint.startswith('compare/'):
+                    return {'status': 'ahead' if published else 'diverged'}
                 return records[int(endpoint.split('/')[-1])]
             writes.append((endpoint, method, payload))
+            if method == 'PATCH' and confirm:
+                return {**records[int(endpoint.split('/')[-1])], **payload}
             return {}
         with patch.object(w, 'root', return_value=Path('/unused')), patch.object(
                 w, 'mapping', return_value=({1, 2, 3}, 1, 'owner/repo')), patch.object(
                 w, 'gh', side_effect=fake_gh):
             w.main(args)
         return writes
+
+    def test_closeout_requires_full_review_current_scope_and_published_source(self):
+        target = issue(2, 'acceptance', body='## Acceptance criteria\n- [ ] Booking works\n- [ ] Access refused\n\n## Scope\nFull original scope')
+        records = {1: issue(1), 2: target, 3: issue(3)}
+        data = dict(issue=2, issue_body_sha256=hashlib.sha256(target['body'].encode()).hexdigest(),
+                    revision='a' * 40, whole_issue_accepted=True, remaining=[],
+                    review='Reviewed integrated diff and booking/refusal evidence against full scope',
+                    criteria=[dict(criterion=text, passed=True, evidence='accepted.json: ' + text)
+                              for text in ('Booking works', 'Access refused')])
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / 'closeout.json'
+            args = ['move', '2', 'done', '--reason', 'whole issue accepted', '--evidence', str(report)]
+            for key, value in [('issue', 3), ('issue_body_sha256', 'stale'), ('remaining', ['missing refusal']),
+                               ('whole_issue_accepted', False), ('review', ''), ('revision', 'short'),
+                               ('criteria', data['criteria'][:1]),
+                               ('criteria', [{**row, 'passed': False} for row in data['criteria']]),
+                               ('criteria', [{**row, 'evidence': ''} for row in data['criteria']])]:
+                report.write_text(json.dumps({**data, key: value}))
+                with self.assertRaises(ValueError):
+                    self.invoke(records, args)
+            report.write_text(json.dumps(data))
+            with self.assertRaises(ValueError):
+                self.invoke(records, args, published=False)
+            with self.assertRaises(ValueError):
+                self.invoke(records, args, confirm=False)
+            writes = self.invoke(records, args)
+            self.assertIn('Whole-issue closeout:', writes[0][2]['body'])
+            self.assertEqual(writes[1][2]['state'], 'closed')
+            self.assertEqual(writes[1][2]['labels'], ['flow:done'])
+            target['labels'].append({'name': 'flow:blocked'})
+            target['body'] += '\nFlow-Blocked: external dependency'
+            data['issue_body_sha256'] = hashlib.sha256(target['body'].encode()).hexdigest()
+            report.write_text(json.dumps(data))
+            with self.assertRaises(ValueError):
+                self.invoke(records, args)
+
+    def test_remote_acknowledgement_required_before_reporting_success(self):
+        with self.assertRaisesRegex(ValueError, 'reconcile before retry'):
+            self.invoke({1: issue(1), 2: issue(2), 3: issue(3)},
+                        ['move', '2', 'ready', '--reason', 'scope understood'], confirm=False)
 
     def test_explicit_move_preserves_labels_and_records_evidence(self):
         target = issue(2, 'integrating')

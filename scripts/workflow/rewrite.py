@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Explicit Rust epic workflow controls. Issue text is data, never executable input."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -62,18 +63,51 @@ def validate_remote(issues, epic):
     return states
 
 
-def transition(old, new, reason, evidence):
+def transition(old, new, reason, evidence, interrupt=None):
     if not reason.strip():
         raise ValueError('a concrete reason is required')
-    parking = old in {'developing', 'acceptance'} and new == 'backlog'
+    parking = old in ACTIVE and new == 'backlog'
     allowed = list(zip(STATES, STATES[1:])) + [('acceptance', 'developing'), ('done', 'developing'),
-                                            ('developing', 'backlog'), ('acceptance', 'backlog')]
+                                            *[(s, 'backlog') for s in ACTIVE]]
     if (old, new) not in allowed:
         raise ValueError(f'unsupported transition {old} -> {new}')
     if new in {'acceptance', 'done'} and not (evidence or '').strip():
         raise ValueError('acceptance/done requires a nonempty evidence reference')
     if parking and not (evidence or '').strip():
         raise ValueError('parking unfinished work requires a nonempty evidence reference')
+    if parking and interrupt not in {'user-stop', 'dependency', 'external-blocker'}:
+        raise ValueError('partial delivery is not a reason to switch issues; specify --interrupt')
+    if interrupt and not parking:
+        raise ValueError('--interrupt is only valid when parking active work')
+
+
+def closeout(issue, evidence):
+    """Check a lead's whole-issue review; never infer acceptance from green tests."""
+    data = json.loads(Path(evidence).read_text())
+    if not isinstance(data, dict):
+        raise ValueError('closeout must be a JSON object')
+    body = issue.get('body') or ''
+    if (type(data.get('issue')) is not int or data['issue'] != issue['number']
+            or data.get('issue_body_sha256') != hashlib.sha256(body.encode()).hexdigest()):
+        raise ValueError('closeout must match this issue and its current full body')
+    if (data.get('whole_issue_accepted') is not True or data.get('remaining') != []
+            or not isinstance(data.get('review'), str) or not data['review'].strip()):
+        raise ValueError('closeout requires whole-issue review and no remaining acceptance')
+    revision = data.get('revision', '')
+    if not isinstance(revision, str) or not re.fullmatch(r'[0-9a-f]{40}', revision):
+        raise ValueError('closeout requires a full source commit')
+    section = re.search(r'^## (?:Acceptance|Completion) criteria[ \t]*\n(.*?)(?=^## |\Z)', body, re.M | re.S)
+    criteria = re.findall(r'^- \[[ xX]\] (.+)$', section[1], re.M) if section else []
+    rows = data.get('criteria')
+    if (not criteria or not isinstance(rows, list) or len(rows) != len(criteria)
+            or any(not isinstance(row, dict) for row in rows)
+            or [row.get('criterion') for row in rows] != criteria):
+        raise ValueError('closeout must cover every original acceptance criterion in order')
+    for row in rows:
+        if (row.get('passed') is not True or not isinstance(row.get('evidence'), str)
+                or not row['evidence'].strip()):
+            raise ValueError('every acceptance criterion requires passing evidence')
+    return revision
 
 
 def valid_path(value):
@@ -216,6 +250,7 @@ def main(argv=None):
     move.add_argument('state', choices=STATES)
     move.add_argument('--reason', required=True)
     move.add_argument('--evidence')
+    move.add_argument('--interrupt', choices=('user-stop', 'dependency', 'external-blocker'))
     packet = sub.add_parser('packet')
     packet.add_argument('--issue', type=int, required=True)
     packet.add_argument('--owner', required=True)
@@ -269,20 +304,36 @@ def main(argv=None):
             print(json.dumps(states, indent=2))
             return
         old = states[args.issue]
-        transition(old, args.state, args.reason, args.evidence)
+        transition(old, args.state, args.reason, args.evidence, args.interrupt)
         if args.issue != epic and args.state in ACTIVE:
             if any(n != args.issue and n != epic and s in ACTIVE for n, s in states.items()):
                 raise ValueError('another child already occupies the single WIP slot')
         issue = next(i for i in issues if i['number'] == args.issue)
+        if args.interrupt in {'dependency', 'external-blocker'}:
+            if 'flow:blocked' not in [v['name'] for v in issue['labels']]:
+                raise ValueError('parking requires flow:blocked and a concrete Flow-Blocked cause')
+        if args.state == 'done':
+            revision = closeout(issue, args.evidence)
+            comparison = gh(repo, f'compare/{revision}...codex/rust-platform')
+            if comparison.get('status') not in {'identical', 'ahead'}:
+                raise ValueError('accepted source must be published in codex/rust-platform before closure')
+            if 'flow:blocked' in [v['name'] for v in issue['labels']]:
+                raise ValueError('resolve the recorded blocker before closure')
         labels = [v['name'] for v in issue['labels'] if v['name'] not in {f'flow:{s}' for s in STATES}]
         labels.append(f'flow:{args.state}')
         comment = f"Workflow: {old} -> {args.state}\n\nReason: {args.reason.strip()}"
         if args.evidence:
-            comment += f'\n\nEvidence reference (not automatically verified): {args.evidence.strip()}'
+            comment += f'\n\nEvidence reference: {args.evidence.strip()}'
+        if args.state == 'done':
+            comment += '\n\nWhole-issue closeout:\n```json\n' + Path(args.evidence).read_text() + '\n```'
+        if args.interrupt:
+            comment += f'\n\nInterruption: {args.interrupt}; unfinished scope is preserved.'
         # Save the decision before mutation; API failures remain visible and are never replayed automatically.
         gh(repo, f'issues/{args.issue}/comments', 'POST', {'body': comment})
-        gh(repo, f'issues/{args.issue}', 'PATCH', {'labels': labels,
+        updated = gh(repo, f'issues/{args.issue}', 'PATCH', {'labels': labels,
            'state': 'closed' if args.state == 'done' else 'open'})
+        if updated.get('number') != args.issue or state(updated) != args.state:
+            raise ValueError('GitHub did not confirm the requested state; reconcile before retry')
         print(f'#{args.issue}: {old} -> {args.state}')
 
 

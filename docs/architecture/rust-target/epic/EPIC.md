@@ -235,11 +235,13 @@ partial implementations/evidence remain valid in their recorded scope even
 when the parent issue waits in backlog for its remaining acceptance. No
 blanket issue closure is implied by initializing these labels.
 
-Current focus: #701, complete source-authoritative Dinero import and its
-remaining original evidence/document workflows. All other original children
-remain queued without discarding existing work. Installed desktop GUI
-acceptance is explicitly deferred until all preceding implementation and
-headless checks are complete; no repeated screen-unlock requests.
+Execution is paused at the user's request. On authorized resume, select one
+existing issue for whole-issue closure and finish its remaining acceptance.
+Partial components preserve evidence but do not justify switching issues.
+Each state has a scope limit, exit condition and stop rule in
+[the workflow contract](../../../development-workflow.md). The existing state
+machine remains authoritative; no extra queue or manager is introduced.
+Installed manual desktop acceptance remains last.
 
 Hooks enforce work-packet scope and commit issue references locally. The
 workflow checker validates status exclusivity, open/closed consistency and
