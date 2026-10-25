@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, BTreeSet};
 fn error(_: impl std::fmt::Display) -> rentemester_engine::Error {
     store::refused("native snapshot or restore refused; no automatic retry or adoption")
 }
-fn snapshot(db: &Connection) -> Result<Vec<u8>, rentemester_engine::Error> {
+pub(super) fn snapshot(db: &Connection) -> Result<Vec<u8>, rentemester_engine::Error> {
     let count: i64 = db
         .pragma_query_value(None, "page_count", |r| r.get(0))
         .map_err(error)?;
@@ -717,7 +717,7 @@ impl Owner {
             .unwrap()
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|_| OwnerError::Database)?;
-        let has_restore:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM workspace_audit WHERE event_type='native_portable_restore' AND entity_type='backup')",[],|r|r.get(0)).map_err(|_|OwnerError::Database)?;
+        let has_restore:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM workspace_audit WHERE event_type IN ('native_portable_restore','source_workspace_snapshot_restore') AND entity_type='backup')",[],|r|r.get(0)).map_err(|_|OwnerError::Database)?;
         let boot:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM rm_workspace_bootstrap_events WHERE reservation_hash=?1 AND event_type='access_completed' AND user_id=?2 AND company_slug=?3)",rusqlite::params![reservation.reservation_hash,reservation.user_id,reservation.company_slug],|r|r.get(0)).map_err(|_|OwnerError::Database)?;
         if !has_restore || !boot {
             return Err(OwnerError::Context);

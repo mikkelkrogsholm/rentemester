@@ -6,12 +6,9 @@
 //! operator authority. The current credential/Operator and canonical Owner fence
 //! must still authorize every company before any snapshot or restore effect.
 //!
-//! Integration blocker: NamespaceGuard::create_verified_restore_stage and
-//! Owner::restore_new accept only native backup_artifact::VerifiedArtifact.
-//! Original717RestoreStage accepts only HMAC-verified VerifiedOriginal717 and
-//! publishes one company, not an atomic workspace. Neither type may be forged or
-//! substituted for this source archive. This module deliberately opens no paths,
-//! restores no SQL, issues no credentials, and registers no HTTP endpoint.
+//! Independent-key trust produces a distinct source-profile proof. The host
+//! still performs complete SQL/business admission and explicit source-unavailable
+//! control before staging; no native artifact/adoption proof is manufactured.
 use crate::backup_artifact::{Error, MAX_MANIFEST_BYTES, original717 as company};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use ring::signature;
@@ -431,6 +428,21 @@ mod tests {
         assert!(check_archive(b"{\"format\":\"rentemester-native-backup/1\"}").is_err());
     }
     #[test]
+    fn original716_independent_company_trust_never_comes_from_embedded_key() {
+        let files = fixture(false);
+        let wire = company::archive(&files).unwrap();
+        let mut keys = company::Files::new();
+        for slug in ["synthetic-a", "synthetic-b"] {
+            let nested = company::read_archive(&files[&format!("companies/{slug}.tar")]).unwrap();
+            keys.insert(slug.into(), nested["config/backup-manifest.pub"].clone());
+        }
+        assert!(trust_archive(&wire, &keys).is_ok());
+        assert!(trust_archive(&wire, &company::Files::new()).is_err());
+        let a = keys["synthetic-a"].clone();
+        keys.insert("synthetic-b".into(), a);
+        assert!(trust_archive(&wire, &keys).is_err());
+    }
+    #[test]
     fn original716_source_transfer_recovery_plan_is_not_an_authentication_database() {
         let slugs = BTreeSet::from(["synthetic-a".into()]);
         let valid = json!({"version":1,"recovery":"bootstrap-owner-then-reinvite","users":[{"name":"Synthetic owner","email":"owner@example.invalid","workspaceRole":"workspace_owner","memberships":[{"companySlug":"synthetic-a","role":"owner"}]}]});
@@ -452,4 +464,110 @@ mod tests {
         invalid["users"][0]["memberships"][0]["companySlug"] = json!("unregistered");
         assert!(plan(&serde_json::to_vec(&invalid).unwrap(), &slugs).is_err());
     }
+}
+
+/// Independent operator-supplied keys indexed by company slug. Embedded keys are
+/// compared to these keys, never promoted to a trust root.
+pub struct TrustedArchive {
+    archive: CheckedArchive,
+    stage_files: company::Files,
+}
+impl TrustedArchive {
+    pub fn archive(&self) -> &CheckedArchive {
+        &self.archive
+    }
+    pub fn stage_files(&self) -> &company::Files {
+        &self.stage_files
+    }
+}
+pub fn trust_archive(bytes: &[u8], keys: &company::Files) -> Result<TrustedArchive, Error> {
+    let archive = check_archive(bytes)?;
+    if keys.len() != archive.manifest.companies.len() {
+        return Err(Error::Coverage);
+    }
+    let mut stage_files = company::Files::new();
+    for c in &archive.manifest.companies {
+        let files = company::read_archive(&archive.files[&c.backup.path])?;
+        let expected = company::parse_public_key(keys.get(&c.slug).ok_or(Error::InvalidKey)?)?;
+        let actual = company::parse_public_key(&files["config/backup-manifest.pub"])?;
+        if actual != expected {
+            return Err(Error::Signature);
+        }
+        for (path, bytes) in files {
+            let mapped = if path == "ledger.sqlite" {
+                Some("data/ledger.sqlite".to_owned())
+            } else if let Some(p) = path.strip_prefix("documents-originals/") {
+                Some(format!("documents/originals/{p}"))
+            } else if let Some(p) = path.strip_prefix("invoices-issued/") {
+                Some(format!("invoices/issued/{p}"))
+            } else if path == "config/policy.yaml" {
+                Some(path)
+            } else {
+                None
+            };
+            if let Some(path) = mapped {
+                stage_files.insert(format!("{}/{path}", c.slug), bytes);
+            }
+        }
+    }
+    stage_files.insert(
+        ".rentemester/restored-access-plan.json".into(),
+        archive.files["access-plan.json"].clone(),
+    );
+    Ok(TrustedArchive {
+        archive,
+        stage_files,
+    })
+}
+
+/// Build the source workspace envelope around already signed credential-free
+/// company TARs. This codec has no filesystem/authority effects.
+pub fn create_archive(
+    workspace: Vec<u8>,
+    access: AccessPlan,
+    companies: Vec<(Company, Vec<u8>)>,
+    created_at: String,
+    provenance: Value,
+) -> Result<Vec<u8>, Error> {
+    let mut files = company::Files::from([
+        ("workspace.json".into(), workspace),
+        (
+            "access-plan.json".into(),
+            serde_json::to_vec(&access).map_err(|_| Error::Malformed)?,
+        ),
+    ]);
+    let evidence = |path: &str, bytes: &[u8]| File {
+        path: path.into(),
+        sha256: company::sha256(bytes),
+        size_bytes: bytes.len() as u64,
+    };
+    let mut rows = vec![];
+    for (mut c, bytes) in companies {
+        c.backup = evidence(&format!("companies/{}.tar", c.slug), &bytes);
+        if files.insert(c.backup.path.clone(), bytes).is_some() {
+            return Err(Error::Duplicate);
+        }
+        rows.push(c);
+    }
+    let manifest = Manifest {
+        version: 1,
+        created_at,
+        provenance,
+        credential_policy: CREDENTIAL_POLICY.into(),
+        workspace_manifest: evidence("workspace.json", &files["workspace.json"]),
+        access_plan: evidence("access-plan.json", &files["access-plan.json"]),
+        company_knowledge: None,
+        ownership_graph: None,
+        workspace_registry: None,
+        intercompany_dispositions: None,
+        workspace_inbox: None,
+        companies: rows,
+    };
+    files.insert(
+        "manifest.json".into(),
+        serde_json::to_vec_pretty(&manifest).map_err(|_| Error::Malformed)?,
+    );
+    let bytes = company::archive(&files)?;
+    check_archive(&bytes)?;
+    Ok(bytes)
 }

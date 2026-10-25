@@ -22,6 +22,70 @@ impl NamespaceGuard {
         }
         WorkspaceLayout::validate_new_manifest(workspace, slug, image.manifest_bytes())
             .map_err(|_| Error::Invalid)?;
+        Self::materialize_private_stage(
+            root,
+            uid,
+            workspace,
+            slug,
+            profile,
+            image.manifest_bytes(),
+            image.companies(),
+            &std::iter::once((RECEIPT_PATH, image.receipt_bytes()))
+                .chain(
+                    image
+                        .files()
+                        .iter()
+                        .map(|f| (f.path.as_str(), f.bytes.as_slice())),
+                )
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    /// Distinct source-profile proof; never accepted as an AdoptionImage/native artifact.
+    pub fn create_source_restore_stage(
+        root: &Path,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        profile: NamespaceProfile,
+        source: &crate::original716::transfer::TrustedArchive,
+    ) -> Result<Self, Error> {
+        let companies = source
+            .archive()
+            .manifest()
+            .companies
+            .iter()
+            .map(|c| c.slug.clone())
+            .collect::<Vec<_>>();
+        let files = source
+            .stage_files()
+            .iter()
+            .map(|(p, b)| (p.as_str(), b.as_slice()))
+            .collect::<Vec<_>>();
+        Self::materialize_private_stage(
+            root,
+            uid,
+            workspace,
+            slug,
+            profile,
+            &source.archive().files()["workspace.json"],
+            &companies,
+            &files,
+        )
+    }
+
+    fn materialize_private_stage(
+        root: &Path,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        profile: NamespaceProfile,
+        manifest: &[u8],
+        companies: &[String],
+        files: &[(&str, &[u8])],
+    ) -> Result<Self, Error> {
+        WorkspaceLayout::validate_new_manifest(workspace, slug, manifest)
+            .map_err(|_| Error::Invalid)?;
         process_profile(uid, profile)?;
         if !root.is_absolute()
             || root
@@ -46,16 +110,18 @@ impl NamespaceGuard {
         }
         let lease = WorkspaceLease::acquire(root).map_err(|_| Error::Busy)?;
         let mut directories = BTreeSet::from([".rentemester".to_owned()]);
-        for company in image.companies() {
-            for suffix in [
-                "",
-                "/data",
-                "/documents",
-                "/documents/originals",
-                "/bank",
-                "/bank/processed",
-            ] {
-                directories.insert(format!("{company}{suffix}"));
+        for company in companies {
+            directories.insert(company.to_owned());
+            for suffix in crate::namespace::COMPANY_LAYOUT_DIRS {
+                directories.insert(format!("{company}/{suffix}"));
+            }
+        }
+        // Inventory paths are proof-validated canonical names. Create each
+        // intermediate directory once, parent first, under the fresh held root.
+        for (path, _) in files {
+            let parts = path.split('/').collect::<Vec<_>>();
+            for n in 1..parts.len() {
+                directories.insert(parts[..n].join("/"));
             }
         }
         let mut dirs: Vec<_> = directories.into_iter().collect();
@@ -82,10 +148,9 @@ impl NamespaceGuard {
             file.sync_all().map_err(|_| Error::Invalid)
         };
         write(".rentemester/workspace-control.sqlite", &[])?;
-        write("workspace.json", image.manifest_bytes())?;
-        write(RECEIPT_PATH, image.receipt_bytes())?;
-        for file in image.files() {
-            write(&file.path, &file.bytes)?;
+        write("workspace.json", manifest)?;
+        for (path, bytes) in files {
+            write(path, bytes)?;
         }
         for dir in dirs.iter().rev() {
             let d = File::from(

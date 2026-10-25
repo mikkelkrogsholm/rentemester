@@ -235,6 +235,17 @@ pub fn initialize_control(
     tx.commit().map_err(sql)?;
     crate::control_migration::validate_current_control(db)
 }
+/// Distinct source-profile initialization. No native restore event or source
+/// authentication tables are imported by this adapter.
+pub fn initialize_source_control(db: &mut Connection, archive_hash: &str) -> Result<(), Error> {
+    if archive_hash.len() != 64 || !archive_hash.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err(refused("source restore digest invalid"));
+    }
+    crate::control_migration::initialize_empty(db)?;
+    db.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('source_workspace_snapshot_restore','backup',?1,'system:source-workspace-restore')",[archive_hash]).map_err(sql)?;
+    crate::control_migration::validate_current_control(db)
+}
+
 fn export_access_tables(tx: &Transaction<'_>) -> Result<Vec<u8>, Error> {
     let exists: bool = tx
         .query_row(
