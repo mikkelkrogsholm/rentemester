@@ -3,8 +3,9 @@ use serde_json::{Value, json};
 mod protocol_common;
 
 
-// Registry includes the required bookkeeping_batch_dry_run alias.
-const EXPECTED_NATIVE_TOOLS: usize = 436;
+// Explicit integrated registry fixture, including source717 additions.
+const EXPECTED_NATIVE_TOOLS: usize = 448;
+use protocol_common::TcpListener;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -26,7 +27,7 @@ fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
 }
 use std::{
     io::{Read, Write},
-    net::TcpListener,
+
     path::PathBuf,
     process::{Command, Output, Stdio},
     sync::{
@@ -1573,7 +1574,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
 
 #[test]
 fn privacy_mcp_export_is_audited_and_full_unknown_coverage_is_preserved() {
-    let reply = r#"{"ok":true,"gdpr":{"export":{"coverage":{"complete":false},"records":[{"source":"audit_log","retentionUnknown":true,"retainUntil":null,"erasable":false}]}}}"#;
+    let reply = r#"{"ok":true,"result":{"ok":true,"errors":[],"asOf":"2026-01-31","coverage":{"complete":false},"records":[{"source":"audit_log","retentionUnknown":true,"retainUntil":null,"erasable":false}]}}"#;
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
         reply.len()
@@ -1588,17 +1589,18 @@ fn privacy_mcp_export_is_audited_and_full_unknown_coverage_is_preserved() {
             call(
                 2,
                 "gdpr_export",
-                json!({"company":"synthetic","body":body,"confirm":true}),
+                json!({"company":"synthetic","cvr":"  SYN-SUBJECT  ","asOf":"2026-01-31","confirm":true}),
             ),
         ],
     ));
     assert_eq!(
         v[1]["result"]["structuredContent"]["data"],
-        serde_json::from_str::<Value>(reply).unwrap()
+        { let mut core = serde_json::from_str::<Value>(reply).unwrap()["result"].clone(); core.as_object_mut().unwrap().remove("ok"); core.as_object_mut().unwrap().remove("errors"); core }
     );
     let wire = String::from_utf8(request.recv().unwrap()).unwrap();
-    assert!(wire.starts_with("POST /api/companies/synthetic/gdpr/export HTTP/1.1"));
-    assert!(wire.ends_with(body));
+    assert!(wire.starts_with("POST /api/companies/synthetic/original-gdpr-export HTTP/1.1"));
+    let sent: Value = serde_json::from_str(wire.split_once("\r\n\r\n").unwrap().1).unwrap();
+    assert_eq!(sent, serde_json::from_str::<Value>(body).unwrap());
     task.join().unwrap();
 }
 #[test]

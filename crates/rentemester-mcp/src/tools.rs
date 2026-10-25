@@ -234,6 +234,33 @@ pub fn list() -> Value {
     tools.extend(crate::knowledge_ownership_original717::tools());
     tools.extend(crate::inbox_original717::tools());
     tools.extend(crate::intercompany_original717::tools());
+    // Native audit export appends evidence; it must never inherit the source
+    // read-only audit-log annotation or share its original name.
+    tools.push(tool(
+        "native_gdpr_audit_log",
+        "Audited native GDPR export. Appends audit evidence; exact confirmed native body once, no automatic retries.",
+        json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":native_body(rentemester_client::PrivacyOperation::AuditLog.schema()),"confirm":{"const":true}},"additionalProperties":false}),
+        false,
+    ));
+    // Discovery metadata is frozen source contract, not a paraphrase of native
+    // behavior. Execution remains in the admitted family-specific dispatchers.
+    let source: Value = serde_json::from_str(include_str!(
+        "../../../docs/architecture/rust-target/implementation/baseline/inventory.json"
+    )).expect("frozen source inventory");
+    for t in &mut tools {
+        if matches!(t["name"].as_str(), Some(
+            "system_backup_destination_list" | "system_backup_destination_add" |
+            "system_backup_destination_remove" | "system_backup_confirm_placement" |
+            "system_backup_governance" | "gdpr_discover" | "gdpr_export" |
+            "gdpr_audit_log" | "efaktura_onboarding_status" | "efaktura_onboard" |
+            "efaktura_registrer" | "efaktura_modtag" | "efaktura_modtag_workspace" |
+            "efaktura_konfigurer"
+        )) {
+            let original = source["mcp"].as_array().expect("source tools")
+                .iter().find(|s| s["name"] == t["name"]).expect("original tool");
+            *t = original.clone();
+        }
+    }
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -291,6 +318,18 @@ struct DomainWriteArgs {
 
 /// Invalid RPC tool/arguments are protocol errors; HTTP/domain failures are tool results.
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    if matches!(name, "gdpr_discover" | "gdpr_export" | "gdpr_audit_log") {
+        return crate::privacy::original717_call(api, name, args).await;
+    }
+    if matches!(name, "system_backup_destination_list" | "system_backup_destination_add" | "system_backup_destination_remove" | "system_backup_confirm_placement") {
+        return crate::backup_registration::original717::source_call(api, name, args).await;
+    }
+    if name == "system_backup_governance" {
+        return crate::backup_governance::source_call(api, args).await;
+    }
+    if matches!(name, "efaktura_onboarding_status" | "efaktura_onboard" | "efaktura_registrer" | "efaktura_modtag" | "efaktura_modtag_workspace") {
+        return crate::public_einvoice::original717_tool_result(api, name, args).await;
+    }
     if crate::original717::accepts(name) { return crate::original717::call(api,name,args).await; }
     if crate::original_discovery123::accepts(name) { return crate::original_discovery123::call(api, name, args).await; }
     if !args.is_object() {
@@ -360,6 +399,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::invoice_compensation::accepts(name) => crate::invoice_compensation::call(api,name,args).await?,
         name if crate::reminder_claims::accepts(name) => crate::reminder_claims::call(api,name,args).await?,
         name if crate::company_setup::accepts(name) => crate::company_setup::call(api,name,args).await?,
+        "native_gdpr_audit_log" => crate::privacy::call(api,"gdpr_audit_log",args).await?,
         name if crate::privacy::accepts(name) => crate::privacy::call(api,name,args).await?,
         name if crate::budget::accepts(name) => crate::budget::call(api,name,args).await?,
         name if crate::consolidation::accepts(name)=>crate::consolidation::call(api,name,args).await?,

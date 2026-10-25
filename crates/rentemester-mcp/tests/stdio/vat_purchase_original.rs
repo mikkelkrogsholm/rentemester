@@ -24,8 +24,8 @@ fn registry_362_unique_strict_two_writes_and_confirmation_before_http() {
         .iter()
         .map(|t| t["name"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(names.len(), 370);
-    assert_eq!(tools.len(), 370);
+    assert_eq!(names.len(), EXPECTED_NATIVE_TOOLS);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "vat_report",
         "vat_eu_sales_list",

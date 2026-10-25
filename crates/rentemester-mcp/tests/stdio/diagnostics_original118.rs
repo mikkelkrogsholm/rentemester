@@ -20,7 +20,7 @@ fn original_diagnostics118_catalogue_exact_flat_grammar_titles_and_hints() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 436);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for (name, title) in [
         ("retention_status", "Retention status report"),
         ("system_healthcheck", "Company directory healthcheck"),
