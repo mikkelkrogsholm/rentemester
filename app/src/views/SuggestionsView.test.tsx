@@ -1,3 +1,5 @@
+import { useState } from "react";
+import * as authContext from "../lib/auth-context";
 // Tests for the SuggestionsView — the Agent-forslag side of #346.
 //
 // The view consumes `/api/companies/:slug/agent-suggestions` (read) and posts
@@ -297,4 +299,42 @@ test("unknown result locks both decisions across read and remount; manual releas
   expect(posts).toBe(1);
   expect(within(dialog).getByRole("button", { name: "Afvis forslag" })).not.toBeDisabled();
   sessionStorage.clear();
+});
+
+function reviewAuth(role: "reader" | "reviewer"): authContext.AuthState {
+  const user = { id: "synthetic-reviewer", email: "reviewer@example.invalid", emailVerified: true, twoFactorEnabled: true };
+  return { loading: false, hosted: true, backend: "rust", session: user, currentSessionId: "synthetic-session", context: { user, workspaceRole: "member", companies: [{ slug: "acme-aps", name: "Synthetic", role, archived: false }] }, refresh: async () => {}, clear: () => {} };
+}
+
+test("reader can inspect proposals but cannot open a decision", async () => {
+  const spy = vi.spyOn(authContext, "useOptionalAuth").mockReturnValue(reviewAuth("reader"));
+  try {
+    mockFetch(route()); renderView();
+    await screen.findByText("Overforfalden kreditorpost");
+    expect(screen.queryByRole("button", { name: /Godkend Overforfalden/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Afvis Overforfalden/ })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Kun læseadgang/).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  } finally { spy.mockRestore(); }
+});
+
+test("authority loss invalidates the open review and hides old queue facts before any POST", async () => {
+  let auth = reviewAuth("reviewer");
+  const spy = vi.spyOn(authContext, "useOptionalAuth").mockImplementation(() => auth);
+  try {
+    mockFetch(route()); const original = globalThis.fetch;
+    const calls = vi.fn(original); stubGlobal("fetch", calls);
+    function Harness() {
+      const [, setTick] = useState(0);
+      return <><button onClick={() => { auth = { ...auth, context: { ...auth.context!, companies: [] } }; setTick(x => x + 1); }}>Synthetic revoke</button><SuggestionsView /></>;
+    }
+    renderAt(<Harness />, { route: "/companies/acme-aps/agent-forslag", path: "/companies/:slug/agent-forslag" });
+    await userEvent.click(await screen.findByRole("button", { name: /Godkend Overforfalden/ }));
+    await screen.findByRole("dialog", { name: "Beslut forslag #101" });
+    await userEvent.click(screen.getByRole("button", { name: "Synthetic revoke" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.queryByText("Overforfalden kreditorpost")).not.toBeInTheDocument();
+    await screen.findByText(/Din adgang til forslagene kunne ikke bekræftes/);
+    expect(calls.mock.calls.filter(([,init]) => init?.method === "POST")).toHaveLength(0);
+  } finally { spy.mockRestore(); }
 });

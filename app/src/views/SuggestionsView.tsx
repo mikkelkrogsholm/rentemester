@@ -22,9 +22,14 @@ const SEVERITY_LABEL: Record<AgentSuggestionRow["severity"], string> = {
 
 export function SuggestionsView() {
   const { slug = "" } = useParams();
+  const auth = useOptionalAuth();
+  const capabilities = useCapabilities(slug);
+  const readable = !auth?.loading && capabilities.can("company.read");
   const state = useAsync<CompanyAgentSuggestions>(
-    (signal) => api.agentSuggestions(slug, { signal }),
-    [slug],
+    (signal) => readable
+      ? api.agentSuggestions(slug, { signal })
+      : Promise.reject(new ApiError("access_denied", "Din adgang til forslagene kunne ikke bekræftes. Kontrollér din session og adgang.", 403)),
+    [slug, auth?.session?.id, auth?.currentSessionId, auth?.context, readable],
   );
 
 
