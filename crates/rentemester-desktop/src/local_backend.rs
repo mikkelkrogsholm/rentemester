@@ -32,6 +32,7 @@ struct Observation {
     failure: Option<&'static str>,
 }
 pub struct Managed {
+    // Child retains the sole parent-side stdin writer until stop/drop or owner death.
     child: Child,
     observation: Arc<Mutex<Observation>>,
     pub origin: String,
@@ -401,7 +402,8 @@ impl Managed {
             .arg(config)
             .arg("--local-runtime-dir")
             .arg(&input.profile)
-            .stdin(Stdio::null())
+            .arg("--managed-parent-stdin")
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
         if create {
@@ -863,8 +865,60 @@ mod tests {
         unrelated.kill().unwrap();
         unrelated.wait().unwrap();
     }
+    /// Not named actual_: the supervisor's actual_ filter must not run this
+    /// waiting subprocess fixture directly.
+    #[test]
+    #[ignore = "subprocess fixture for the actual Managed owner-death test"]
+    fn owned_parent_fixture() {
+        let profile = PathBuf::from(std::env::var_os("RENTEMESTER_TEST_OWNER_PROFILE").unwrap());
+        let ready = PathBuf::from(std::env::var_os("RENTEMESTER_TEST_OWNER_READY").unwrap());
+        let mut managed = Managed::start(Start {
+            profile,
+            create: false,
+            company_name: String::new(),
+            server_binary: PathBuf::from(
+                std::env::var_os("RENTEMESTER_TEST_LOCAL_SERVER").unwrap(),
+            ),
+            web: PathBuf::from(std::env::var_os("RENTEMESTER_TEST_LOCAL_WEB").unwrap()),
+        })
+        .unwrap();
+        let pending = ready.with_extension("pending");
+        fs::write(&pending, json!({"pid": managed.child.id()}).to_string()).unwrap();
+        fs::rename(pending, ready).unwrap();
+        let deadline = Instant::now() + Duration::from_secs(60);
+        while Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(50));
+        }
+        managed.stop().unwrap();
+        panic!("controller did not kill the owner fixture within its bounded lifetime");
+    }
+
+    // Observe only the fixture's child, never discover/kill an arbitrary server.
+    // A zombie has exited too (the SIGKILLed owner cannot reap its child).
+    fn owned_backend_exited(pid: u32, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let status = Command::new("/bin/ps")
+                .args(["-p", &pid.to_string(), "-o", "stat="])
+                .output()
+                .unwrap();
+            if !status.status.success()
+                || String::from_utf8_lossy(&status.stdout)
+                    .trim()
+                    .starts_with('Z')
+            {
+                return true;
+            }
+            if Instant::now() >= deadline {
+                return false;
+            }
+            thread::sleep(Duration::from_millis(25));
+        }
+    }
+
     #[test]
     #[ignore = "requires the real Mac runtime server and built browser assets"]
+    #[cfg(target_os = "macos")]
     fn actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile() {
         let server = PathBuf::from(
             std::env::var_os("RENTEMESTER_TEST_LOCAL_SERVER").expect("set compiled server path"),
@@ -894,7 +948,63 @@ mod tests {
         assert!(first.child.try_wait().unwrap().is_some());
         let mut reopened = Managed::start(input(false)).unwrap();
         assert!(fs::read(path.join("server.json")).unwrap() == original);
-        reopened.stop().unwrap();
+        // A real backend crash leaves stale endpoints, but not a live lease.
+        reopened.child.kill().unwrap();
+        reopened.child.wait().unwrap();
+        let mut recovered = Managed::start(input(false)).unwrap();
+        assert!(fs::read(path.join("server.json")).unwrap() == original);
+        let previous: SocketAddr = recovered
+            .origin
+            .strip_prefix("http://")
+            .unwrap()
+            .parse()
+            .unwrap();
+        recovered.stop().unwrap();
+        let occupied = std::net::TcpListener::bind(previous).unwrap();
+        let mut fresh = Managed::start(input(false)).unwrap();
+        assert_ne!(fresh.origin, format!("http://{previous}"));
+        assert_eq!(occupied.local_addr().unwrap(), previous);
+        assert!(std::net::TcpStream::connect(previous).is_ok());
+        assert!(fs::read(path.join("server.json")).unwrap() == original);
+        fresh.stop().unwrap();
+        drop(occupied);
+
+        // Kill the actual owner, not its backend. The helper uses this very
+        // Managed implementation, with no Tauri window or alternate manager.
+        let ready = path.join("owner-ready");
+        let mut owner = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--ignored",
+                "--exact",
+                "local_backend::tests::owned_parent_fixture",
+                "--nocapture",
+            ])
+            .env("RENTEMESTER_TEST_OWNER_PROFILE", &path)
+            .env("RENTEMESTER_TEST_OWNER_READY", &ready)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(40);
+        while !ready.is_file() {
+            if owner.try_wait().unwrap().is_some() || Instant::now() >= deadline {
+                let _ = owner.kill();
+                let _ = owner.wait();
+                panic!("owner fixture failed before Managed readiness");
+            }
+            thread::sleep(Duration::from_millis(25));
+        }
+        let receipt: Value = serde_json::from_slice(&fs::read(&ready).unwrap()).unwrap();
+        let pid = receipt["pid"].as_u64().unwrap() as u32;
+        owner.kill().unwrap();
+        owner.wait().unwrap();
+        assert!(
+            owned_backend_exited(pid, Duration::from_secs(15)),
+            "owned backend did not product-exit after owner SIGKILL"
+        );
+        let mut successor = Managed::start(input(false)).unwrap();
+        assert!(fs::read(path.join("server.json")).unwrap() == original);
+        successor.stop().unwrap();
         fs::remove_dir_all(path).unwrap();
     }
 }
