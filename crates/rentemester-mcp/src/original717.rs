@@ -35,7 +35,12 @@ fn wrap(mut core: Value) -> Value {
             })
             .unwrap_or_default()
             .to_lowercase();
-        let code = if errors.contains("falls in closed period")
+        let code = if matches!(
+            core["code"].as_str(),
+            Some("backup_overdue" | "BACKUP_LOCKED")
+        ) {
+            Some("BACKUP_LOCKED")
+        } else if errors.contains("falls in closed period")
             || errors.contains("falls in reported period")
             || errors.contains("perioden er lukket")
             || errors.contains("periode er lukket")

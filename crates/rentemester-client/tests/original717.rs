@@ -230,9 +230,21 @@ async fn original717_system_restore_backup_local_operator_wire_and_reconnect() {
     std::fs::set_permissions(path.join("r.json"), std::fs::Permissions::from_mode(0o600)).unwrap();
     let local = rentemester_client::LocalRuntime::load(&path).unwrap();
     let api = ApiClient::new_local(&local, Some("session=synthetic".into())).unwrap();
-    let target = path.join("workspace/restored");
-    let a = json!({"backupDir":path.join("workspace/source/backups/b1"),"targetCompany":target,"verifyKey":path.join("workspace/source/backups/.backup-manifest.key"),"confirm":true,"confirmText":format!("RESTORE {}",target.display())});
-    let expected = a.clone();
+    let cwd = std::env::current_dir().unwrap();
+    let target = cwd.join("synthetic-restored");
+    let a = json!({"backupDir":"./synthetic-backup","targetCompany":"./unused/../synthetic-restored","verifyKey":"./synthetic-key","confirm":true,"confirmText":"RESTORE ./unused/../synthetic-restored"});
+    let mut expected = a.clone();
+    expected["backupDir"] = json!(cwd.join("synthetic-backup"));
+    expected["targetCompany"] = json!(target);
+    expected["verifyKey"] = json!(cwd.join("synthetic-key"));
+    expected["confirmText"] = json!(format!("RESTORE {}", target.display()));
+    let mut wrong_confirmation = a.clone();
+    wrong_confirmation["confirmText"] = json!("RESTORE another-target");
+    assert!(matches!(
+        api.original717("system_restore_backup", &wrong_confirmation)
+            .await,
+        Err(Error::InvalidInput(_))
+    ));
     let reply = json!({"ok":true,"backupId":"b1","restoredAt":"2026-01-01T00:00:00Z","targetCompanyRoot":target,"restoredDbPath":target.join("data/ledger.sqlite"),"restoredFiles":{"documentsOriginals":0,"invoicesIssued":0,"config":0},"errors":[]});
     let r = reply.clone();
     let worker = std::thread::spawn(move || {

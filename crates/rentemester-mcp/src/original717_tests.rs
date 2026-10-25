@@ -91,7 +91,7 @@ async fn exercise(name: &str) {
         worker.join().unwrap();
     }
 }
-macro_rules! cases {($($name:ident),*)=>{$(#[tokio::test] async fn $name(){exercise(stringify!($name).strip_prefix("original717_").unwrap()).await;})*};}
+macro_rules! cases {($($name:ident),*)=>{$(#[test] fn $name(){tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(exercise(stringify!($name).strip_prefix("original717_").unwrap()));})*};}
 cases!(
     original717_system_backup,
     original717_system_backup_archive,
@@ -130,8 +130,15 @@ fn original717_registry_metadata_and_envelope() {
         agreement(&wrap(c));
     }
 }
-#[tokio::test]
-async fn original717_cvr_optional_confirmation_is_domain_result() {
+#[test]
+fn original717_cvr_optional_confirmation_is_domain_result() {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(cvr_confirmation());
+}
+async fn cvr_confirmation() {
     let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
     for name in ["cvr_lookup", "company_sync_cvr"] {
         for confirmation in [None, Some(false)] {
@@ -153,8 +160,15 @@ async fn original717_cvr_optional_confirmation_is_domain_result() {
         assert!(crate::tools::call(&api, name, a).await.is_err());
     }
 }
-#[tokio::test]
-async fn original717_audit_and_posting_selectors_reject_remote_paths() {
+#[test]
+fn original717_audit_and_posting_selectors_reject_remote_paths() {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(audit_selectors());
+}
+async fn audit_selectors() {
     let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
     for name in ["audit_verify", "audit_log_list"] {
         let v = crate::tools::call(&api, name, json!({"company":"/outside/synthetic"}))
@@ -174,6 +188,10 @@ async fn original717_audit_and_posting_selectors_reject_remote_paths() {
 }
 #[test]
 fn original717_wrap_core_result_cross_cutting_codes_and_false_idempotency() {
+    let locked =
+        wrap(json!({"ok":false,"errors":["Bookkeeping is locked"],"code":"backup_overdue"}));
+    agreement(&locked);
+    assert_eq!(locked["structuredContent"]["code"], "BACKUP_LOCKED");
     for (message, code) in [
         ("date falls in closed period 2026", "PERIOD_CLOSED"),
         ("invoice must be posted", "PRECONDITION_MISSING"),

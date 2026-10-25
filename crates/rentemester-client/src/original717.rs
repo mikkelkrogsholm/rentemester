@@ -144,12 +144,18 @@ fn messages(source: &str) -> Result<Value, Error> {
         return Err(fail());
     }
     let mut paths = if m.is_dir() {
-        fs::read_dir(p)
+        let entries = fs::read_dir(p)
             .map_err(|_| fail())?
             .take(4097)
             .map(|e| e.map(|e| e.path()))
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|_| fail())?
+            .map_err(|_| fail())?;
+        // Count before filtering: a bounded traversal must not silently omit a
+        // later EML after thousands of unrelated entries.
+        if entries.len() > 4096 {
+            return Err(fail());
+        }
+        entries
             .into_iter()
             .filter(|p| p.extension().is_some_and(|e| e.eq_ignore_ascii_case("eml")))
             .collect::<Vec<_>>()
@@ -207,12 +213,36 @@ impl ApiClient {
         let restore = name == "system_restore_backup";
         // Source authenticated remote restore had no company and was unsupported.
         // Explicit out is an operator-local write, not arbitrary hosted authority.
-        if (restore || args.get("out").is_some()) && self.local.is_none() {
+        let explicit_out = args["out"].as_str().is_some_and(|s| !s.trim().is_empty());
+        if (restore || explicit_out) && self.local.is_none() {
             return Err(Error::InvalidInput(
                 "explicit verified local operator profile required",
             ));
         }
         let mut body = args.clone();
+        if restore {
+            // Confirm the caller's literal target before resolving it. Rewriting
+            // an incorrect confirmation would grant an unconfirmed restore.
+            let target = args["targetCompany"].as_str().ok_or(Error::Protocol)?;
+            if args["confirmText"].as_str() != Some(format!("RESTORE {target}").as_str()) {
+                return Err(Error::InvalidInput(
+                    "restore confirmation must match target",
+                ));
+            }
+            for field in ["backupDir", "targetCompany", "verifyKey", "publicKey"] {
+                if let Some(value) = args[field].as_str().filter(|s| !s.is_empty()) {
+                    body[field] = json!(local_path(value)?);
+                }
+            }
+            body["confirmText"] = json!(format!(
+                "RESTORE {}",
+                body["targetCompany"].as_str().ok_or(Error::Protocol)?
+            ));
+        } else if explicit_out {
+            body["out"] = json!(local_path(
+                args["out"].as_str().ok_or(Error::Protocol)?.trim()
+            )?);
+        }
         let path = if restore {
             "/api/original-system-restore-backup".to_owned()
         } else {
@@ -268,5 +298,56 @@ impl ApiClient {
     }
     pub fn original717_company_selector(&self, company: &str) -> Result<String, Error> {
         self.diagnostics_company_original118(company)
+    }
+}
+
+// Resolve source-local relative paths lexically. The admitted server still
+// verifies actual ancestors, ownership, leases and protected target boundaries.
+fn local_path(value: &str) -> Result<String, Error> {
+    use std::path::{Component, Path, PathBuf};
+    let path = Path::new(value);
+    let absolute = if path.is_absolute() {
+        path.to_owned()
+    } else {
+        std::env::current_dir()
+            .map_err(|_| Error::InvalidInput("local working directory unavailable"))?
+            .join(path)
+    };
+    let mut resolved = PathBuf::new();
+    for component in absolute.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                resolved.pop();
+            }
+            other => resolved.push(other.as_os_str()),
+        }
+    }
+    resolved
+        .into_os_string()
+        .into_string()
+        .map_err(|_| Error::InvalidInput("local path must be UTF-8"))
+}
+
+#[cfg(test)]
+mod boundary_tests {
+    use super::*;
+    #[test]
+    fn original717_maildrop_refuses_truncated_directory() {
+        let dir = std::env::temp_dir().join(format!(
+            "rm717-mail-bounds-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&dir).unwrap();
+        for n in 0..4097 {
+            std::fs::write(dir.join(format!("{n:05}.txt")), []).unwrap();
+        }
+        let result = messages(dir.to_str().unwrap());
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert!(matches!(result, Err(Error::InvalidInput(_))));
     }
 }
