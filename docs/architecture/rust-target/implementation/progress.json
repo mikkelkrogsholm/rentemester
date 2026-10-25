@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R108servicepayable journal/keyedreceipt principal fixed;14storage+4actualservice application cases/current1613contracts; whole712finalinstalledacceptance/nativeagent716remain",
-  "code_revision": "500957c21adf02e21879772a2f2b2f4b358473e3",
+  "current_increment": "R109 FULLoriginalAgentRun716 accepted: commonRustCLI/server guardedexpense/payable/nativeproposals/sharedReact; exactactual5journals14lines andnoreplay,1615contracts. Full716/all55remain.",
+  "code_revision": "90aef55401910595680326dc13492657ee15a5d8",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "service_payable_principal712_repaired",
+  "state": "full_original_agent_run716_component_accepted",
   "issues_closed": 41,
   "next": [
-    "Whole712 still requires final revision-bound installed Tauri/WebKit OS save/read/forget and cancel/restore acceptance. Existing R41 actual HTTP cancellation/real Keychain and source-bound R44 identity proof retained; installed bundle predates session_vault, so no false installed acceptance.",
-    "Full original CLI agent run716 remains unported: ordered intake/book/route/payables/reconcile/deadlines/report, exact flags/report/format/errors and safe explicit company-local account rules. R108 repairs its existing payable attribution prerequisite, not a partial replacement loop.",
-    "All55originalissues/J01-J07/release/cutover/finalmanualdesktop remain; no live workspace/default launcher changed."
+    "Full716 stays open: remaining original literal CLI keys, positive group overview, first-workspace/bootstrap/selectors/actor-config/default launcher and full265 operation/error/rendering compatibility must still be completed and accepted; this flow is not wholeCLI closure.",
+    "All14 original open children/672/J01-J07/migration/release/cutover remain,41of55closed. ExistingReact/Tauri useonecommonRustengine/server; final installedmanualdesktop acceptance LAST, no screenunlocknow.",
+    "Actual fresh flow covers ordinary humanCLI/server/nativeproposals/sharedReact; currentservice/guard/defaultwriter proof is native actual-writer fixtures and retained R108proof, not a new servicebrowser/installeddesktop/restore macro."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R107existing Agent-forslag humanreview accepted: actualsharedReact/Rust threeauditeddecisions/nofinancialeffects/acceptedreplylost noreplay; current1613contracts; nativeproducer/full718open",
+  "previous_verified_increment": "R108servicepayable journal/keyedreceipt principal fixed;14storage+4actualservice application cases/current1613contracts; whole712finalinstalledacceptance/nativeagent716remain",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16657,6 +16657,10 @@
     "r108_service_payable712": {
       "path": "/private/tmp/rentemester-rust-reports/r108-service-payable-principal712-accepted.json",
       "sha256": "664fe7ab2614613004dd72d8f221a61d619be5155350500bd00118562ac92583"
+    },
+    "r109_full_original_agent_run716": {
+      "path": "/private/tmp/rentemester-rust-reports/r109-full-original-agent-run716-component-accepted.json",
+      "sha256": "f6f8e2c905512b3a80956d3c5515e23aad5592fa9909761d19433aa00070c2a9"
     }
   },
   "verified_history": [
@@ -19018,6 +19022,19 @@
         "Whole712 still requires final revision-bound installed Tauri/WebKit OS save/read/forget and cancel/restore acceptance. Existing R41 actual HTTP cancellation/real Keychain and source-bound R44 identity proof retained; installed bundle predates session_vault, so no false installed acceptance.",
         "Full original CLI agent run716 remains unported: ordered intake/book/route/payables/reconcile/deadlines/report, exact flags/report/format/errors and safe explicit company-local account rules. R108 repairs its existing payable attribution prerequisite, not a partial replacement loop.",
         "All55originalissues/J01-J07/release/cutover/finalmanualdesktop remain; no live workspace/default launcher changed."
+      ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "90aef55401910595680326dc13492657ee15a5d8",
+      "report": "/tmp/rentemester-rust-reports/r109-full-original-agent-run716-component-accepted.json",
+      "sha256": "f6f8e2c905512b3a80956d3c5515e23aad5592fa9909761d19433aa00070c2a9",
+      "scope": "FULL existing original explicit AgentRun CLI loop: physical intake/scanning, mapped bankCSV, canonical admitted expense/payable posting, refusal/overdue/reconciliation/accrual/tax/deadline producers, exact15fieldreport and sourcehumanrenderer. No proposal-only substitute/newMCPjob/secondengine. Actualcurrentprincipal andtrustedagentprogram beforecommit, per-effecttransactions andnoautoretry.",
+      "remaining": [
+        "Full716 stays open: remaining original literal CLI keys, positive group overview, first-workspace/bootstrap/selectors/actor-config/default launcher and full265 operation/error/rendering compatibility must still be completed and accepted; this flow is not wholeCLI closure.",
+        "All14 original open children/672/J01-J07/migration/release/cutover remain,41of55closed. ExistingReact/Tauri useonecommonRustengine/server; final installedmanualdesktop acceptance LAST, no screenunlocknow.",
+        "Actual fresh flow covers ordinary humanCLI/server/nativeproposals/sharedReact; currentservice/guard/defaultwriter proof is native actual-writer fixtures and retained R108proof, not a new servicebrowser/installeddesktop/restore macro."
       ]
     }
   ],

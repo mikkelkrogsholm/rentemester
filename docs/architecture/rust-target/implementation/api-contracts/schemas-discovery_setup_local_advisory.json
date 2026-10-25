@@ -8846,6 +8846,1007 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "AgentMetadata109": {
+      "anyOf": [
+        {
+          "type": [
+            "null",
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/AgentMetadata109"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/AgentMetadata109"
+          }
+        }
+      ],
+      "x-rentemester-arbitrary-json": {
+        "scope": "inbox.items[].metadata only",
+        "rationale": "Parsed source sidecar JSON reaches actual original intake validation; semantically invalid parsed JSON is an individual rejection, not whole-inbox parse failure. It never grants authority or supplies operator policy.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-engine/src/agent_run.rs",
+            "needle": "pub struct Report",
+            "sha256": "c07727a125194a951fae23eeb8443c92b1ca7f48fbd648f99fb86c382c44e4ea"
+          },
+          {
+            "path": "crates/rentemester-server/src/product_http/agent_run.rs",
+            "needle": "pub(super) async fn handle",
+            "sha256": "11f614fce735bdb8e4ba9e92cfd8d17ebe02bfa3746386f0886cb29c2ca13ea9"
+          },
+          {
+            "path": "crates/rentemester-host/src/agent_run.rs",
+            "needle": "pub fn agent_run_start(",
+            "sha256": "caf1ce98e6e5d1120a40ccccaeae086dcf4fe1a8792ebd51b46fcdbb49332a8b"
+          },
+          {
+            "path": "crates/rentemester-application/src/agent_run.rs",
+            "needle": "pub fn execute(",
+            "sha256": "0cc363b262934572f3e02e2e90f0eb428f234110fc9379182ee9e43e8c30f379"
+          },
+          {
+            "path": "crates/rentemester-storage/src/agent_finance.rs",
+            "needle": "pub fn import_account(",
+            "sha256": "693c1a3f763be176a0cb2d7de05f54bd4e883f353c64408ba22cf1053f39d2fd"
+          },
+          {
+            "path": "crates/rentemester-client/src/agent_run.rs",
+            "needle": "pub async fn original_agent_run(",
+            "sha256": "8575f05f76e0c3fe898aa0b1525aaa3f734ea8b731f940838977672f01d79de4"
+          },
+          {
+            "path": "crates/rentemester-cli/src/agent_original.rs",
+            "needle": "pub fn execute(",
+            "sha256": "2ee1ee36fde33f80eb43460729c1d0510679d63d0af2bfe6344bb55bfd3f9ae7"
+          },
+          {
+            "path": "src/agent/loop.ts",
+            "needle": "function runPhases(",
+            "sha256": "a00781bd05060a70b1d3cfe1215f65cc18058813f133379153bd18bab2cfc286"
+          }
+        ]
+      }
+    },
+    "AgentRunRequest109": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inbox": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "const": "files"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "fileName": {
+                        "type": "string"
+                      },
+                      "fileBase64": {
+                        "type": "string"
+                      },
+                      "metadata": {
+                        "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/AgentMetadata109"
+                      }
+                    },
+                    "required": [
+                      "fileName",
+                      "fileBase64",
+                      "metadata"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "state",
+                "items"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "const": "failed"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "state",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bank": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "const": "csv"
+                },
+                "fileName": {
+                  "type": "string"
+                },
+                "csv": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "state",
+                "fileName",
+                "csv"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "const": "failed"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "state",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "asOf",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "AgentRunReport109": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsRejected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bankTransactionsImported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expensesBooked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "documentNo": {
+                "type": "string"
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "expenseAccount": {
+                "type": "string"
+              },
+              "vatTreatment": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "documentNo",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "currency",
+              "expenseAccount",
+              "vatTreatment",
+              "label",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "payablesMatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "payableId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "payableId",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accrualRecognitionsDue": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openExceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exceptionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "type": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requiredAction": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "exceptionId",
+              "type",
+              "severity",
+              "message",
+              "requiredAction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "upcomingDeadlines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "vat_period",
+                  "fiscal_year"
+                ]
+              },
+              "periodStart": {
+                "type": "string"
+              },
+              "periodEnd": {
+                "type": "string"
+              },
+              "dueDate": {
+                "type": "string"
+              },
+              "daysRemaining": {
+                "type": "integer"
+              },
+              "ready": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "periodStart",
+              "periodEnd",
+              "dueDate",
+              "daysRemaining",
+              "ready",
+              "note"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "summary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "actor",
+        "asOf",
+        "company",
+        "phases",
+        "documentsIngested",
+        "documentsRejected",
+        "bankTransactionsImported",
+        "expensesBooked",
+        "payablesMatched",
+        "accrualRecognitionsDue",
+        "openExceptions",
+        "upcomingDeadlines",
+        "summary",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AgentRunSuccess109": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsRejected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bankTransactionsImported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expensesBooked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "documentNo": {
+                "type": "string"
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "expenseAccount": {
+                "type": "string"
+              },
+              "vatTreatment": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "documentNo",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "currency",
+              "expenseAccount",
+              "vatTreatment",
+              "label",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "payablesMatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "payableId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "payableId",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accrualRecognitionsDue": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openExceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exceptionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "type": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requiredAction": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "exceptionId",
+              "type",
+              "severity",
+              "message",
+              "requiredAction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "upcomingDeadlines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "vat_period",
+                  "fiscal_year"
+                ]
+              },
+              "periodStart": {
+                "type": "string"
+              },
+              "periodEnd": {
+                "type": "string"
+              },
+              "dueDate": {
+                "type": "string"
+              },
+              "daysRemaining": {
+                "type": "integer"
+              },
+              "ready": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "periodStart",
+              "periodEnd",
+              "dueDate",
+              "daysRemaining",
+              "ready",
+              "note"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "summary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "actor",
+        "asOf",
+        "company",
+        "phases",
+        "documentsIngested",
+        "documentsRejected",
+        "bankTransactionsImported",
+        "expensesBooked",
+        "payablesMatched",
+        "accrualRecognitionsDue",
+        "openExceptions",
+        "upcomingDeadlines",
+        "summary",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AgentRunFailure109": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "actor": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsRejected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bankTransactionsImported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expensesBooked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "documentNo": {
+                "type": "string"
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "expenseAccount": {
+                "type": "string"
+              },
+              "vatTreatment": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "documentNo",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "currency",
+              "expenseAccount",
+              "vatTreatment",
+              "label",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "payablesMatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "payableId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "documentId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "supplier": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "payableId",
+              "documentId",
+              "bankTransactionId",
+              "supplier",
+              "amount",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "accrualRecognitionsDue": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openExceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exceptionId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "type": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requiredAction": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "exceptionId",
+              "type",
+              "severity",
+              "message",
+              "requiredAction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "upcomingDeadlines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "vat_period",
+                  "fiscal_year"
+                ]
+              },
+              "periodStart": {
+                "type": "string"
+              },
+              "periodEnd": {
+                "type": "string"
+              },
+              "dueDate": {
+                "type": "string"
+              },
+              "daysRemaining": {
+                "type": "integer"
+              },
+              "ready": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "periodStart",
+              "periodEnd",
+              "dueDate",
+              "daysRemaining",
+              "ready",
+              "note"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "summary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "actor",
+        "asOf",
+        "company",
+        "phases",
+        "documentsIngested",
+        "documentsRejected",
+        "bankTransactionsImported",
+        "expensesBooked",
+        "payablesMatched",
+        "accrualRecognitionsDue",
+        "openExceptions",
+        "upcomingDeadlines",
+        "summary",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AgentRunHelp109": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "usage": {
+          "type": "string"
+        },
+        "connection": {
+          "type": "string"
+        },
+        "authority": {
+          "type": "string"
+        },
+        "recovery": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "usage",
+        "connection",
+        "authority",
+        "recovery",
+        "phases"
+      ],
+      "additionalProperties": false
+    },
+    "AgentRunTechnical109": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }
