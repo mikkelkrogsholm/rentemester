@@ -263,3 +263,83 @@ impl ApiClient {
         }
     }
 }
+
+impl ApiClient {
+    /// Frozen original flat read grammar (company is the separately authorized selector).
+    pub fn bookkeeping_workbench_schema() -> Value {
+        object(json!({
+            "from":{"type":"string","pattern":"^\\d{4}-\\d{2}-\\d{2}$"},
+            "to":{"type":"string","pattern":"^\\d{4}-\\d{2}-\\d{2}$"},
+            "status":{"type":"string","enum":["ready","suggestedMatch","missingDocument","partyUnresolved","accountingDecisionRequired","vatEvidenceRequired","dimensionEvidenceRequired","stalePlan","applyFailed"]},
+            "bankAccountId":{"type":"integer","exclusiveMinimum":0,"maximum":9007199254740991u64},
+            "partyId":{"type":"string","minLength":3,"maxLength":64},
+            "documentQuality":{"type":"string","enum":["matched","missing"]},
+            "account":{"type":"string","minLength":1,"maxLength":32},
+            "vatTreatment":{"type":"string","minLength":1,"maxLength":80},
+            "dimension":{"type":"string","minLength":3,"maxLength":160},
+            "cursor":{"type":"integer","minimum":0,"maximum":9007199254740991u64},
+            "limit":{"type":"integer","minimum":1,"maximum":100},
+            "search":{"type":"string","maxLength":200}
+        }), &["from", "to"])
+    }
+    pub fn validate_bookkeeping_workbench(input: &Value) -> Result<(), Error> {
+        // Reuse the strict schema validator for unknown fields, types, enums and numbers.
+        // String bounds in the original Zod grammar count UTF-16 code units.
+        let mut schema = Self::bookkeeping_workbench_schema();
+        for property in schema["properties"].as_object_mut().unwrap().values_mut() {
+            property.as_object_mut().unwrap().remove("minLength");
+            property.as_object_mut().unwrap().remove("maxLength");
+        }
+        let mut normalized = input.clone();
+        for key in ["bankAccountId", "cursor", "limit"] {
+            if let Some(n) = input[key].as_f64() {
+                if n.fract() == 0.0 && (0.0..=9_007_199_254_740_991.0).contains(&n) {
+                    normalized[key] = json!(n as u64);
+                }
+            }
+        }
+        body(&serde_json::to_vec(&normalized).map_err(|_| Error::InvalidInput("flat workbench required"))?, &schema)?;
+        for (key, property) in Self::bookkeeping_workbench_schema()["properties"].as_object().unwrap() {
+            if let Some(text) = input[key].as_str() {
+                let length = text.encode_utf16().count() as u64;
+                if length < property["minLength"].as_u64().unwrap_or(0)
+                    || length > property["maxLength"].as_u64().unwrap_or(u64::MAX) {
+                    return Err(Error::InvalidInput("workbench string outside original bounds"));
+                }
+            }
+        }
+        for key in ["from", "to"] {
+            let date = input[key].as_str().unwrap();
+            if date.len() != 10 || !date.bytes().enumerate().all(|(i,b)| if i==4 || i==7 { b==b'-' } else { b.is_ascii_digit() }) {
+                return Err(Error::InvalidInput("ISO workbench date shape required"));
+            }
+        }
+        // Calendar validity/order are business checks on the current authorized server.
+        Ok(())
+    }
+    /// Single inert canonical GET; population/selection/page and provenance stay server-owned.
+    pub async fn bookkeeping_workbench(&self, company: &str, input: &Value) -> Result<Value, Error> {
+        Self::validate_bookkeeping_workbench(input)?;
+        let owned = input.as_object().unwrap().iter().map(|(k,v)| {
+            (k.clone(), v.as_str().map(str::to_owned).unwrap_or_else(|| (v.as_f64().unwrap() as u64).to_string()))
+        }).collect::<Vec<_>>();
+        let query = owned.iter().map(|(k,v)| (k.as_str(),v.as_str())).collect::<Vec<_>>();
+        let selected = if std::path::Path::new(company).is_absolute() {
+            let local = self.local.as_ref().ok_or(Error::InvalidInput("absolute company requires explicit verified local profile"))?;
+            self.assert_original_workspace89(local.workspace_root().to_str().ok_or(Error::InvalidInput("UTF-8 workspace root required"))?)?;
+            let relative = std::path::Path::new(company).strip_prefix(local.workspace_root()).map_err(|_| Error::InvalidInput("company differs from verified workspace root"))?;
+            let mut parts = relative.components();
+            let Some(std::path::Component::Normal(slug)) = parts.next() else { return Err(Error::InvalidInput("one registered company directory required")); };
+            if parts.next().is_some() { return Err(Error::InvalidInput("one registered company directory required")); }
+            slug.to_str().ok_or(Error::InvalidInput("UTF-8 company slug required"))?.to_owned()
+        } else { company.to_owned() };
+        let value = self.batch_json(Method::GET, &company_path(&selected,"bookkeeping-workbench")?, &query, None).await?;
+        if value["ok"] == true && !value["workbench"].is_object() {
+            return Err(Error::Protocol);
+        }
+        if value["ok"] == false && !value["errors"].as_array().is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string)) {
+            return Err(Error::Protocol);
+        }
+        Ok(value)
+    }
+}
