@@ -509,7 +509,7 @@
             "sourceRefs": [
               {
                 "path": "protocol/http-v1.json",
-                "sha256": "5f34755e672f9a3909f46f7f53a508602163d143adf01cdfe96096c21f272809",
+                "sha256": "632a3e6e39468f71ff4476664298a860fc97437b069e4b2fbae72d4c72967503",
                 "needle": "/api/recurring-invoices/run-workspace"
               },
               {
@@ -519,7 +519,7 @@
               },
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
-                "sha256": "4608af8eadebad0219c5960051644cd3a977ba1ebcd4c906b8c0b69cc6e7144f",
+                "sha256": "108beb29fe7aa7b10746d805a727c07e0a58d959c7027ce2abb17cb1ee39ae48",
                 "needle": "fn proof("
               },
               {
@@ -539,7 +539,7 @@
               },
               {
                 "path": "crates/rentemester-host/src/lib.rs",
-                "sha256": "b4e9fe84d0f342142646dee9a85e4707a4e0ffcca1997809e5f462c593133162",
+                "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
                 "needle": "fn document_action<T>"
               },
               {
@@ -549,7 +549,7 @@
               },
               {
                 "path": "crates/rentemester-application/src/service_company.rs",
-                "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+                "sha256": "1cc9d7fc77a6bab427107b687d4a2725d1d6c44f6f60b56866cac21a6b336ee8",
                 "needle": "pub enum UsageStage"
               },
               {

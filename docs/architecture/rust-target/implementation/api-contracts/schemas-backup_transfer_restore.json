@@ -25919,6 +25919,2208 @@
         "operation"
       ],
       "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "OriginalBackup122_system_backup_status_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "description": "Optional YYYY-MM-DD date to evaluate the backup compliance against (default: today UTC). Use this to ask 'were we compliant on 2026-03-31?'",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "OriginalBackup122_system_backup_status_OutputEnvelope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "appliedRules": {
+          "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "code": {
+          "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+          "type": "string"
+        },
+        "data": {
+          "additionalProperties": {},
+          "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+          "properties": {},
+          "type": "object"
+        },
+        "errors": {
+          "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ok": {
+          "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "type": "object"
+    },
+    "OriginalBackup122_system_backup_status_Core": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-BACKUP-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "latestBackupAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latestBackupId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "backupDue": {
+          "type": "boolean"
+        },
+        "hasActivitySinceBackup": {
+          "type": "boolean"
+        },
+        "daysSinceLatestBackup": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "requiredBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checkedAt": {
+          "type": "string"
+        },
+        "backupsFound": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "latestJournalEntryAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestDocumentAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBankImportAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "latestJournalEntryAt",
+            "latestDocumentAt",
+            "latestBankImportAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "latestBackupAt",
+        "latestBackupId",
+        "backupDue",
+        "hasActivitySinceBackup",
+        "daysSinceLatestBackup",
+        "requiredBy",
+        "checkedAt",
+        "backupsFound",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_HttpSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "backupStatus": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_Core"
+        }
+      },
+      "required": [
+        "ok",
+        "backupStatus"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_HttpFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-BACKUP-001"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "latestBackupAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBackupId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "hasActivitySinceBackup": {
+              "type": "boolean"
+            },
+            "daysSinceLatestBackup": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "requiredBy": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "backupsFound": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "latestJournalEntryAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestDocumentAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestBankImportAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "latestJournalEntryAt",
+                "latestDocumentAt",
+                "latestBankImportAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "latestBackupAt",
+            "latestBackupId",
+            "backupDue",
+            "hasActivitySinceBackup",
+            "daysSinceLatestBackup",
+            "requiredBy",
+            "checkedAt",
+            "backupsFound",
+            "evidence"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-BACKUP-001"
+          ]
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_SuccessEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_SuccessEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_FailureEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_FailureEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_InputValidationFailure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "const": "MCP error -32602: Input validation error: Invalid arguments for tool system_backup_status"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "isError",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_status_Parse": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid or oversized newline-delimited message"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid JSON"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "expected one JSON-RPC object"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "invalid JSON-RPC request"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "request id already used"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "already initialized"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32000
+                    },
+                    "message": {
+                      "const": "session request limit reached; reconnect"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected params object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "initialize requires protocolVersion, capabilities and clientInfo"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32002
+                    },
+                    "message": {
+                      "const": "initialize and notifications/initialized required"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "task execution not supported"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "tool name required"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32601
+                    },
+                    "message": {
+                      "const": "method not found"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected arguments object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_status_InputValidationFailure"
+        }
+      ]
+    },
+    "OriginalBackup122_system_backup_lock_Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "OriginalBackup122_system_backup_lock_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "description": "Optional ISO-8601 timestamp recorded as the change time (default: now UTC).",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "enforced": {
+          "description": "Whether the lock is enforced (true) or just monitored (false). When enforced AND the weekly backup is overdue beyond graceDays, subsequent bookkeeping writes return code:'BACKUP_LOCKED'. Default: keep existing setting (or false on a fresh ledger).",
+          "type": "boolean"
+        },
+        "graceDays": {
+          "description": "Days of grace AFTER the weekly backup deadline before the lock activates. Integer ≥ 0. Default: keep existing setting (initial: 3).",
+          "type": "number"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "OriginalBackup122_system_backup_lock_OutputEnvelope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "appliedRules": {
+          "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "code": {
+          "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+          "type": "string"
+        },
+        "data": {
+          "additionalProperties": {},
+          "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+          "properties": {},
+          "type": "object"
+        },
+        "errors": {
+          "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ok": {
+          "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "type": "object"
+    },
+    "OriginalBackup122_system_backup_lock_Body": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "description": "Optional ISO-8601 timestamp recorded as the change time (default: now UTC).",
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "enforced": {
+          "description": "Whether the lock is enforced (true) or just monitored (false). When enforced AND the weekly backup is overdue beyond graceDays, subsequent bookkeeping writes return code:'BACKUP_LOCKED'. Default: keep existing setting (or false on a fresh ledger).",
+          "type": "boolean"
+        },
+        "graceDays": {
+          "description": "Days of grace AFTER the weekly backup deadline before the lock activates. Integer ≥ 0. Default: keep existing setting (initial: 3).",
+          "type": "number"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "type": "object"
+    },
+    "OriginalBackup122_system_backup_lock_Core": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "const": []
+            },
+            "config": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "const": "backup-lock-v1"
+                },
+                "enforced": {
+                  "type": "boolean"
+                },
+                "graceDays": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "updatedBy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "version",
+                "enforced",
+                "graceDays",
+                "updatedAt",
+                "updatedBy"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors",
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalBackup122_system_backup_lock_HttpSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "backupLock": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_Core"
+        }
+      },
+      "required": [
+        "ok",
+        "backupLock"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_HttpFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-BACKUP-001"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "const": "backup-lock-v1"
+                },
+                "enforced": {
+                  "type": "boolean"
+                },
+                "graceDays": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "updatedBy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "version",
+                "enforced",
+                "graceDays",
+                "updatedAt",
+                "updatedBy"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "config"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-BACKUP-001"
+          ]
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_SuccessEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_SuccessEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_FailureEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "structuredContent": {
+              "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_FailureEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_InputValidationFailure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "const": "MCP error -32602: Input validation error: Invalid arguments for tool system_backup_lock"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "isError",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBackup122_system_backup_lock_Parse": {
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid or oversized newline-delimited message"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "invalid JSON"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "const": null
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32700
+                    },
+                    "message": {
+                      "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "expected one JSON-RPC object"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "invalid JSON-RPC request"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "request id already used"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32600
+                    },
+                    "message": {
+                      "const": "already initialized"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32000
+                    },
+                    "message": {
+                      "const": "session request limit reached; reconnect"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected params object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "initialize requires protocolVersion, capabilities and clientInfo"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32002
+                    },
+                    "message": {
+                      "const": "initialize and notifications/initialized required"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "task execution not supported"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "tool name required"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32601
+                    },
+                    "message": {
+                      "const": "method not found"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "jsonrpc": {
+                  "const": "2.0"
+                },
+                "id": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "error": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "const": -32602
+                    },
+                    "message": {
+                      "enum": [
+                        "expected arguments object"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "jsonrpc",
+                "id",
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_InputValidationFailure"
+        }
+      ]
     }
   }
 }

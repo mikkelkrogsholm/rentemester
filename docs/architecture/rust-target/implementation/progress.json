@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R121 actualsharedReact receipt→mappedstatement→oneexpense→bankdifference0→verifiedsignedbackup accepted; sourcecashsupplier reader/history gap corrected6+4tests. Full718 remainsopen.",
-  "code_revision": "3a632b50ed9e27ced2703f78b85551530e6b41fa",
+  "current_increment": "R122 original backup status and atomic opt-in lock accepted:19actual targeted tests, same common engine/current auth/signed-artifact producer, exact438-tool catalogue/1629operation contracts. Full717 remains open.",
+  "code_revision": "98469e011de6ceba127210e59326171fd740e352",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "first_receipt_bookkeeping718_journey_accepted",
+  "state": "original_backup_status_lock717_component_accepted",
   "issues_closed": 41,
-  "next": "Close existing717 original backup/mail tool families and workflow/ABI gaps; reuse accepted daily owner flow and full55scope, finaldesktopLAST. Full718 alloriginalscreens/files/keyboard/local-hosted refusal acceptance remains.",
+  "next": "Next existing717 original backup artifact/archive/placement/recovery family; preserve all9remaining originalnames/29workflow descriptions and full55scope. Reuse accepted daily owner bookkeeping proof; final installed desktop acceptance LAST.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16676,6 +16676,33 @@
       "sha256": "8f4af4c591bab58d49623a6a6ed744c385599d4fcd615807965a9294df4a7fe0",
       "wholeIssueAccepted": false,
       "freshCompleteUploadAccepted": false
+    },
+    "r122_original_backup_status_lock717": {
+      "issue": 717,
+      "status": "component_accepted_issue_open",
+      "source_revision": "98469e011de6ceba127210e59326171fd740e352",
+      "report": "/tmp/rentemester-rust-reports/r122-original-backup-status-lock717-component-accepted.json",
+      "sha256": "522ac6d7f1dac4eab2517c5d30c5eef96ac5634c5694451704e7fc1b71d25fb3",
+      "whole_issue_accepted": false,
+      "scope": "Original backup status/transactional opt-in lock via shared Rust application/host/HTTP/SDK/MCP; native interfaces retained. Component acceptance, not full717/epic or real-data cutover.",
+      "tests": 19,
+      "mcp_tools": 438,
+      "remaining_original_names": [
+        "system_backup",
+        "system_backup_archive",
+        "system_backup_place",
+        "system_backup_verify_remote_placement",
+        "system_restore_backup",
+        "mail_intake_ingest",
+        "imap_intake_poll",
+        "invoice_send_email",
+        "efaktura_konfigurer"
+      ],
+      "scope_limits": [
+        "29 original workflow descriptions, full per-operation/source ABI, discovery/reconnect/revocation/isolation acceptance; bounded current family not whole717 closure",
+        "All original remaining14 issues and full55 scope retained, installed desktop last",
+        "Real-data cutover remains gated; no actual fresh browser/restore/remote compliance claim for this component"
+      ]
     }
   },
   "verified_history": [

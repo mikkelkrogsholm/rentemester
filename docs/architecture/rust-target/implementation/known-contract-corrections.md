@@ -669,3 +669,27 @@ eller revisionsspor. Valideringen af eksisterende berigelseshistorik bevares.
 Det er en rettelse af det eksisterende kassebonforløb; ingen ny dokumenttype,
 leverandørgætning eller svagere fradragsregel. De målrettede regressioner har
 præfikset `receipt121_` i `purchase_preflight/tests.rs`.
+
+
+### R122 — oprindelig backupstatus og konfiguration med aktuel adgang
+
+`system_backup_status` bruger den fælles Rust-producents fysisk verificerede,
+signerede lokale snapshots og de aktuelle aktivitetsspor. `asOf` ændrer kun
+beregningens observationstid; den genskaber ikke historisk ledger-tilstand og
+ændrer aldrig adgangens eller bogføringslåsens ur. En normal overskredet
+backupfrist bevarer det oprindelige `ok:false, errors:[]`-resultat.
+
+`system_backup_lock` bevarer de oprindelige valgfrie felter og fletter dem
+under den samme transaktion. Uden en eksisterende indstilling gælder den
+oprindelige standard `false/3`; en eksisterende eksplicit nulværdi bevares.
+`at` er konfigurationens registrerede dato; audit-hændelsens tidspunkt og
+aktuel autorisation kommer fra det betroede ur. Agentens audit-actor følger
+samme `user:{subject}`-repræsentation som den fælles journalmotor.
+
+Datoargumenter accepterer kalenderdato eller RFC3339 frem for vilkårlig
+JavaScript Date-fortolkning. Grace skal være et ikke-negativt heltal inden
+for Rust-feltets u32-grænse og den eksisterende Date-deadlineberegning;
+overløb afvises uden konfigurationsændring. Den eksisterende native routes
+365-dages inputgrænse består. Original status er lokal backup-evidens, ikke
+bevis for ekstern synkronisering. De øvrige oprindelige backupværktøjer og
+hele #717 holdes åbne.
