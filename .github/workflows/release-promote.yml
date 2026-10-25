@@ -103,6 +103,14 @@ jobs:
         working-directory: candidate
         run: sha256sum --check release-manifest.json.sha256 sbom.spdx.json.sha256 supply-chain-evidence.json.sha256 agent-discovery-coverage-report.json.sha256
 
+      - name: Verify explicit runtime and original candidate artifacts
+        id: artifacts
+        env:
+          RUN_HEAD_SHA: ${{ steps.candidate_run.outputs.head_sha }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
+          RUN_ATTEMPT: ${{ inputs.candidate_run_attempt }}
+        run: bun run scripts/release/rust-promotion.ts candidate "$RUN_HEAD_SHA" "$RUN_ID" "$RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+
       - name: Verify agent-discovery evidence is bound to the candidate manifest
         run: |
           set -euo pipefail
@@ -117,7 +125,15 @@ jobs:
           bun -e 'const raw=process.env.APPROVAL_JSON; if(!raw) throw new Error("approval missing"); JSON.parse(raw); await Bun.write("candidate/digisense-approval.json", raw.endsWith("\n") ? raw : raw + "\n")'
 
       - name: Verify approval is bound to candidate evidence
-        run: bun run scripts/release/verify-approval.ts candidate/release-manifest.json candidate/digisense-approval.json
+        env:
+          RUNTIME: ${{ steps.artifacts.outputs.runtime }}
+        run: |
+          set -euo pipefail
+          case "$RUNTIME" in
+            rust) bun run scripts/release/verify-approval.ts candidate/release-manifest.json candidate/digisense-approval.json candidate/rust-build-identity.json ;;
+            bun) bun run scripts/release/verify-approval.ts candidate/release-manifest.json candidate/digisense-approval.json ;;
+            *) echo "Unknown candidate runtime; refusing promotion" >&2; exit 1 ;;
+          esac
 
       - name: Read approved identity
         id: identity
@@ -179,6 +195,7 @@ jobs:
           SBOM_SHA256: ${{ steps.identity.outputs.sbom_sha256 }}
           SUPPLY_CHAIN_SHA256: ${{ steps.identity.outputs.supply_chain_sha256 }}
           AGENT_DISCOVERY_SHA256: ${{ steps.identity.outputs.agent_discovery_sha256 }}
+          RUNTIME: ${{ steps.artifacts.outputs.runtime }}
         run: |
           set -euo pipefail
           target="$REGISTRY_IMAGE:v$VERSION"
@@ -219,23 +236,56 @@ jobs:
             echo "candidate registry bytes do not match approved digest: $candidate_actual" >&2
             exit 1
           fi
-          sbom="$(docker buildx imagetools inspect "$REGISTRY_IMAGE@$DIGEST" --format '{{ json .SBOM }}')"
-          [ "$sbom" != "null" ] && [ -n "$sbom" ] || { echo "candidate digest has no SBOM" >&2; exit 1; }
-          printf '%s' "$sbom" | bun -e 'const value=JSON.parse(await Bun.stdin.text()); if(!value || typeof value!=="object" || Array.isArray(value)) throw new Error("candidate SBOM is not an object"); process.stdout.write(`${JSON.stringify(value)}\n`)' > /tmp/rentemester-candidate-sbom.json
-          actual_sbom_sha256="sha256:$(sha256sum /tmp/rentemester-candidate-sbom.json | cut -d ' ' -f 1)"
-          [ "$actual_sbom_sha256" = "$SBOM_SHA256" ] || { echo "candidate SBOM does not match approved evidence" >&2; exit 1; }
+          if [ "$RUNTIME" = bun ]; then
+            sbom="$(docker buildx imagetools inspect "$REGISTRY_IMAGE@$DIGEST" --format '{{ json .SBOM }}')"
+            [ "$sbom" != "null" ] && [ -n "$sbom" ] || { echo "candidate digest has no SBOM" >&2; exit 1; }
+            printf '%s' "$sbom" | bun -e 'const value=JSON.parse(await Bun.stdin.text()); if(!value || typeof value!=="object" || Array.isArray(value)) throw new Error("candidate SBOM is not an object"); process.stdout.write(`${JSON.stringify(value)}\n`)' > /tmp/rentemester-candidate-sbom.json
+            actual_sbom_sha256="sha256:$(sha256sum /tmp/rentemester-candidate-sbom.json | cut -d ' ' -f 1)"
+            [ "$actual_sbom_sha256" = "$SBOM_SHA256" ] || { echo "candidate SBOM does not match approved evidence" >&2; exit 1; }
+          elif [ "$RUNTIME" = rust ]; then
+            # The Rust qualifier below compares the actual platform SPDX with
+            # these original approved bytes; do not reserialize their digest.
+            actual_sbom_sha256="sha256:$(sha256sum candidate/sbom.spdx.json | cut -d ' ' -f 1)"
+            [ "$actual_sbom_sha256" = "$SBOM_SHA256" ] || { echo "candidate SBOM does not match approved evidence" >&2; exit 1; }
+          else
+            echo "Unknown candidate runtime; refusing promotion" >&2
+            exit 1
+          fi
           actual_supply_chain_sha256="sha256:$(sha256sum candidate/supply-chain-evidence.json | cut -d ' ' -f 1)"
           [ "$actual_supply_chain_sha256" = "$SUPPLY_CHAIN_SHA256" ] || { echo "candidate supply-chain report does not match approved evidence" >&2; exit 1; }
-          docker run --rm --read-only \
-            -e RENTEMESTER_AGENT_DISCOVERY_IMAGE_DIGEST="$DIGEST" \
-            --entrypoint bun "$REGISTRY_IMAGE@$DIGEST" \
-            run src/agent-discovery-coverage-cli.ts > /tmp/rentemester-agent-discovery-coverage.json
-          cmp /tmp/rentemester-agent-discovery-coverage.json candidate/agent-discovery-coverage-report.json || {
-            echo "candidate runtime discovery coverage no longer matches approved evidence" >&2
-            exit 1
-          }
-          actual_agent_discovery_sha256="sha256:$(sha256sum /tmp/rentemester-agent-discovery-coverage.json | cut -d ' ' -f 1)"
-          [ "$actual_agent_discovery_sha256" = "$AGENT_DISCOVERY_SHA256" ] || { echo "candidate runtime discovery coverage checksum mismatch" >&2; exit 1; }
+          case "$RUNTIME" in
+            rust)
+              docker pull "$REGISTRY_IMAGE@$DIGEST"
+              verification="$(mktemp -d)"
+              trap 'rm -rf "$verification"' EXIT
+              platform="$(jq -er '.image.platforms | if length == 1 then .[0] else error("single qualified platform required") end' candidate/release-manifest.json)"
+              python3 scripts/release/qualify-rust-candidate.py \
+                --source source \
+                --image "$REGISTRY_IMAGE@$DIGEST" \
+                --identity candidate/rust-build-identity.json \
+                --package-evidence candidate/rust-package-evidence.json \
+                --license-evidence candidate/rust-license-evidence.json \
+                --sbom candidate/sbom.spdx.json \
+                --commit "$COMMIT" --version "$VERSION" --platform "$platform" \
+                --output "$verification/supply-chain-evidence.json" \
+                --discovery-output "$verification/agent-discovery-coverage-report.json"
+              cmp "$verification/supply-chain-evidence.json" candidate/supply-chain-evidence.json
+              cmp "$verification/agent-discovery-coverage-report.json" candidate/agent-discovery-coverage-report.json
+              ;;
+            bun)
+              docker run --rm --read-only \
+                -e RENTEMESTER_AGENT_DISCOVERY_IMAGE_DIGEST="$DIGEST" \
+                --entrypoint bun "$REGISTRY_IMAGE@$DIGEST" \
+                run src/agent-discovery-coverage-cli.ts > /tmp/rentemester-agent-discovery-coverage.json
+              cmp /tmp/rentemester-agent-discovery-coverage.json candidate/agent-discovery-coverage-report.json || {
+                echo "candidate runtime discovery coverage no longer matches approved evidence" >&2
+                exit 1
+              }
+              actual_agent_discovery_sha256="sha256:$(sha256sum /tmp/rentemester-agent-discovery-coverage.json | cut -d ' ' -f 1)"
+              [ "$actual_agent_discovery_sha256" = "$AGENT_DISCOVERY_SHA256" ] || { echo "candidate runtime discovery coverage checksum mismatch" >&2; exit 1; }
+              ;;
+            *) echo "Unknown candidate runtime; refusing promotion" >&2; exit 1 ;;
+          esac
           attestation_json="$(gh attestation verify "oci://$REGISTRY_IMAGE@$DIGEST" \
             --repo "$GITHUB_REPOSITORY" \
             --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-candidate.yml" \
@@ -289,7 +339,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.identity.outputs.version }}
           COMMIT: ${{ steps.identity.outputs.commit }}
+          RUNTIME: ${{ steps.artifacts.outputs.runtime }}
         run: |
+          set -euo pipefail
+          runtime_assets=()
+          case "$RUNTIME" in
+            rust)
+              for file in rust-build-identity.json rust-package-evidence.json rust-license-evidence.json; do
+                runtime_assets+=("../candidate/$file" "../candidate/$file.sha256")
+              done
+              ;;
+            bun) ;;
+            *) echo "Unknown candidate runtime; refusing promotion" >&2; exit 1 ;;
+          esac
           release_flags=()
           if [[ "$VERSION" == *-* ]]; then
             release_flags+=(--prerelease)
@@ -306,6 +368,9 @@ jobs:
             ../candidate/supply-chain-evidence.json.sha256 \
             ../candidate/agent-discovery-coverage-report.json \
             ../candidate/agent-discovery-coverage-report.json.sha256 \
+            ../candidate/sbom.spdx.json \
+            ../candidate/sbom.spdx.json.sha256 \
+            "${runtime_assets[@]}" \
             ../candidate/digisense-approval.json
 
       - name: Promotion summary

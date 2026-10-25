@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isReleaseProvenance } from "../../src/core/release-provenance";
 import { isValidSemVer } from "../../src/core/semver";
-import { assertRustManifest } from "./rust-manifest";
+import { promotionRuntime } from "./rust-promotion";
 
 type JsonObject = Record<string, unknown>;
 
@@ -79,14 +79,12 @@ const runtime = objectField(manifest.value, "runtime");
 const evidence = objectField(manifest.value, "evidence");
 const reviewer = objectField(approval, "reviewer");
 
-if (manifest.value.manifestVersion !== 1 && manifest.value.manifestVersion !== 2) {
-  throw new Error("release manifestVersion must be 1 or 2");
+if (process.argv.length !== (manifest.value.manifestVersion === 2 ? 5 : 4)) {
+  throw new Error(manifest.value.manifestVersion === 2
+    ? "Rust v2 approval requires the exact packaged build-identity.json"
+    : "Bun v1 approval accepts only manifest and independent approval");
 }
-if (manifest.value.manifestVersion === 2) {
-  const identityPath = process.argv[4];
-  if (!identityPath) throw new Error("Rust v2 approval requires the exact packaged build-identity.json");
-  assertRustManifest(manifest.value, readFileSync(identityPath, "utf8"));
-}
+promotionRuntime(manifest.value, manifest.value.manifestVersion === 2 ? readFileSync(process.argv[4]!, "utf8") : undefined);
 const releaseVersion = stringField(release, "version");
 const releaseCommit = stringField(release, "gitCommit");
 const releaseBuiltAt = stringField(release, "builtAt");
