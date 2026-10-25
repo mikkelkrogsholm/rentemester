@@ -74,6 +74,8 @@ fn run(args: &[String]) -> Output {
                 | "--origin"
                 | "--trust-keys"
                 | "--source-unavailable"
+                | "--artifact-format"
+                | "--trusted-backup-key"
         ) {
             return usage(&format!("Unknown flag {k}"));
         }
@@ -99,10 +101,25 @@ fn run(args: &[String]) -> Output {
     {
         return usage("--format must be json or human");
     }
+    let native = match flags
+        .get("--artifact-format")
+        .copied()
+        .unwrap_or("source-tar-v1")
+    {
+        "source-tar-v1" => false,
+        "native-v1" => true,
+        _ => return usage("--artifact-format must be source-tar-v1 or native-v1"),
+    };
+    if native && flags.contains_key("--trust-keys") || !native && flags.contains_key("--trusted-backup-key") {
+        return usage("Trust controls must match the explicitly selected artifact profile");
+    }
+    if native && flags.contains_key("--at") {
+        return usage("native-v1 uses the admitted runtime clock; --at belongs to source-tar-v1");
+    }
     if flags.contains_key("--help") {
         return Output {
             stdout: format!(
-                "workspace snapshot --workspace <dir> --out <tar> --confirm yes [--at <ISO-timestamp>]\nworkspace restore --snapshot <tar> --target-workspace <dir> --confirm yes\n\nRust operator controls: --config <private0600.json> --server-bin <absolute-native-server>\nSnapshot also requires --cookie-file <private0600> --origin <origin>. Restore requires --trust-keys <JSON slug-to-PEM map> --source-unavailable yes; --target is an alias of --target-workspace. Embedded public keys never grant trust. Source legacy schemas/nonempty unsupported business require explicit versioned migration. No automatic retry.\n"
+                "workspace snapshot --workspace <dir> --out <tar> --confirm yes [--at <ISO-timestamp>]\nworkspace restore --snapshot <tar> --target-workspace <dir> --confirm yes\n\nRust operator controls: --config <private0600.json> --server-bin <absolute-native-server>\nSnapshot also requires --cookie-file <private0600> --origin <origin>. Restore requires --trust-keys <JSON slug-to-PEM map> --source-unavailable yes; --target is an alias of --target-workspace. --artifact-format source-tar-v1 is the original TAR profile; native-v1 explicitly selects rentemester-native-backup/1 and versioned rentemester-cli-workspace/2 receipts. native-v1 preserves current native business sections and bank originals, requires configured backupSigningKeyFile for snapshot and --trusted-backup-key RAW_PUBLIC_KEY for restore. This is never a TAR or an implicit format fallback. Embedded public keys never grant trust. Source legacy schemas/nonempty unsupported business require explicit versioned migration. No automatic retry.\n"
             ),
             stderr: String::new(),
             exit: 0,
@@ -121,7 +138,11 @@ fn run(args: &[String]) -> Output {
     let required = if args[1] == "snapshot" {
         vec!["--workspace", "--out", "--cookie-file", "--origin"]
     } else {
-        vec!["--snapshot", "--trust-keys", "--source-unavailable"]
+        if native {
+            vec!["--snapshot", "--trusted-backup-key", "--source-unavailable"]
+        } else {
+            vec!["--snapshot", "--trust-keys", "--source-unavailable"]
+        }
     };
     for k in required.into_iter().chain(["--config", "--server-bin"]) {
         if flags.get(k).is_none_or(|v| v.trim().is_empty()) {
@@ -142,7 +163,7 @@ fn run(args: &[String]) -> Output {
         return usage("--server-bin must be absolute");
     }
     match rentemester_client::original716::transfer::execute(bin,args){
-        Ok(o)=>Output{stdout:String::from_utf8_lossy(&o.stdout).into_owned(),stderr:String::from_utf8_lossy(&o.stderr).into_owned(),exit:o.status.code().unwrap_or(1)},
+        Ok(o)=>Output{stdout:String::from_utf8_lossy(&o.stdout).into_owned(),stderr:String::from_utf8_lossy(&o.stderr).into_owned(),exit:u8::try_from(o.status.code().unwrap_or(1)).unwrap_or(1)},
         Err(_)=>Output{stdout:String::new(),stderr:"native transfer outcome unknown; reconcile source keys, snapshot files and private stages before another deliberate attempt (no fallback or retry)\n".into(),exit:1},
     }
 }

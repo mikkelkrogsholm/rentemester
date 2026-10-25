@@ -336,6 +336,30 @@ mod tests {
             .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
             .unwrap();
         let op = Operator::from_policy("w", "user:u", &["user:u".into()]).unwrap();
+        // Retain one synthetic native artifact for the packaged CLI adapter check.
+        // Public RFC8032 vector, never an operator key/default.
+        if let Some(dir) = std::env::var_os("RENTEMESTER_OPERATOR_ACCEPT_DIR") {
+            use rentemester_runtime::backup_artifact as artifact;
+            let der = concat!(
+                "3051020101300506032b657004220420",
+                "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+                "812100",
+                "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+            );
+            let der = (0..der.len())
+                .step_by(2)
+                .map(|i| u8::from_str_radix(&der[i..i + 2], 16).unwrap())
+                .collect::<Vec<_>>();
+            let key = artifact::SigningKey::from_pkcs8(&der).unwrap();
+            let native = owner
+                .backup_workspace(&cookies, &Fixed, &proof, &key)
+                .unwrap()
+                .outcome
+                .unwrap();
+            let dir = std::path::PathBuf::from(dir);
+            std::fs::write(dir.join("native.json"), native).unwrap();
+            std::fs::write(dir.join("native.pub"), key.public_key_bytes()).unwrap();
+        }
         let wire = owner
             .snapshot_original716(&cookies, &Fixed, &proof, &op, None)
             .unwrap()
@@ -417,7 +441,7 @@ mod tests {
     }
     #[test]
     fn source_transfer_end_to_end() {
-        let parent = tempfile::tempdir().unwrap();
+        let parent = tempfile::tempdir_in(std::env::var_os("HOME").unwrap()).unwrap();
         let output = std::process::Command::new(std::env::current_exe().unwrap())
             .args([
                 "--ignored",

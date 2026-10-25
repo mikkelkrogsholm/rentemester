@@ -136,6 +136,8 @@ fn run(args: &[String]) -> Result<(Value, bool), Error> {
                 | "--origin"
                 | "--trust-keys"
                 | "--source-unavailable"
+                | "--artifact-format"
+                | "--trusted-backup-key"
         ) {
             return Err("unknown flag".into());
         }
@@ -185,6 +187,17 @@ fn run(args: &[String]) -> Result<(Value, bool), Error> {
         original717::operator(&config).ok_or("current configured operator policy required")?;
     if f.get("--actor").is_some_and(|a| *a != operator.actor()) {
         return Err("caller actor cannot replace current operator".into());
+    }
+    match f
+        .get("--artifact-format")
+        .copied()
+        .unwrap_or("source-tar-v1")
+    {
+        "native-v1" => {
+            return native_profile(&args[1], &f, &config, &operator, uid).map(|v| (v, machine));
+        }
+        "source-tar-v1" if !f.contains_key("--trusted-backup-key") => {}
+        _ => return Err("unsupported explicit artifact profile".into()),
     }
     if args[1] == "snapshot" {
         if Path::new(required(&f, "--workspace")?) != config.root {
@@ -310,5 +323,133 @@ fn run(args: &[String]) -> Result<(Value, bool), Error> {
             json!({"ok":true,"targetWorkspaceRoot":target,"companyCount":checked.archive().manifest().companies.len(),"accessRecoveryPlanPath":target.join(".rentemester/restored-access-plan.json"),"nextStep":"bootstrap-owner-then-reinvite","appliedRules":[source::RULE],"errors":[]}),
             machine,
         ))
+    }
+}
+
+// Versioned CLI adapter only. All data, current authority, signatures, accounting,
+// inventory, fresh staging and publication belong to the accepted common engine.
+fn native_profile(
+    verb: &str,
+    f: &BTreeMap<&str, &str>,
+    config: &Config,
+    operator: &rentemester_runtime::bootstrap::Operator,
+    uid: u32,
+) -> Result<Value, Error> {
+    use rentemester_runtime::{backup_artifact as artifact, backup_keys};
+    if f.contains_key("--at") || f.contains_key("--trust-keys") {
+        return Err("source TAR controls are not native-v1 controls".into());
+    }
+    if verb == "snapshot" {
+        if Path::new(required(f, "--workspace")?) != config.root {
+            return Err("exact configured workspace required".into());
+        }
+        let out = Path::new(required(f, "--out")?);
+        if !out.is_absolute() || out.starts_with(&config.root) {
+            return Err("absolute external snapshot output required".into());
+        }
+        let sidecar = out.with_file_name(format!(
+            "{}.sha256",
+            out.file_name()
+                .ok_or("output filename")?
+                .to_str()
+                .ok_or("output filename")?
+        ));
+        if out.symlink_metadata().is_ok() || sidecar.symlink_metadata().is_ok() {
+            return Err("snapshot output already exists".into());
+        }
+        let key = backup_keys::signing_key(
+            config
+                .backup_signing_key_file
+                .as_deref()
+                .ok_or("native-v1 requires configured backupSigningKeyFile")?,
+            &config.root,
+        )?;
+        let cookies = CookieVerifier::new(
+            &config.workspace,
+            super::cookie_profile(required(f, "--origin")?)?,
+            &config.cookie_key,
+        )?;
+        let cookie = Zeroizing::new(read(
+            Path::new(required(f, "--cookie-file")?),
+            uid,
+            16384,
+            true,
+        )?);
+        let proof = cookies.verify(Some(std::str::from_utf8(&cookie)?.trim()), None)?;
+        let mut owner = rentemester_host::Owner::open_with_profile(
+            &config.root,
+            uid,
+            &config.workspace,
+            &config.company_slug,
+            config.runtime_profile,
+        )?;
+        let wire = owner
+            .backup_workspace(&cookies, &SystemClock, &proof, &key)?
+            .outcome
+            .map_err(|_| "native snapshot refused or outcome unknown; do not retry")?;
+        let trusted = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes())?;
+        let verified = artifact::verify(&wire, &trusted)?;
+        let count = verified.manifest().context.companies.len();
+        let hash = backup_keys::digest(&wire);
+        write_new(out, &wire)?;
+        write_new(
+            &sidecar,
+            format!(
+                "{hash}  {}\n",
+                out.file_name().unwrap().to_str().ok_or("output filename")?
+            )
+            .as_bytes(),
+        )?;
+        owner
+            .try_close()
+            .map_err(|_| "snapshot owner close failed; output retained")?;
+        Ok(
+            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":artifact::FORMAT,"snapshotPath":out,"sha256":hash,"sha256Path":sidecar,"companyCount":count,"errors":[]}),
+        )
+    } else {
+        let target = Path::new(
+            f.get("--target-workspace")
+                .or(f.get("--target"))
+                .copied()
+                .ok_or("fresh target required")?,
+        );
+        if target != config.root
+            || !target.is_absolute()
+            || f.get("--source-unavailable") != Some(&"yes")
+        {
+            return Err(
+                "exact fresh configured target and explicit --source-unavailable yes required"
+                    .into(),
+            );
+        }
+        if config.imap_transport.is_some()
+            || !config.public_einvoice.is_empty()
+            || !config.invoice_mail.is_empty()
+        {
+            return Err("fresh restore requires disabled providers".into());
+        }
+        let trusted = backup_keys::trusted_key(Path::new(required(f, "--trusted-backup-key")?))?;
+        let wire = read(
+            Path::new(required(f, "--snapshot")?),
+            uid,
+            artifact::MAX_WIRE_BYTES as u64,
+            false,
+        )?;
+        let verified = artifact::verify(&wire, &trusted)?;
+        let owner = rentemester_host::Owner::restore_new(
+            target,
+            uid,
+            &config.workspace,
+            &config.company_slug,
+            config.runtime_profile,
+            &verified,
+            operator,
+        )?;
+        owner
+            .try_close()
+            .map_err(|_| "published restore close failed; inspect target before another action")?;
+        Ok(
+            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":artifact::FORMAT,"targetWorkspaceRoot":target,"companyCount":verified.manifest().context.companies.len(),"nextStep":"bootstrap-owner-then-reinvite","errors":[]}),
+        )
     }
 }

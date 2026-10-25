@@ -57,3 +57,33 @@ fn source_transfer_unknown_duplicate_missing_and_no_implicit_engine() {
         assert!(o.stdout.is_empty());
     }
 }
+
+#[test]
+fn native_original716_profile_is_explicit_and_clock_trust_controls_do_not_mix() {
+    for a in [
+        vec!["workspace", "snapshot", "--artifact-format=unknown"],
+        vec![
+            "workspace",
+            "snapshot",
+            "--artifact-format=native-v1",
+            "--at=2026-01-01",
+        ],
+        vec![
+            "workspace",
+            "restore",
+            "--artifact-format=native-v1",
+            "--confirm=yes",
+            "--snapshot=/synthetic",
+            "--target=/synthetic",
+            "--config=/synthetic",
+            "--server-bin=/synthetic",
+            "--source-unavailable=yes",
+        ],
+    ] {
+        let o = call(&a);
+        assert_eq!(o.status.code(), Some(2));
+        assert!(o.stdout.is_empty());
+    }
+    let o = call(&["workspace", "restore", "--help"]);
+    assert!(String::from_utf8_lossy(&o.stdout).contains("rentemester-cli-workspace/2"));
+}
