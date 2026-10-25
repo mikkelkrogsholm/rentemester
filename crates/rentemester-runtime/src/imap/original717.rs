@@ -140,3 +140,84 @@ pub fn encode_eml(bytes: &[u8]) -> String {
     use base64::Engine;
     base64::engine::general_purpose::STANDARD.encode(bytes)
 }
+
+/// Advance one bounded native batch without discarding the unprocessed tail.
+/// A changed mailbox epoch or non-progressing batch is a real protocol refusal.
+pub fn next_cursor(
+    batch: &super::Batch,
+    old: Option<super::Cursor>,
+) -> Result<Option<super::Cursor>, Failure> {
+    if batch.uid_validity == 0
+        || old.is_some_and(|c| c.uid_validity != 0 && c.uid_validity != batch.uid_validity)
+    {
+        return Err(Failure::Protocol);
+    }
+    let floor = old.map_or(0, |c| c.last_uid);
+    let mut seen = std::collections::BTreeSet::new();
+    for uid in batch
+        .messages
+        .iter()
+        .map(|m| m.uid)
+        .chain(batch.refusals.iter().map(|m| m.uid))
+    {
+        if uid <= floor || !seen.insert(uid) {
+            return Err(Failure::Protocol);
+        }
+    }
+    if batch.has_more {
+        let last_uid = seen.last().copied().ok_or(Failure::Protocol)?;
+        Ok(Some(super::Cursor {
+            uid_validity: batch.uid_validity,
+            last_uid,
+        }))
+    } else {
+        Ok(None)
+    }
+}
+#[cfg(test)]
+mod continuation_tests {
+    use super::*;
+    #[test]
+    fn original717_imap_continuation_refusal_and_epoch_change() {
+        let mut b = crate::imap::Batch {
+            uid_validity: 7,
+            messages: vec![crate::imap::Message {
+                uid: 33,
+                raw: vec![1],
+            }],
+            has_more: true,
+            refusals: vec![crate::imap::Refusal {
+                uid: 34,
+                declared_size: 30_000_000,
+                code: "imap_message_too_large".into(),
+            }],
+        };
+        let next = next_cursor(
+            &b,
+            Some(crate::imap::Cursor {
+                uid_validity: 0,
+                last_uid: 32,
+            }),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(next.last_uid, 34);
+        assert_eq!(next.uid_validity, 7);
+        assert!(next_cursor(&b, Some(next)).is_err());
+        assert!(
+            next_cursor(
+                &b,
+                Some(crate::imap::Cursor {
+                    uid_validity: 8,
+                    last_uid: 32
+                })
+            )
+            .is_err()
+        );
+        b.messages.clear();
+        b.refusals.clear();
+        assert!(next_cursor(&b, None).is_err());
+        b.has_more = false;
+        assert!(next_cursor(&b, Some(next)).unwrap().is_none());
+    }
+}

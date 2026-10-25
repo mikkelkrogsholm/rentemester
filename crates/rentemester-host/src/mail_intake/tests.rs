@@ -489,3 +489,108 @@ fn original717_imap_intake_poll_fake_happy_duplicate_and_revoked_finish() {
             .is_err()
     );
 }
+#[test]
+fn original717_mail_scanner_exact_admission_missing_mismatch_success_and_revocation() {
+    use rentemester_application::documents::ScanPolicy;
+    use rentemester_engine::document_scan::ScanEvidence;
+    let (_dir, mut owner, cookies, proof, _) = setup();
+    let input = original717_input(Some(
+        json!({"documentType":"cash_register_receipt","issueDate":"2026-01-01","amountIncVat":125,"vatAmount":25,"currency":"DKK","deliveryDescription":"Synthetic purchase","sender":{"name":"Synthetic vendor","vatOrCvr":"DK12345678","countryCode":"DK","identifierKind":"dk_cvr"}}),
+    ));
+    for case in ["missing", "mismatch", "success", "revoked"] {
+        let mut request = input.clone();
+        let admission = owner
+            .original717_prepare_mail_ingest(
+                &cookies,
+                &proof,
+                &Fixed(NOW),
+                request.clone(),
+                ScanPolicy::Required,
+                None,
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        assert_eq!(admission.files().len(), 1);
+        let hash = admission.files()[0].hash().to_owned();
+        let scans = match case {
+            "missing" => vec![],
+            "mismatch" => {
+                vec![ScanEvidence::new(&"a".repeat(64), "synthetic", None, None).unwrap()]
+            }
+            _ => vec![ScanEvidence::new(&hash, "synthetic", None, None).unwrap()],
+        };
+        // Changing the adapter's original struct cannot change admitted bytes/metadata.
+        request.metadata = None;
+        assert!(request.metadata.is_none());
+        if case == "revoked" {
+            owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')",[]).unwrap();
+        }
+        let result = owner
+            .original717_finish_mail_ingest(&cookies, &proof, &Fixed(NOW), admission, scans)
+            .unwrap()
+            .outcome;
+        if case == "success" {
+            assert_eq!(result.unwrap().value["attachmentsIngested"], 1);
+            let scans:i64=owner.held.0.as_ref().unwrap().company.as_ref().unwrap().query_row("SELECT count(*) FROM document_scan_evidence WHERE scanner_id='synthetic' AND result='clean'",[],|r|r.get(0)).unwrap();
+            assert_eq!(scans, 1);
+        } else {
+            assert!(result.is_err(), "{case}");
+        }
+    }
+}
+#[test]
+fn original717_imap_oversize_exception_is_idempotent_and_current_authority_bound() {
+    let (_dir, mut owner, cookies, proof, _) = setup();
+    let config = imap::original717::resolve(&Default::default(), |k| match k {
+        "RENTEMESTER_IMAP_HOST" => Some("mail.example.invalid".into()),
+        "RENTEMESTER_IMAP_USERNAME" => Some("synthetic".into()),
+        "RENTEMESTER_IMAP_PASSWORD" => Some("synthetic-secret".into()),
+        _ => None,
+    })
+    .ok()
+    .unwrap();
+    let poll = owner
+        .original717_prepare_imap_intake_poll(&cookies, &proof, &Fixed(NOW), config)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let refused = vec![imap::Refusal {
+        uid: 34,
+        declared_size: 26 * 1024 * 1024,
+        code: "imap_message_too_large".into(),
+    }];
+    for created in [1, 0] {
+        let result = owner
+            .original717_oversized_mail(&cookies, &proof, &Fixed(NOW), &poll, 11, &refused)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        assert_eq!(result["ok"], true);
+        assert_eq!(result["messagesProcessed"], 1);
+        assert_eq!(result["exceptionsCreated"], created);
+    }
+    let company = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let evidence: String = company
+        .query_row(
+            "SELECT source_evidence FROM exceptions WHERE type='MAIL_INTAKE_TOO_LARGE'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let evidence: Value = serde_json::from_str(&evidence).unwrap();
+    assert_eq!(evidence["uid"], 34);
+    assert_eq!(evidence["rawRetained"], false);
+    assert_eq!(evidence["rawByteSize"], 26 * 1024 * 1024);
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')",[]).unwrap();
+    assert!(
+        owner
+            .original717_oversized_mail(&cookies, &proof, &Fixed(NOW), &poll, 11, &refused)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}

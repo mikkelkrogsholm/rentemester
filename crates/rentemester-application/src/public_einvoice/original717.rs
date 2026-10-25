@@ -7,7 +7,8 @@ pub fn configure(
     context: Context<'_>,
     body: &Value,
 ) -> Result<Committed<Value>, Failure> {
-    control_fence::execute_cookie_subject(
+    let mut publication_attempted = false;
+    let result = control_fence::execute_cookie_subject(
         control,
         company,
         CookieAuthorization {
@@ -25,17 +26,26 @@ pub fn configure(
             let bytes = serde_json::to_vec(&secret).map_err(|_| refused())?;
             rentemester_runtime::public_einvoice::original717::from_admitted_secret(&bytes)
                 .map_err(|_| refused())?;
+            let generation = rentemester_runtime::auth::new_token().map_err(|_| refused())?;
+            publication_attempted = true;
             guard
                 .write_digisense_config(&bytes)
                 .map_err(|_| refused())?;
-            let generation = rentemester_runtime::auth::new_token().map_err(|_| refused())?;
             tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('original717_digisense_config','private_config','digisense',?,?)",rusqlite::params![json!({"generation":generation.as_str(),"sha256":rentemester_storage::invoice_email::sha(&bytes)}).to_string(),actor]).map_err(|_|refused())?;
 
             Ok(
                 json!({"ok":true,"configPath":"config/digisense.json","environment":secret["environment"]}),
             )
         },
-    )
+    );
+    result.map_err(|mut failure| {
+        // Atomic private-file publication is an external effect relative to the
+        // SQLite transaction. A later audit/commit failure cannot claim no effect.
+        if publication_attempted {
+            failure.stage = FailureStage::OutcomeUnknown;
+        }
+        failure
+    })
 }
 /// Never returned through HTTP; caller constructs a fresh immutable provider client.
 pub fn secret(
@@ -54,21 +64,73 @@ pub fn secret(
         },
         selection(&context),
         Permission::CompanyExternalSend,
-        |tx, _| {
-            use rusqlite::OptionalExtension;
-            let generation:Option<String>=tx.query_row("SELECT message FROM audit_log WHERE event_type='original717_digisense_config' AND entity_type='private_config' AND entity_id='digisense' ORDER BY id DESC LIMIT 1",[],|r|r.get(0)).optional().map_err(|_|refused())?;
-            let bytes = guard.read_digisense_config().map_err(|_| refused())?;
-            match (bytes, generation) {
-                (Some(bytes), Some(generation)) => {
-                    let proof: Value = serde_json::from_str(&generation).map_err(|_| refused())?;
-                    if proof["sha256"] != rentemester_storage::invoice_email::sha(&bytes) {
-                        return Err(refused());
-                    }
-                    Ok(Some((bytes, generation)))
-                }
-                (None, None) => Ok(None),
-                _ => Err(refused()),
-            }
-        },
+        |tx, _| read_secret(tx, guard),
     )
+}
+
+fn read_secret(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+) -> Result<Option<(Vec<u8>, String)>, rentemester_engine::Error> {
+    use rusqlite::OptionalExtension;
+    let generation:Option<String>=tx.query_row("SELECT message FROM audit_log WHERE event_type='original717_digisense_config' AND entity_type='private_config' AND entity_id='digisense' ORDER BY id DESC LIMIT 1",[],|r|r.get(0)).optional().map_err(|_|refused())?;
+    let bytes = guard.read_digisense_config().map_err(|_| refused())?;
+    match (bytes, generation) {
+        (Some(bytes), Some(generation)) => {
+            let proof: Value = serde_json::from_str(&generation).map_err(|_| refused())?;
+            if proof["sha256"] != rentemester_storage::invoice_email::sha(&bytes) {
+                return Err(refused());
+            }
+            Ok(Some((bytes, generation)))
+        }
+        (None, None) => Ok(None),
+        _ => Err(refused()),
+    }
+}
+/// Read-only configuration uses the same saved generation as dispatch without
+/// returning secret bytes or requiring an external-send grant merely to read UI.
+pub fn configuration(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    fallback: Option<&str>,
+) -> Result<Committed<Value>, Failure> {
+    let observed = control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        selection(&context),
+        Permission::CompanyRead,
+        |tx, _| {
+            read_secret(tx, guard)?
+                .map(|(bytes, _)| {
+                    let config =
+                        rentemester_runtime::public_einvoice::original717::from_admitted_secret(
+                            &bytes,
+                        )
+                        .map_err(|_| refused())?;
+                    Ok(match config.environment() {
+                        rentemester_runtime::public_einvoice::Environment::Test => "test",
+                        rentemester_runtime::public_einvoice::Environment::Production => {
+                            "production"
+                        }
+                    })
+                })
+                .transpose()
+        },
+    )?;
+    if !observed.control_reusable {
+        return Err(Failure {
+            stage: FailureStage::OutcomeUnknown,
+            error: refused(),
+            control_reusable: false,
+            company_reusable: false,
+        });
+    }
+    super::configuration(control, company, context, observed.value.or(fallback))
 }

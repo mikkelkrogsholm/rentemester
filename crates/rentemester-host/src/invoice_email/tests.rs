@@ -479,6 +479,7 @@ fn original717_invoice_send_email_happy_duplicate_missing_config_live_refusal_an
 #[test]
 fn original717_efaktura_konfigurer_secret_happy_default_duplicate_and_refusal() {
     let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    owner.held.0.as_mut().unwrap().company.as_mut().unwrap().execute("UPDATE companies SET cvr='12345678',name='Synthetic Public Company',address='Synthetic 1',country='DK' WHERE id=1",[]).unwrap();
     let body = json!({"apiLicenseKey":"synthetic-secret-original717","confirm":true});
     let saved = owner
         .original717_efaktura_konfigurer(&proof, &Fixed(NOW), &body)
@@ -487,6 +488,16 @@ fn original717_efaktura_konfigurer_secret_happy_default_duplicate_and_refusal() 
         .unwrap()
         .value;
     assert_eq!(saved["environment"], "test");
+    let view = owner
+        .public_einvoice_configuration(&proof, &Fixed(NOW), None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(view["publicEInvoice"]["configured"], true);
+    assert_eq!(view["publicEInvoice"]["environment"], "test");
+    assert!(!view.to_string().contains("synthetic-secret"));
+
     assert!(
         saved["configPath"]
             .as_str()
@@ -524,6 +535,19 @@ fn original717_efaktura_konfigurer_secret_happy_default_duplicate_and_refusal() 
             .0,
         bytes.0
     );
+
+    owner.original717_efaktura_konfigurer(&proof,&Fixed(NOW),&json!({"apiLicenseKey":"synthetic-rotated-secret","environment":"production","confirm":true})).unwrap().outcome.unwrap();
+    let rotated = owner
+        .public_einvoice_configuration(&proof, &Fixed(NOW), Some("test"))
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(
+        rotated["publicEInvoice"]["environment"], "production",
+        "saved generation overrides stale native fallback"
+    );
+    assert!(!rotated.to_string().contains("secret"));
     let refused = owner
         .original717_efaktura_konfigurer(
             &proof,
@@ -546,5 +570,42 @@ fn original717_efaktura_konfigurer_secret_happy_default_duplicate_and_refusal() 
             .mode()
             & 0o777,
         0o600
+    );
+}
+#[test]
+fn original717_efaktura_config_audit_failure_after_secret_publication_is_unknown() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    owner
+        .original717_efaktura_konfigurer(
+            &proof,
+            &Fixed(NOW),
+            &json!({"apiLicenseKey":"synthetic-old","confirm":true}),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    owner.held.0.as_mut().unwrap().company.as_mut().unwrap().execute_batch("CREATE TRIGGER reject_config_audit BEFORE INSERT ON audit_log WHEN NEW.event_type='original717_digisense_config' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END;").unwrap();
+    let attempted = owner
+        .original717_efaktura_konfigurer(
+            &proof,
+            &Fixed(NOW),
+            &json!({"apiLicenseKey":"synthetic-new","confirm":true}),
+        )
+        .unwrap();
+    let failure = match attempted.outcome {
+        Err(f) => f,
+        Ok(_) => panic!("audit abort accepted"),
+    };
+    assert_eq!(
+        failure.stage,
+        rentemester_application::control_fence::FailureStage::OutcomeUnknown
+    );
+    assert!(
+        owner
+            .original717_digisense_secret(&proof, &Fixed(NOW))
+            .unwrap()
+            .outcome
+            .is_err(),
+        "file/audit generation mismatch must fail closed"
     );
 }

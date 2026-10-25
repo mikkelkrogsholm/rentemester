@@ -49,9 +49,9 @@ pub(crate) async fn handle(State(state): State<Product>, request: Request) -> Re
             return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable");
         };
         match owner.original717_invoice_send_email(&cookie, &SystemClock, &body) {
-            Ok(a) => match super::super::documents::outcome(a) {
+            Ok(a) => match super::super::bilagsmail::original717::outcome(a) {
                 Ok(v) => response(StatusCode::OK, json!({"ok":true,"result":v})),
-                Err(r) => *r,
+                Err(r) => r,
             },
             Err(_) => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown"),
         }
