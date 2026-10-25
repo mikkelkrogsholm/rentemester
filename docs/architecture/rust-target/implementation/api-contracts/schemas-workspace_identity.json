@@ -1320,37 +1320,75 @@
       "additionalProperties": false
     },
     "Original716_workspace_access_bootstrap_first_Refusal": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": false
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "error": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok"
+          ],
+          "additionalProperties": false
         },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        },
-        "appliedRules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "outcome": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lastCommittedPhase": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "commitOutcomeUnknown": {
+              "type": "boolean"
+            },
+            "ownerRetired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "lastCommittedPhase",
+            "commitOutcomeUnknown",
+            "ownerRetired"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok"
-      ],
-      "additionalProperties": false
+      ]
     }
   }
 }

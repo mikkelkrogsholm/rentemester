@@ -260,7 +260,6 @@ mod tests {
     fn all_headers_roundtrip_and_cli_exit_classification() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
             thread,
         };
         let dir = std::env::temp_dir().join(format!("rm-journal-history-{}", std::process::id()));
@@ -279,7 +278,7 @@ mod tests {
             .write_all(b"session=synthetic")
             .unwrap();
         for status in [200, 403] {
-            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let listener = crate::test_protocol::TcpListener::bind("127.0.0.1:0").unwrap();
             let origin = format!("http://{}", listener.local_addr().unwrap());
             let task = thread::spawn(move || {
                 let (mut socket, _) = listener.accept().unwrap();

@@ -8,7 +8,7 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -253,7 +253,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/journal_history.rs",
-      "sha256": "9f0d7d54cb6125b8837e12d8a577a66fa4b8413a1f65dc10439c0802ba26414e",
+      "sha256": "6b5005fedd5598da2a3d49861d586dc27d8ccd2bd06e3d44273cfea8677b0e98",
       "needle": "const MAP:"
     },
     {
@@ -323,12 +323,12 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "if args.first().map(String::as_str) == Some(\"validate-journal\")"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "if args.first().map(String::as_str) == Some(\"verify-journal-hashes\")"
     },
     {

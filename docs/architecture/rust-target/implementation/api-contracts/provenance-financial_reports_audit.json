@@ -171,7 +171,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -226,7 +226,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/dated_reports.rs",
-      "sha256": "f490a35df3cf80cdb75b55ec8e344d8268b3a69da1d1f3f5a840d5c9455585e6",
+      "sha256": "9ddd6ecc5d737f47d8857c7e8895c3623bc91708a7a3c4714fdc869084b4648f",
       "needle": "fn failure(message: impl AsRef<str>, exit: u8) -> Output {"
     },
     {
@@ -236,7 +236,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "if args.first().map(String::as_str) != Some(\"trial-balance\")"
     },
     {
@@ -321,7 +321,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "audit_verify_original::preflight"
     },
     {
@@ -367,7 +367,7 @@
     {
       "path": "crates/rentemester-cli/src/main.rs",
       "needle": "fn main(",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f"
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6"
     },
     {
       "path": "crates/rentemester-cli/src/original_args.rs",
@@ -416,7 +416,7 @@
       },
       {
         "path": "crates/rentemester-cli/src/main.rs",
-        "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+        "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
         "needle": "audit_verify_original::preflight"
       },
       {

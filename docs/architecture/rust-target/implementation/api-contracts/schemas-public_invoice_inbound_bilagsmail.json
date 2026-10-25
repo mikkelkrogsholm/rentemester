@@ -12319,7 +12319,7 @@
           "minimum": 0
         },
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "errors": {
           "type": "array",
@@ -12346,37 +12346,116 @@
       "additionalProperties": false
     },
     "Original716_imap_intake_poll_Refusal": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": false
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "error": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok"
+          ],
+          "additionalProperties": false
         },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        },
-        "appliedRules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "outcome": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "messagesProcessed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attachmentsIngested": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attachmentsSkipped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "exceptionsCreated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "messageId": {
+                    "type": "string"
+                  },
+                  "documentNo": {
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "messageId",
+                  "documentNo",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "messagesFetched": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "attachmentsIngested",
+            "attachmentsSkipped",
+            "documents",
+            "errors",
+            "exceptionsCreated",
+            "messagesFetched",
+            "messagesProcessed",
+            "ok"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Original716_invoice_send_Input": {
       "type": "object",
@@ -12645,9 +12724,6 @@
             "type": "string"
           }
         },
-        "ok": {
-          "type": "boolean"
-        },
         "errors": {
           "type": "array",
           "items": {
@@ -12669,8 +12745,7 @@
         "inboundReady",
         "outboundReady",
         "ready",
-        "blockers",
-        "ok"
+        "blockers"
       ],
       "additionalProperties": false
     },
@@ -13550,7 +13625,7 @@
           }
         },
         "ok": {
-          "type": "boolean"
+          "const": true
         },
         "appliedRules": {
           "type": "array",
@@ -13572,37 +13647,99 @@
       "additionalProperties": false
     },
     "Original716_efaktura_modtag_Refusal": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": false
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "error": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok"
+          ],
+          "additionalProperties": false
         },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "string"
-        },
-        "appliedRules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "outcome": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "pagesFetched": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsListed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsIngested": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsSkipped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsQuarantined": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/ReceivedDocument"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "documents",
+            "documentsIngested",
+            "documentsListed",
+            "documentsQuarantined",
+            "documentsSkipped",
+            "errors",
+            "ok",
+            "pagesFetched"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Original716_efaktura_modtag_workspace_Input": {
       "type": "object",

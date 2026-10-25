@@ -297,11 +297,11 @@ impl Owner {
 #[cfg(all(test, target_os = "macos"))]
 mod tests {
     use super::*;
-    use rentemester_runtime::auth::{AuthError, CookieProfile};
+    use rentemester_runtime::auth::{AuthError, CookieProfile, SystemClock};
     struct Fixed;
     impl Clock for Fixed {
         fn now_unix_ms(&self) -> Result<i64, AuthError> {
-            Ok(1767225660000)
+            SystemClock.now_unix_ms()
         }
     }
     #[test]
@@ -332,6 +332,23 @@ mod tests {
             "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE",
         )
         .unwrap();
+        // A real bounded current session, not an unbounded future-expiry fixture.
+        let now = SystemClock.now_unix_ms().unwrap();
+        let created = rentemester_runtime::backup_keys::timestamp(now - 1000).unwrap();
+        let expires = rentemester_runtime::backup_keys::timestamp(now + 3_600_000).unwrap();
+        owner
+            .held
+            .0
+            .as_mut()
+            .unwrap()
+            .control
+            .as_mut()
+            .unwrap()
+            .execute(
+                "UPDATE session SET createdAt=?1,updatedAt=?1,expiresAt=?2 WHERE id='s'",
+                rusqlite::params![created, expires],
+            )
+            .unwrap();
         let cookie = cookies.issue_session("synthetic-token").unwrap();
         let proof = cookies
             .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
@@ -360,6 +377,12 @@ mod tests {
             let dir = std::path::PathBuf::from(dir);
             std::fs::write(dir.join("native.json"), native).unwrap();
             std::fs::write(dir.join("native.pub"), key.public_key_bytes()).unwrap();
+            std::fs::write(dir.join("native.key"), &der).unwrap();
+            std::fs::write(
+                dir.join("cookie"),
+                cookie.set_cookie().split(';').next().unwrap(),
+            )
+            .unwrap();
         }
         let wire = owner
             .snapshot_original716(&cookies, &Fixed, &proof, &op, None)
@@ -439,6 +462,18 @@ mod tests {
         let reopened = Owner::open_with_profile(&target, uid, "w", "a", profile).unwrap();
         reopened.try_close().map_err(|_| ()).unwrap();
         owner.try_close().map_err(|_| ()).unwrap();
+        if let Some(dir) = std::env::var_os("RENTEMESTER_OPERATOR_ACCEPT_DIR") {
+            let dir = std::path::PathBuf::from(dir);
+            let retained = dir.join("source");
+            assert!(!retained.exists());
+            std::fs::rename(&root, &retained).unwrap();
+            let config = serde_json::json!({"root":retained,"brokerUid":uid,"runtimeProfile":"local-user-macos","workspace":"w","companySlug":"a","companyName":"Synthetic A","cookieKey":"QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE","mfaKey":"QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE","setupActor":"user:u","restoreActor":"user:u","operatorActors":["user:u"],"backupSigningKeyFile":dir.join("native.key")});
+            std::fs::write(
+                dir.join("source-config.json"),
+                serde_json::to_vec(&config).unwrap(),
+            )
+            .unwrap();
+        }
     }
     #[test]
     fn source_transfer_end_to_end() {

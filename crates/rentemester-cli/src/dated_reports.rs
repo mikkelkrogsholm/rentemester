@@ -476,7 +476,6 @@ mod tests {
     fn actual_sdk_cli_dispatch_keeps_business1_and_server_refusal_streams() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
             thread,
         };
         let dir = std::env::temp_dir().join(format!("rm-dated-report-{}", std::process::id()));
@@ -495,7 +494,7 @@ mod tests {
             .write_all(b"session=synthetic")
             .unwrap();
         for (status, json_mode) in [(200, true), (200, false), (403, true)] {
-            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let listener = crate::test_protocol::TcpListener::bind("127.0.0.1:0").unwrap();
             let origin = format!("http://{}", listener.local_addr().unwrap());
             let task = thread::spawn(move || {
                 let (mut socket, _) = listener.accept().unwrap();

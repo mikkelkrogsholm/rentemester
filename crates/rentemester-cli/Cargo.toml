@@ -14,8 +14,6 @@ rentemester-client = { path = "../rentemester-client" }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 rentemester-engine = { path = "../rentemester-engine" }
 rentemester-storage = { path = "../rentemester-storage" }
-# Source transfer ledger admission deserializes private immutable SQLite bytes.
-rusqlite = { version = "=0.40.2", features = ["bundled", "rentemester_identity", "serialize"] }
 serde_json.workspace = true
 rentemester-runtime = { path = "../rentemester-runtime" }
 

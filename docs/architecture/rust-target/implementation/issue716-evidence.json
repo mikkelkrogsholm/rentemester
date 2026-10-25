@@ -1,7 +1,7 @@
 {
   "issue": 716,
   "whole_issue_accepted": false,
-  "status": "final wiring and focused proof executed; lead whole-issue actualdiff and four-criteria acceptance pending",
+  "status": "Lead repaired concrete schema and legacy fixture defects;54CLIunit and full native CLI chain passed; finite whole acceptance pending",
   "source_revision": "b033962616a1b6361cf8e40287a0af45c83fb9c0",
   "working_tree_changes_included": true,
   "build_output": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716",
@@ -151,5 +151,207 @@
     "Linux broker/genuine hosted environment and final installed desktop acceptance not established.",
     "Declaration and leaf syntax success are not all four original acceptance criteria.",
     "No commit per bounded-worker handoff mandate."
+  ],
+  "lead_executed": {
+    "cli_unit_repair": {
+      "passed": true,
+      "log": "/tmp/issue716-cli-unit-repair.log",
+      "sha256": "8836ea552427047a0c4fdb0b831230bd9976e2e8da9b606274520317305e2ab4"
+    },
+    "storage_standalone": {
+      "passed": true,
+      "log": "/tmp/issue716-storage-alone.log",
+      "sha256": "d036d1413dd29ad01673e5638fc471aefc7dc27776ea4dec31f6e7a2ab8695be"
+    },
+    "native_fixture": {
+      "passed": true,
+      "log": "/tmp/issue716-native-fixture-current-session.log",
+      "sha256": "992e51c54aa231581831ab74bdb6f546bd127e2ebcf5aa3a6a9d89907b8b113f"
+    },
+    "native_cli_chain": {
+      "passed": true,
+      "log": "/tmp/issue716-native-cli-accept.log",
+      "sha256": "56f00a257494bcc74a7042ec2b1eb53e26756269982c5940773305d1a11c564d",
+      "result": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "actual native CLI snapshot with current human authority",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "independent native signature and accounting verification",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "data preserving fresh native restore",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "ordinary fresh owner bootstrap after native restore",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "existing target refused",
+            "exit": 1,
+            "ok": false
+          },
+          {
+            "name": "independent trust refused",
+            "exit": 1,
+            "ok": false
+          },
+          {
+            "name": "source unavailable required",
+            "exit": 2,
+            "ok": false
+          }
+        ],
+        "artifactSha256": "898968bcc9a845ed9d0e73f37643656d3d25fc97185c96e711e5653fd3282420",
+        "cliSha256": "1584f03ade6b467a4c7ec0ccaa2f53bba2673febfeff1810ef3d87e3537013c8",
+        "serverSha256": "f040eb301d6668962b7399a340a646fb3b95ee18ab63db4bc88ee1270569f300",
+        "syntheticRoot": "/Users/mikkelfreltoftkrogsholm/rentemester-native716-cli-a21v3jlx",
+        "whole_issue_accepted": false
+      }
+    },
+    "specific_typed_contracts": {
+      "passed": true,
+      "log": "/tmp/issue716-specific-contract-check.log",
+      "sha256": "44dcdb3a529d45cc081fce3303f1641289e6f72e89c2e6623a18a538b97c3640",
+      "result": {
+        "passed": true,
+        "cases": 15,
+        "checks": [
+          {
+            "schema": "Original716_efaktura_onboarding_status_Success",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_efaktura_onboarding_status_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_efaktura_modtag_Refusal",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_efaktura_modtag_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_imap_intake_poll_Refusal",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_imap_intake_poll_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_workspace_access_bootstrap_first_Refusal",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_workspace_snapshot_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_workspace_snapshot_Success",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_workspace_snapshot_Success",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_workspace_snapshot_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_workspace_restore_Success",
+            "accepted": false
+          },
+          {
+            "schema": "Original716_workspace_restore_Success",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_workspace_restore_Success",
+            "accepted": true
+          },
+          {
+            "schema": "Original716_workspace_restore_Success",
+            "accepted": false
+          }
+        ],
+        "numericPendingMigrationIds": true
+      }
+    },
+    "preserved_first_use": {
+      "passed": true,
+      "log": "/tmp/issue716-operator-resume.log",
+      "sha256": "8f212032854f324addd4a9f4bad7cd79cd8f28a5ee17bec968c11342fbc05681",
+      "result": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "fresh init observed exit0 with source missing-payment warning; continuing preserved effects",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "existing workspace refused, no replacement",
+            "exit": 1,
+            "ok": false
+          },
+          {
+            "name": "current schema read-only",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "current schema explicit operator apply",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "canonical views inspect",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "canonical views explicit no-op repair",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "first owner reservation and verification pipeline",
+            "exit": 0,
+            "ok": true
+          },
+          {
+            "name": "same owner reservation reconciles",
+            "exit": 0,
+            "ok": true
+          }
+        ],
+        "syntheticWorkspace": "/Users/mikkelfreltoftkrogsholm/rentemester-original716-cli-9pqj8y1e/workspace",
+        "cliSha256": "f175c86daad7e71dad5b703363c38a534106a2a984b1dc692f9a818cca37a9d5",
+        "serverSha256": "49889e09fec35f7846301b0e6d1a23700aa13660a6875687239e3b575b5a6738",
+        "whole_issue_accepted": false
+      }
+    }
+  },
+  "remaining": [
+    "finite combined CLI/layer acceptance",
+    "lead final review/publication and GitHub closure"
+  ],
+  "preserved_failures": [
+    "/tmp/issue716-operator-accept.log",
+    "/tmp/issue716-operator-accept-home.log",
+    "/tmp/issue716-native-fixture.log"
   ]
 }

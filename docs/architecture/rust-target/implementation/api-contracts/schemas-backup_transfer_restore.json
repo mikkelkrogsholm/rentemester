@@ -33912,56 +33912,100 @@
       "additionalProperties": false
     },
     "Original716_workspace_snapshot_Success": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "snapshotPath": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "sha256Path": {
+              "type": "string"
+            },
+            "companyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "accessIdentityCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "snapshotPath",
+            "sha256",
+            "sha256Path",
+            "companyCount",
+            "accessIdentityCount",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
         },
-        "snapshotPath": {
-          "type": "string"
-        },
-        "sha256": {
-          "type": "string"
-        },
-        "sha256Path": {
-          "type": "string"
-        },
-        "companyCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "accessIdentityCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "appliedRules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "outputVersion": {
-          "const": "rentemester-cli-workspace/2"
-        },
-        "artifactFormat": {
-          "const": "rentemester-native-backup/1"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "snapshotPath": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "sha256Path": {
+              "type": "string"
+            },
+            "companyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outputVersion": {
+              "const": "rentemester-cli-workspace/2"
+            },
+            "artifactFormat": {
+              "const": "rentemester-native-backup/1"
+            }
+          },
+          "required": [
+            "ok",
+            "snapshotPath",
+            "sha256",
+            "sha256Path",
+            "companyCount",
+            "errors",
+            "outputVersion",
+            "artifactFormat"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "snapshotPath",
-        "sha256",
-        "sha256Path",
-        "companyCount",
-        "errors"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Original716_workspace_snapshot_Refusal": {
       "type": "object",
@@ -34081,51 +34125,91 @@
       "additionalProperties": false
     },
     "Original716_workspace_restore_Success": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "targetWorkspaceRoot": {
+              "type": "string"
+            },
+            "companyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "accessRecoveryPlanPath": {
+              "type": "string"
+            },
+            "nextStep": {
+              "const": "bootstrap-owner-then-reinvite"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "targetWorkspaceRoot",
+            "companyCount",
+            "accessRecoveryPlanPath",
+            "nextStep",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
         },
-        "targetWorkspaceRoot": {
-          "type": "string"
-        },
-        "companyCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "accessRecoveryPlanPath": {
-          "type": "string"
-        },
-        "nextStep": {
-          "const": "bootstrap-owner-then-reinvite"
-        },
-        "appliedRules": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "outputVersion": {
-          "const": "rentemester-cli-workspace/2"
-        },
-        "artifactFormat": {
-          "const": "rentemester-native-backup/1"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "targetWorkspaceRoot": {
+              "type": "string"
+            },
+            "companyCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nextStep": {
+              "const": "bootstrap-owner-then-reinvite"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outputVersion": {
+              "const": "rentemester-cli-workspace/2"
+            },
+            "artifactFormat": {
+              "const": "rentemester-native-backup/1"
+            }
+          },
+          "required": [
+            "ok",
+            "targetWorkspaceRoot",
+            "companyCount",
+            "nextStep",
+            "errors",
+            "outputVersion",
+            "artifactFormat"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "targetWorkspaceRoot",
-        "companyCount",
-        "nextStep",
-        "errors"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Original716_workspace_restore_Refusal": {
       "type": "object",

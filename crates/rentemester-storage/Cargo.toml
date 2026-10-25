@@ -8,7 +8,7 @@ publish.workspace = true
 [dependencies]
 base64 = "0.22.1"
 rentemester-engine = { path = "../rentemester-engine" }
-rusqlite = { version = "0.40.2", features = ["bundled", "rentemester_identity"] }
+rusqlite = { version = "0.40.2", features = ["serialize", "bundled", "rentemester_identity"] }
 ryu-js = "1.0.3"
 serde.workspace = true
 serde_json = { workspace = true, features = ["float_roundtrip"] }

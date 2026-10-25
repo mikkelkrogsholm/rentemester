@@ -977,3 +977,7 @@ mod opening_balance;
 mod portfolio_cashflow;
 
 mod dinero_import;
+
+#[cfg(test)]
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod test_protocol;

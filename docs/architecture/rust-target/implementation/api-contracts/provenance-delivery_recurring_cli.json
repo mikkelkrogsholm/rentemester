@@ -5,17 +5,17 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "fn main()"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "match run(args)"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "sha256": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
       "needle": "if recurring_original::accepts"
     },
     {

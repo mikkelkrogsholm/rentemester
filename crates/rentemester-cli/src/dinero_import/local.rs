@@ -152,7 +152,8 @@ mod tests {
         fn new() -> Self {
             static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
             let path = std::env::temp_dir().join(format!(
-                "rm126-source-{}-{}",
+                "rm126-source-{}-{}-{}",
+                module_path!().replace("::", "-"),
                 std::process::id(),
                 NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
             ));

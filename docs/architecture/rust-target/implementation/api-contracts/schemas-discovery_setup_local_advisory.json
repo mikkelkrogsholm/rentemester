@@ -13669,7 +13669,8 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "integer",
+                "minimum": 1
               },
               "name": {
                 "type": "string"
