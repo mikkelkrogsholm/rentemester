@@ -50,7 +50,7 @@ fn document_party_original_pure_help_global_flags_and_old_dispatcher() {
     assert!(String::from_utf8_lossy(&o.stdout).contains("party-link-plan"));
     let family: Value = serde_json::from_slice(&o.stdout).unwrap();
     assert_eq!(family["ok"], true);
-    assert_eq!(family["commands"].as_array().unwrap().len(), 15);
+    assert_eq!(family["commands"].as_array().unwrap().len(), 17);
     assert!(family.get("native").is_some());
     assert!(
         family["commands"]

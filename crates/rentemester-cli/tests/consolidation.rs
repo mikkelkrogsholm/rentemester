@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::Value;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
 };
@@ -30,7 +32,13 @@ fn discoverable_six_commands_and_strict_global_company_selectors() {
     }
     for args in [
         vec!["consolidation"],
-        vec!["journal", "--company", "synthetic", "--profile-id", "forbidden"],
+        vec![
+            "journal",
+            "--company",
+            "synthetic",
+            "--profile-id",
+            "forbidden",
+        ],
         vec![
             "group-report-profiles",
             "--company",
@@ -164,6 +172,7 @@ fn confirmed_mapping_approval_sends_exact_body_once_and_reports_unknown() {
             )
             .unwrap();
             drop(stream);
+            let listener = listener.into_inner();
             listener.set_nonblocking(true).unwrap();
             thread::sleep(std::time::Duration::from_millis(70));
             assert!(listener.accept().is_err());

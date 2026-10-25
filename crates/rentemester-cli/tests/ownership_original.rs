@@ -560,7 +560,10 @@ fn local_unix_binding_and_workspace_equality_no_tcp_fallback() {
     let path = home.join(format!(".rm-ownership716-{}", std::process::id()));
     fs::DirBuilder::new().mode(0o700).create(&path).unwrap();
     let workspace = path.join("workspace");
-    fs::create_dir(&workspace).unwrap();
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(&workspace)
+        .unwrap();
     let company = format!("synthetic-{}", "x".repeat(70));
     fs::create_dir(workspace.join(&company)).unwrap();
     let tcp = std::net::TcpListener::bind("127.0.0.1:0").unwrap();

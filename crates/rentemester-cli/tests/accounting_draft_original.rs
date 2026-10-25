@@ -108,7 +108,10 @@ fn input_is_local_unique_bounded_json_file() {
 
 #[test]
 fn duplicate_global_flags_are_usage_before_credentials() {
-    for flags in [["--json", "--json"], ["--format=json", "--format=human"]] {
+    for flags in [
+        ["--company=a", "--company=b"],
+        ["--actor=user:a", "--actor=user:b"],
+    ] {
         let mut args = vec!["accounting-draft", "list"];
         args.extend(flags);
         args.push("--cookie-file=/missing/credential");

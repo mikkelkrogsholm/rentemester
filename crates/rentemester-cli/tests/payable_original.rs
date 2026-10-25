@@ -291,7 +291,7 @@ fn strict_source_flags_business_streams_and_human_display_server_totals_and_agin
         200,
         json!({"ok":true,"data":{"count":1,"asOfDate":"2026-04-01","totalOpenBalance":1234.5,"overdueOpenBalance":1000,"notYetDueOpenBalance":234.5,"rows":[{"payableId":7,"documentId":4,"supplierName":"Synthetic supplier","billNo":"S-7","billDate":"2026-01-01","dueDate":"2026-01-31","grossAmount":125,"paidAmount":50,"openBalance":75,"isOverdue":true,"overdueDays":60,"agingBucket":"31-60","status":"open"}]},"errors":[]}),
     );
-    let out = call("list", &origin, &f, false, &[]);
+    let out = call("list", &origin, &f, false, &["--format", "human"]);
     assert_eq!(out.status.code(), Some(0));
     let text = String::from_utf8(out.stdout).unwrap();
     assert!(

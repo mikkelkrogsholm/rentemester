@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
     time::Duration,
@@ -119,6 +121,7 @@ fn exact_one_time_receipt_unknown_hosted_result_and_explicit_recovery_have_no_re
             )
             .unwrap();
             drop(s);
+            let l = l.into_inner();
             l.set_nonblocking(true).unwrap();
             thread::sleep(Duration::from_millis(60));
             assert!(l.accept().is_err());

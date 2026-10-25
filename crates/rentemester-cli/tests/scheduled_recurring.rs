@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
 };
@@ -87,6 +89,7 @@ fn scheduled_cli_exact_dispatch_once_and_unknown_outcome() {
         s.write_all(b"HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n")
             .unwrap();
         drop(s);
+        let l = l.into_inner();
         l.set_nonblocking(true).unwrap();
         thread::sleep(std::time::Duration::from_millis(70));
         assert!(l.accept().is_err());
@@ -164,6 +167,7 @@ fn scheduled_cli_exact_reconsent_once_and_unknown_outcome() {
         s.write_all(b"HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n")
             .unwrap();
         drop(s);
+        let l = l.into_inner();
         l.set_nonblocking(true).unwrap();
         thread::sleep(std::time::Duration::from_millis(70));
         assert!(l.accept().is_err());

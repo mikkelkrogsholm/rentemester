@@ -1,3 +1,5 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::process::Command;
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
@@ -11,7 +13,14 @@ fn canonical_namespace_is_discoverable_and_confirmation_and_selectors_are_strict
         let output = Command::new(BIN).args(args).output().unwrap();
         assert!(output.status.success());
         let help: Value = serde_json::from_slice(&output.stdout).unwrap();
-        assert!(help["usage"].as_str().unwrap().contains("--document-id"));
+        let help = help.get("invoiceExtraction").unwrap_or(&help);
+        assert!(
+            help["commands"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|command| command.as_str().unwrap().contains("--document-id"))
+        );
         assert!(
             help["recovery"]
                 .as_str()
@@ -102,10 +111,10 @@ fn canonical_namespace_is_discoverable_and_confirmation_and_selectors_are_strict
 }
 #[cfg(unix)]
 mod http {
+    use super::common::TcpListener;
     use super::*;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
         os::unix::fs::OpenOptionsExt,
         path::PathBuf,
         sync::atomic::{AtomicUsize, Ordering},
@@ -206,6 +215,7 @@ mod http {
             }
             write!(stream,"HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection:close\r\n\r\n{body}",body.len()).unwrap();
             drop(stream);
+            let listener = listener.into_inner();
             thread::sleep(Duration::from_millis(75));
             assert!(
                 listener.accept().is_err(),
@@ -217,7 +227,7 @@ mod http {
     fn call(command: &str, origin: &str, cookie: &Cookie) -> std::process::Output {
         let mut child = Command::new(BIN);
         child.args([
-            "documents",
+            "remote",
             command,
             "--server",
             origin,
@@ -240,7 +250,7 @@ mod http {
         serde_json::from_slice(&output.stdout).unwrap()
     }
     #[test]
-    fn canonical_namespace_posts_once_and_preserves_conflicts_and_exact_source_fields() {
+    fn native_remote_posts_once_and_preserves_conflicts_and_exact_source_fields() {
         const BODY: &str = r#"{"ok":true,"extraction":{"attemptId":7,"status":"needs_resolution","fields":[{"key":"grossAmount","value":"9007199254740993.01","sourceText":"Total 9007199254740993.01","confidence":0.9,"page":1}],"conflicts":["gross amount conflicts with supplied metadata"],"resolutions":[]}}"#;
         let cookie = Cookie::new();
         let (origin, task) = endpoint("POST", "extract-invoice", "200 OK", BODY);

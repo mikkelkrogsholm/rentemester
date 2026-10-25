@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::Command,
     thread,
     time::Duration,
@@ -136,6 +138,7 @@ fn mileage_posting_cli_exact_body_file_path_and_no_retry() {
                 };
                 write!(s,"HTTP/1.1 {status}\r\nContent-Type:application/json\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",reply.len()).unwrap();
                 drop(s);
+                let l = l.into_inner();
                 l.set_nonblocking(true).unwrap();
                 thread::sleep(Duration::from_millis(60));
                 assert!(l.accept().is_err(), "must never retry");

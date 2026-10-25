@@ -230,7 +230,7 @@ fn missing_selector_usage_unmatched_business_and_practical_currency_safe_human()
         200,
         json!({"ok":true,"data":{"count":1,"rows":[{"invoiceNumber":"INV-7","customerName":"Synthetic customer","invoiceDate":"2027-01-01","effectiveDueDate":"2027-01-31","grossAmount":125,"openBalance":75,"currency":"EUR","status":"open","isOverdue":true,"overdueDays":12}]},"errors":[]}),
     );
-    let out = call("list", &origin, &f, false, &[]);
+    let out = call("list", &origin, &f, false, &["--format", "human"]);
     assert_eq!(out.status.code(), Some(0));
     let text = String::from_utf8(out.stdout).unwrap();
     assert!(

@@ -171,7 +171,12 @@ fn five_exact_flat_contracts() {
             ],
             "POST /api/companies/synthetic/periods/original/close HTTP/1.1",
             json!({"periodStart":"2024-01-01","periodEnd":"2024-03-31","packetHash":hash,"reviewId":7,"status":"reported","reference":"receipt=a","confirm":true}),
-            { let mut v=receipt.clone(); v["status"]=json!("reported"); v["reference"]=json!("receipt=a"); v },
+            {
+                let mut v = receipt.clone();
+                v["status"] = json!("reported");
+                v["reference"] = json!("receipt=a");
+                v
+            },
         ),
         (
             "reopen",
@@ -185,7 +190,14 @@ fn five_exact_flat_contracts() {
             ],
             "POST /api/companies/synthetic/periods/original/reopen HTTP/1.1",
             json!({"periodStart":"2024-01-01","periodEnd":"2024-03-31","reason":" correction ","kind":"custom","confirm":true}),
-            { let mut v=receipt.clone(); v["kind"]=json!("custom"); v["effectiveStatus"]=json!("open"); v["reopenedBy"]=json!("user:server"); v["reason"]=json!("correction"); v },
+            {
+                let mut v = receipt.clone();
+                v["kind"] = json!("custom");
+                v["effectiveStatus"] = json!("open");
+                v["reopenedBy"] = json!("user:server");
+                v["reason"] = json!("correction");
+                v
+            },
         ),
     ] {
         let (origin, t) = server(200, result.clone());
@@ -250,7 +262,7 @@ fn strict_refusals_before_profile_or_credentials() {
         ],
         vec!["status", "--review-id=9007199254740992"],
         vec!["status", "--review-id=1", "--review-id=2"],
-        vec!["status", "--review-id=1", "--json", "--json"],
+        vec!["status", "--review-id=1", "--format=csv"],
         vec!["readiness", "--from=2024-02-30", "--to=2024-03-31"],
         vec![
             "readiness",

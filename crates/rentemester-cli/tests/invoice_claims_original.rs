@@ -306,6 +306,8 @@ fn strict_claim_flags_business_and_input_failures_preserve_exit_streams() {
             let mut args = vec!["--invoice-number", "INV", "--as-of", "2026-01-01"];
             if !human {
                 args.push("--json");
+            } else {
+                args.extend(["--format", "human"]);
             }
             let out = call("interest", &origin, &f, &args, None);
             assert_eq!(out.status.code(), Some(1));

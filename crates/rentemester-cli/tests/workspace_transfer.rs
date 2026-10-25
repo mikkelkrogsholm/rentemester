@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
     time::Duration,
@@ -137,6 +139,7 @@ fn transfer_cli_preserves_canonical_refusal_export_and_selected_receipt_mapping(
             assert!(wire.starts_with(format!("POST {path} HTTP/1.1").as_bytes()));
             write!(s,"HTTP/1.1 {status}\r\nContent-Type:{mime}\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",response.len()).unwrap();
             drop(s);
+            let l = l.into_inner();
             l.set_nonblocking(true).unwrap();
             thread::sleep(Duration::from_millis(60));
             assert!(l.accept().is_err());

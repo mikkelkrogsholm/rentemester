@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
 };
@@ -93,6 +95,7 @@ fn public_invoice_cli_retains_known_uncertainty_without_resend_or_false_delivery
         )
         .unwrap();
         drop(s);
+        let listener = listener.into_inner();
         listener.set_nonblocking(true).unwrap();
         std::thread::sleep(std::time::Duration::from_millis(60));
         assert!(listener.accept().is_err());

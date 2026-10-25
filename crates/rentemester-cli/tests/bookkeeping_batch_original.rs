@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::Command,
     sync::mpsc,
     thread,
@@ -52,6 +54,7 @@ fn server(
         )
         .unwrap();
         drop(s);
+        let l = l.into_inner();
         l.set_nonblocking(true).unwrap();
         thread::sleep(Duration::from_millis(60));
         1 + l.incoming().take_while(Result::is_ok).count()

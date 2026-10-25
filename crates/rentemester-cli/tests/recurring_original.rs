@@ -231,6 +231,8 @@ fn original_recurring_cli_business_usage_and_human_list_are_distinct() {
         .args([
             "recurring-invoice",
             "list",
+            "--format",
+            "human",
             "--server",
             &origin,
             "--allow-loopback-http",

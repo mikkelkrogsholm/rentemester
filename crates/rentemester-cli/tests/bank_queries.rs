@@ -165,7 +165,7 @@ fn business_messages_streams_usage_and_human_original_units_are_preserved() {
         let extra = if json_mode {
             vec!["--account", "unknown", "--json"]
         } else {
-            vec!["--account", "unknown"]
+            vec!["--account", "unknown", "--format", "human"]
         };
         let output = call(&["bank", "list"], &origin, &fixture, false, &extra);
         assert_eq!(output.status.code(), Some(1));
@@ -210,7 +210,14 @@ fn business_messages_streams_usage_and_human_original_units_are_preserved() {
         &origin,
         &fixture,
         true,
-        &["--from", "2020-01-01", "--to", "2027-12-31"],
+        &[
+            "--from",
+            "2020-01-01",
+            "--to",
+            "2027-12-31",
+            "--format",
+            "human",
+        ],
     );
     assert_eq!(output.status.code(), Some(0));
     let text = String::from_utf8(output.stdout).unwrap();

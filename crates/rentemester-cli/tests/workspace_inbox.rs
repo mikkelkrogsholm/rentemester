@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::Value;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::Command,
     thread,
 };
@@ -152,6 +154,7 @@ fn exact_ingress_body_and_original_key_cross_cli_unknown_without_retry() {
             )
             .unwrap();
         drop(stream);
+        let listener = listener.into_inner();
         listener.set_nonblocking(true).unwrap();
         thread::sleep(std::time::Duration::from_millis(70));
         assert!(listener.accept().is_err());

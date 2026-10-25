@@ -94,7 +94,7 @@ fn run_fixture(
     let task = thread::spawn(move || {
         let manifest: Value =
             serde_json::from_str(include_str!("../../../protocol/http-v1.json")).unwrap();
-        assert_eq!(manifest["operations"].as_array().unwrap().len(), 642);
+        assert_eq!(manifest["operations"].as_array().unwrap().len(), 701);
         let mut bodies = vec![];
         for (path, status, v) in steps {
             let Some(mut s) = bounded_accept(&l) else {

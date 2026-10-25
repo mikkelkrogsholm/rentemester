@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::Value;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
 };
@@ -161,6 +163,7 @@ fn confirmed_mapping_approval_sends_exact_body_once_and_reports_unknown() {
             )
             .unwrap();
             drop(stream);
+            let listener = listener.into_inner();
             listener.set_nonblocking(true).unwrap();
             thread::sleep(std::time::Duration::from_millis(70));
             assert!(listener.accept().is_err());

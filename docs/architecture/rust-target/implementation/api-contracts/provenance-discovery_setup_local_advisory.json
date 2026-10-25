@@ -141,7 +141,7 @@
     },
     {
       "path": "crates/rentemester-cli/tests/original_company716.rs",
-      "sha256": "92fc8d1956bd1ea1e5869b237578268b3f7ab44b518fa71750e3e66578d20225",
+      "sha256": "315b3cc5c4233b6be8869e784fb6ada688029bd650df6a1d668aba90cf500e62",
       "needle": "fn five_original_keys_body_projection_and_streams"
     },
     {
@@ -762,7 +762,7 @@
       },
       {
         "path": "crates/rentemester-cli/tests/original_company716.rs",
-        "sha256": "92fc8d1956bd1ea1e5869b237578268b3f7ab44b518fa71750e3e66578d20225",
+        "sha256": "315b3cc5c4233b6be8869e784fb6ada688029bd650df6a1d668aba90cf500e62",
         "needle": "fn five_original_keys_body_projection_and_streams"
       },
       {

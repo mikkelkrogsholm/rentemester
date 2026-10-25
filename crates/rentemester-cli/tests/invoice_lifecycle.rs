@@ -389,15 +389,12 @@ fn repair_posting_explicit_flags_flat_source_receipts_business_and_usage_exits()
             json!({"ok":false,"code":"business","errors":["Legacy journal is not eligible for repair"],"appliedRules":["source-rule"]})
         };
         let (origin, t) = server(200, value.clone());
+        let human_args = [&base[..base.len() - 1], &["--format", "human"]].concat();
         let out = call(
             "repair-posting",
             &origin,
             &f,
-            if human {
-                &base[..base.len() - 1]
-            } else {
-                &base
-            },
+            if human { &human_args } else { &base },
             None,
         );
         assert_eq!(out.status.code(), Some(if success { 0 } else { 1 }));

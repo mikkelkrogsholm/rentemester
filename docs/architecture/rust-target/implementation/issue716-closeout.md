@@ -1,33 +1,36 @@
-# #716 final wiring handoff — not whole-issue closure
+# #716 — CLI, local launcher and machine-readable contracts
 
-Transfer parent modules, private common-server helper and exact CLI dispatch are
-wired. Two SQLite count decodes now use checked signed-to-unsigned conversion;
-CLI explicitly enables the existing rusqlite serialization feature used by private
-transfer ledger admission. No second engine, HTTP schema route, retry or TS fallback.
+Lead acceptance covers the full original R44 scope and all four original criteria.
+All265 original CLI identities are wired with current help/flags and typed contracts;
+the strict1724-operation inventory retains every prior1670 identity and schema.
+The existing scripts use the Rust launcher; `RENTEMESTER_LEGACY_CLI=1` is the explicit
+compatibility path. One common Rust Owner/server remains authoritative.
 
-The existing protocol generator added 12 actual method/path registrations. Client
-manifest matches exactly. All 38 operation/schema/provenance partitions retain
-prior IDs and schema names; 42 original CLI identities bring totals to **575 CLI,
-701 HTTP, 448 MCP (1,724)**. All 265 original identities carry current source
-metadata; new records include typed shapes, flags, stream/exit/rendering and source
-constructor bindings. The unchanged strict verifier passed. Source hash refreshes
-also retain earlier field-scoped arbitrary-JSON rationale; no oracle weakening.
+Executed proof:54 CLI unit tests and all112 CLI integration targets pass.86 unchanged
+targets reuse their actual source-/binary-bound results;26 diagnosed stale fixtures
+were corrected, recompiled and executed.24 new layer tests pass, including actual
+custody/authority, report, schema and bootstrap behavior. Passing wrapper tests run
+their qualified child rather than treating an ignored child as an executed case.
+Earlier source-transfer, server5-case, real8-step first-use and7-step signed native
+snapshot/independent verification/fresh restore/new owner CLI results remain valid.
+Exact source hashes, logs, binary hashes and criterion mapping are in
+`issue716-evidence.json`; all failed and cancelled receipts are retained.
 
-Executed: guarded combined check and binary build; 42 focused CLI tests in nine
-suites; one real host source-transfer end-to-end test (its private child is normally
-ignored); five server #716 tests; eight actual CLI-to-server synthetic first-use,
-schema and owner-bootstrap/reconciliation checks. Syntax716 and Graphify extraction
-ran. Paths and binary hashes are in `issue716-evidence.json`.
+Latest corrections affect fixtures only: passive protocol discovery, private0700
+workspace fixtures, exact current manifest/help cardinality, explicit human output,
+and valid duplicate-flag refusals. Raw no-retry/no-fallback assertions and all
+business/financial/exit/stream assertions are retained. Native extraction fixtures
+exercise the documented `remote` namespace; canonical original commands keep their
+separate flat-output contract. No product control was weakened to obtain PASS.
 
-The whole CLI command **failed**: 51 unit tests passed, three failed before the
-integration suites. Two unowned in-module fixtures omit current passive protocol
-negotiation; the third requires case-distinct files on a case-insensitive host.
-Their output is retained, not relabelled PASS. Owned focused fixtures were corrected
-to canonical temporary paths and the actual selector-consuming SDK contract; no
-product permission/file guard was relaxed. Earlier rejected outputs remain in the
-worker build directory.
+Workspace `source-tar-v1` retains independent per-company trust and source receipts,
+and refuses unsupported nonempty source sections. Explicit `--artifact-format
+native-v1` uses the existing accepted native backup/restore motor with distinct
+`rentemester-cli-workspace/2` receipts. It never silently changes the TAR format,
+restores credentials, overwrites a target or accepts an embedded signing key as
+independent trust. Actual native restore preserves accounting data and requires a
+fresh owner. This is the versioned compatibility allowed by the original criterion.
 
-Full original #716 remains open pending lead actualdiff review and all four
-original criteria. Preserve all 55 epic issues, accepted 223 CLI families and #717.
-No live migration/cutover, Linux qualification, provider approval, final installed
-desktop acceptance, GitHub closure, publication or commit is claimed here.
+No live migration/cutover or final installed desktop acceptance is claimed. All55
+original epic scopes and remaining release requirements are preserved. Public
+GitHub closure requires the finite SGD acceptance and published accepted revision.

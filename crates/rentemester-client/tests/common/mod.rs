@@ -34,6 +34,9 @@ fn discovery(stream: &mut (impl Read + Write)) -> std::io::Result<()> {
 
 pub struct TcpListener(std::net::TcpListener);
 impl TcpListener {
+    pub fn into_inner(self) -> std::net::TcpListener {
+        self.0
+    }
     pub fn bind(addr: impl std::net::ToSocketAddrs) -> std::io::Result<Self> {
         std::net::TcpListener::bind(addr).map(Self)
     }

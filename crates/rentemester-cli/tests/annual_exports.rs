@@ -127,7 +127,11 @@ fn annual_without_artifact_preserves_flat_report_and_human_sections() {
             "annual",
             &origin,
             &dir,
-            if json_mode { &["--json"] } else { &[] },
+            if json_mode {
+                &["--json"]
+            } else {
+                &["--format", "human"]
+            },
         );
         assert!(
             out.status.success(),
@@ -217,7 +221,11 @@ fn annual_blockers_write_no_file_and_tax_preserves_json_and_human_null_review() 
             "tax",
             &origin,
             &dir,
-            if json_mode { &["--json"] } else { &[] },
+            if json_mode {
+                &["--json"]
+            } else {
+                &["--format", "human"]
+            },
         );
         assert!(
             out.status.success(),

@@ -1,7 +1,9 @@
+use common::TcpListener;
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
     time::Duration,
@@ -127,6 +129,7 @@ fn invoice_email_cli_preserves_canonical_known_refusal_exit_and_never_retries() 
                 )
                 .unwrap();
                 drop(s);
+                let l = l.into_inner();
                 l.set_nonblocking(true).unwrap();
                 thread::sleep(Duration::from_millis(60));
                 assert!(l.accept().is_err());

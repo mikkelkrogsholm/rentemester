@@ -369,7 +369,10 @@ fn local_unix_workspace_assertion_long_company_path_and_no_tcp_fallback() {
         .join(format!(".rm-party688-{}", std::process::id()));
     fs::DirBuilder::new().mode(0o700).create(&base).unwrap();
     let workspace = base.join("workspace");
-    fs::create_dir(&workspace).unwrap();
+    fs::DirBuilder::new()
+        .mode(0o700)
+        .create(&workspace)
+        .unwrap();
     let company = format!("synthetic-{}", "x".repeat(85));
     let company_path = workspace.join(&company);
     fs::create_dir(&company_path).unwrap();
