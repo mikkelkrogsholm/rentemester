@@ -97,14 +97,17 @@ fn original_diagnostics118_host_dated_read_and_missing_secondary_health() {
             .value["ok"],
         false
     );
-    assert_eq!(
-        owner
-            .system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "a")
-            .unwrap()
-            .outcome
-            .unwrap()["ok"],
-        true
-    );
+    // Owner's minimum SQL namespace is not the full original company layout.
+    // The diagnostic must expose missing folders rather than fabricate health.
+    let incomplete = owner.system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "a").unwrap().outcome.unwrap();
+    assert_eq!(incomplete["ok"], false);
+    assert_eq!(incomplete["missing"], json!(["documents", "config"]));
+    use std::os::unix::fs::DirBuilderExt;
+    for relative in ["a/documents/inbox", "a/config"] {
+        std::fs::DirBuilder::new().recursive(true).mode(0o700).create(owner.root.join(relative)).unwrap();
+    }
+    let healthy = owner.system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "a").unwrap().outcome.unwrap();
+    assert_eq!(healthy["ok"], true, "{healthy}");
     assert!(
         owner
             .system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "../escape")
