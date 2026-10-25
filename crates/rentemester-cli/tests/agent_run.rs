@@ -355,3 +355,37 @@ fn invalid_date_and_uninitialized_company_are_flat_business_reports() {
         assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), v);
     }
 }
+
+#[test]
+fn wrong_company_success_is_unknown_without_retry() {
+    let mut v = report();
+    v["company"] = json!("another-company");
+    let (out, bodies) = run_fixture(
+        &["--json"],
+        vec![(
+            "POST /api/companies/synthetic/agent/original/run HTTP/1.1",
+            200,
+            v,
+        )],
+    );
+    assert_eq!(bodies.len(), 1);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(out.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("unknown"));
+}
+
+#[test]
+fn mismatched_asserted_actor_success_is_unknown_without_retry() {
+    let (out, bodies) = run_fixture(
+        &["--json", "--actor", "user:expected"],
+        vec![(
+            "POST /api/companies/synthetic/agent/original/run HTTP/1.1",
+            200,
+            report(),
+        )],
+    );
+    assert_eq!(bodies.len(), 1);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(out.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&out.stderr).contains("unknown"));
+}

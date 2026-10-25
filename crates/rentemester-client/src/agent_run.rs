@@ -125,6 +125,10 @@ impl ApiClient {
         if !validate_report(&report)
             || (status == 422 && report["ok"] != false)
             || report["asOf"] != request["asOf"]
+            || report["company"] != company
+            || request
+                .get("expectedActor")
+                .is_some_and(|actor| report["actor"] != *actor)
         {
             return Err(Error::OutcomeUnknown);
         }
