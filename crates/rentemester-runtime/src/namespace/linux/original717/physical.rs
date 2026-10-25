@@ -204,14 +204,16 @@ impl NamespaceGuard {
         self.ensure_current()?;
         Ok(zeroize::Zeroizing::new(key))
     }
-    /// Retain original directory and deterministic source USTAR + SHA sidecar, no overwrite.
-    pub fn retain_original717(&mut self, proof: &VerifiedOriginal717) -> Result<(), Error> {
+    /// Retain just the source directory: system_backup defaults to archive:false.
+    pub fn retain_original717_directory(
+        &mut self,
+        proof: &VerifiedOriginal717,
+    ) -> Result<PathBuf, Error> {
         self.ensure_current()?;
         let name = &proof.manifest().backup_id;
         if !id(name) {
             return Err(Error::Invalid);
         }
-        let archive = codec::archive(proof.files()).map_err(|_| Error::Invalid)?;
         let backups = backup_directory(&self.root.join(&self.slug).join("backups"), self.uid)?;
         mkdirat(&backups, name.as_str(), Mode::from_raw_mode(0o700)).map_err(|_| Error::Exists)?;
         let dir = File::from(
@@ -219,14 +221,86 @@ impl NamespaceGuard {
                 .map_err(|_| Error::Invalid)?,
         );
         materialize(&dir, proof.files())?;
-        create_file(&backups, &format!("{name}.tar"), &archive)?;
-        create_file(
-            &backups,
-            &format!("{name}.tar.sha256"),
-            format!("{}  {name}.tar\n", codec::sha256(&archive)).as_bytes(),
-        )?;
         backups.sync_all().map_err(|_| Error::Invalid)?;
-        self.ensure_current()
+        self.ensure_current()?;
+        Ok(self.root.join(&self.slug).join("backups").join(name))
+    }
+    /// Explicit archive publication. Custom destinations require the existing trusted operator
+    /// binding AND verified local transport/current authority at the calling backend boundary.
+    /// Existing custom files are never opened: closing a SQLite alias could release its locks.
+    pub fn pack_original717(
+        &mut self,
+        proof: &VerifiedOriginal717,
+        out: Option<&Path>,
+        operator: Option<&crate::bootstrap::Operator>,
+    ) -> Result<PathBuf, Error> {
+        self.ensure_current()?;
+        let name = &proof.manifest().backup_id;
+        if !id(name) {
+            return Err(Error::Invalid);
+        }
+        let default = self
+            .root
+            .join(&self.slug)
+            .join("backups")
+            .join(format!("{name}.tar"));
+        let target = out.unwrap_or(&default);
+        if !target.is_absolute() {
+            return Err(Error::Invalid);
+        }
+        let custom = target != default;
+        if custom {
+            if operator.is_none() {
+                return Err(Error::Invalid);
+            }
+            // Even the local operator export cannot write into a live workspace's other resources.
+            if target.starts_with(&self.root)
+                && !target.starts_with(self.root.join(&self.slug).join("backups"))
+                && !target.starts_with(self.root.join(&self.slug).join("exports"))
+            {
+                return Err(Error::Invalid);
+            }
+        }
+        let leaf = target
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or(Error::Invalid)?;
+        let sidecar = format!("{leaf}.sha256");
+        let directory = backup_directory(target.parent().ok_or(Error::Invalid)?, self.uid)?;
+        if custom {
+            for file in [leaf, sidecar.as_str()] {
+                match statat(&directory, file, AtFlags::SYMLINK_NOFOLLOW) {
+                    Err(rustix::io::Errno::NOENT) => {}
+                    _ => return Err(Error::Exists),
+                }
+            }
+        }
+        let archive = codec::archive(proof.files()).map_err(|_| Error::Invalid)?;
+        let digest = format!("{}  {leaf}\n", codec::sha256(&archive));
+        for (file, bytes) in [
+            (leaf, archive.as_slice()),
+            (sidecar.as_str(), digest.as_bytes()),
+        ] {
+            match statat(&directory, file, AtFlags::SYMLINK_NOFOLLOW) {
+                Err(rustix::io::Errno::NOENT) => create_file(&directory, file, bytes)?,
+                Ok(_) if !custom => {
+                    // Only the fixed backup compartment supports exact-byte readback/reuse.
+                    if read_bounded(&directory, self.uid, file, bytes.len())? != bytes {
+                        return Err(Error::Exists);
+                    }
+                }
+                _ => return Err(Error::Exists),
+            }
+        }
+        directory.sync_all().map_err(|_| Error::Invalid)?;
+        self.ensure_current()?;
+        Ok(target.to_owned())
+    }
+    /// Existing convenience for a deliberately requested directory+archive bundle.
+    pub fn retain_original717(&mut self, proof: &VerifiedOriginal717) -> Result<(), Error> {
+        self.retain_original717_directory(proof)?;
+        self.pack_original717(proof, None, None)?;
+        Ok(())
     }
     /// None selects latest authenticated createdAt, not filesystem enumeration order.
     pub fn load_original717(
@@ -454,7 +528,45 @@ mod tests {
         );
         files.insert("manifest.json".into(), text);
         let proof = codec::verify(&files, &key, None).unwrap();
-        guard.retain_original717(&proof).unwrap();
+        let retained = guard.retain_original717_directory(&proof).unwrap();
+        let tar = retained.with_extension("tar");
+        assert!(!tar.exists(), "archive:false must not create a TAR");
+        assert!(!tar.with_extension("tar.sha256").exists());
+        assert_eq!(guard.load_original717(None, None).unwrap().files(), &files);
+        assert_eq!(guard.pack_original717(&proof, None, None).unwrap(), tar);
+        let bytes = std::fs::read(&tar).unwrap();
+        assert_eq!(codec::read_archive(&bytes).unwrap(), files);
+        guard.pack_original717(&proof, None, None).unwrap();
+        assert_eq!(std::fs::read(&tar).unwrap(), bytes);
+        let exported = base.join("exported.tar");
+        assert!(
+            guard
+                .pack_original717(&proof, Some(&exported), None)
+                .is_err()
+        );
+        assert!(!exported.exists());
+        let operator = crate::bootstrap::Operator::from_policy(
+            "w",
+            "user:operator",
+            &["user:operator".into()],
+        )
+        .unwrap();
+        guard
+            .pack_original717(&proof, Some(&exported), Some(&operator))
+            .unwrap();
+        assert_eq!(std::fs::read(&exported).unwrap(), bytes);
+        assert!(
+            guard
+                .pack_original717(&proof, Some(&exported), Some(&operator))
+                .is_err()
+        );
+        let protected = root.join("a/data/forbidden.tar");
+        assert!(
+            guard
+                .pack_original717(&proof, Some(&protected), Some(&operator))
+                .is_err()
+        );
+        assert!(!protected.exists());
         assert!(guard.retain_original717(&proof).is_err());
         assert_eq!(guard.load_original717(None, None).unwrap().files(), &files);
         assert!(guard.load_original717(Some("../bad"), None).is_err());
