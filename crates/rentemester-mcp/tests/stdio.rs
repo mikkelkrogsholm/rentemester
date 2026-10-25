@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Registry includes the required bookkeeping_batch_dry_run alias.
-const EXPECTED_NATIVE_TOOLS: usize = 370;
+const EXPECTED_NATIVE_TOOLS: usize = 434;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2272,3 +2272,6 @@ mod posting_rules_original;
 
 #[path = "stdio/accounts_original.rs"]
 mod accounts_original;
+
+#[path = "stdio/company_creation_original116.rs"]
+mod company_creation_original116;
