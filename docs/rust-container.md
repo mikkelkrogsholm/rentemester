@@ -14,6 +14,7 @@ Fra checkoutet:
 ```sh
 python3 scripts/rust/cargo-guard.py status
 docker build -f Dockerfile.rust \
+  --build-arg RUST_BUILD_CACHE_ID="local-$(date +%s)-$$" \
   --build-arg RENTEMESTER_VERSION=0.2.0 \
   --build-arg RENTEMESTER_GIT_COMMIT="$(git rev-parse HEAD)" \
   --build-arg SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" \
@@ -30,12 +31,14 @@ Rust-toolchain er byggeafhængigheder; de kopieres ikke til runtime-imaget.
 PDFium-licenser, Debian-pakkeversioner og kontrol af native biblioteker følger
 med i `/opt/rentemester`.
 
-BuildKit bruger én låst Cargo-cache pr. arkitektur. Den eksisterende
-Cargo-kontrol kræver mindst 30 GiB ledigt og håndhæver én compilerproces uden
-incremental-cache. `target/` er udeladt fra Docker-konteksten. Der bygges til
+BuildKit kræver et eksplicit `RUST_BUILD_CACHE_ID` og bruger en separat Cargo-cache
+pr. byggeforløb. Uafhængige workers deler ikke compilerlås eller target-mappe.
+Cargo-kontrollen kræver mindst 30 GiB ledigt på både kilde- og byggevolumen;
+der bruges to Cargo-jobs, og incremental-cache er slået fra. `target/` er udeladt fra Docker-konteksten. Der bygges til
 den valgte Linux-arkitektur; en bestået arm64-prøve beviser ikke amd64.
-Uafhængig reproducerbarhed, SBOM/attestation og integration med den eksisterende
-review-/promotionsrute er særskilte R53-gates.
+Releaseworkflowet implementerer nu to uafhængige kolde OCI-bygninger, rå SPDX-SBOM
+og Rust v2-review/promotion. Faktisk fjernkørsel, reproducerbarhed og godkendt
+registry-promotion er fortsat særskilte, uafsluttede acceptkrav under #725.
 
 ## Konfiguration og første start
 
@@ -156,10 +159,15 @@ bun scripts/release/verify-approval.ts release-manifest.json approval.json build
 
 Kontrollen kræver identitetens præcise bytes samt menneskegodkendelsens præcise
 manifesthash, image-digest, version og commit. Den eksisterende Bun v1-rute
-bevarer sin kontrakt. Denne lokale v2-understøttelse ændrer endnu ikke CI eller
-promotionsruten. Betroet workflow, SBOM, supply-chain, dækkende native
-interfacekontrol, attestation og godkendt promotion af præcis digest skal stadig
-forbindes og kvalificeres, før Rust bliver produktionsruten.
+bevarer sin kontrakt. De eksisterende kandidat- og promotionsworkflows har nu en eksplicit Rust v2-rute;
+Rust er standardvalget, og Bun vælges særskilt. Den rå identitet, pakkeinventar,
+licensbevis, SPDX, supply-chain og discovery bindes til præcis image-digest.
+Promotion genkontrollerer kandidatens godkendte kildecheckout med den betroede
+kontrolkode og gældende licenspolitik og bygger ikke igen. Se
+[releasekontrakten](release/README.md). Manglende original MCP-/workflowdækning
+afviser stadig en release; navneantal er ikke paritetsbevis. Ingen faktisk
+hosted amd64-kørsel, registry-promotion eller uafhængig godkendelse udledes af
+de lokale tests.
 
 ## Automatisk headless accept
 

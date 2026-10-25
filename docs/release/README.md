@@ -25,6 +25,62 @@ betragtes som en Digisense-godkendelse.
    afsluttende testopsummering sammen med releasearbejdet.
 5. Merge ændringen til `main`. Opret ikke Git-tag manuelt.
 
+## Rust-kandidaten og resterende accept
+
+`release candidate` har nu et eksplicit `runtime`-valg, med `rust` som standard
+og `bun` som den bevarede tidligere rute. Rust-versionen skal være ens i
+`Cargo.toml`, `package.json` og `app/package.json`. Rust-kandidaten bruger
+`Dockerfile.rust`, det samme React-UI og én fælles Rust-motor/server.
+
+Rust-ruten kræver en Linux x64-runner med mindst 30 GiB ledigt på kilde- og
+byggevolumen. Repositoryvariablen `RENTEMESTER_RUST_RELEASE_RUNNER` kan vælge en
+allerede konfigureret runner med tilstrækkelig plads. Ellers anvendes
+`ubuntu-latest`, og preflight stopper med en konkret kapacitetsfejl, hvis den
+ikke opfylder kravet. Kontrollen må ikke sænkes for at få et grønt CI-job.
+En faktisk egnet runner og fjernkørsel er endnu ikke kvalificeret.
+
+To uafhængige kolde BuildKit-bygninger skal give samme OCI-arkivhash,
+platformmanifest og image-konfiguration. Hver bygning bruger egen Cargo-cache.
+Den første verificerede cache kan derefter genbruges til readiness og publicering.
+Én fuld syntetisk ejer/MFA/bogføring/PDF/genstart-prøve køres mod det verificerede
+image; det publicerede immutable image skal have de samme bytes. Det udløser
+ikke en gentagelse af de samme finansielle effekter.
+
+Samme kandidat-artefakt indeholder følgende originale filer med hver sin præcise
+SHA-256-sidecar:
+
+- `release-manifest.json` (v2)
+- `rust-build-identity.json` (rå pakket identitet)
+- `rust-package-evidence.json`
+- `rust-license-evidence.json`
+- `sbom.spdx.json` (den faktiske BuildKit-SPDX)
+- `supply-chain-evidence.json`
+- `agent-discovery-coverage-report.json`
+
+`qualify-rust-candidate.py` kontrollerer det immutable image, platform,
+pakkeinventar, rå identitet, licenspolitik og den faktisk vedhæftede SPDX.
+Discovery kontrollerer de oprindelige MCP-inputsignaturer/sikkerhedshint og
+workflowtrin; det erstatter ikke fuld semantisk CLI-/MCP-accept. Kendte mangler
+og uafklarede forskelle mod de dokumenterede native kontraktkorrektioner må ikke
+omdøbes til fuld dækning. Release forbliver afvist, indtil kravene er opfyldt.
+
+Ved promotion bruges `--source source` til kandidatens godkendte kildecheckout.
+Selve verifikatoren og den gældende licenspolitik kommer fra det betroede
+promotionscheckout. Deterministiske supply-chain-/discoveryrapporter skal matche
+originalerne; manifest, rå identitet, checksums, attestation, run-attempt og
+uafhængig godkendelse skal alle passe. Der bygges ikke igen, og hverken `latest`,
+overskrivning eller usikre registry-lookups er tilladt.
+
+De lokale implementeringsprøver er bestået. Faktisk amd64-reproducerbarhed,
+hosted CI/registry/attestation, HTTPS-proxy/cookies/klient-IP, recovery og
+Digisense-godkendt promotion er fortsat åbne acceptkrav under #725. Dette er ikke
+en erklæring om produktionsklar Rust eller en ændring af live-data.
+
+De følgende ældre runtime-specifikke eksempler (pdf.js, lokal profil uden login
+og `docker-compose.example.yml`) gælder `runtime=bun`. Brug for Rust
+[Docker-/opsætningskontrakten](../rust-container.md), normal ejer/MFA og
+`docker-compose.rust.example.yml`.
+
 ## 2. Byg release candidate
 
 Start GitHub Actions-workflowet `release candidate` fra `main` med versionen

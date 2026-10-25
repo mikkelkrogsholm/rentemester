@@ -37,7 +37,7 @@ jobs:
   candidate:
     if: github.ref == 'refs/heads/main'
     name: build and publish run-unique candidate
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runtime == 'rust' && vars.RENTEMESTER_RUST_RELEASE_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 120
     steps:
       - name: Checkout exact candidate commit
@@ -154,6 +154,19 @@ jobs:
           RENTEMESTER_BUN_VERSION: ${{ env.BUN_VERSION }}
           RENTEMESTER_BASE_IMAGE_DIGEST: ${{ env.BUN_BASE_IMAGE_DIGEST }}
         run: bun run container:test
+
+      - name: Check Rust release runner capacity
+        if: inputs.runtime == 'rust'
+        run: |
+          python3 - <<'PYSPACE'
+          import platform, shutil
+          if platform.system() != 'Linux' or platform.machine() not in ('x86_64', 'AMD64'):
+              raise SystemExit('Rust release requires a Linux x64 runner; configure RENTEMESTER_RUST_RELEASE_RUNNER.')
+          free = shutil.disk_usage('.').free
+          if free < 30 * 1024**3:
+              raise SystemExit('Rust release requires at least 30 GiB free on the source volume; configure a sufficient existing runner with RENTEMESTER_RUST_RELEASE_RUNNER. Build-volume guards remain active.')
+          print('Rust release source-volume preflight passed; Cargo still checks source and build volumes.')
+          PYSPACE
 
       - name: Install packaged Rust browser acceptance runtime
         if: inputs.runtime == 'rust'

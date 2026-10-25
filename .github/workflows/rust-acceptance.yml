@@ -34,7 +34,7 @@ concurrency:
 jobs:
   server-web:
     name: packaged Rust server and web journeys
-    runs-on: ubuntu-24.04
+    runs-on: ${{ vars.RENTEMESTER_RUST_RELEASE_RUNNER || 'ubuntu-24.04' }}
     timeout-minutes: 60
     steps:
       - name: Checkout tested source
@@ -75,6 +75,7 @@ jobs:
             --build-arg "RENTEMESTER_GIT_COMMIT=$COMMIT" \
             --build-arg "RENTEMESTER_VERSION=$VERSION" \
             --build-arg "SOURCE_DATE_EPOCH=$EPOCH" \
+            --build-arg "RUST_BUILD_CACHE_ID=acceptance-${{ github.run_id }}-${{ github.run_attempt }}" \
             --build-arg RENTEMESTER_SOURCE_DIRTY=false .
       - name: Verify actual packaged bytes and live metadata
         env:
