@@ -62,7 +62,7 @@ fn success(name: &str) -> Value {
         "system_backup_destination_add" => {
             json!({"destination":{"id":"synthetic","placements":[]}})
         }
-        "system_backup_destination_remove" => json!({"removed":true}),
+        "system_backup_destination_remove" => json!({}),
         "system_backup_confirm_placement" => {
             json!({"placement":{"verified":false,"archiveSha256":"a".repeat(64)}})
         }

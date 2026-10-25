@@ -129,7 +129,7 @@ fn success(name: &str) -> Value {
         "system_backup_destination_add" => {
             json!({"destination":{"id":"synthetic","placements":[]}})
         }
-        "system_backup_destination_remove" => json!({"removed":true}),
+        "system_backup_destination_remove" => json!({}),
         "system_backup_confirm_placement" => {
             json!({"placement":{"verified":false,"archiveSha256":"a".repeat(64)}})
         }
@@ -216,6 +216,16 @@ fn original717_contracts_metadata_exact_and_all_source_names_unique() {
             .find(|t| t["name"] == name)
             .unwrap();
         assert_eq!(a, b, "{name}");
+    }
+    for (names, expected) in [
+        (vec!["invoice_imported_receivables", "budget_vs_actual", "bookkeeping_batch_plan", "bookkeeping_batch_status"], json!({"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false})),
+        (vec!["invoice_write_off_bad_debt", "invoice_claim_interest", "invoice_post_interest", "invoice_post_interest_correction", "invoice_claim_compensation", "invoice_post_compensation", "native_gdpr_audit_log"], json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false})),
+        (vec!["bookkeeping_batch_persist", "bookkeeping_batch_dry_run", "bookkeeping_batch_approve", "bookkeeping_batch_apply"], json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false})),
+    ] {
+        for name in names {
+            let tool=tools.iter().find(|t|t["name"]==name).unwrap();
+            assert_eq!(tool["annotations"],expected,"{name}");
+        }
     }
     assert_eq!(
         tools

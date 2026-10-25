@@ -261,6 +261,23 @@ pub fn list() -> Value {
             *t = original.clone();
         }
     }
+    // Hints describe observed effects, including explicit native operations.
+    for t in &mut tools {
+        let hints = match t["name"].as_str().unwrap_or("") {
+            "invoice_imported_receivables" | "budget_vs_actual" |
+            "bookkeeping_batch_plan" | "bookkeeping_batch_status" => Some((true, false, true, false)),
+            "invoice_write_off_bad_debt" | "invoice_claim_interest" |
+            "invoice_post_interest" | "invoice_post_interest_correction" |
+            "invoice_claim_compensation" | "invoice_post_compensation" |
+            "native_gdpr_audit_log" => Some((false, false, false, false)),
+            "bookkeeping_batch_persist" | "bookkeeping_batch_dry_run" |
+            "bookkeeping_batch_approve" | "bookkeeping_batch_apply" => Some((false, false, true, false)),
+            _ => None,
+        };
+        if let Some((read, destructive, idempotent, open)) = hints {
+            t["annotations"] = json!({"readOnlyHint":read,"destructiveHint":destructive,"idempotentHint":idempotent,"openWorldHint":open});
+        }
+    }
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
