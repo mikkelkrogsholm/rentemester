@@ -8919,7 +8919,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-storage/src/exceptions.rs",
-                "sha256": "5a342d927d5e6e6e21a0b999c52106dee8c58f091635514e6f3199a8ce9023e2",
+                "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
                 "needle": "fn parsed("
               }
             ]
@@ -8932,7 +8932,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/exceptions.rs",
-            "sha256": "5a342d927d5e6e6e21a0b999c52106dee8c58f091635514e6f3199a8ce9023e2",
+            "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
             "needle": "fn parsed("
           }
         ]

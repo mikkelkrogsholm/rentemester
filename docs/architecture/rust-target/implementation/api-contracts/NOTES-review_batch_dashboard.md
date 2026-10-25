@@ -55,3 +55,37 @@ Only the four owned flat files are changed. The strict oracle validates exact id
 
 ## Lead source-review repair
 Lead source review repaired five native batch CLI success wrappers; original persist CLI now excludes SDK-removed dryRun without changing HTTP/native/dry-run. Fiscal-years retains human/service success branches and fiscal/original-exception failures include exact required service stages, while original normal success/business422 stay flat.
+
+## 2026-10-25 — Existing Agent-forslag owner review
+
+The existing React proposal queue now has its original three native URLs: GET
+list and POST approve/reject (plus the catalogued implicit HEAD refusal).
+Every open literal AGENT_ exception remains visible, including unknown kinds
+and archived source facts. The projection retains genuine nullable provenance,
+parsed evidence and preview, source rule id and correlated severity counts.
+
+Current human/service authority uses the existing CompanyRead/CompanyReview
+fences. One transaction asserts open/type and uses the same exception resolver.
+A decision changes only exception status/note and its immutable audit record;
+it never posts, pays, changes VAT or calls a provider. Repeats/missing rows
+refuse409, wrong types400, retired/unreusable/unknown outcomes remain503.
+Decision bodies are objects with only optional string note; positional arrays,
+null, duplicate and unknown fields refuse. The original wire/Bun binding stays.
+
+The shared UI shows company/id/rationale/rule/evidence/preview before a frozen
+explicit decision, validates its correlated receipt and keeps one persisted
+barrier across approve/reject. Reads/remounts never resend; manual reconciliation
+sends no POST. Authority changes hide old queue facts and invalidate review.
+
+Actual shared React/Rust acceptance used normal two-user MFA and three
+explicitly controlled synthetic open proposals: approve, reject with reason,
+and a genuinely accepted approval whose reply was lost. Exactly three decisions
+and audits, zero financial changes, no resend on reload, repeat409. The first
+actual snapshot failed on a WITHOUT ROWID table before decisions; its exact
+selector was repaired and verified read-only before the one successful retry.
+Focused UI/API/authority/exception checks and proper design/TypeScript/build pass.
+
+This qualifies the human review consumer. It does not qualify native proposal
+production: the original public producer is CLI agent run, whose full source
+loop can also post. No new sync endpoint/proposal-only flag is invented. Full
+718, all original55 issues and final cutover/installed desktop gates remain.

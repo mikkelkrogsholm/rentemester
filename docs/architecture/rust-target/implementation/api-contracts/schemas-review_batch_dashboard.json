@@ -404,7 +404,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-storage/src/exceptions.rs",
-                "sha256": "5a342d927d5e6e6e21a0b999c52106dee8c58f091635514e6f3199a8ce9023e2",
+                "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
                 "needle": "serde_json::from_str(&s).unwrap_or(Value::String(s))"
               }
             ]
@@ -431,7 +431,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-storage/src/exceptions.rs",
-                "sha256": "5a342d927d5e6e6e21a0b999c52106dee8c58f091635514e6f3199a8ce9023e2",
+                "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
                 "needle": "serde_json::from_str(&s).unwrap_or(Value::String(s))"
               }
             ]
@@ -11414,6 +11414,312 @@
         "usage",
         "business"
       ],
+      "additionalProperties": false
+    },
+    "AgentSuggestion107": {
+      "type": "object",
+      "properties": {
+        "exceptionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^AGENT_"
+        },
+        "kindLabel": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "requiredAction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ruleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceEvidence": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+          },
+          "x-arbitrary-json": {
+            "scope": "exceptions.sourceEvidence",
+            "rationale": "parsed stored TEXT accepts any JSON, malformed retained TEXT becomes string and SQL NULL becomes null. Historical read producer is broader than current creation constructors.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/exceptions.rs",
+                "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
+                "needle": "serde_json::from_str(&s).unwrap_or(Value::String(s))"
+              }
+            ]
+          }
+        },
+        "postingPreview": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+          },
+          "x-arbitrary-json": {
+            "scope": "exceptions.postingPreview",
+            "rationale": "parsed stored TEXT accepts any JSON, malformed retained TEXT becomes string and SQL NULL becomes null. Historical read producer is broader than current creation constructors.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/exceptions.rs",
+                "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
+                "needle": "serde_json::from_str(&s).unwrap_or(Value::String(s))"
+              }
+            ]
+          }
+        },
+        "agentActor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "agentProgram": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "relatedDocumentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relatedBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "link": {
+          "enum": [
+            "leverandoerfaktura",
+            "posteringer",
+            "anlaeg",
+            null
+          ]
+        }
+      },
+      "required": [
+        "exceptionId",
+        "type",
+        "kindLabel",
+        "severity",
+        "rationale",
+        "requiredAction",
+        "ruleId",
+        "sourceEvidence",
+        "postingPreview",
+        "agentActor",
+        "agentProgram",
+        "createdAt",
+        "relatedDocumentId",
+        "relatedBankTransactionId",
+        "link"
+      ],
+      "additionalProperties": false
+    },
+    "AgentSuggestionList107": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "cvr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "country": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "fiscalYearStartMonth": {
+              "type": "integer"
+            },
+            "fiscalYearLabelStrategy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "cvr",
+            "country",
+            "currency",
+            "fiscalYearStartMonth",
+            "fiscalYearLabelStrategy"
+          ],
+          "additionalProperties": false
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_batch_dashboard.json#/$defs/AgentSuggestion107"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bySeverity": {
+          "type": "object",
+          "properties": {
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "rows",
+        "count",
+        "bySeverity"
+      ],
+      "additionalProperties": false
+    },
+    "AgentSuggestionListHttp107": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "agentSuggestions": {
+          "$ref": "schemas-review_batch_dashboard.json#/$defs/AgentSuggestionList107"
+        }
+      },
+      "required": [
+        "ok",
+        "agentSuggestions"
+      ],
+      "additionalProperties": false
+    },
+    "AgentSuggestionDecisionHttp107": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "suggestion": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "decision": {
+              "enum": [
+                "approved",
+                "rejected"
+              ]
+            },
+            "resolved": {
+              "const": true
+            }
+          },
+          "required": [
+            "id",
+            "decision",
+            "resolved"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "suggestion"
+      ],
+      "additionalProperties": false
+    },
+    "AgentSuggestionNote107": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [],
       "additionalProperties": false
     }
   }

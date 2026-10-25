@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R106native boundinternalvoucher UIregression repaired;37targetedUI/API/build, unchanged Rustbank/date/exemptcontrols;R105actualgaps/whole718open",
-  "code_revision": "b64ad37470bf772fee56fa390d25b480da844ab2",
+  "current_increment": "R107existing Agent-forslag humanreview accepted: actualsharedReact/Rust threeauditeddecisions/nofinancialeffects/acceptedreplylost noreplay; current1613contracts; nativeproducer/full718open",
+  "code_revision": "573ea3e850aaf1c3cfcfc9033563c5f888c1390c",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "owner_internal_voucher718_regression_repaired",
+  "state": "owner_agent_review718_accepted",
   "issues_closed": 41,
   "next": [
-    "All R105 fresh actual providerloss/reader/restart/restore gaps retained, no fullmacroPASS.",
-    "Whole718 original41company+13static screens/files/error/keyboard/local-hosted/J03/J04 still open. Next originalAgent-forslag adapters missing.",
-    "All55originalissues/release/cutover/finalmanualdesktop remain; no liveworkspace switched."
+    "Native agent proposal producers are not ported by R107. Existing public producer entry is CLI agent run under716; no original standalone overdue-sync/MCP/HTTP binding. Preserve full AgentRunReport/phases and actual posting behavior; do not invent proposal-only flag/endpoint or claim a partial loop complete.",
+    "Whole718 all original41company+13static screens/files/local-hosted keyboard/accessibility/actionablefailures/J03/J04 remain, including explicitly missing R105 fresh providerloss/reader/restart/restore.",
+    "All55originalissues/release/cutover/finalmanualdesktop remain; no live workspace/default launcher switched."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R104/R105 bounded owner VAT UI binding accepted:75cases/properbuild/actualproviderfailure-recovery-onejournal, unchangedruntime-barrierreuse; fresh fullmacro FAILED/stopped and whole718 open",
+  "previous_verified_increment": "R106native boundinternalvoucher UIregression repaired;37targetedUI/API/build, unchanged Rustbank/date/exemptcontrols;R105actualgaps/whole718open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16649,6 +16649,10 @@
     "r106_internal_voucher718": {
       "path": "/private/tmp/rentemester-rust-reports/r106-bound-internal-voucher718-accepted.json",
       "sha256": "719378a7c34062b6625b461c01fc812a00557e1aa9cb85af59d01e31caa848c1"
+    },
+    "r107_agent_review718": {
+      "path": "/private/tmp/rentemester-rust-reports/r107-owner-agent-review718-component-accepted.json",
+      "sha256": "65d5921ebfcec199882c78c58784d26c076643fedae1bf663eb7b33992889626"
     }
   },
   "verified_history": [
@@ -18984,6 +18988,19 @@
         "All R105 fresh actual providerloss/reader/restart/restore gaps retained, no fullmacroPASS.",
         "Whole718 original41company+13static screens/files/error/keyboard/local-hosted/J03/J04 still open. Next originalAgent-forslag adapters missing.",
         "All55originalissues/release/cutover/finalmanualdesktop remain; no liveworkspace switched."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "573ea3e850aaf1c3cfcfc9033563c5f888c1390c",
+      "report": "/tmp/rentemester-rust-reports/r107-owner-agent-review718-component-accepted.json",
+      "sha256": "65d5921ebfcec199882c78c58784d26c076643fedae1bf663eb7b33992889626",
+      "scope": "Existing shared React Agent-forslag queue now uses native common exceptions reader/writer. Three reviewed owner decisions (approve/reject with note/accepted reply lost) persist exactly three typed audit records and no financial changes. Inert reads/cancel, strict bodies/HEAD405, repeat409, one persisted cross-decision unknown barrier, current authority-scoped reads, reader/refusal/revocation tests. Four source-bound HTTP operations including implicit HEAD. No new engine/schema/native producer or CLI/MCP operation.",
+      "remaining": [
+        "Native agent proposal producers are not ported by R107. Existing public producer entry is CLI agent run under716; no original standalone overdue-sync/MCP/HTTP binding. Preserve full AgentRunReport/phases and actual posting behavior; do not invent proposal-only flag/endpoint or claim a partial loop complete.",
+        "Whole718 all original41company+13static screens/files/local-hosted keyboard/accessibility/actionablefailures/J03/J04 remain, including explicitly missing R105 fresh providerloss/reader/restart/restore.",
+        "All55originalissues/release/cutover/finalmanualdesktop remain; no live workspace/default launcher switched."
       ]
     }
   ],
