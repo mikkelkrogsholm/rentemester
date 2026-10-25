@@ -25,6 +25,7 @@ pub fn configure(control:&Transaction<'_>,company:&Transaction<'_>,slug:&str,enf
 }
 /// The native adapter retains its 365-day input cap; original policies use u32.
 pub fn configure_original122(control:&Transaction<'_>,company:&Transaction<'_>,slug:&str,enforced:bool,grace_days:u32,actor:&str,at:&str,audit_at:&str)->Result<(),Error>{
+ if !actor.starts_with("user:") || actor.len()==5{return Err(invalid());}
  let s=Settings{version:1,enforced,grace_days,restore_boundary:boundary(control)?,updated_at:Some(at.into()),updated_by:Some(actor.into())};
  company.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES('native_backup_lock','backup_lock',?,?,?,?)",params![slug,serde_json::to_string(&s).map_err(|_|invalid())?,actor,audit_at]).map_err(|_|invalid())?;Ok(())
 }

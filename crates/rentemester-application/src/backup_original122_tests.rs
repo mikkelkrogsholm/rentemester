@@ -77,3 +77,26 @@ fn backup_original122_merge_default_zero_cap_refusal_and_real_audit(){
  assert_eq!(l.query_row("SELECT count(*) FROM audit_log",[],|r|r.get::<_,i64>(0)).unwrap(),count);
  let ct=c.transaction().unwrap();let lt=l.transaction().unwrap();assert_eq!(rentemester_storage::backup_state::settings(&ct,&lt).unwrap().grace_days,366);assert!(rentemester_storage::backup_state::configure(&ct,&lt,"a",false,366,"user:u","2026-01-01").is_err());
 }
+
+#[test]
+fn backup_original122_service_admin_recovery_actor_charge_isolation_and_revocation(){
+ use rentemester_runtime::service_key::ServiceKey;
+ let (_d,mut c,mut l,_,_,_)=fixture();
+ let key=ServiceKey::new("w","synthetic-backup-service-key").unwrap();
+ c.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('svc','Synthetic service','svc@example.invalid',1,0,'2026-01-01','2026-01-01');INSERT INTO rm_workspace_service_principals(user_id,display_name,created_at)VALUES('svc','Synthetic service','2026-01-01T00:00:00.000Z');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('svc','activate','member','user:u');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('svc','a','grant','owner','user:u');").unwrap();
+ c.execute("INSERT INTO apikey(id,configId,name,start,referenceId,prefix,key,enabled,rateLimitEnabled,rateLimitTimeWindow,rateLimitMax,requestCount,remaining,createdAt,updatedAt) VALUES('backup-key','workspace-service-principal','Synthetic','rms_sy','svc','rms_',?1,1,1,60000,600,0,8,'2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z')",[key.lookup_hash()]).unwrap();
+ l.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('B','Synthetic bank','asset','debit');INSERT INTO bank_accounts(id,slug,name,currency,ledger_account_no)VALUES(1,'synthetic','Synthetic','DKK','B');INSERT INTO bank_transactions(transaction_date,text,amount,currency,bank_account_id)VALUES('2025-12-01','Synthetic',1,'DKK',1)").unwrap();
+ let clock=Fixed(NOW);
+ let ctx=|slug|service_company::Context{key:&key,clock:&clock,selection:control_fence::CompanySelection{workspace:"w",slug,registered:true,archived:false},max_future_days:0};
+ let one=service(&mut c,&mut l,ctx("a"),input(json!({"confirm":true,"enforced":true,"graceDays":0,"at":"2020-01-01"}))).unwrap();
+ assert_eq!(one.result["config"]["updatedBy"],"user:svc");
+ {let ct=c.transaction().unwrap();let lt=l.transaction().unwrap();assert_eq!(backup_status::require_write(&ct,&lt,"w","a",&clock).unwrap_err().code,"backup_overdue");}
+ let two=service(&mut c,&mut l,ctx("a"),input(json!({"confirm":true,"enforced":false}))).unwrap();
+ assert_eq!(two.result["config"]["graceDays"],0);assert_eq!(two.result["config"]["enforced"],false);
+ let audit:(String,String)=l.query_row("SELECT actor,created_at FROM audit_log WHERE event_type='native_backup_lock' ORDER BY id DESC LIMIT 1",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();assert_eq!(audit,("user:svc".into(),"2026-01-01T00:00:00.000Z".into()));
+ let count=l.total_changes();
+ assert!(service(&mut c,&mut l,ctx("b"),input(json!({"confirm":true}))).is_err());
+ let usage:i64=c.query_row("SELECT requestCount FROM apikey WHERE id='backup-key'",[],|r|r.get(0)).unwrap();assert_eq!(usage,2);
+ c.execute("UPDATE apikey SET enabled=0 WHERE id='backup-key'",[]).unwrap();
+ assert!(service(&mut c,&mut l,ctx("a"),input(json!({"confirm":true,"at":"2020-01-01"}))).is_err());assert_eq!(l.total_changes(),count);
+}

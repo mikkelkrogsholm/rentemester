@@ -8,7 +8,13 @@ use serde_json::{Value,json};
 const RULE:&str="DK-BOOKKEEPING-BACKUP-001";
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields,rename_all="camelCase")]
-pub struct Input {pub confirm:bool,pub enforced:Option<bool>,pub grace_days:Option<serde_json::Number>,pub at:Option<String>}
+pub struct Input {
+ pub confirm:bool,
+ #[serde(default,deserialize_with="present")] pub enforced:Option<bool>,
+ #[serde(default,deserialize_with="present")] pub grace_days:Option<serde_json::Number>,
+ #[serde(default,deserialize_with="present")] pub at:Option<String>
+}
+fn present<'de,D,T>(deserializer:D)->Result<Option<T>,D::Error> where D:serde::Deserializer<'de>,T:Deserialize<'de>{T::deserialize(deserializer).map(Some)}
 pub enum Action {Status(Option<String>),Configure(Input)}
 fn invalid()->Error {Error::new("backup_status_unavailable","Backup observation unavailable")}
 fn timestamp(ms:i64)->Result<String,Error>{rentemester_runtime::backup_keys::timestamp(ms).map_err(|_|invalid())}
@@ -46,7 +52,7 @@ pub fn human(c:&mut Connection,l:&mut Connection,ctx:Context<'_>,action:Action)-
 }
 pub fn service(c:&mut Connection,l:&mut Connection,ctx:service_company::Context<'_>,action:Action)->Result<service_company::ServiceResult<Value>,service_company::ServiceFailure>{
  let read=matches!(action,Action::Status(_));let workspace=ctx.selection.workspace;let slug=ctx.selection.slug;let clock=ctx.clock;
- let callback=|c:&Transaction<'_>,l:&Transaction<'_>,subject:&str,_:&mut Option<Value>|Ok(service_company::OperationResult{result:apply(c,l,workspace,slug,clock,subject,action)?,receipt:None});
+ let callback=|c:&Transaction<'_>,l:&Transaction<'_>,subject:&str,_:&mut Option<Value>|Ok(service_company::OperationResult{result:apply(c,l,workspace,slug,clock,&format!("user:{subject}"),action)?,receipt:None});
  if read{service_company::execute_operation_both(c,l,ctx,Permission::CompanyRead,false,callback)}else{service_company::execute_recovery_both(c,l,ctx,Permission::CompanyAdmin,callback)}
 }
 #[cfg(test)]
