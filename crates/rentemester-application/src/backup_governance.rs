@@ -36,8 +36,15 @@ pub fn execute(
         true,
         true,
         |control, company, _| {
-            let mut current =
-                crate::backup_status::data(control, company, workspace, slug, clock, true)?;
+            let mut current = crate::backup_status::data_at_kind(
+                control,
+                company,
+                workspace,
+                slug,
+                clock.now_unix_ms().map_err(|_| invalid())?,
+                true,
+                false,
+            )?;
             let mut ids = std::collections::BTreeSet::new();
             for config in configs {
                 if !ids.insert(&config.id) {
@@ -56,7 +63,10 @@ pub fn execute(
             let mut placement_count = 0;
             let mut remote_count = 0;
             let mut declared_copy = false;
-            if let Some(hash) = current["backup"]["latestBackupId"].as_str() {
+            if let Some(hash) = current["backup"]["latestBackupId"]
+                .as_str()
+                .filter(|id| id.len() == 64)
+            {
                 let uuid: String = company
                     .query_row(
                         "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
@@ -121,5 +131,6 @@ pub fn execute(
         },
     )
 }
+pub mod original717;
 #[cfg(all(test, any(target_os = "linux", target_os = "macos")))]
 mod tests;

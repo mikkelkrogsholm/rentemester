@@ -788,3 +788,34 @@ pub fn verify_original717_archive(
     }
     Ok(())
 }
+
+/// Only configured operator targets can be observed. Missing copies remain declarations;
+/// present but unsafe or mismatched copies refuse rather than becoming verified evidence.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub fn verify_original717_placement(
+    config: &Config,
+    id: &str,
+    expected: &[u8],
+) -> Result<bool, &'static str> {
+    if id.is_empty()
+        || !id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+        || id == "."
+        || id == ".."
+    {
+        return Err("backup_archive_invalid");
+    }
+    let path = config.directory.join(format!("{id}.tar"));
+    match std::fs::symlink_metadata(&path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(_) => return Err("backup_archive_unavailable"),
+        Ok(_) => {}
+    }
+    verify_original717_archive(&path, rustix::process::geteuid().as_raw(), expected)?;
+    Ok(true)
+}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub fn verify_original717_placement(_: &Config, _: &str, _: &[u8]) -> Result<bool, &'static str> {
+    Err("backup_destination_unsupported_platform")
+}

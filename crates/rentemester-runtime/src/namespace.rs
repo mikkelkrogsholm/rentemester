@@ -271,3 +271,21 @@ impl Original717RestoreStage {
     pub fn publish(&mut self, _: &Path) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
     pub fn publish_into_empty(&mut self, _: &Path) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
 }
+
+/// Read only fixed company backup resources; neither live SQLite inode is opened.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub fn observe_original717(
+    control: &std::path::Path,
+    company: &std::path::Path,
+    slug: &str,
+) -> Result<Vec<crate::backup_artifact::original717::VerifiedOriginal717>, NamespaceError> {
+    linux::observe_original717(control, company, slug)
+}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub fn observe_original717(
+    _: &std::path::Path,
+    _: &std::path::Path,
+    _: &str,
+) -> Result<Vec<crate::backup_artifact::original717::VerifiedOriginal717>, NamespaceError> {
+    Err(NamespaceError::Unsupported)
+}

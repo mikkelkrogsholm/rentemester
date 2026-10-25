@@ -15,7 +15,7 @@ pub fn accepts(name: &str) -> bool {
             | "backup_registration_operation"
     )
 }
-pub fn tools() -> Vec<Value> {
+fn native_tools() -> Vec<Value> {
     let mut result = vec![
         tool(
             "system_backup_destination_list",
@@ -50,7 +50,7 @@ pub fn tools() -> Vec<Value> {
     }
     result
 }
-pub async fn call(
+async fn native_call(
     api: &ApiClient,
     name: &str,
     args: Value,
@@ -114,7 +114,7 @@ mod tests {
                 ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-service".into())
                     .unwrap();
             assert!(matches!(
-                call(
+                native_call(
                     &api,
                     "system_backup_destination_list",
                     json!({"company":"synthetic"})
@@ -127,7 +127,7 @@ mod tests {
                 let mut args = json!({"company":"synthetic"});
                 args[field] = json!("forged");
                 assert!(
-                    call(&api, "system_backup_destination_list", args)
+                    native_call(&api, "system_backup_destination_list", args)
                         .await
                         .is_err()
                 )
@@ -136,5 +136,27 @@ mod tests {
             assert_eq!(t[0]["annotations"]["readOnlyHint"], true);
             assert_eq!(t[2]["annotations"]["readOnlyHint"], false);
         });
+    }
+}
+
+pub mod original717;
+pub fn tools() -> Vec<Value> {
+    let mut t = original717::tools();
+    t.extend(
+        native_tools()
+            .into_iter()
+            .filter(|t| t["name"] == "backup_registration_operation"),
+    );
+    t
+}
+pub async fn call(
+    api: &ApiClient,
+    name: &str,
+    args: Value,
+) -> Result<Result<Value, Error>, &'static str> {
+    if name == "backup_registration_operation" {
+        native_call(api, name, args).await
+    } else {
+        original717::call(api, name, args).await
     }
 }

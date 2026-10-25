@@ -192,3 +192,4 @@ mod tests {
         }
     }
 }
+pub(crate) use physical::observe_retained;

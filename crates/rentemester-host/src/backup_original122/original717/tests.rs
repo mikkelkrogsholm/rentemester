@@ -328,6 +328,38 @@ fn original717_system_backup_place_copy_duplicate_unknown_and_scope() {
         assert_eq!(outcome["placement"]["verified"], true);
         assert_eq!(outcome["placement"]["actor"], "user:u");
     }
+    let listed = owner
+        .backup_views_original717(
+            &proof,
+            &Fixed(NOW),
+            std::slice::from_ref(&config),
+            rentemester_application::backup_registration::original717::Operation::List,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(
+        listed["destinations"][0]["placements"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+    let governance = owner
+        .backup_views_original717(
+            &proof,
+            &Fixed(NOW),
+            std::slice::from_ref(&config),
+            rentemester_application::backup_registration::original717::Operation::Governance(None),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(governance["compliance"]["latestBackupId"], core["backupId"]);
+    assert_eq!(governance["latestBackupPlacementCount"], 2);
+    assert_eq!(governance["latestBackupPlacedOffsite"], true);
     assert_eq!(
         owner
             .place_original717(
@@ -546,4 +578,67 @@ fn original717_system_backup_verify_remote_placement_fake_provider_happy_failure
             .outcome
             .is_err()
     );
+}
+
+#[test]
+fn original717_backupviews_create_status_lock_and_tampered_readback() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let created = owner
+        .backup_original717(
+            &proof,
+            &Fixed(NOW),
+            Operation::Create(Create {
+                confirm: true,
+                at: None,
+                archive: Some(false),
+            }),
+            None,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(created["ok"], true);
+    let read = |owner: &mut Owner| {
+        owner
+            .backup_original122(&proof, &Fixed(NOW), app::Action::Status(None))
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+    };
+    let status = read(&mut owner);
+    assert_eq!(status["latestBackupId"], created["backupId"]);
+    assert_eq!(status["backupsFound"], 1);
+    assert_eq!(status["errors"], serde_json::json!([]));
+    owner
+        .backup_original122(
+            &proof,
+            &Fixed(NOW),
+            app::Action::Configure(app::Input {
+                confirm: true,
+                enforced: Some(true),
+                grace_days: Some(serde_json::Number::from(0)),
+                at: None,
+            }),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    // Same policy path used by bookkeeping lock: a current complete original artifact qualifies.
+    let slots = owner.held.0.as_mut().unwrap();
+    let c = slots.control.as_mut().unwrap().transaction().unwrap();
+    let l = slots.company.as_mut().unwrap().transaction().unwrap();
+    assert!(
+        rentemester_application::backup_status::require_write(&c, &l, "w", "a", &Fixed(NOW))
+            .is_ok()
+    );
+    drop(l);
+    drop(c);
+    let manifest =
+        std::path::Path::new(created["backupDir"].as_str().unwrap()).join("manifest.json");
+    std::fs::write(manifest, b"tampered synthetic artifact").unwrap();
+    let tampered = read(&mut owner);
+    assert!(tampered["latestBackupId"].is_null());
+    assert!(!tampered["errors"].as_array().unwrap().is_empty());
 }
