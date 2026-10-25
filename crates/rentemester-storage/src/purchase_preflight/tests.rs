@@ -32,6 +32,74 @@ fn observation(status: &str) -> ProviderResult {
     }
 }
 #[test]
+fn receipt121_preserved_typed_supplier_is_read_without_rewriting_history() {
+    let mut control = Connection::open_in_memory().unwrap();
+    let mut db = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic receipt").unwrap();
+    let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+    let meta: Metadata = serde_json::from_value(json!({"source":"synthetic-receipt","documentType":"cash_register_receipt","issueDate":"2026-10-18","amountIncVat":12,"vatAmount":0,"sender":{"name":"Synthetic receipt supplier","vatOrCvr":"12345678","countryCode":"DK","identifierKind":"dk_cvr"}})).unwrap();
+    crate::documents::register(&tx, crate::documents::Original { filename:"receipt.txt",hash:&"a".repeat(64),path:"synthetic-original",mime:"text/plain" }, &meta,"synthetic","2026-10-18").unwrap();
+    // This is the actual existing layout: typed source, null legacy projection.
+    assert_eq!(tx.query_row::<Option<String>,_,_>("SELECT supplier_identity_status FROM documents WHERE id=1",[],|r|r.get(0)).unwrap(), None);
+    let before = tx.total_changes();
+    let value = inspect(&tx, 1, NOW).unwrap();
+    assert_eq!(value["ok"], true);
+    assert_eq!(value["classification"], "DK");
+    assert_eq!(value["wouldCallProvider"], false);
+    assert_eq!(before, tx.total_changes());
+    assert_eq!(supplier(&tx, 1).unwrap().unwrap().identifier.as_deref(),Some("DK12345678"));
+    // Read derivation must not turn a later explicit refusal into permission.
+    tx.execute("UPDATE documents SET supplier_identity_status='human_resolution_required' WHERE id=1",[]).unwrap();
+    assert_eq!(inspect(&tx,1,NOW).unwrap()["ok"], false);
+    tx.execute("UPDATE documents SET supplier_identity_status=NULL,supplier_country_code='DK' WHERE id=1",[]).unwrap();
+    assert_eq!(inspect(&tx,1,NOW).unwrap()["ok"], false);
+    tx.execute("UPDATE documents SET supplier_country_code=NULL,sender_vat_cvr='87654321' WHERE id=1",[]).unwrap();
+    assert_eq!(inspect(&tx,1,NOW).unwrap()["ok"], false);
+    tx.execute("UPDATE documents SET sender_vat_cvr='12345678',payload_json='{}' WHERE id=1",[]).unwrap();
+    assert_eq!(inspect(&tx,1,NOW).unwrap()["ok"], false);
+}
+#[test]
+fn receipt121_absent_conflicting_and_foreign_sources_keep_their_required_controls() {
+    for (sender, region, ok, provider) in [
+        (Value::Null, "CONFLICT", false, false),
+        (json!({"vatOrCvr":"12345678","countryCode":"DE","identifierKind":"dk_cvr"}), "CONFLICT", false, false),
+        (json!({"vatOrCvr":"DE123456789","countryCode":"DE","identifierKind":"eu_vat"}), "EU", false, true),
+        (json!({"name":"Synthetic US supplier","countryCode":"US","identifierKind":"non_eu"}), "NON_EU", true, false),
+    ] {
+        let mut control = Connection::open_in_memory().unwrap();
+        let mut db = Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control,&mut db,"Synthetic source boundary").unwrap();
+        let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+        let meta:Metadata=serde_json::from_value(json!({"source":"synthetic-receipt","documentType":"cash_register_receipt","sender":sender})).unwrap();
+        crate::documents::register(&tx,crate::documents::Original{filename:"receipt.txt",hash:&"a".repeat(64),path:"synthetic-original",mime:"text/plain"},&meta,"synthetic","2026-10-18").unwrap();
+        let before=tx.total_changes();
+        let result=inspect(&tx,1,NOW).unwrap();
+        assert_eq!(result["classification"],region);
+        assert_eq!(result["ok"],ok);
+        assert_eq!(result["wouldCallProvider"],provider);
+        assert_eq!(before,tx.total_changes());
+        crate::documents_original::validate_history(&tx).unwrap();
+    }
+}
+#[test]
+fn receipt121_existing_enrichment_bytes_remain_bound_and_read_only() {
+    let mut control=Connection::open_in_memory().unwrap();
+    let mut db=Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control,&mut db,"Synthetic historic receipt").unwrap();
+    let tx=db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+    let initial:Metadata=serde_json::from_value(json!({"source":"synthetic-history","documentType":"cash_register_receipt"})).unwrap();
+    crate::documents::register(&tx,crate::documents::Original{filename:"receipt.txt",hash:&"a".repeat(64),path:"synthetic-original",mime:"text/plain"},&initial,"synthetic","2026-10-18").unwrap();
+    let incoming:Metadata=serde_json::from_value(json!({"source":"synthetic-history","documentType":"cash_register_receipt","sender":{"vatOrCvr":"12345678","countryCode":"DK","identifierKind":"dk_cvr"}})).unwrap();
+    crate::documents_original::enrich(&tx,1,&incoming,"user:synthetic").unwrap();
+    let before:String=tx.query_row("SELECT original_payload_json||original_payload_sha256||enriched_metadata_json||enriched_metadata_sha256 FROM document_metadata_enrichments WHERE document_id=1",[],|r|r.get(0)).unwrap();
+    let changes=tx.total_changes();
+    assert_eq!(inspect(&tx,1,NOW).unwrap()["ok"],true);
+    crate::documents_original::validate_history(&tx).unwrap();
+    assert_eq!(changes,tx.total_changes());
+    let after:String=tx.query_row("SELECT original_payload_json||original_payload_sha256||enriched_metadata_json||enriched_metadata_sha256 FROM document_metadata_enrichments WHERE document_id=1",[],|r|r.get(0)).unwrap();
+    assert_eq!(before,after);
+}
+#[test]
 fn readonly_then_negative_recovery_cache_and_safe_source_snapshot() {
     let mut control = Connection::open_in_memory().unwrap();
     let mut db = Connection::open_in_memory().unwrap();

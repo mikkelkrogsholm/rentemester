@@ -44,7 +44,34 @@ fn author(actor: &str) -> Result<(), Error> {
 pub(crate) fn supplier(tx: &Transaction<'_>, id: i64) -> Result<Option<Supplier>, Error> {
     let row: (Option<String>,Option<String>,Option<String>,Option<String>) = tx.query_row("SELECT sender_vat_cvr,supplier_country_code,supplier_identifier_kind,supplier_identity_status FROM documents WHERE id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).map_err(sql)?;
     if row.3.as_deref() != Some("resolved") {
-        return Ok(None);
+        // Cash-receipt intake historically preserved the typed sender in the
+        // payload but left this projection empty. Read that admitted source;
+        // never rewrite old metadata/history or override an explicit refusal.
+        if row.3.is_some() || row.1.is_some() || row.2.is_some() {
+            return Ok(None);
+        }
+        let (kind, raw): (String, Option<String>) = tx.query_row(
+            "SELECT document_type,payload_json FROM documents WHERE id=?1", [id],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        ).map_err(sql)?;
+        if kind != "cash_register_receipt" {
+            return Ok(None);
+        }
+        let Some(metadata) = raw.as_deref().and_then(|raw|
+            serde_json::from_str::<document::Metadata>(raw).ok()) else { return Ok(None) };
+        if metadata.kind() != kind || metadata.validate().is_err() {
+            return Ok(None);
+        }
+        let Some(source) = metadata.sender.as_ref() else { return Ok(None) };
+        let Ok(identity) = document::supplier(source) else { return Ok(None) };
+        let persisted = document::supplier(&Party {
+            vat_or_cvr: row.0,
+            country_code: source.country_code.clone(),
+            identifier_kind: source.identifier_kind.clone(),
+            ..Default::default()
+        }).ok();
+        return Ok(persisted.filter(|p| p.country == identity.country
+            && p.kind == identity.kind && p.identifier == identity.identifier));
     }
     Ok(document::supplier(&Party {
         vat_or_cvr: row.0,

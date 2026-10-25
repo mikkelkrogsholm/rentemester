@@ -110,16 +110,9 @@ fn ready(
     } else {
         None
     };
-    let identity: (Option<String>,Option<String>,Option<String>,Option<String>) = tx.query_row(
-        "SELECT sender_vat_cvr,supplier_country_code,supplier_identifier_kind,supplier_identity_status FROM documents WHERE id=?1",[input.document_id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).map_err(sql)?;
-    let persisted = document::supplier(&document::Party {
-        vat_or_cvr: identity.0,
-        country_code: identity.1,
-        identifier_kind: identity.2,
-        ..Default::default()
-    })?;
-    if identity.3.as_deref() != Some("resolved")
-        || persisted.kind != supplier.kind
+    let persisted = crate::purchase_preflight::supplier(tx, input.document_id)?
+        .ok_or_else(|| fail("resolved persisted supplier identity required"))?;
+    if persisted.kind != supplier.kind
         || persisted.country != supplier.country
         || persisted.identifier != supplier.identifier
     {
