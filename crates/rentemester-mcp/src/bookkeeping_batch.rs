@@ -9,7 +9,8 @@ use serde_json::{Value, json};
 pub fn accepts(s: &str) -> bool {
     matches!(
         s,
-        "bookkeeping_batch_plan"
+        "bookkeeping_workbench"
+            | "bookkeeping_batch_plan"
             | "bookkeeping_batch_status"
             | "bookkeeping_batch_persist"
             | "bookkeeping_batch_approve"
@@ -64,6 +65,14 @@ pub fn tools() -> Vec<Value> {
     dry_run["annotations"]["destructiveHint"] = json!(false);
     dry_run["annotations"]["idempotentHint"] = json!(true);
     out.push(dry_run);
+    let mut schema = ApiClient::bookkeeping_workbench_schema();
+    schema["properties"]["company"] = json!({"type":"string","minLength":1});
+    schema["required"].as_array_mut().unwrap().push(json!("company"));
+    let mut workbench = tool("bookkeeping_workbench", "Read the deterministic unresolved bank-work population with canonical party-resolution, evidence and posting facets. Population blockers are independent of page filters; this never persists, approves or applies a batch. Company is a current server slug, or exactly one company directory under a freshly verified explicit local workspace. Absolute filesystem selectors require --local-profile; no remote path guessing or fallback.", schema, true);
+    workbench["title"] = json!("Read bookkeeping workbench");
+    workbench["outputSchema"] = json!({"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false});
+    workbench["annotations"]["openWorldHint"] = json!(false);
+    out.push(workbench);
     out
 }
 #[derive(Deserialize)]
@@ -142,6 +151,7 @@ fn original_schema(op: OriginalBatchOperation) -> Value {
 /// deny-unknown-fields parser, never silently discard the other dialect.
 pub fn is_original(name: &str, args: &Value) -> bool {
     match name {
+        "bookkeeping_workbench" => true,
         "bookkeeping_batch_plan" => args.get("scope").is_none(),
         "bookkeeping_batch_persist" | "bookkeeping_batch_approve" | "bookkeeping_batch_apply" => args.get("body").is_none(),
         "bookkeeping_batch_dry_run" => true,
@@ -212,6 +222,28 @@ fn original_input(name: &str, args: Value) -> Result<(String, Value), &'static s
     Ok((company, input))
 }
 pub async fn call_original(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    if name == "bookkeeping_workbench" {
+        let invalid = || json!({"isError":true,"content":[{"type":"text","text":"MCP error -32602: Input validation error: Invalid arguments for tool bookkeeping_workbench"}]});
+        let Some(mut fields) = args.as_object().cloned() else { return Ok(invalid()); };
+        let Some(company) = fields.remove("company").and_then(|v| v.as_str().map(str::to_owned)).filter(|s| !s.is_empty()) else { return Ok(invalid()); };
+        let input = Value::Object(fields);
+        if ApiClient::validate_bookkeeping_workbench(&input).is_err() { return Ok(invalid()); }
+        return Ok(match api.bookkeeping_workbench(&company, &input).await {
+            Ok(mut core) => {
+                let fields = core.as_object_mut().ok_or("invalid workbench response")?;
+                let ok = fields.remove("ok").unwrap_or(json!(false));
+                let errors = fields.remove("errors").unwrap_or(json!([]));
+                let code = fields.remove("code");
+                let rules = fields.remove("appliedRules");
+                let mut envelope = json!({"ok":ok,"errors":errors});
+                if !fields.is_empty() { envelope["data"] = core; }
+                if let Some(code) = code { envelope["code"] = code; }
+                if let Some(rules) = rules { envelope["appliedRules"] = rules; }
+                result(envelope)
+            }
+            Err(error) => failure(error),
+        });
+    }
     let op = original_operation(name).ok_or("unknown original batch operation")?;
     let (company, input) = original_input(name, args)?;
     if input.get("confirm").is_some_and(|v| v == false) {
@@ -338,15 +370,17 @@ mod original_tests {
     fn registry_has_only_required_alias_and_disjoint_schemas() {
         let catalogue = crate::tools::list();
         let all = catalogue["tools"].as_array().unwrap();
-        assert_eq!(all.len(),370);
+        assert_eq!(all.len(),434);
         let names = all.iter().map(|t|t["name"].as_str().unwrap()).collect::<std::collections::HashSet<_>>();
-        assert_eq!(names.len(),370);
+        assert_eq!(names.len(),434);
         let batch = tools();
-        assert_eq!(batch.len(),6);
+        assert_eq!(batch.len(),7);
         for t in &batch {
             let name = t["name"].as_str().unwrap();
             assert!(accepts(name));
-            if name == "bookkeeping_batch_dry_run" {
+            if name == "bookkeeping_workbench" {
+                assert_eq!(t["annotations"]["openWorldHint"],false);
+            } else if name == "bookkeeping_batch_dry_run" {
                 assert_eq!(t["annotations"]["readOnlyHint"],false);
                 assert_eq!(t["annotations"]["destructiveHint"],false);
                 assert_eq!(t["annotations"]["idempotentHint"],true);

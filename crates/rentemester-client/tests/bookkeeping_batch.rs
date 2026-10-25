@@ -186,3 +186,116 @@ async fn unknown_persist_can_read_exact_run_key_without_resending() {
     ));
     assert_eq!(t.join().unwrap(), 1);
 }
+
+fn workbench_input() -> Value {
+    json!({"from":"2026-01-01","to":"2026-01-31","status":"ready","bankAccountId":7.0,
+        "partyId":"party:synthetic","documentQuality":"matched","account":"1234",
+        "vatTreatment":"purchase & VAT","dimension":"project:one","cursor":2.0,"limit":3.0,
+        "search":"synthetic / æ & ?"})
+}
+#[tokio::test]
+async fn original_first_use116_workbench_all_fields_are_inert_lossless_get() {
+    const REPLY: &str = r#"{"ok":true,"workbench":{"rows":[],"population":{"total":9,"ready":2,"blockers":7},"selection":{"total":0,"ready":0,"blockers":0},"page":{"cursor":2.0,"limit":3.0,"total":0,"nextCursor":null},"sourceHash":"canonical","staleSources":[{"changedSource":"evidence_changed"}],"plan":{"planHash":"reviewed"},"periodClose":{"status":"unavailable","blockers":null},"future":{"amount":"90071992547409.99"}}}"#;
+    let (origin, rx, task) = server("200 OK", REPLY, "application/json");
+    let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+    assert_eq!(api.bookkeeping_workbench("synthetic", &workbench_input()).await.unwrap(), serde_json::from_str::<Value>(REPLY).unwrap());
+    let bytes = rx.recv_timeout(Duration::from_secs(3)).unwrap();
+    let wire = String::from_utf8(bytes).unwrap();
+    assert!(wire.starts_with("GET /api/companies/synthetic/bookkeeping-workbench?"));
+    for value in ["from=2026-01-01", "to=2026-01-31", "status=ready", "bankAccountId=7", "partyId=party%3Asynthetic", "documentQuality=matched", "account=1234", "vatTreatment=purchase+%26+VAT", "dimension=project%3Aone", "cursor=2", "limit=3", "search=synthetic+%2F+%C3%A6+%26+%3F"] {
+        assert!(wire.lines().next().unwrap().contains(value), "{value}: {wire}");
+    }
+    assert!(wire.to_lowercase().contains("cookie: session=synthetic"));
+    assert!(wire.ends_with("\r\n\r\n"));
+    assert_eq!(task.join().unwrap(),1);
+}
+#[tokio::test]
+async fn original_first_use116_workbench_invalid_grammar_and_selector_never_send() {
+    let api = ApiClient::new("http://127.0.0.1:9",true,None).unwrap();
+    for (key, value) in [
+        ("from",json!("2026-2-30")),("to",json!("2025-12")),("status",json!("invented")),
+        ("bankAccountId",json!(0)),("bankAccountId",json!(9007199254740992u64)),("partyId",json!("ab")),
+        ("documentQuality",json!("guessed")),("account",json!("x".repeat(33))),
+        ("vatTreatment",json!("x".repeat(81))),("dimension",json!("ab")),
+        ("cursor",json!(-1)),("cursor",json!(9007199254740992u64)),("limit",json!(101)),
+        ("limit",json!(0)),("limit",json!("3")),("search",json!("x".repeat(201))),
+        ("actor",json!("user:forged")),("workspace",json!("/invented")),("confirm",json!(true)),
+        ("scope",json!({})),("companyId",json!(1)),("search",Value::Null),
+    ] {
+        let mut input=workbench_input(); input[key]=value;
+        assert!(matches!(api.bookkeeping_workbench("synthetic",&input).await,Err(Error::InvalidInput(_))),"{key}");
+    }
+    for company in ["", "../other", "other/ledger", "company?actor=forged"] {
+        assert!(matches!(api.bookkeeping_workbench(company,&workbench_input()).await,Err(Error::InvalidInput(_))));
+    }
+    for key in ["from","to"] {
+        let mut input=workbench_input(); input.as_object_mut().unwrap().remove(key);
+        assert!(matches!(api.bookkeeping_workbench("synthetic",&input).await,Err(Error::InvalidInput(_))));
+    }
+    let mut input=workbench_input();input["search"]=json!("æ".repeat(200));
+    assert!(ApiClient::validate_bookkeeping_workbench(&input).is_ok());
+}
+#[tokio::test]
+async fn original_first_use116_workbench_current_refusal_and_response_loss_no_replay() {
+    for (status, reply) in [
+        ("403 Forbidden",r#"{"ok":false,"code":"permission_denied","errors":["current CompanyRead required"],"appliedRules":["current_authority"]}"#),
+        ("404 Not Found",r#"{"ok":false,"code":"company_not_found","errors":["wrong selector"]}"#),
+        ("401 Unauthorized",r#"{"ok":false,"code":"session_expired","errors":["expired"]}"#),
+        ("200 OK",""),
+        ("200 OK",r#"{"ok":true,"workbench":null}"#),
+        ("200 OK",r#"{"ok":true,"other":[]}"#),
+    ] {
+        let (origin,rx,task)=server(status,reply,"application/json");
+        let api=ApiClient::new(&origin,true,None).unwrap();
+        let got=api.bookkeeping_workbench("synthetic",&json!({"from":"2026-01-01","to":"2026-01-31"})).await;
+        if reply.is_empty() || serde_json::from_str::<Value>(reply).is_ok_and(|v| v["ok"]==true) {assert!(matches!(got,Err(Error::Protocol)));}
+        else {assert_eq!(got.unwrap(),serde_json::from_str::<Value>(reply).unwrap());}
+        rx.recv_timeout(Duration::from_secs(3)).unwrap();assert_eq!(task.join().unwrap(),1);
+    }
+}
+
+#[tokio::test]
+async fn original_first_use116_workbench_concurrent_calls_keep_company_and_page_isolated() {
+    let (origin_a,rx_a,task_a)=server("200 OK",r#"{"ok":true,"workbench":{"page":{"cursor":0},"sourceHash":"a","population":{"blockers":4}}}"#,"application/json");
+    let (origin_b,rx_b,task_b)=server("200 OK",r#"{"ok":true,"workbench":{"page":{"cursor":5},"sourceHash":"b","population":{"blockers":8}}}"#,"application/json");
+    let api_a=ApiClient::new(&origin_a,true,None).unwrap();
+    let api_b=ApiClient::new(&origin_b,true,None).unwrap();
+    let input_a=json!({"from":"2026-01-01","to":"2026-01-31","cursor":0,"search":"alpha"});
+    let input_b=json!({"from":"2026-02-01","to":"2026-02-28","cursor":5,"search":"beta"});
+    let (a,b)=tokio::join!(api_a.bookkeeping_workbench("synthetic-a",&input_a),api_b.bookkeeping_workbench("synthetic-b",&input_b));
+    assert_eq!(a.unwrap()["workbench"]["population"]["blockers"],4);
+    assert_eq!(b.unwrap()["workbench"]["population"]["blockers"],8);
+    for (rx,company,cursor,search,task) in [(rx_a,"synthetic-a",0,"alpha",task_a),(rx_b,"synthetic-b",5,"beta",task_b)] {
+        let wire=String::from_utf8(rx.recv_timeout(Duration::from_secs(3)).unwrap()).unwrap();
+        assert!(wire.starts_with(&format!("GET /api/companies/{company}/bookkeeping-workbench?")));
+        assert!(wire.contains(&format!("cursor={cursor}")));assert!(wire.contains(&format!("search={search}")));
+        assert_eq!(task.join().unwrap(),1);
+    }
+}
+
+#[tokio::test]
+async fn original_first_use116_workbench_domain_dates_remain_current_server_business_refusals() {
+    let reply=r#"{"ok":false,"code":"invalid_input","errors":["ordered valid ISO range required"]}"#;
+    for (from,to) in [("2026-02-30","2026-03-01"),("2026-01-31","2026-01-01")] {
+        let(origin,rx,task)=server("400 Bad Request",reply,"application/json");
+        let api=ApiClient::new(&origin,true,None).unwrap();
+        assert_eq!(api.bookkeeping_workbench("synthetic",&json!({"from":from,"to":to})).await.unwrap(),serde_json::from_str::<Value>(reply).unwrap());
+        let wire=String::from_utf8(rx.recv_timeout(Duration::from_secs(3)).unwrap()).unwrap();assert!(wire.contains(&format!("from={from}")));assert!(wire.contains(&format!("to={to}")));assert_eq!(task.join().unwrap(),1);
+    }
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn original_first_use116_workbench_absolute_company_requires_real_local_root() {
+    use rentemester_client::LocalRuntime;
+    use std::{fs,os::unix::{fs::{DirBuilderExt,PermissionsExt},net::UnixListener}};
+    let root=fs::canonicalize(std::env::var_os("HOME").unwrap()).unwrap().join(format!(".rm116-workbench-{}",std::process::id()));
+    fs::DirBuilder::new().mode(0o700).create(&root).unwrap();fs::DirBuilder::new().mode(0o700).create(root.join("workspace")).unwrap();
+    let listener=UnixListener::bind(root.join("r.sock")).unwrap();fs::set_permissions(root.join("r.sock"),fs::Permissions::from_mode(0o600)).unwrap();
+    fs::write(root.join("r.json"),json!({"format":"rentemester-local-runtime/1","origin":"http://127.0.0.1:9","socket":"r.sock","workspaceRoot":root.join("workspace"),"workspaceId":root.join("elsewhere")}).to_string()).unwrap();fs::set_permissions(root.join("r.json"),fs::Permissions::from_mode(0o600)).unwrap();
+    let local=LocalRuntime::load(&root).unwrap();let api=ApiClient::new_local(&local,None).unwrap();let input=json!({"from":"2026-01-01","to":"2026-01-31"});
+    for company in [root.join("elsewhere/synthetic"),root.join("workspace/../synthetic"),root.join("workspace/nested/synthetic")] { assert!(matches!(api.bookkeeping_workbench(company.to_str().unwrap(),&input).await,Err(Error::InvalidInput(_)))); }
+    listener.set_nonblocking(true).unwrap();assert!(listener.accept().is_err());listener.set_nonblocking(false).unwrap();
+    let task=thread::spawn(move||{let(mut stream,_)=listener.accept().unwrap();let mut bytes=Vec::new();loop{let mut b=[0;4096];let n=stream.read(&mut b).unwrap();assert!(n>0);bytes.extend_from_slice(&b[..n]);if bytes.ends_with(b"\r\n\r\n"){break;}}let wire=String::from_utf8(bytes).unwrap();assert!(wire.starts_with("GET /api/companies/synthetic/bookkeeping-workbench?"));let reply=r#"{"ok":true,"workbench":{"rows":[],"population":{"blockers":3}}}"#;write!(stream,"HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",reply.len()).unwrap();});
+    assert_eq!(api.bookkeeping_workbench(root.join("workspace/synthetic").to_str().unwrap(),&input).await.unwrap()["workbench"]["population"]["blockers"],3);task.join().unwrap();fs::remove_dir_all(root).unwrap();
+}
