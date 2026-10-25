@@ -31,7 +31,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     {
         return refused(StatusCode::BAD_REQUEST, "invalid_input");
     }
-    let local = crate::verified_local_uid(&request) == Some(state.native.backup_destination_uid);
+    let local = rentemester_server::verified_local_uid(&request) == Some(state.native.backup_destination_uid);
     let path = request.uri().path().to_owned();
     let slug = path.split('/').nth(3).unwrap_or("").to_owned();
     let Ok(bytes) = to_bytes(request.into_body(), 16384).await else {
@@ -112,7 +112,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 }
 
 async fn restore(state: Product, request: Request) -> Response {
-    if crate::verified_local_uid(&request) != Some(state.native.backup_destination_uid)
+    if rentemester_server::verified_local_uid(&request) != Some(state.native.backup_destination_uid)
         || state.native.original_restore_operator().is_none()
     {
         return refused(StatusCode::FORBIDDEN, "local_operator_required");
