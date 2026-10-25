@@ -246,12 +246,27 @@ async fn run(args: &[String]) -> Output {
     if family == "compliance" {
         return report::execute(&api, &company, &f).await;
     }
-    if f.contains_key("--actor") && family == "opening-balance" {
-        return fail(
-            "Opening-balance apply lacks an atomic expectedActor assertion; no operation sent",
-            &f,
-            family,
-        );
+    if family == "opening-balance" {
+        if let Some(actor) = f.get("--actor") {
+            if f.contains_key("--service-key-file") {
+                return usage(
+                    "--actor assertion requires a current human cookie; service credentials determine their own principal",
+                );
+            }
+            let me = match api.me().await {
+                Ok(v) => v,
+                Err(e) => return fail(e, &f, family),
+            };
+            if me["user"]["id"]
+                .as_str()
+                .is_none_or(|id| *actor != format!("user:{id}"))
+            {
+                return fail("actor differs from current cookie user", &f, family);
+            }
+        }
+        // The same immutable credential identifies every plan/apply request; server fences
+        // recheck current authority in each phase. Caller actor is never outgoing authority.
+        return opening(&api, &company, &f).await;
     }
     if let Some(actor) = f.get("--actor") {
         let operation = if family == "retention" {
