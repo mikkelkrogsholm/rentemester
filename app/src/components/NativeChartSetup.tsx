@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 import type { AccountRole, CompanyAccounts } from "../lib/types";
 import { useCapabilities } from "../lib/useCapabilities";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
-import { Button, Input, Select } from "./ui";
+import { Button, Field, Input, Select } from "./ui";
 
 const types = { asset: "Aktiv", liability: "Passiv", equity: "Egenkapital", income: "Indtægt", expense: "Omkostning", vat: "Moms" };
 const roles: Record<AccountRole, [string, string, string]> = {
@@ -45,8 +45,8 @@ export function NativeChartSetup({ slug, data, onSaved }: { slug: string; data: 
         <div className="modal-field-grid">
           <label>Kontonummer<Input required maxLength={64} value={accountNo} onChange={e => setAccountNo(e.target.value)} /></label>
           <label>Kontonavn<Input required maxLength={256} value={name} onChange={e => setName(e.target.value)} /></label>
-          <label>Kontotype<Select value={type} onChange={e => setType(e.target.value)}>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>
-          <label>Normal saldo<Select value={normalBalance} onChange={e => setNormalBalance(e.target.value)}><option value="debit">Debet</option><option value="credit">Kredit</option></Select></label>
+          <Field label="Kontotype"><Select value={type} onChange={e => setType(e.target.value)}>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></Field>
+          <Field label="Normal saldo"><Select value={normalBalance} onChange={e => setNormalBalance(e.target.value)}><option value="debit">Debet</option><option value="credit">Kredit</option></Select></Field>
           <label>Standard momskode (valgfri)<Input value={vatCode} onChange={e => setVatCode(e.target.value)} placeholder="fx DK_PURCHASE_25" /></label>
         </div>
         <Button type="submit">Opret konto</Button>
@@ -57,8 +57,8 @@ export function NativeChartSetup({ slug, data, onSaved }: { slug: string; data: 
       <p className="muted">Vælg hvilken konto bogføringen skal bruge til rollen. Kun aktive konti med passende type og normal saldo vises.</p>
       <form aria-label="Bekræft kontorolle" onSubmit={e => { e.preventDefault(); void save(() => api.confirmAccountRole(slug, role, roleAccount)); }}>
         <div className="modal-field-grid">
-          <label>Kontorolle<Select value={role} onChange={e => { setRole(e.target.value as AccountRole); setRoleAccount(""); }}>{Object.entries(roles).map(([value, [label]]) => <option key={value} value={value}>{label}</option>)}</Select></label>
-          <label>Konto til rollen<Select required value={roleAccount} onChange={e => setRoleAccount(e.target.value)}><option value="">Vælg konto</option>{compatible.map(a => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} — {a.name}</option>)}</Select></label>
+          <Field label="Kontorolle"><Select value={role} onChange={e => { setRole(e.target.value as AccountRole); setRoleAccount(""); }}>{Object.entries(roles).map(([value, [label]]) => <option key={value} value={value}>{label}</option>)}</Select></Field>
+          <Field label="Konto til rollen"><Select required value={roleAccount} onChange={e => setRoleAccount(e.target.value)}><option value="">Vælg konto</option>{compatible.map(a => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} — {a.name}</option>)}</Select></Field>
         </div>
         <Button type="submit" disabled={!roleAccount}>Bekræft kontorolle</Button>
       </form>
