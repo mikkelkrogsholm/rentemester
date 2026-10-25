@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R122 original backup status and atomic opt-in lock accepted:19actual targeted tests, same common engine/current auth/signed-artifact producer, exact438-tool catalogue/1629operation contracts. Full717 remains open.",
-  "code_revision": "98469e011de6ceba127210e59326171fd740e352",
+  "current_increment": "Whole original716 CLI/local launcher/machine-readable contracts accepted and GitHub CLOSED/flow:done;265 original identities and all4 original criteria preserved.",
+  "code_revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_backup_status_lock717_component_accepted",
-  "issues_closed": 41,
-  "next": "Next existing717 original backup artifact/archive/placement/recovery family; preserve all9remaining originalnames/29workflow descriptions and full55scope. Reuse accepted daily owner bookkeeping proof; final installed desktop acceptance LAST.",
+  "state": "original716_whole_issue_closed",
+  "issues_closed": 43,
+  "next": "Focused716 round complete. Select the next smallest necessary whole existing issue in subsequent authorized work;12 original issues and all release/cutover/final installed desktop requirements remain.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -15,7 +15,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R116 original company_add and bookkeeping_workbench over existing common Rust producers accepted:25selected SDK/MCP tests, actual434catalogue and1618source-bound typed contracts. Whole717 remains open.",
+  "previous_verified_increment": "R122 original backup status and atomic opt-in lock accepted:19actual targeted tests, same common engine/current auth/signed-artifact producer, exact438-tool catalogue/1629operation contracts. Full717 remains open.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -19198,6 +19198,16 @@
         "Original receipt1 remains unresolved/unposted; no silent correction or accounting replay.",
         "All55/J01-J07/release/cutover and finalinstalleddesktopLAST retained."
       ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueAccepted": true,
+      "githubState": "closed",
+      "flow": "done",
+      "revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
+      "evidence": "issue716-evidence.json",
+      "checkedAt": "2026-10-25T20:12:42.439156+00:00",
+      "results": "112CLI integration targets (86valid results reused+26 corrected recompiled/executed),54CLI units,24new layer tests, exact1724contracts, actual source/native restore+8first-use/7native chain. Main actualdiff review; all failed/cancelled receipts preserved."
     }
   ],
   "scope_clarifications": [
@@ -19216,7 +19226,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 718,
+    "current_issue": null,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
@@ -19239,17 +19249,20 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 714
+    "last_closed_issue": 716
   },
   "issue716_final_wire716": {
-    "state": "focused_proof_passed_whole_acceptance_pending",
-    "whole_issue_accepted": false,
+    "state": "whole_issue_closed",
+    "whole_issue_accepted": true,
     "evidence": "issue716-evidence.json",
+    "revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
+    "github": "https://github.com/mikkelkrogsholm/rentemester/issues/716",
+    "sgdRun": "issue716-close-20261025T200850.785966000",
     "contractCounts": {
       "cli": 575,
       "http": 701,
       "mcp": 448
     },
-    "remaining": "Lead actualdiff review, repair/execute unowned whole-CLI fixtures, all four original criteria and genuine-environment acceptance. Prior receipts and rejected logs preserved."
+    "remaining": []
   }
 }

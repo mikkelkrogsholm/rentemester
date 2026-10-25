@@ -1,9 +1,9 @@
 {
   "issue": 716,
   "whole_issue_accepted": true,
-  "status": "lead whole original716 accepted; finite SGD receipt/publication pending",
-  "source_revision": "9b97167731cb965ce72db23661838c68fc7c85bb",
-  "working_tree_changes_included": true,
+  "status": "Whole original716 accepted, SGD done, published and GitHub confirmed CLOSED/flow:done",
+  "source_revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
+  "working_tree_changes_included": false,
   "build_output": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716",
   "preservation": {
     "epic_issues": 55,
@@ -687,5 +687,51 @@
       "passed": true,
       "evidence": "All112 CLI targets preserve existing array/flat/snake_case/output/error assertions. Actual8step first-use/schema/bootstrap and7step signed native workspace CLI flow pass; source transfer roundtrip passes. Source TAR and native-v1 have distinct strict versioned receipts, independent trust and no credential restoration."
     }
-  ]
+  ],
+  "product_source_revision": "9b97167731cb965ce72db23661838c68fc7c85bb",
+  "publication": {
+    "acceptedRevision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
+    "branch": "codex/rust-platform",
+    "githubIssue": "https://github.com/mikkelkrogsholm/rentemester/issues/716",
+    "verifiedState": "closed",
+    "verifiedFlow": "flow:done",
+    "verifiedAt": "2026-10-25T20:12:42.439156+00:00",
+    "sgdRun": "issue716-close-20261025T200850.785966000",
+    "acceptanceChecks": [
+      {
+        "check": "whole716",
+        "key": "294aee0e99b5922f15af1468837072e60ba67589ef018a6ec17352944bccd14b",
+        "argv": [
+          "python3",
+          "/tmp/issue716-accept-reuse.py"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue716-close-20261025T200850.785966000/acceptance/294aee0e99b5922f15af1468837072e60ba67589ef018a6ec17352944bccd14b/whole716.log"
+      },
+      {
+        "check": "contracts716",
+        "key": "8d9b5b9de0ea01e9ea580906f5c4d8e4c087b98fabdd0d8d4f8302c6cedbce00",
+        "argv": [
+          "python3",
+          "/tmp/issue716-contract-verify.py"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue716-close-20261025T200850.785966000/acceptance/8d9b5b9de0ea01e9ea580906f5c4d8e4c087b98fabdd0d8d4f8302c6cedbce00/contracts716.log"
+      },
+      {
+        "check": "typed716",
+        "key": "b6b59225cb714a9c9c57e4780386e5877dfd416de6e0496151a44b7f8849e719",
+        "argv": [
+          "/Users/mikkelfreltoftkrogsholm/Skills/state-graph-development/.runtime/bin/python",
+          "/tmp/issue716-specific-contract-check.py"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue716-close-20261025T200850.785966000/acceptance/b6b59225cb714a9c9c57e4780386e5877dfd416de6e0496151a44b7f8849e719/typed716.log"
+      }
+    ],
+    "scope": "All4 original criteria and full265 command scope; full55issue mission not complete."
+  }
 }

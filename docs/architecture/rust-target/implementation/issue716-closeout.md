@@ -32,5 +32,7 @@ independent trust. Actual native restore preserves accounting data and requires 
 fresh owner. This is the versioned compatibility allowed by the original criterion.
 
 No live migration/cutover or final installed desktop acceptance is claimed. All55
-original epic scopes and remaining release requirements are preserved. Public
-GitHub closure requires the finite SGD acceptance and published accepted revision.
+original epic scopes and remaining release requirements are preserved. SGD `issue716-close-20261025T200850.785966000` passed all three acceptance checks
+on `dbf28b96c43e40b336f5a7f4d6e45701fef8697c`, published to `codex/rust-platform`.
+GitHub independently confirms #716 closed with `flow:done`.43 of55 original issues
+are closed;12 remain. This ends the authorized focused716 round.
