@@ -97,8 +97,22 @@ fn original_diagnostics118_host_dated_read_and_missing_secondary_health() {
             .value["ok"],
         false
     );
-    // Owner's minimum SQL namespace is not the full original company layout.
-    // The diagnostic must expose missing folders rather than fabricate health.
+    // Fresh creation must support the original intake/export layout privately.
+    // Keep this source-derived expectation independent of the runtime constant.
+    let original_dirs = ["data", "bank", "bank/incoming_csv", "bank/processed",
+        "documents", "documents/inbox", "documents/originals", "invoices",
+        "invoices/drafts", "invoices/issued", "exports", "backups", "logs", "config"];
+    use std::os::unix::fs::PermissionsExt;
+    for relative in original_dirs {
+        let metadata = std::fs::symlink_metadata(owner.root.join("a").join(relative)).unwrap();
+        assert!(metadata.is_dir() && !metadata.file_type().is_symlink(), "{relative}");
+        assert_eq!(metadata.permissions().mode() & 0o7777, 0o700, "{relative}");
+    }
+    assert_eq!(owner.system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "a")
+        .unwrap().outcome.unwrap()["ok"], true);
+    // A genuinely damaged layout remains diagnostic data, never read-side repair.
+    std::fs::remove_dir_all(owner.root.join("a/documents")).unwrap();
+    std::fs::remove_dir(owner.root.join("a/config")).unwrap();
     let incomplete = owner.system_healthcheck_original118(&cookies, &proof, &Fixed(NOW), "a").unwrap().outcome.unwrap();
     assert_eq!(incomplete["ok"], false);
     assert_eq!(incomplete["missing"], json!(["documents", "config"]));
@@ -123,6 +137,16 @@ fn original_diagnostics118_host_dated_read_and_missing_secondary_health() {
         .unwrap()
         .outcome
         .unwrap();
+    for relative in original_dirs {
+        let metadata = std::fs::symlink_metadata(owner.root.join("b").join(relative)).unwrap();
+        assert!(metadata.is_dir() && !metadata.file_type().is_symlink(), "{relative}");
+        assert_eq!(metadata.permissions().mode() & 0o7777, 0o700, "{relative}");
+    }
+    let sentinel = owner.root.join("b/documents/inbox/synthetic-existing");
+    std::fs::write(&sentinel, b"preserve existing original").unwrap();
+    assert!(owner.create_company(&cookies, &Fixed(NOW), &proof, &input)
+        .unwrap().outcome.is_err());
+    assert_eq!(std::fs::read(&sentinel).unwrap(), b"preserve existing original");
     owner.select_company("a").unwrap();
     let ledger = owner.root.join("b/data/ledger.sqlite");
     std::fs::remove_file(&ledger).unwrap();

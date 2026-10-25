@@ -154,8 +154,18 @@ impl WorkspaceLayout {
         rustix::fs::mkdirat(&self.lease.directory, slug, Mode::from_raw_mode(0o700))
             .map_err(|_| LayoutError::Unavailable)?;
         let company = open_relative(&self.lease, &[slug.to_owned()], true)?;
-        rustix::fs::mkdirat(&company, "data", Mode::from_raw_mode(0o700))
-            .map_err(|_| LayoutError::Unavailable)?;
+        for relative in crate::namespace::COMPANY_LAYOUT_DIRS {
+            rustix::fs::mkdirat(&company, *relative, Mode::from_raw_mode(0o700))
+                .map_err(|_| LayoutError::Unavailable)?;
+        }
+        for relative in crate::namespace::COMPANY_LAYOUT_DIRS.iter().rev() {
+            let parts = std::iter::once(slug.to_owned())
+                .chain(relative.split('/').map(str::to_owned))
+                .collect::<Vec<_>>();
+            open_relative(&self.lease, &parts, true)?
+                .sync_all()
+                .map_err(|_| LayoutError::Unavailable)?;
+        }
         let data = open_relative(&self.lease, &[slug.to_owned(), "data".into()], true)?;
         let file = File::from(
             openat(

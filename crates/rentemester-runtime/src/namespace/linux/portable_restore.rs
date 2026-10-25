@@ -50,15 +50,9 @@ impl NamespaceGuard {
         let lease = WorkspaceLease::acquire(root).map_err(|_| Error::Busy)?;
         let mut directories = BTreeSet::from([".rentemester".to_owned()]);
         for c in &artifact.manifest().context.companies {
-            for suffix in [
-                "",
-                "/data",
-                "/documents",
-                "/documents/originals",
-                "/bank",
-                "/bank/processed",
-            ] {
-                directories.insert(format!("{}{suffix}", c.slug));
+            directories.insert(c.slug.clone());
+            for relative in crate::namespace::COMPANY_LAYOUT_DIRS {
+                directories.insert(format!("{}/{relative}", c.slug));
             }
         }
         let mut dirs: Vec<_> = directories.into_iter().collect();

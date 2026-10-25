@@ -313,11 +313,14 @@ impl NamespaceGuard {
             return Err(Error::Changed);
         }
         let lease = WorkspaceLease::acquire(&root).map_err(|_| Error::Invalid)?;
-        for name in [
-            ".rentemester".to_owned(),
-            slug.to_owned(),
-            format!("{slug}/data"),
-        ] {
+        for name in [".rentemester".to_owned(), slug.to_owned()]
+            .into_iter()
+            .chain(
+                super::COMPANY_LAYOUT_DIRS
+                    .iter()
+                    .map(|d| format!("{slug}/{d}")),
+            )
+        {
             rustix::fs::mkdirat(&directory, name.as_str(), Mode::from_raw_mode(0o700))
                 .map_err(|_| Error::Invalid)?;
         }
@@ -342,11 +345,12 @@ impl NamespaceGuard {
             file.write_all(bytes).map_err(|_| Error::Invalid)?;
             file.sync_all().map_err(|_| Error::Invalid)?;
         }
-        for name in [
-            ".rentemester".to_owned(),
-            format!("{slug}/data"),
-            slug.to_owned(),
-        ] {
+        for name in super::COMPANY_LAYOUT_DIRS
+            .iter()
+            .rev()
+            .map(|d| format!("{slug}/{d}"))
+            .chain([slug.to_owned(), ".rentemester".to_owned()])
+        {
             let dir = File::from(
                 openat(&directory, name.as_str(), DIRECTORY, Mode::empty())
                     .map_err(|_| Error::Invalid)?,
@@ -380,30 +384,44 @@ impl NamespaceGuard {
         let (_, root) = walk(&self.root, self.uid, true)?;
         match rustix::fs::mkdirat(&root, "native-backups", Mode::from_raw_mode(0o700)) {
             Ok(()) => root.sync_all().map_err(|_| Error::Invalid)?,
-            Err(rustix::io::Errno::EXIST) => {},
+            Err(rustix::io::Errno::EXIST) => {}
             Err(_) => return Err(Error::Invalid),
         }
         let config = crate::backup_destination::Config {
-            id: "native-local-backups".into(), label: "Local retained snapshots".into(),
-            kind: "local-folder".into(), directory: self.root.join("native-backups"),
-            non_related_party: false, in_eea_or_eu: false, country: "ZZ".into(),
-            meets_recognised_standards: false, attested_by: "system:local-retention".into(),
+            id: "native-local-backups".into(),
+            label: "Local retained snapshots".into(),
+            kind: "local-folder".into(),
+            directory: self.root.join("native-backups"),
+            non_related_party: false,
+            in_eea_or_eu: false,
+            country: "ZZ".into(),
+            meets_recognised_standards: false,
+            attested_by: "system:local-retention".into(),
             attested_at: "1970-01-01T00:00:00Z".into(),
         };
         let operation = crate::backup_keys::digest(wire);
-        let receipt = match crate::backup_destination::place(&config, self.uid, &operation, wire, trusted, workspace) {
+        let receipt = match crate::backup_destination::place(
+            &config, self.uid, &operation, wire, trusted, workspace,
+        ) {
             Ok(value) => value,
             Err("backup_destination_exists_read_back") => {
-                let value = crate::backup_destination::verify(&config, self.uid, &operation, trusted, workspace).map_err(|_| Error::Invalid)?;
-                if value["archiveSha256"] != operation { return Err(Error::Invalid); }
+                let value = crate::backup_destination::verify(
+                    &config, self.uid, &operation, trusted, workspace,
+                )
+                .map_err(|_| Error::Invalid)?;
+                if value["archiveSha256"] != operation {
+                    return Err(Error::Invalid);
+                }
                 value
-            },
+            }
             Err(_) => return Err(Error::Invalid),
         };
         self.ensure_current()?;
-        Ok(serde_json::json!({"format":"rentemester-native-retained-backup/1",
+        Ok(
+            serde_json::json!({"format":"rentemester-native-retained-backup/1",
             "archiveSha256":receipt["archiveSha256"],"archiveSizeBytes":receipt["archiveSizeBytes"],
-            "backupCreatedAt":receipt["backupCreatedAt"],"signatureVerified":true,"remoteSyncVerified":false}))
+            "backupCreatedAt":receipt["backupCreatedAt"],"signatureVerified":true,"remoteSyncVerified":false}),
+        )
     }
     pub fn ensure_current(&mut self) -> Result<(), Error> {
         if self.invalidated {

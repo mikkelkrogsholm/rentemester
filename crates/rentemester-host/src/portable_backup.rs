@@ -1514,6 +1514,38 @@ mod tests {
         verified(context, entries)
     }
     #[test]
+    #[cfg(target_os = "macos")]
+    fn original_layout119_signed_restore_provisions_all_companies_without_overwrite() {
+        use std::os::unix::fs::PermissionsExt;
+        let artifact = mixed_company_archive(Some(json!(true)), false);
+        validate(&artifact).unwrap();
+        let parent = tempfile::tempdir().unwrap();
+        let root = parent.path().canonicalize().unwrap().join("restore-stage");
+        let uid = String::from_utf8(std::process::Command::new("id").arg("-u")
+            .output().unwrap().stdout).unwrap().trim().parse().unwrap();
+        let profile = NamespaceProfile::LocalUserMacos;
+        let mut guard = NamespaceGuard::create_verified_restore_stage(
+            &root, uid, "w", "synthetic", profile, &artifact).unwrap();
+        guard.ensure_current().unwrap();
+        for company in &artifact.manifest().context.companies {
+            for relative in ["data", "bank", "bank/incoming_csv", "bank/processed",
+                "documents", "documents/inbox", "documents/originals", "invoices",
+                "invoices/drafts", "invoices/issued", "exports", "backups", "logs", "config"] {
+                let metadata = std::fs::symlink_metadata(root.join(&company.slug).join(relative)).unwrap();
+                assert!(metadata.is_dir() && !metadata.file_type().is_symlink());
+                assert_eq!(metadata.permissions().mode() & 0o7777, 0o700);
+            }
+        }
+        for entry in artifact.entries() {
+            if !matches!(entry.kind(), artifact::EntryKind::ControlBusiness { .. }) {
+                assert_eq!(std::fs::read(root.join(entry.path())).unwrap(), entry.bytes());
+            }
+        }
+        assert!(NamespaceGuard::create_verified_restore_stage(
+            &root, uid, "w", "synthetic", profile, &artifact).is_err());
+        guard.ensure_current().unwrap();
+    }
+    #[test]
     fn signed_mixed_active_and_archived_companies_preserve_flag_inventory_and_native_ledger() {
         let artifact = mixed_company_archive(Some(json!(true)), false);
         validate(&artifact).unwrap();

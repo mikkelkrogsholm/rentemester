@@ -1,4 +1,22 @@
 //! Explicitly profiled physical namespace admission, not application authorization.
+// Parent-first original company layout (src/core/paths.ts). Creation is only
+// for new private companies/stages; it never repairs an admitted existing root.
+pub(crate) const COMPANY_LAYOUT_DIRS: &[&str] = &[
+    "data",
+    "bank",
+    "bank/incoming_csv",
+    "bank/processed",
+    "documents",
+    "documents/inbox",
+    "documents/originals",
+    "invoices",
+    "invoices/drafts",
+    "invoices/issued",
+    "exports",
+    "backups",
+    "logs",
+    "config",
+];
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 use std::path::Path;
 
@@ -81,7 +99,12 @@ impl NamespaceGuard {
     pub fn remove_imap_config(&mut self) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
-    pub fn retain_backup(&mut self, _: &[u8], _: &crate::backup_artifact::TrustedPublicKey, _: &str) -> Result<serde_json::Value, NamespaceError> {
+    pub fn retain_backup(
+        &mut self,
+        _: &[u8],
+        _: &crate::backup_artifact::TrustedPublicKey,
+        _: &str,
+    ) -> Result<serde_json::Value, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
     pub fn workspace_manifest(&mut self) -> Result<Vec<u8>, NamespaceError> {
@@ -104,9 +127,15 @@ impl NamespaceGuard {
         Err(NamespaceError::Unsupported)
     }
     pub fn create_adoption_stage(
-        _: &Path, _: u32, _: &str, _: &str, _: NamespaceProfile,
+        _: &Path,
+        _: u32,
+        _: &str,
+        _: &str,
+        _: NamespaceProfile,
         _: &crate::legacy_adoption::AdoptionImage,
-    ) -> Result<Self, NamespaceError> { Err(NamespaceError::Unsupported) }
+    ) -> Result<Self, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn publish_adopted_root(&mut self, _: &Path) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
@@ -114,12 +143,28 @@ impl NamespaceGuard {
         Err(NamespaceError::Unsupported)
     }
 
-    pub fn catalog(&mut self)->Result<Vec<(String,String,bool)>,NamespaceError>{Err(NamespaceError::Unsupported)}
-    pub fn select_company(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
-    pub fn select_company_for_snapshot(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
-    pub fn create_company_files(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
-    pub fn verify_pending_company(&mut self,_:&str,_:&rusqlite::Connection)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
-    pub fn publish_company(&mut self,_:&str,_:&str,_:i64)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
+    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn select_company(&mut self, _: &str) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn select_company_for_snapshot(&mut self, _: &str) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn create_company_files(&mut self, _: &str) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn verify_pending_company(
+        &mut self,
+        _: &str,
+        _: &rusqlite::Connection,
+    ) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn publish_company(&mut self, _: &str, _: &str, _: i64) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn acquire_with_profile(
         _: &Path,
         _: u32,
@@ -198,7 +243,10 @@ mod tests {
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-pub(crate) fn backup_directory(path: &std::path::Path, uid: u32) -> Result<std::fs::File, NamespaceError> {
+pub(crate) fn backup_directory(
+    path: &std::path::Path,
+    uid: u32,
+) -> Result<std::fs::File, NamespaceError> {
     linux::backup_directory(path, uid)
 }
 #[cfg(any(target_os = "linux", target_os = "macos"))]
