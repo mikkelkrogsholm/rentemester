@@ -35,3 +35,5 @@ pub mod bootstrap;
 pub mod custody;
 pub mod report;
 pub mod schema;
+
+pub mod transfer;

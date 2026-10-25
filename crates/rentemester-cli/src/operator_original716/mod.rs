@@ -2,6 +2,7 @@
 pub mod bootstrap;
 pub mod custody;
 pub mod schema;
+pub mod transfer;
 use crate::dated_reports::Output;
 use rentemester_client::LocalRuntime;
 use serde_json::{Value, json};

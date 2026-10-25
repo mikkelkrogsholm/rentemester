@@ -11,7 +11,7 @@ use std::{
 #[test]
 fn original716_compliance_positive_file_hash_metadata_and_no_server_path() {
     use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-    let dir = std::env::temp_dir().join(format!("compliance716-{}", std::process::id()));
+    let dir = std::env::temp_dir().canonicalize().unwrap().join(format!("compliance716-{}", std::process::id()));
     std::fs::create_dir(&dir).unwrap();
     std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
     let cookie = dir.join("cookie");

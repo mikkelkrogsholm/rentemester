@@ -3,7 +3,7 @@
   "partition": "financial_reports_audit",
   "status": "specified",
   "unresolved": [],
-  "operationCount": 45,
+  "operationCount": 47,
   "operationIds": [
     "cli:audit verify",
     "cli:reg citations",
@@ -66,7 +66,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -151,7 +151,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "pub fn router(native: Arc<Backend>, origin: &str) -> Router {"
     },
     {
@@ -171,7 +171,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -236,12 +236,12 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "if args.first().map(String::as_str) != Some(\"trial-balance\")"
     },
     {
       "path": "crates/rentemester-storage/src/lib.rs",
-      "sha256": "115138db7e08340de823420e90a77d239aed94e547bc61be104afa8f5437d8e6",
+      "sha256": "c72a19fe3843b0796cb618f68c62994f7c8c90bbd10cdcd1b282d359b6f46ef2",
       "needle": "pub fn trial_balance("
     },
     {
@@ -313,6 +313,86 @@
       "path": "src/cli-meta/compliance-specs.ts",
       "sha256": "da722554bbe757761ea515c38cb87d847620b6e0ae73f056ededec362ef6283f",
       "needle": "key: \"reg citations\""
+    },
+    {
+      "path": "crates/rentemester-cli/src/audit_verify_original.rs",
+      "sha256": "6ec2dd8a58f8e148eae0ad78c791cdd47c658d0a597df85ad0c08250679ae554",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "needle": "audit_verify_original::preflight"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe",
+      "needle": "fn migrated"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
+      "needle": "pub fn help"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "8aaf9f3194b723c0bf06dae7b1f367f45a7700190f1a337b113fb24e4f0d293d",
+      "needle": "fn local_company"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "9e7e163c1c77d05f960763b92a535965100e6e9e26a77c5ce30922d91da73935",
+      "needle": "pub fn load"
+    },
+    {
+      "path": "crates/rentemester-client/src/audit_verify.rs",
+      "sha256": "14442dacee1bb255432380d518f715677c9da08564df463f16f02f4f5fc6c0b7",
+      "needle": "fn checked"
+    },
+    {
+      "path": "src/cli/audit.ts",
+      "sha256": "fd357bf8839d25254b38ec36d961e8159b1ebfb2475191a3c7cc007985bcca1e",
+      "needle": "dispatch.on(\"audit\", \"verify\""
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remaining_original716/mod.rs",
+      "needle": "pub async fn execute",
+      "sha256": "7898ba1bb536dfa1b3c68a448a528d33d5056b973904986941ff9eb66471ed2b"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "needle": "fn main(",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "needle": "pub fn value(",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remaining_original716/presentation.rs",
+      "needle": "pub(super) fn render",
+      "sha256": "9f457b0cc1ad4ba57ffcc111d73133408b44fa96791d239d8395ce9879239ce1"
+    },
+    {
+      "path": "crates/rentemester-client/src/original716/report.rs",
+      "needle": "pub async fn original716_remaining",
+      "sha256": "6b91ef67101583552a51e2cf645825cc39f9d72a8a051745c13cb18bfc2f5712"
+    },
+    {
+      "path": "src/cli/compliance.ts",
+      "needle": "export function register",
+      "sha256": "9357cee7b59d49418cdec7f89077f15fa6a6507221293c29e21e312925baf6c9"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/original716/report.rs",
+      "needle": "async fn",
+      "sha256": "9eab16d999f05660b9ebc38d10b404d794de6cc3604ac7acc24a27af330aed87"
     }
   ],
   "scope": "Only42 frozen report/audit operations. Prior821/26 partitions and all55/J01-J07/final desktop/release/cutover/retirement unchanged; no global closure or runtime replay.",
@@ -336,7 +416,7 @@
       },
       {
         "path": "crates/rentemester-cli/src/main.rs",
-        "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+        "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
         "needle": "audit_verify_original::preflight"
       },
       {
@@ -346,7 +426,7 @@
       },
       {
         "path": "crates/rentemester-cli/src/original_discovery.rs",
-        "sha256": "51bcf3faa487cda5292c89c1f4827a0e97c14dfefe37cc53fdda1d2a84aaa549",
+        "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
         "needle": "pub fn help"
       },
       {
@@ -380,5 +460,9 @@
     "correction": "Source CLI execute no longer exposes generic native run envelope; native run/compliance unchanged. No reg rows existed in this private partition at base; two original operation rows are made explicit here.",
     "test": "CARGO_BUILD_JOBS=2 python3 scripts/rust/cargo-guard.py cargo test -p rentemester-cli --test original_reg716",
     "scope": "Actual compiled CLI/current bundled corpus, no HTTP/Unix fixtures appropriate for offline commands."
-  }
+  },
+  "original716AddedIdentities": [
+    "cli:compliance report"
+  ],
+  "currentCliIdentityCount": 265
 }

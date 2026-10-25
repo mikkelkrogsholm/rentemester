@@ -8,7 +8,7 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -38,12 +38,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn response("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -58,7 +58,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "pub enum OwnerError"
     },
     {
@@ -188,7 +188,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "async fn write("
     },
     {
@@ -223,7 +223,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "pub async fn manual_journal("
     },
     {
@@ -323,12 +323,12 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "if args.first().map(String::as_str) == Some(\"validate-journal\")"
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "if args.first().map(String::as_str) == Some(\"verify-journal-hashes\")"
     },
     {
@@ -485,5 +485,7 @@
     "Native keyed known-business refusal is preserved independently of SDK error wrappers.",
     "Original MCP transactionDate parser accepts nonempty string; server validates calendar.",
     "Original journal global preprocessing errors exit2, stdout empty and text stderr."
-  ]
+  ],
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

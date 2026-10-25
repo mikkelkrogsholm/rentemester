@@ -10113,6 +10113,152 @@
         "offline"
       ],
       "additionalProperties": false
+    },
+    "Original716_compliance_report_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "compliance report"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--as-of-instant": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--example": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_compliance_report_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        },
+        "commitSha": {
+          "type": "string"
+        },
+        "ruleBundleVersion": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "out": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "ok",
+        "asOfDate",
+        "generatedAt",
+        "commitSha",
+        "ruleBundleVersion",
+        "fingerprint",
+        "out",
+        "bytes"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_compliance_report_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

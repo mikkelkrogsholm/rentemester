@@ -47,7 +47,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "let handlers = AuthHandlers"
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn admit_auth"
     },
     {
@@ -67,7 +67,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": "protocol::install(router, connected)"
     },
     {
@@ -92,7 +92,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": "rust_workspace_not_connected"
     },
     {
@@ -219,5 +219,8 @@
     "x-maxUtf8Bytes": "Rust String::len byte constraint, not JSON Schema character count. Schema annotations and operation parser constraints jointly specify accepted inputs.",
     "responseWrappers": "status/mediaType/body/headers are wire variant metadata; local refs resolve exact JSON bodies. Empty request bytes distinguished from JSON null; ignored GET/HEAD bodies not decoded.",
     "sourceOnly": "Structural oracle does not establish runtime or semantic acceptance."
-  }
+  },
+  "operationCount": 8,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

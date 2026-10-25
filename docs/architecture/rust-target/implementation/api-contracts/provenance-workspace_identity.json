@@ -8,12 +8,12 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": ".route(\"/api/workspace/invitations\",get(workspace_access::handle).post(workspace_access::handle))"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "async fn companies("
     },
     {
@@ -78,17 +78,17 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": ".merge(product_http::router(backend.clone(), &origin))"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "workspace_context: Some(Box::new(move |proof|"
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn control_auth<T>("
     },
     {
@@ -165,6 +165,31 @@
       "path": "crates/rentemester-runtime/src/local/layout/companies.rs",
       "sha256": "ac542bf9db8a62839fba05b7b24ebc77f11e413359fc52e558c2c2d1dbfc10d5",
       "needle": "pub fn catalog("
+    },
+    {
+      "path": "crates/rentemester-cli/src/operator_original716/bootstrap.rs",
+      "needle": "pub async fn execute",
+      "sha256": "366c3c34527d664a8cf1270ae768ee5d1da410578341a4d392a603b96c1378ab"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "needle": "fn main(",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "needle": "pub fn value(",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe"
+    },
+    {
+      "path": "crates/rentemester-server/src/original716_cli/bootstrap.rs",
+      "needle": "pub async fn execute",
+      "sha256": "3bc19020abf8da3271a1fe6b728dba62006b52c8cafa38879a3eea5f92b16306"
+    },
+    {
+      "path": "src/cli/workspace-access.ts",
+      "needle": "export function register",
+      "sha256": "f6b9a9ed10e8ff16abfc31cb69c0cdf629f86ddc243b88b5bdb51f26dad38dd2"
     }
   ],
   "retainedAcceptance": {
@@ -174,5 +199,10 @@
   "limitations": [
     "Declarations and structural oracle are not network execution evidence. Main owns constructor/recovery review and acceptance.",
     "No global registry coverage, #677 closure, CLI/MCP coverage or accepted effect replay claimed."
-  ]
+  ],
+  "operationCount": 14,
+  "original716AddedIdentities": [
+    "cli:workspace-access bootstrap-first"
+  ],
+  "currentCliIdentityCount": 265
 }

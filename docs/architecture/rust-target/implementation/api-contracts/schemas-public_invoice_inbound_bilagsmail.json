@@ -10069,7 +10069,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10084,7 +10084,7 @@
               {
                 "path": "crates/rentemester-client/src/original717.rs",
                 "needle": "mail_intake_ingest",
-                "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
               }
             ]
           }
@@ -10277,7 +10277,7 @@
                 {
                   "path": "crates/rentemester-server/src/product_http.rs",
                   "needle": "pub fn router",
-                  "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                  "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
                 },
                 {
                   "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10292,7 +10292,7 @@
                 {
                   "path": "crates/rentemester-client/src/original717.rs",
                   "needle": "mail_intake_ingest",
-                  "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                  "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
                 }
               ]
             }
@@ -10651,7 +10651,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10666,7 +10666,7 @@
               {
                 "path": "crates/rentemester-client/src/original717.rs",
                 "needle": "imap_intake_poll",
-                "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
               }
             ]
           }
@@ -10859,7 +10859,7 @@
                 {
                   "path": "crates/rentemester-server/src/product_http.rs",
                   "needle": "pub fn router",
-                  "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                  "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
                 },
                 {
                   "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10874,7 +10874,7 @@
                 {
                   "path": "crates/rentemester-client/src/original717.rs",
                   "needle": "imap_intake_poll",
-                  "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                  "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
                 }
               ]
             }
@@ -11741,7 +11741,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -12018,6 +12018,1996 @@
       "required": [
         "ok",
         "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_mail_intake_ingest_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "mail-intake ingest"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--source": {
+              "type": "string"
+            },
+            "--metadata": {
+              "type": "string"
+            },
+            "--force": {
+              "const": true
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_mail_intake_ingest_Success": {
+      "type": "object",
+      "properties": {
+        "messagesProcessed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string"
+              },
+              "documentNo": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "messageId",
+              "documentNo",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "messagesProcessed",
+        "attachmentsIngested",
+        "attachmentsSkipped",
+        "exceptionsCreated",
+        "documents",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_mail_intake_ingest_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_imap_intake_poll_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "imap-intake poll"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--metadata": {
+              "type": "string"
+            },
+            "--imap-host": {
+              "type": "string"
+            },
+            "--imap-port": {
+              "type": "string"
+            },
+            "--imap-username": {
+              "type": "string"
+            },
+            "--imap-mailbox": {
+              "type": "string"
+            },
+            "--since-uid": {
+              "type": "string"
+            },
+            "--force": {
+              "const": true
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_imap_intake_poll_Success": {
+      "type": "object",
+      "properties": {
+        "messagesProcessed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string"
+              },
+              "documentNo": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "messageId",
+              "documentNo",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "messagesFetched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "messagesProcessed",
+        "attachmentsIngested",
+        "attachmentsSkipped",
+        "exceptionsCreated",
+        "documents",
+        "messagesFetched",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_imap_intake_poll_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_invoice_send_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "invoice send"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--document-id": {
+              "type": "string"
+            },
+            "--invoice-number": {
+              "type": "string"
+            },
+            "--kind": {
+              "type": "string"
+            },
+            "--to": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_invoice_send_Success": {
+      "type": "object",
+      "properties": {
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "duplicate",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_invoice_send_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboarding_status_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura onboarding-status"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboarding_status_Success": {
+      "type": "object",
+      "properties": {
+        "configured": {
+          "type": "boolean"
+        },
+        "environment": {
+          "enum": [
+            "test",
+            "production",
+            null
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "cvr": {
+                  "type": "string"
+                },
+                "companyName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cvr",
+                "companyName"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companyKeyConfigured": {
+          "type": "boolean"
+        },
+        "inboundReady": {
+          "type": "boolean"
+        },
+        "outboundReady": {
+          "type": "boolean"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "configured",
+        "environment",
+        "identity",
+        "companyKeyConfigured",
+        "inboundReady",
+        "outboundReady",
+        "ready",
+        "blockers",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboarding_status_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboard_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura onboard"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboard_Success": {
+      "type": "object",
+      "properties": {
+        "companyKey": {
+          "type": "string"
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "configured": {
+              "type": "boolean"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production",
+                null
+              ]
+            },
+            "identity": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "cvr": {
+                      "type": "string"
+                    },
+                    "companyName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cvr",
+                    "companyName"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "companyKeyConfigured": {
+              "type": "boolean"
+            },
+            "inboundReady": {
+              "type": "boolean"
+            },
+            "outboundReady": {
+              "type": "boolean"
+            },
+            "ready": {
+              "type": "boolean"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "configured",
+            "environment",
+            "identity",
+            "companyKeyConfigured",
+            "inboundReady",
+            "outboundReady",
+            "ready",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "companyKey",
+        "status",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_onboard_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_konfigurer_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura konfigurer"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--api-license-key": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--environment": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--api-license-key-file": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_konfigurer_Success": {
+      "type": "object",
+      "properties": {
+        "configPath": {
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "test",
+            "production"
+          ]
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "configPath",
+        "environment",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_konfigurer_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura registrer"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--cvr": {
+              "type": "string"
+            },
+            "--company-name": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--network": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_Success": {
+      "type": "object",
+      "properties": {
+        "companyKey": {
+          "type": "string"
+        },
+        "directionsRegistered": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "outbound",
+              "inbound"
+            ]
+          }
+        },
+        "network": {
+          "enum": [
+            "nemhandel",
+            "peppol"
+          ]
+        },
+        "participantType": {
+          "const": "DK:CVR"
+        },
+        "participantId": {
+          "type": "string"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "companyKey",
+        "directionsRegistered",
+        "network",
+        "participantType",
+        "participantId",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_gln_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura registrer-test-gln"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--network": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_gln_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "registered": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "registered"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_gln_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_afsender_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura registrer-test-afsender"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_afsender_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "registered": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "registered"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_registrer_test_afsender_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura modtag"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--digisense-company-key": {
+              "type": "string"
+            },
+            "--limit": {
+              "type": "string"
+            },
+            "--max-timestamp": {
+              "type": "string"
+            },
+            "--metadata": {
+              "type": "string"
+            },
+            "--force": {
+              "const": true
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_Success": {
+      "type": "object",
+      "properties": {
+        "pagesFetched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsListed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsQuarantined": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/ReceivedDocument"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "pagesFetched",
+        "documentsListed",
+        "documentsIngested",
+        "documentsSkipped",
+        "documentsQuarantined",
+        "documents",
+        "errors",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_workspace_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura modtag-workspace"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_workspace_Success": {
+      "type": "object",
+      "properties": {
+        "companies": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "skipped"
+                  },
+                  "reason": {
+                    "enum": [
+                      "archived",
+                      "not initialized",
+                      "not configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "polled"
+                  },
+                  "documentsIngested": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "documentsIngested"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "failed"
+                  },
+                  "reason": {
+                    "const": "receive failed; inspect authoritative documents and dedup before any further action"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "companies",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_modtag_workspace_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_leveringsstatus_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura leveringsstatus"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--document-id": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--digisense-company-key": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_leveringsstatus_Success": {
+      "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/OriginalStatus100Producer"
+    },
+    "Original716_efaktura_leveringsstatus_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_status_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "efaktura status"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--document-id": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--digisense-company-key": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_efaktura_status_Success": {
+      "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/OriginalStatus100Producer"
+    },
+    "Original716_efaktura_status_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
       ],
       "additionalProperties": false
     }

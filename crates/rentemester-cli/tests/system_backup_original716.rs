@@ -240,7 +240,8 @@ fn signed_backup_and_public_key_export_use_common_source_routes() {
                 "{h}"
             );
             if cmd == "backup" {
-                assert_eq!(b["signWithEd25519"], true);
+                // Endpoint selection consumes the CLI-only selector; SignedBackup rejects unknown fields.
+                assert!(b.get("signWithEd25519").is_none());
                 assert_eq!(b["confirm"], true);
             }
             assert!(b.get("privateKey").is_none());

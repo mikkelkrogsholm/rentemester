@@ -172,5 +172,8 @@
       "needle": "pub async fn call"
     }
   ],
-  "scope": "64 local selected IDs,207 overall. Prior419/18 partitions unchanged. Whole677/all55/J01-J07/finaldesktop/release/cutover/retirement retained."
+  "scope": "64 local selected IDs,207 overall. Prior419/18 partitions unchanged. Whole677/all55/J01-J07/finaldesktop/release/cutover/retirement retained.",
+  "operationCount": 64,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

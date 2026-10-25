@@ -13645,6 +13645,883 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "Original716_SchemaInspection": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "current",
+            "pending"
+          ]
+        },
+        "currentVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requiredVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "checksum": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "checksum"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "status",
+        "currentVersion",
+        "requiredVersion",
+        "pending"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_Views": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "affectedNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "catalogueDigest": {
+          "type": "string"
+        },
+        "actualDigest": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "affectedNames",
+        "catalogueDigest",
+        "actualDigest"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_init_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "init"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--name": {
+              "type": "string"
+            },
+            "--cvr": {
+              "type": "string"
+            },
+            "--address": {
+              "type": "string"
+            },
+            "--postal-code": {
+              "type": "string"
+            },
+            "--city": {
+              "type": "string"
+            },
+            "--payment-terms": {
+              "type": "string"
+            },
+            "--vat-period": {
+              "type": "string"
+            },
+            "--no-vat": {
+              "const": true
+            },
+            "--bank-name": {
+              "type": "string"
+            },
+            "--bank-reg": {
+              "type": "string"
+            },
+            "--bank-account": {
+              "type": "string"
+            },
+            "--iban": {
+              "type": "string"
+            },
+            "--fiscal-year-start-month": {
+              "type": "string"
+            },
+            "--fiscal-year-label-strategy": {
+              "type": "string"
+            },
+            "--runtime-config": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_init_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "companyRoot": {
+          "type": "string"
+        },
+        "ledger": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "string"
+        },
+        "workspaceSlug": {
+          "type": "string"
+        },
+        "runtimeConfig": {
+          "type": "string"
+        },
+        "accountCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        },
+        "vatPeriod": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasPaymentDetails": {
+          "type": "boolean"
+        },
+        "workspaceRegistered": {
+          "const": true
+        }
+      },
+      "required": [
+        "ok",
+        "message",
+        "companyRoot",
+        "ledger",
+        "workspace",
+        "workspaceSlug",
+        "runtimeConfig",
+        "accountCount",
+        "cvr",
+        "fiscalYearStartMonth",
+        "fiscalYearLabelStrategy",
+        "vatPeriod",
+        "hasPaymentDetails",
+        "workspaceRegistered"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_init_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_serve_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "serve"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--workspace": {
+              "type": "string"
+            },
+            "--host": {
+              "type": "string"
+            },
+            "--port": {
+              "type": "string"
+            },
+            "--runtime-config": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--origin": {
+              "type": "string"
+            },
+            "--web-dir": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_serve_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "workspace": {
+          "type": "string"
+        },
+        "dataLocation": {
+          "type": "string"
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "slug",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "mode": {
+          "const": "local-single-company"
+        },
+        "authRequired": {
+          "const": true
+        },
+        "deploymentProfile": {
+          "enum": [
+            "local",
+            "hosted"
+          ]
+        },
+        "browserOpenAttempted": {
+          "type": "boolean"
+        },
+        "stopped": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_serve_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_local_start_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "local start"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--workspace": {
+              "type": "string"
+            },
+            "--company-name": {
+              "type": "string"
+            },
+            "--port": {
+              "type": "string"
+            },
+            "--no-open": {
+              "const": true
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--runtime-config": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_local_start_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "workspace": {
+          "type": "string"
+        },
+        "dataLocation": {
+          "type": "string"
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "slug",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "mode": {
+          "const": "local-single-company"
+        },
+        "authRequired": {
+          "const": true
+        },
+        "deploymentProfile": {
+          "enum": [
+            "local",
+            "hosted"
+          ]
+        },
+        "browserOpenAttempted": {
+          "type": "boolean"
+        },
+        "stopped": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_local_start_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_migrate_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system migrate"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--apply": {
+              "type": "string"
+            },
+            "--server-bin": {
+              "type": "string"
+            },
+            "--config": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_migrate_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "action": {
+          "type": "string"
+        },
+        "wouldMigrate": {
+          "type": "boolean"
+        },
+        "wouldRepair": {
+          "type": "boolean"
+        },
+        "schema_outdated": {
+          "type": "boolean"
+        },
+        "schema": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_SchemaInspection"
+        },
+        "views": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        },
+        "migrated": {
+          "type": "boolean"
+        },
+        "repaired": {
+          "type": "boolean"
+        },
+        "from": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "affectedNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "before": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        },
+        "after": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_migrate_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_repair_schema_views_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system repair-schema-views"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--apply": {
+              "type": "string"
+            },
+            "--reason": {
+              "type": "string"
+            },
+            "--server-bin": {
+              "type": "string"
+            },
+            "--config": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_repair_schema_views_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "action": {
+          "type": "string"
+        },
+        "wouldMigrate": {
+          "type": "boolean"
+        },
+        "wouldRepair": {
+          "type": "boolean"
+        },
+        "schema_outdated": {
+          "type": "boolean"
+        },
+        "schema": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_SchemaInspection"
+        },
+        "views": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        },
+        "migrated": {
+          "type": "boolean"
+        },
+        "repaired": {
+          "type": "boolean"
+        },
+        "from": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "affectedNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "before": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        },
+        "after": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Original716_Views"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_repair_schema_views_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

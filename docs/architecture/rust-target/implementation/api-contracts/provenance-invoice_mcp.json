@@ -159,17 +159,17 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn send("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "impl fmt::Display for Error"
     },
     {
@@ -179,17 +179,17 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn refused("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn query("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -419,5 +419,8 @@
     "rejectedCommit": "3c20fcfd2119b84d286faf46744079470ee44027",
     "diagnosis": "Partition-localRPCclosedmessageunion nowcoversactualselectedinvoiceparseerrors/globalobjectguard; originalrender mediaTypeapplication/json receipt.",
     "newModelAttempt": false
-  }
+  },
+  "operationCount": 21,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

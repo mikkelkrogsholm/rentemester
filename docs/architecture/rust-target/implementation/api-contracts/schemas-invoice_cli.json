@@ -5372,7 +5372,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-client/src/lib.rs",
-                "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+                "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
                 "needle": "serde_json::from_slice(&bytes).map_err"
               }
             ]

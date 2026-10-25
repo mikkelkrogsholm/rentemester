@@ -337,6 +337,12 @@ fn main() -> ExitCode {
         let o = agent_original::execute(&args);
         print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
     }
+    if let Some(args) = operator_original716::transfer::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(operator_original716::transfer::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
     if let Some(args) = operator_original716::bootstrap::prepare(&raw) {
         let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
         if let Some(o) = runtime.block_on(operator_original716::bootstrap::execute(&args)) {

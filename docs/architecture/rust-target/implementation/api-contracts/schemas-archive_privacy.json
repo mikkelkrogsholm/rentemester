@@ -9290,6 +9290,378 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "Original716_retention_status_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "retention status"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--example": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_retention_status_Success": {
+      "$ref": "schemas-archive_privacy.json#/$defs/OriginalDiagnostics118_retention_status_Core"
+    },
+    "Original716_retention_status_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_gdpr_export_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "gdpr export"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--cvr": {
+              "type": "string"
+            },
+            "--subject": {
+              "type": "string"
+            },
+            "--name": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--example": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_gdpr_export_Success": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Subject"
+        },
+        "legalHolds": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Holds"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/Record"
+          },
+          "minItems": 0
+        },
+        "coverage": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Coverage"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "asOf",
+        "subject",
+        "legalHolds",
+        "records",
+        "coverage",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_gdpr_export_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_gdpr_erase_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "gdpr erase"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--cvr": {
+              "type": "string"
+            },
+            "--subject": {
+              "type": "string"
+            },
+            "--name": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--example": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_gdpr_erase_Success": {
+      "$ref": "schemas-archive_privacy.json#/$defs/ErasureCore"
+    },
+    "Original716_gdpr_erase_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

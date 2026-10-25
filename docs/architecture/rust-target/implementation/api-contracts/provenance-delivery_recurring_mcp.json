@@ -78,17 +78,17 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn send("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "fn company_path("
     },
     {
@@ -98,12 +98,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn response("
     },
     {
@@ -123,7 +123,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn document_action"
     },
     {
@@ -248,7 +248,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "pub fn recurring_invoices("
     },
     {
@@ -425,7 +425,35 @@
       "path": "crates/rentemester-storage/src/scheduled_recurring/recovery.rs",
       "sha256": "49062ca8dc46a3317c725a624a5e471618cc569c67b4c1c6a07e2b4b638c8cbf",
       "needle": "struct RestoreConsent"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "pub fn router",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "invoice_send_email",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/original717.rs",
+      "needle": "fn wrap",
+      "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+    },
+    {
+      "path": "crates/rentemester-client/src/original717.rs",
+      "needle": "invoice_send_email",
+      "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
     }
   ],
-  "evidenceScope": "Source reading and existing strict artifact oracle only; no financial/mail/provider/consent/auth/job effects replayed. Existing692/709/711/R44 and accepted HEAD fixture evidence retained at actual scope; not new runtime acceptance. Main owns semantic acceptance and full677."
+  "evidenceScope": "Source reading and existing strict artifact oracle only; no financial/mail/provider/consent/auth/job effects replayed. Existing692/709/711/R44 and accepted HEAD fixture evidence retained at actual scope; not new runtime acceptance. Main owns semantic acceptance and full677.",
+  "operationCount": 26,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

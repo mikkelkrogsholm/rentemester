@@ -7,7 +7,7 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "//! Thin browser adapter over the same owner used for authentication."
     },
     {
@@ -202,7 +202,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "mod mileage_posting;"
     },
     {
@@ -304,6 +304,56 @@
       "path": "crates/rentemester-client/src/portfolio_cashflow.rs",
       "sha256": "3106755fa5166e8bf01d54bcca8194b27b5d8c24b0cbf371d8ca21a548c2f0fc",
       "needle": "//! Canonical current-authority portfolio and imported bank history; no local aggregation."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "needle": "mod agent_suggestions;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/agent_suggestions.rs",
+      "sha256": "cd097088cebfa1db550970a2486f622f8f306f76a12897de1bb4479ecc9b4f61",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-storage/src/exceptions.rs",
+      "sha256": "18b055473d8be41ea14024626a72fe8b951ada58f234869e02d7b84539d85a97",
+      "needle": "pub fn decide_agent_suggestion("
+    },
+    {
+      "path": "crates/rentemester-application/src/exceptions.rs",
+      "sha256": "0d05ddda8a4c07b9c2110f904166eae332695e89a91aa4d26ba963ff5393e1de",
+      "needle": "AgentSuggestions"
+    },
+    {
+      "path": "src/mcp/tools/bookkeeping-workbench.ts",
+      "needle": "bookkeeping_workbench",
+      "sha256": "2a315e160cf6837ddf3152b90559b33a478a3d6329d2b6d3cd15a4196b243154"
+    },
+    {
+      "path": "crates/rentemester-client/src/bookkeeping_batch.rs",
+      "needle": "bookkeeping_workbench",
+      "sha256": "39eb455ad2fc040151db26200e37832a47adb12532c94a232e9564dfecac6a46"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bookkeeping_batch.rs",
+      "needle": "pub async fn call_original",
+      "sha256": "647d98f6ec8e10938f015140dbaaf589eb09b19c534dab46494fe15819668c29"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "needle": "async fn negotiate",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "needle": "assert_original_workspace89",
+      "sha256": "9e7e163c1c77d05f960763b92a535965100e6e9e26a77c5ce30922d91da73935"
     }
   ],
   "acceptance": "Independent strict oracle is structural evidence only; actual source/diff acceptance belongs to parent. Prior1285 operations/34 partitions unchanged; full55/J01-J07/finaldesktop/release/cutover/retirement retained.",
@@ -313,5 +363,8 @@
     "graphify": "graphify query before source; graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\" completed:34009 nodes/107681 edges, output outside owned code.",
     "notRun": "No Cargo, server, browser, network, provider, SMTP/IMAP, posting, scanner, job, authentication or runtime effects."
   },
-  "leadReviewRepair": "Lead source review repaired five native batch CLI success wrappers; original persist CLI now excludes SDK-removed dryRun without changing HTTP/native/dry-run. Fiscal-years retains human/service success branches and fiscal/original-exception failures include exact required service stages, while original normal success/business422 stay flat."
+  "leadReviewRepair": "Lead source review repaired five native batch CLI success wrappers; original persist CLI now excludes SDK-removed dryRun without changing HTTP/native/dry-run. Fiscal-years retains human/service success branches and fiscal/original-exception failures include exact required service stages, while original normal success/business422 stay flat.",
+  "operationCount": 63,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

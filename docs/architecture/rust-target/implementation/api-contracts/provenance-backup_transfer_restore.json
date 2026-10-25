@@ -3,7 +3,7 @@
   "partition": "backup_transfer_restore",
   "status": "specified",
   "unresolved": [],
-  "operationCount": 69,
+  "operationCount": 113,
   "sourceRefs": [
     {
       "path": "crates/rentemester-server/src/product_http/backup_governance.rs",
@@ -12,7 +12,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -137,7 +137,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "match run(args)"
     },
     {
@@ -259,8 +259,239 @@
       "path": "crates/rentemester-mcp/src/backup_governance.rs",
       "sha256": "d320c82c8d9f7b3f2f7b47a2a3536b6a7cc90dfc52de8b2d8d312e2bea8ad952",
       "needle": "pub fn tools()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "pub fn router",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_confirm_placement",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-application/src/backup_original122/original717.rs",
+      "needle": "pub",
+      "sha256": "b88d86a8d38ae7f63c7f4801c17439a022b506dae378310d8f2c82c63be4a4b2"
+    },
+    {
+      "path": "crates/rentemester-application/src/backup_registration/original717.rs",
+      "needle": "pub",
+      "sha256": "288ecc5c2eeabfd0a2053438fe24d21b097098f284da2071a90fc57e5824c036"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/backup_original122.rs",
+      "needle": "fn wrap",
+      "sha256": "e606734d28e36bcd6ae0330aaa038018812786169b8ae355d137caef0e27bb79"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_destination_add",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_destination_list",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_destination_remove",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_governance",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_status",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "src/mcp/tools/system/backup.ts",
+      "needle": "system_backup_status",
+      "sha256": "9d9be7c8ea40bf751151b1da9319ea47429ae41e8f3d299f4fa432aec5f786ff"
+    },
+    {
+      "path": "crates/rentemester-application/src/backup_original122.rs",
+      "needle": "pub",
+      "sha256": "7953754ccc5e74ce1894e337b72ec9638e81b128af19d106f080f055ebe7f84e"
+    },
+    {
+      "path": "crates/rentemester-host/src/backup_original122.rs",
+      "needle": "pub",
+      "sha256": "bc33911a2ad45754a5561b69698506c4154bd94995de824593f03fcd76472b4f"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/backup_original122.rs",
+      "needle": "fn",
+      "sha256": "f13dd15b14823b2f359e09b8e4d0af9de7316ec2977764ba09fc29e7c54cbad8"
+    },
+    {
+      "path": "crates/rentemester-client/src/backup_original122.rs",
+      "needle": "system_backup_status_original122",
+      "sha256": "c6a98c1a08448b2bb8513fd4deb8534acb3fb5b0f4275a795d63f0cdf10e2a38"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/backup_original122.rs",
+      "needle": "system_backup_status",
+      "sha256": "e606734d28e36bcd6ae0330aaa038018812786169b8ae355d137caef0e27bb79"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "/system-backup-status",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "needle": "/system-backup-status",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650"
+    },
+    {
+      "path": "src/mcp/tools/system/backup-lock.ts",
+      "needle": "system_backup_lock",
+      "sha256": "225656f068daf2ea5f7926bd25e9d16e5f53cf000a0433c9df0b1cb38b8bda59"
+    },
+    {
+      "path": "crates/rentemester-client/src/backup_original122.rs",
+      "needle": "system_backup_lock_original122",
+      "sha256": "c6a98c1a08448b2bb8513fd4deb8534acb3fb5b0f4275a795d63f0cdf10e2a38"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/backup_original122.rs",
+      "needle": "system_backup_lock",
+      "sha256": "e606734d28e36bcd6ae0330aaa038018812786169b8ae355d137caef0e27bb79"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "/system-backup-lock",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "needle": "/system-backup-lock",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_archive",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_place",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_backup_verify_remote_placement",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "system_restore_backup",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-cli/src/system_original716/mod.rs",
+      "needle": "pub async fn execute",
+      "sha256": "32be8d1b976fd31618672d91d1d23deda1f065e2d57cc018b8b2491898aa3225"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "needle": "fn main(",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "needle": "pub fn value(",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe"
+    },
+    {
+      "path": "crates/rentemester-cli/src/system_original716/presentation.rs",
+      "needle": "pub(super) fn output",
+      "sha256": "97dcfbff32255238754fe9c95b06dcae4516a2c7a0e702a3f742479d2aea238d"
+    },
+    {
+      "path": "crates/rentemester-client/src/original717.rs",
+      "needle": "pub async fn original717(",
+      "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
+    },
+    {
+      "path": "src/cli/system.ts",
+      "needle": "export function register",
+      "sha256": "0c8a4265d7f12e687ccf7fb58a39f0e5c2cd881e257f30ec2cc9830746c532b7"
+    },
+    {
+      "path": "crates/rentemester-cli/src/operator_original716/custody.rs",
+      "needle": "pub async fn execute",
+      "sha256": "64dfb7b87ac52a3797b64f5f1bd0816fe1f817acd7855a78bb6566058c969058"
+    },
+    {
+      "path": "crates/rentemester-client/src/original716/custody.rs",
+      "needle": "pub async fn original716_custody",
+      "sha256": "d0a98f5c962ca57ee4982af36f81d76ada833179157d071e8a6c1cee98b9bdf3"
+    },
+    {
+      "path": "crates/rentemester-cli/src/operator_original716/transfer.rs",
+      "needle": "pub async fn execute",
+      "sha256": "2b4e80e24b66f1d6dc728f95ab410d2684eb0e33d4948bcf1ec18b3605c31e73"
+    },
+    {
+      "path": "crates/rentemester-client/src/original716/transfer.rs",
+      "needle": "pub fn execute",
+      "sha256": "4a9e97a4afd1426f1b0c84c44446bb0bdb35281be7f64185bd1d36e22a694490"
+    },
+    {
+      "path": "crates/rentemester-server/src/original716_cli/transfer.rs",
+      "needle": "pub fn execute",
+      "sha256": "5b569ce55aa7dcb735c3ec3108cf487a2a695d05d7c59815305cb926fbe1c2cc"
+    },
+    {
+      "path": "src/cli/workspace-snapshot.ts",
+      "needle": "export function register",
+      "sha256": "0b01b2b190c634a4833a8d56955aa281203fb0a5743a54764fa7b830f31321e4"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/original716/custody.rs",
+      "needle": "async fn",
+      "sha256": "3c8e3f2ec89c4b01cc4904cd7d8a5907b2d437de5798a041c4c37ad772c12a9b"
     }
   ],
   "method": "Graphify query first then actual Rust parser/adaptor/guard/producer/storage source; no effect replay. Strict oracle validates finite references, source bytes and coverage; semantic acceptance remains main-owned.",
-  "leadReviewRepair": "Lead source review: admitted destination/remote403 failures retain exact engine message plus required outcomeUnknown:false, separate from proof failures. Six documents::outcome-backed operations include503 outcome_unknown, including their bodyless HEAD projections. No restore/backup/authority stage weakened or effect replayed."
+  "leadReviewRepair": "Lead source review: admitted destination/remote403 failures retain exact engine message plus required outcomeUnknown:false, separate from proof failures. Six documents::outcome-backed operations include503 outcome_unknown, including their bodyless HEAD projections. No restore/backup/authority stage weakened or effect replayed.",
+  "original716AddedIdentities": [
+    "cli:system backup",
+    "cli:system backup-status",
+    "cli:system restore-backup",
+    "cli:system backup-archive",
+    "cli:system backup-governance",
+    "cli:system backup-destinations",
+    "cli:system backup-add-destination",
+    "cli:system backup-remove-destination",
+    "cli:system backup-place",
+    "cli:system backup-confirm-placement",
+    "cli:system backup-verify-remote-placement",
+    "cli:system backup-lock",
+    "cli:system backup-guide",
+    "cli:system export-public-key",
+    "cli:system verify-backup-signature",
+    "cli:system rotate-backup-keypair",
+    "cli:workspace snapshot",
+    "cli:workspace restore"
+  ],
+  "currentCliIdentityCount": 265
 }

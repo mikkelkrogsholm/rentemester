@@ -46,7 +46,7 @@ fn source_usage_refusals_precede_credentials_and_files() {
 fn private_cookie() -> std::path::PathBuf {
     use std::os::unix::fs::OpenOptionsExt;
     static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-    let p = std::env::temp_dir().join(format!(
+    let p = std::env::temp_dir().canonicalize().unwrap().join(format!(
         "remaining716-{}-{}",
         std::process::id(),
         NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)

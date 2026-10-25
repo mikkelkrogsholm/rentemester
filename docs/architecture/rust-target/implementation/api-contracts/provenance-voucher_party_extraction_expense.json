@@ -6,7 +6,7 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "fn main()"
     },
     {
@@ -71,7 +71,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -121,7 +121,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "get(documents::expense)"
     },
     {
@@ -206,7 +206,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "pub"
     },
     {
@@ -266,7 +266,7 @@
     },
     {
       "path": "protocol/http-v1.json",
-      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
       "needle": "/documents/book-expense"
     }
   ],
@@ -277,5 +277,7 @@
     "native CLI false-core refusal",
     "positive i64 raw HTTP event IDs distinct from safe originalSDK",
     "bounded Session IDs/null framing and selected RPCmessage reachability"
-  ]
+  ],
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

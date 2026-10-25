@@ -29,7 +29,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -149,7 +149,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "match run(args)"
     },
     {
@@ -246,5 +246,7 @@
   "checks": {
     "strictOracle": "PASS exactselected bank_reconciliation_corrections 41 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
     "runtime": "Not executed: source-only mandate. No HEAD probes, Cargo, server/browser, network/provider/financial effects."
-  }
+  },
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

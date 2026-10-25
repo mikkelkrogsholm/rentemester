@@ -39,7 +39,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "pub fn mileage("
     },
     {
@@ -54,12 +54,12 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn document_action<T>"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -159,7 +159,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "let raw = if raw.first().is_some_and(|s| mileage_posting::accepts(s))"
     },
     {
@@ -188,5 +188,7 @@
       "needle": "let valid_id = id.is_some_and"
     }
   ],
-  "retainedScope": "Prior626 operations22 partitions unchanged; all55/J01-J07/finaldesktop/release/cutover/retirement retained; main owns integration/acceptance."
+  "retainedScope": "Prior626 operations22 partitions unchanged; all55/J01-J07/finaldesktop/release/cutover/retirement retained; main owns integration/acceptance.",
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

@@ -288,3 +288,20 @@ The historical Bun CLI is available only by explicit `RENTEMESTER_LEGACY_CLI=1`.
 Private bootstrap and stopped-server schema operations retain common Rust Owner
 admission and private operator allowlists; command actor/path assertions do not
 grant authority. Uncertain effects must be reconciled, not automatically retried.
+
+## Native Rust authority and compatibility (#716)
+
+The installed standard CLI selects the existing Rust binary; it does not compile
+or silently invoke Bun. The original seven-phase `agent run` is an orchestrator
+in the same common Rust Owner/server, not a second accounting engine. In this
+profile the current authenticated human/service principal is the authority;
+source `agent:rentemester-bookkeeper` metadata is not a credential or a grant.
+Caller actor assertions must match that actual principal. Existing company,
+period, VAT, immutable-original, backup and transfer fences still apply.
+
+Each dependent mutation is sent once. A failed later phase does not roll back
+previous committed intake/bookkeeping. Unknown outcomes require canonical
+readback and deliberate reconciliation, never automatic mutation retry. Current
+CLI discovery is source metadata for 265 identities, not whole-product acceptance.
+Provider availability, qualified Linux broker environments, live migration and
+final installed desktop acceptance are not established by syntax/declaration tests.

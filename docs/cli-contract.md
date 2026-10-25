@@ -398,3 +398,47 @@ benytter Bun og `src/cli.ts`; det er ikke en Rust-fejlgendannelse eller migratio
 Private operatorhandlinger anvender samme Rust-server og Owner, aldrig en ekstra
 motor. `--actor` er kun en assertion mod aktuelle credentials; schema/bootstrap
 kræver den private serverkonfigurations tilladte operator. Paths giver ikke adgang.
+
+### Original #716: operator-, backup- og overførselsprofiler
+
+De 265 aktuelle originale kommandoidentiteter findes i
+`crates/rentemester-engine/fixtures/current-cli716.json`. Dette er kildemetadata,
+ikke en tilladelse eller en påstand om fuld accept. De konkrete input-, output-,
+fejl- og renderingkontrakter findes i de 38 `api-contracts/`-partitioner.
+
+`init`, `serve`, `local start` og `workspace-access bootstrap-first` kalder det
+installerede søskendeprogram `rentemester-server` én gang; en eksplicit absolut
+`RENTEMESTER_SERVER_BIN` kan vælge et eksisterende program. De starter ikke Bun,
+Cargo eller en anden motor. Bootstrap bruger den private operatorpolitik og en
+privat password-fil; caller actor/path erstatter ikke denne politik. Schema
+`system migrate|repair-schema-views` inspicerer en beskyttet kopi uden mutation;
+kun `--apply yes` med eksplicit `--server-bin` og `--config` bruger den stoppede
+fælles servers namespace-lease. Der findes ingen HTTP-schema-write-genvej.
+
+`workspace snapshot|restore` kræver eksplicit `--config` og absolut
+`--server-bin`; transporten er en enkelt privat proces, ikke en ny HTTP-route.
+Standardformatet `--artifact-format source-tar-v1` er den originale TAR-profil
+med manifest, oprindelige selskabsfiler og separat adgangsgenopretningsplan.
+Snapshot kræver aktuelle cookie-credentials og tilladt operator; restore kræver
+uafhængigt betroede selskabsnøgler (`--trust-keys`), frisk eksakt konfigureret
+mål og `--source-unavailable yes`. Indlejrede nøgler giver ikke tillid.
+`native-v1` er et **eksplicit andet format**, `rentemester-native-backup/1`,
+med `rentemester-cli-workspace/2`-receipt. Det bruger konfigureret signing key
+og `--trusted-backup-key`, aldrig implicit TAR-konvertering eller fallback.
+`--at` og `--trust-keys` tilhører kun source-TAR-profilen. Ikke-understøttede
+historiske schemas eller ikke-understøttede forretningssektioner kræver en
+separat eksplicit versioneret migration; de må ikke droppes for at få restore
+igennem. Restore genskaber ikke sessioner eller provider-credentials: næste trin
+er `bootstrap-owner-then-reinvite`.
+
+Originale company-backups/HMAC/Ed25519 og native whole-workspace-signaturer er
+forskellige kompatibilitetsprofiler. Offsite-attestation er ikke verificeret
+placering, provider-approval eller en udført recovery. Ingen automatisk retry ved
+usikkert svar, delvis filpublicering eller ukendt commit; behold receipt, snapshot,
+sidecar og privat stage til afstemning. Remote paths giver aldrig lokal adgang.
+
+De beskyttede namespace-, custody- og restoreprofiler kræver de faktisk
+kvalificerede Unix/Linux-miljøer og korrekt UID/filmode/descriptor-admission.
+En syntetisk macOS-test er ikke bevis for Linux broker/cgroup eller et ægte
+provider-/hosted-miljø. Et ikke-kvalificeret miljø afvises eksplicit; der findes
+ingen skjult TS-fallback. Ingen live migration eller cutover er accepteret her.

@@ -80,7 +80,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "fn main()"
     },
     {
@@ -132,9 +132,179 @@
       "path": "crates/rentemester-mcp/src/company_knowledge.rs",
       "sha256": "598e6b4e7c4ff92932d2a6fb08ac5da7e347b7ae54cbfa0239b94afc2b34651f",
       "needle": "pub fn accepts("
+    },
+    {
+      "path": "crates/rentemester-storage/src/parties.rs",
+      "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
+      "needle": "pub fn merge_proposal"
+    },
+    {
+      "path": "crates/rentemester-client/src/parties.rs",
+      "sha256": "27ff59f193f28f64df061efce99799ea96946a08d43e5d319955f69d1021fb29",
+      "needle": "pub async fn mutate_workspace_party"
+    },
+    {
+      "path": "crates/rentemester-cli/src/party_original.rs",
+      "sha256": "fe40446e04d080297395b5eb8da50fbc6c50f8eb464a83b4e982895f9317a382",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "needle": "party_original::preflight"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "8aaf9f3194b723c0bf06dae7b1f367f45a7700190f1a337b113fb24e4f0d293d",
+      "needle": "let registry"
+    },
+    {
+      "path": "src/cli-meta/workspace-registry-specs.ts",
+      "sha256": "0d9ca954bbc4821b27b6131493cbbf6e57d1ed711aa3aebff56e01c40046fff0",
+      "needle": "key:\"party approve-merge\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"party\", \"approve-merge\""
+    },
+    {
+      "path": "src/cli-meta/workspace-registry-specs.ts",
+      "sha256": "0d9ca954bbc4821b27b6131493cbbf6e57d1ed711aa3aebff56e01c40046fff0",
+      "needle": "key:\"party propose-merge\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"party\", \"propose-merge\""
+    },
+    {
+      "path": "crates/rentemester-cli/src/party_original.rs",
+      "sha256": "fe40446e04d080297395b5eb8da50fbc6c50f8eb464a83b4e982895f9317a382",
+      "needle": "fn lifecycle"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
+      "needle": "party create|search|inspect|link-role"
+    },
+    {
+      "path": "crates/rentemester-cli/tests/party_lifecycle_original.rs",
+      "sha256": "6dde86857a613d77157d8c10c185e872bd347458dbbd5a9b5b51fc1e77ccb59a",
+      "needle": "fn original_absent_null_and_empty_party_id_are_allocated_only_by_server"
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"party\", \"create\""
+    },
+    {
+      "path": "src/cli-meta/workspace-registry-specs.ts",
+      "sha256": "0d9ca954bbc4821b27b6131493cbbf6e57d1ed711aa3aebff56e01c40046fff0",
+      "needle": "key:\"party create\""
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "d0597301ec891c87bf05699d733d5f55707291de6157facab205f5e7fb147cfd",
+      "needle": "pub fn"
+    },
+    {
+      "path": "crates/rentemester-cli/src/workspace_inbox_original.rs",
+      "sha256": "a78251874a8420aaef1b976713615f4586469bdbd632e8de8ec8fbec55a057e5",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "needle": "workspace_inbox_original::preflight"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe",
+      "needle": "fn migrated"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
+      "needle": "pub fn help"
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"workspace-inbox\""
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "needle": ".route(\"/api/companies/{slug}/workspace-parties/create-identity\",get(parties::handle).post(parties::handle))"
+    },
+    {
+      "path": "crates/rentemester-storage/src/parties.rs",
+      "sha256": "2a5c7c668c38fb8339530f8f3a51fb6f3a4f7781f2523895d165aca6dfff213c",
+      "needle": "pub fn create_identity"
+    },
+    {
+      "path": "crates/rentemester-application/src/parties.rs",
+      "sha256": "db8f11d0ab6653b2295fb410d0ef8ad6b5e9eb5542af0d7598425f05941883d0",
+      "needle": "Action::CreateIdentity"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/parties.rs",
+      "sha256": "9f4932e8016914bc455b815b09cbaca273f7bf78d112f447c9714ce6be595c62",
+      "needle": "Command::CreateIdentity"
+    },
+    {
+      "path": "crates/rentemester-client/src/parties.rs",
+      "sha256": "27ff59f193f28f64df061efce99799ea96946a08d43e5d319955f69d1021fb29",
+      "needle": "PartyMutation::CreateIdentity"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "needle": "workspace-parties/{id}/approve-merge"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "needle": "workspace-parties/{id}/propose-merge"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/knowledge_ownership_original717.rs",
+      "sha256": "6d62a20fb804f5191df8c4d1179c2bbf102ac4fda9997fec102667d94301c444",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/knowledge_ownership_original717.rs",
+      "sha256": "6ed6a598144afd1c5a0b6dfb17fec3eaeb0bacec76ebf0fecaeabb4f15a1fdc7",
+      "needle": "#[test]"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "2ca78085abe240400901f6807af7f568f530ed6b37bec6bdff701498d96e2a39",
+      "needle": "pub fn sha256_bytes"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/inbox_original717.rs",
+      "sha256": "aa052651606ffe451d403cc4d40e7706fe27a5a95c72931ae57c4a55f56c8b07",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/inbox_original717.rs",
+      "sha256": "c85040d53bee6b068540bc6cd26d19d8452d3cc8b19c44351521a8ed50c5c1b0",
+      "needle": "#[test]"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/registry_original717.rs",
+      "sha256": "8feaf49a76785721282c121e827d9da55f53fcdd84243a74d119c5cc31e0c408",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/registry_original717.rs",
+      "sha256": "4bcf311c641b656cf6d67e0c6c116d37ac97a30ff13bc502116e54a8d3e78472",
+      "needle": "#[test]"
     }
   ],
-  "operationCount": 61,
+  "operationCount": 98,
   "validation": {
     "command": "python3 /tmp/r55-677-oracle.py workspace_knowledge",
     "result": "PASS exactselected workspace_knowledge 61 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
@@ -1912,5 +2082,7 @@
     "currentUniverse": "1560=642HTTP493CLI425MCP",
     "helpChanges": "OriginalPartyHelp now6; old rootdescriptor unchanged plus one additive4commanddescriptor",
     "scope": "Original CLI identity lifecycle only; whole716originalkeys compatibility and all55finalscope remain"
-  }
+  },
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

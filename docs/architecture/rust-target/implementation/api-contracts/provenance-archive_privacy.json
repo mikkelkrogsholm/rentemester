@@ -17,7 +17,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -67,7 +67,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn document_action"
     },
     {
@@ -87,7 +87,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "fn main()"
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -204,8 +204,145 @@
       "path": "src/core/schema.sql",
       "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b",
       "needle": "CREATE TABLE IF NOT EXISTS audit_log"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "pub fn router",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "gdpr_audit_log",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/privacy.rs",
+      "needle": "pub async fn original717_call",
+      "sha256": "96b581ff6e79a18cb43beb11fe8c8bf0d219dac1ebdbeedae051d5af8aa49121"
+    },
+    {
+      "path": "crates/rentemester-storage/src/gdpr/original717.rs",
+      "needle": "pub",
+      "sha256": "65f11ff38a71f5b6a1b3eb0854dbfacd9eb677ab5b25efec1d578b3dcc398800"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "gdpr_discover",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "gdpr_export",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/archives_original89.rs",
+      "sha256": "0fd71cdb8efe207e20ef80a8430a3a0dbc2af308b81aaed91e4ef471f05b1e74",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-client/src/archive_original.rs",
+      "sha256": "213f86cec665508c6faa96d5420d506f8ae6ee658ddd9e470c4cd311bd14923b",
+      "needle": "pub async fn query_original_archive("
+    },
+    {
+      "path": "src/mcp/tools/retention.ts",
+      "needle": "retention_status",
+      "sha256": "ef94228c2fe321a831fbf51e1603c776a12453c3421f3a97c7b239b4ecc2b845"
+    },
+    {
+      "path": "crates/rentemester-application/src/diagnostics_original118.rs",
+      "needle": "pub",
+      "sha256": "e483e6e116426883367739d5a1d1eec52e5951fcc2bae267bf0271588a7fa141"
+    },
+    {
+      "path": "crates/rentemester-host/src/diagnostics_original118.rs",
+      "needle": "pub",
+      "sha256": "149c85099b47041afde38fde44edbdbc30b176bd03c308bfd742c6b6e101c439"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/diagnostics_original118.rs",
+      "needle": "fn",
+      "sha256": "68735732f06e205b048f9bc330fbf926f896ebe506e664237904dba963582144"
+    },
+    {
+      "path": "crates/rentemester-client/src/diagnostics_original118.rs",
+      "needle": "retention_status_original118",
+      "sha256": "f07746320cbcec3bd952f1eaf0a7b5f791583870ed1e853896fcf9580e3f7ac7"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/diagnostics_original118.rs",
+      "needle": "retention_status",
+      "sha256": "bd999911d1791acca41f029bb20698b42832329bc9559a1b8b0b255ec7837084"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "/retention-status",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "needle": "/retention-status",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650"
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "needle": "async fn negotiate",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remaining_original716/mod.rs",
+      "needle": "pub async fn execute",
+      "sha256": "7898ba1bb536dfa1b3c68a448a528d33d5056b973904986941ff9eb66471ed2b"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "needle": "fn main(",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "needle": "pub fn value(",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remaining_original716/presentation.rs",
+      "needle": "pub(super) fn render",
+      "sha256": "9f457b0cc1ad4ba57ffcc111d73133408b44fa96791d239d8395ce9879239ce1"
+    },
+    {
+      "path": "crates/rentemester-client/src/original716/report.rs",
+      "needle": "pub async fn original716_remaining",
+      "sha256": "6b91ef67101583552a51e2cf645825cc39f9d72a8a051745c13cb18bfc2f5712"
+    },
+    {
+      "path": "src/cli/retention.ts",
+      "needle": "export function register",
+      "sha256": "7a02fec11f58a68be7190620fb1da9da6e5d825fd49af0baee9750e24fdfd25d"
+    },
+    {
+      "path": "src/cli/gdpr.ts",
+      "needle": "export function register",
+      "sha256": "5a1ffc7accfc276cb80f3807607a58e1b2f6e9fbb725344b8a82369cc42ca574"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/original716/report.rs",
+      "needle": "async fn",
+      "sha256": "9eab16d999f05660b9ebc38d10b404d794de6cc3604ac7acc24a27af330aed87"
     }
   ],
   "operations": 48,
-  "leadReviewRepair": "Raw erasure positional asOf parser string/null with business422, distinct namedobject400; source-reviewed scoped one-slot correction."
+  "leadReviewRepair": "Raw erasure positional asOf parser string/null with business422, distinct namedobject400; source-reviewed scoped one-slot correction.",
+  "operationCount": 63,
+  "original716AddedIdentities": [
+    "cli:retention status",
+    "cli:gdpr export",
+    "cli:gdpr erase"
+  ],
+  "currentCliIdentityCount": 265
 }

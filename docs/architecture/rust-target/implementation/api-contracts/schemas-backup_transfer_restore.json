@@ -30484,6 +30484,3681 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "Original716_system_backup_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--sign-with-ed25519": {
+              "const": true
+            },
+            "--archive": {
+              "const": true
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_Success": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "backupDir": {
+          "type": "string"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "dbSnapshotPath": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archivePath": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "sha256Path": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "const": []
+            }
+          },
+          "required": [
+            "backupId",
+            "archivePath",
+            "archiveSha256",
+            "sha256Path",
+            "archiveSizeBytes",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "backupId",
+        "backupDir",
+        "manifestPath",
+        "dbSnapshotPath",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_status_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-status"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_status_Success": {
+      "type": "object",
+      "properties": {
+        "latestBackupAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latestBackupId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "backupDue": {
+          "type": "boolean"
+        },
+        "hasActivitySinceBackup": {
+          "type": "boolean"
+        },
+        "daysSinceLatestBackup": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "requiredBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checkedAt": {
+          "type": "string"
+        },
+        "backupsFound": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "latestJournalEntryAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestDocumentAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBankImportAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "latestJournalEntryAt",
+            "latestDocumentAt",
+            "latestBankImportAt"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "latestBackupAt",
+        "latestBackupId",
+        "backupDue",
+        "hasActivitySinceBackup",
+        "daysSinceLatestBackup",
+        "requiredBy",
+        "checkedAt",
+        "backupsFound",
+        "evidence",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_status_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_restore_backup_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system restore-backup"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--backup-dir": {
+              "type": "string"
+            },
+            "--target-company": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--verify-key": {
+              "type": "string"
+            },
+            "--public-key": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_restore_backup_Success": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "restoredAt": {
+          "type": "string"
+        },
+        "targetCompanyRoot": {
+          "type": "string"
+        },
+        "restoredDbPath": {
+          "type": "string"
+        },
+        "restoredFiles": {
+          "type": "object",
+          "properties": {
+            "documentsOriginals": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invoicesIssued": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "config": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "documentsOriginals",
+            "invoicesIssued",
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "backupId",
+        "restoredAt",
+        "targetCompanyRoot",
+        "restoredDbPath",
+        "restoredFiles",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_restore_backup_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_archive_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-archive"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--backup-id": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_archive_Success": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "archivePath": {
+          "type": "string"
+        },
+        "archiveSha256": {
+          "type": "string"
+        },
+        "sha256Path": {
+          "type": "string"
+        },
+        "archiveSizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "backupId",
+        "archivePath",
+        "archiveSha256",
+        "sha256Path",
+        "archiveSizeBytes",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_archive_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_governance_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-governance"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_governance_Success": {
+      "type": "object",
+      "properties": {
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "latestBackupAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBackupId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "hasActivitySinceBackup": {
+              "type": "boolean"
+            },
+            "daysSinceLatestBackup": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "requiredBy": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "backupsFound": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "latestJournalEntryAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestDocumentAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestBankImportAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "latestJournalEntryAt",
+                "latestDocumentAt",
+                "latestBankImportAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors",
+            "latestBackupAt",
+            "latestBackupId",
+            "backupDue",
+            "hasActivitySinceBackup",
+            "daysSinceLatestBackup",
+            "requiredBy",
+            "checkedAt",
+            "backupsFound",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        "lock": {
+          "type": "object",
+          "properties": {
+            "enforced": {
+              "type": "boolean"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "graceDays": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "latestBackupAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "daysSinceLatestBackup": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "lockAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "enforced",
+            "locked",
+            "backupDue",
+            "graceDays",
+            "latestBackupAt",
+            "daysSinceLatestBackup",
+            "lockAt",
+            "checkedAt",
+            "reason",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "destinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "compliantDestinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hasCompliantDestination": {
+          "type": "boolean"
+        },
+        "latestBackupPlacedOffsite": {
+          "type": "boolean"
+        },
+        "latestBackupPlacementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkedAt": {
+          "type": "string"
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "local-folder",
+                  "dropbox",
+                  "google-drive",
+                  "ssh",
+                  "other"
+                ]
+              },
+              "location": {
+                "type": "string"
+              },
+              "nonRelatedParty": {
+                "type": "boolean"
+              },
+              "regionAttestation": {
+                "type": "object",
+                "properties": {
+                  "inEeaOrEu": {
+                    "type": "boolean"
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "attestedBy": {
+                    "type": "string"
+                  },
+                  "attestedAt": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "inEeaOrEu",
+                  "country",
+                  "attestedBy",
+                  "attestedAt",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              "itSecurityAttestation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "meetsRecognisedStandards": {
+                        "type": "boolean"
+                      },
+                      "attestedBy": {
+                        "type": "string"
+                      },
+                      "attestedAt": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "meetsRecognisedStandards",
+                      "attestedBy",
+                      "attestedAt",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "createdBy": {
+                "type": "string"
+              },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "backupId": {
+                          "type": "string"
+                        },
+                        "archiveSha256": {
+                          "type": "string"
+                        },
+                        "placedAt": {
+                          "type": "string"
+                        },
+                        "actor": {
+                          "type": "string"
+                        },
+                        "archiveSizeBytes": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "actorKind": {
+                          "enum": [
+                            "human",
+                            "agent"
+                          ]
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "verifyMethod": {
+                          "enum": [
+                            "declared",
+                            "sha256-reread",
+                            "remote-provider"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "remoteEvidence": {
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "const": "google-drive"
+                            },
+                            "objectId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "parentId": {
+                              "type": "string"
+                            },
+                            "checksumSha256": {
+                              "type": "string"
+                            },
+                            "metadataObservedAt": {
+                              "type": "string"
+                            },
+                            "verifiedAt": {
+                              "type": "string"
+                            },
+                            "sizeBytes": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "objectId",
+                            "name",
+                            "parentId",
+                            "checksumSha256",
+                            "metadataObservedAt",
+                            "verifiedAt",
+                            "sizeBytes"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "backupId",
+                        "archiveSha256",
+                        "placedAt",
+                        "actor",
+                        "archiveSizeBytes",
+                        "actorKind",
+                        "verified",
+                        "verifyMethod",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "kind",
+              "location",
+              "nonRelatedParty",
+              "regionAttestation",
+              "itSecurityAttestation",
+              "createdAt",
+              "createdBy",
+              "placements"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "compliance",
+        "lock",
+        "destinationCount",
+        "compliantDestinationCount",
+        "hasCompliantDestination",
+        "latestBackupPlacedOffsite",
+        "latestBackupPlacementCount",
+        "checkedAt",
+        "destinations",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_governance_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_destinations_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-destinations"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_destinations_Success": {
+      "type": "object",
+      "properties": {
+        "destinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "local-folder",
+                  "dropbox",
+                  "google-drive",
+                  "ssh",
+                  "other"
+                ]
+              },
+              "location": {
+                "type": "string"
+              },
+              "nonRelatedParty": {
+                "type": "boolean"
+              },
+              "regionAttestation": {
+                "type": "object",
+                "properties": {
+                  "inEeaOrEu": {
+                    "type": "boolean"
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "attestedBy": {
+                    "type": "string"
+                  },
+                  "attestedAt": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "inEeaOrEu",
+                  "country",
+                  "attestedBy",
+                  "attestedAt",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              "itSecurityAttestation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "meetsRecognisedStandards": {
+                        "type": "boolean"
+                      },
+                      "attestedBy": {
+                        "type": "string"
+                      },
+                      "attestedAt": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "meetsRecognisedStandards",
+                      "attestedBy",
+                      "attestedAt",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "createdBy": {
+                "type": "string"
+              },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "backupId": {
+                          "type": "string"
+                        },
+                        "archiveSha256": {
+                          "type": "string"
+                        },
+                        "placedAt": {
+                          "type": "string"
+                        },
+                        "actor": {
+                          "type": "string"
+                        },
+                        "archiveSizeBytes": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "actorKind": {
+                          "enum": [
+                            "human",
+                            "agent"
+                          ]
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "verifyMethod": {
+                          "enum": [
+                            "declared",
+                            "sha256-reread",
+                            "remote-provider"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "remoteEvidence": {
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "const": "google-drive"
+                            },
+                            "objectId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "parentId": {
+                              "type": "string"
+                            },
+                            "checksumSha256": {
+                              "type": "string"
+                            },
+                            "metadataObservedAt": {
+                              "type": "string"
+                            },
+                            "verifiedAt": {
+                              "type": "string"
+                            },
+                            "sizeBytes": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "objectId",
+                            "name",
+                            "parentId",
+                            "checksumSha256",
+                            "metadataObservedAt",
+                            "verifiedAt",
+                            "sizeBytes"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "backupId",
+                        "archiveSha256",
+                        "placedAt",
+                        "actor",
+                        "archiveSizeBytes",
+                        "actorKind",
+                        "verified",
+                        "verifyMethod",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "kind",
+              "location",
+              "nonRelatedParty",
+              "regionAttestation",
+              "itSecurityAttestation",
+              "createdAt",
+              "createdBy",
+              "placements"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destinationCount",
+        "destinations",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_destinations_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_add_destination_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-add-destination"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--label": {
+              "type": "string"
+            },
+            "--kind": {
+              "type": "string"
+            },
+            "--location": {
+              "type": "string"
+            },
+            "--region-eu": {
+              "type": "string"
+            },
+            "--attested-by": {
+              "type": "string"
+            },
+            "--region-country": {
+              "type": "string"
+            },
+            "--region-note": {
+              "type": "string"
+            },
+            "--non-related": {
+              "type": "string"
+            },
+            "--it-security": {
+              "type": "string"
+            },
+            "--it-security-note": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_add_destination_Success": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "local-folder",
+                "dropbox",
+                "google-drive",
+                "ssh",
+                "other"
+              ]
+            },
+            "location": {
+              "type": "string"
+            },
+            "nonRelatedParty": {
+              "type": "boolean"
+            },
+            "regionAttestation": {
+              "type": "object",
+              "properties": {
+                "inEeaOrEu": {
+                  "type": "boolean"
+                },
+                "country": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "attestedBy": {
+                  "type": "string"
+                },
+                "attestedAt": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "inEeaOrEu",
+                "country",
+                "attestedBy",
+                "attestedAt",
+                "note"
+              ],
+              "additionalProperties": false
+            },
+            "itSecurityAttestation": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "meetsRecognisedStandards": {
+                      "type": "boolean"
+                    },
+                    "attestedBy": {
+                      "type": "string"
+                    },
+                    "attestedAt": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "meetsRecognisedStandards",
+                    "attestedBy",
+                    "attestedAt",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "createdBy": {
+              "type": "string"
+            },
+            "placements": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "backupId": {
+                        "type": "string"
+                      },
+                      "archiveSha256": {
+                        "type": "string"
+                      },
+                      "placedAt": {
+                        "type": "string"
+                      },
+                      "actor": {
+                        "type": "string"
+                      },
+                      "archiveSizeBytes": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0
+                      },
+                      "actorKind": {
+                        "enum": [
+                          "human",
+                          "agent"
+                        ]
+                      },
+                      "verified": {
+                        "type": "boolean"
+                      },
+                      "verifyMethod": {
+                        "enum": [
+                          "declared",
+                          "sha256-reread",
+                          "remote-provider"
+                        ]
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "remoteEvidence": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "const": "google-drive"
+                          },
+                          "objectId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "parentId": {
+                            "type": "string"
+                          },
+                          "checksumSha256": {
+                            "type": "string"
+                          },
+                          "metadataObservedAt": {
+                            "type": "string"
+                          },
+                          "verifiedAt": {
+                            "type": "string"
+                          },
+                          "sizeBytes": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "objectId",
+                          "name",
+                          "parentId",
+                          "checksumSha256",
+                          "metadataObservedAt",
+                          "verifiedAt",
+                          "sizeBytes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "backupId",
+                      "archiveSha256",
+                      "placedAt",
+                      "actor",
+                      "archiveSizeBytes",
+                      "actorKind",
+                      "verified",
+                      "verifyMethod",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "kind",
+            "location",
+            "nonRelatedParty",
+            "regionAttestation",
+            "itSecurityAttestation",
+            "createdAt",
+            "createdBy",
+            "placements"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_add_destination_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_remove_destination_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-remove-destination"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--id": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_remove_destination_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_remove_destination_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_place_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-place"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--archive-file": {
+              "type": "string"
+            },
+            "--destination": {
+              "type": "string"
+            },
+            "--actor-kind": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--note": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_place_Success": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "const": true
+            },
+            "verifyMethod": {
+              "const": "sha256-reread"
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        "copiedTo": {
+          "type": "string"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "placement",
+        "copiedTo",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_place_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_confirm_placement_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-confirm-placement"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--destination": {
+              "type": "string"
+            },
+            "--backup-id": {
+              "type": "string"
+            },
+            "--archive-sha256": {
+              "type": "string"
+            },
+            "--archive-size": {
+              "type": "string"
+            },
+            "--actor-kind": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--note": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_confirm_placement_Success": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "type": "boolean"
+            },
+            "verifyMethod": {
+              "enum": [
+                "declared",
+                "sha256-reread"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "placement",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_confirm_placement_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_verify_remote_placement_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-verify-remote-placement"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--destination": {
+              "type": "string"
+            },
+            "--backup-id": {
+              "type": "string"
+            },
+            "--remote-object-id": {
+              "type": "string"
+            },
+            "--max-metadata-age-ms": {
+              "type": "string"
+            },
+            "--actor-kind": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--note": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_verify_remote_placement_Success": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "const": true
+            },
+            "verifyMethod": {
+              "const": "remote-provider"
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "remoteEvidence": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "const": "google-drive"
+                },
+                "objectId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "parentId": {
+                  "type": "string"
+                },
+                "checksumSha256": {
+                  "type": "string"
+                },
+                "metadataObservedAt": {
+                  "type": "string"
+                },
+                "verifiedAt": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "provider",
+                "objectId",
+                "name",
+                "parentId",
+                "checksumSha256",
+                "metadataObservedAt",
+                "verifiedAt",
+                "sizeBytes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note",
+            "remoteEvidence"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "placement",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_verify_remote_placement_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_lock_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-lock"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--enforce": {
+              "type": "string"
+            },
+            "--grace-days": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_lock_Success": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "const": []
+            },
+            "config": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "const": "backup-lock-v1"
+                },
+                "enforced": {
+                  "type": "boolean"
+                },
+                "graceDays": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "updatedAt": {
+                  "type": "string"
+                },
+                "updatedBy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "version",
+                "enforced",
+                "graceDays",
+                "updatedAt",
+                "updatedBy"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors",
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Original716_system_backup_lock_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_guide_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system backup-guide"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--as-of": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_guide_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "out": {
+          "type": "string"
+        },
+        "checkedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "out",
+        "checkedAt"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_backup_guide_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_export_public_key_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system export-public-key"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_export_public_key_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "outPath": {
+          "type": "string"
+        },
+        "publicKeyHint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "outPath",
+        "publicKeyHint"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_export_public_key_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_verify_backup_signature_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system verify-backup-signature"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--backup-dir": {
+              "type": "string"
+            },
+            "--public-key": {
+              "type": "string"
+            },
+            "--verify-key": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_verify_backup_signature_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "backupId": {
+          "type": "string"
+        },
+        "algorithms": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ed25519",
+              "hmac-sha256"
+            ]
+          }
+        },
+        "trustLevel": {
+          "enum": [
+            "none",
+            "integrity-only",
+            "third-party-authenticity"
+          ]
+        },
+        "publicKeyHint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hmacKeyHint": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "algorithms",
+        "trustLevel",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_verify_backup_signature_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_rotate_backup_keypair_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "system rotate-backup-keypair"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--reason": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_rotate_backup_keypair_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "oldPublicKeyHint": {
+          "type": "string"
+        },
+        "newPublicKeyHint": {
+          "type": "string"
+        },
+        "archivedPrivateKeyPath": {
+          "type": "string"
+        },
+        "archivedPublicKeyPath": {
+          "type": "string"
+        },
+        "newPrivateKeyPath": {
+          "type": "string"
+        },
+        "newPublicKeyPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "oldPublicKeyHint",
+        "newPublicKeyHint",
+        "archivedPrivateKeyPath",
+        "archivedPublicKeyPath",
+        "newPrivateKeyPath",
+        "newPublicKeyPath"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_system_rotate_backup_keypair_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_snapshot_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "workspace snapshot"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--workspace": {
+              "type": "string"
+            },
+            "--snapshot": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--target": {
+              "type": "string"
+            },
+            "--target-workspace": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--config": {
+              "type": "string"
+            },
+            "--server-bin": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--origin": {
+              "type": "string"
+            },
+            "--trust-keys": {
+              "type": "string"
+            },
+            "--source-unavailable": {
+              "type": "string"
+            },
+            "--artifact-format": {
+              "type": "string"
+            },
+            "--trusted-backup-key": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_snapshot_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "snapshotPath": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "sha256Path": {
+          "type": "string"
+        },
+        "companyCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accessIdentityCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputVersion": {
+          "const": "rentemester-cli-workspace/2"
+        },
+        "artifactFormat": {
+          "const": "rentemester-native-backup/1"
+        }
+      },
+      "required": [
+        "ok",
+        "snapshotPath",
+        "sha256",
+        "sha256Path",
+        "companyCount",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_snapshot_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_restore_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "workspace restore"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--workspace": {
+              "type": "string"
+            },
+            "--snapshot": {
+              "type": "string"
+            },
+            "--out": {
+              "type": "string"
+            },
+            "--target": {
+              "type": "string"
+            },
+            "--target-workspace": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--config": {
+              "type": "string"
+            },
+            "--server-bin": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--origin": {
+              "type": "string"
+            },
+            "--trust-keys": {
+              "type": "string"
+            },
+            "--source-unavailable": {
+              "type": "string"
+            },
+            "--artifact-format": {
+              "type": "string"
+            },
+            "--trusted-backup-key": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_restore_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "targetWorkspaceRoot": {
+          "type": "string"
+        },
+        "companyCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accessRecoveryPlanPath": {
+          "type": "string"
+        },
+        "nextStep": {
+          "const": "bootstrap-owner-then-reinvite"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputVersion": {
+          "const": "rentemester-cli-workspace/2"
+        },
+        "artifactFormat": {
+          "const": "rentemester-native-backup/1"
+        }
+      },
+      "required": [
+        "ok",
+        "targetWorkspaceRoot",
+        "companyCount",
+        "nextStep",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_restore_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

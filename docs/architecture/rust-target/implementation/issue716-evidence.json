@@ -1,0 +1,155 @@
+{
+  "issue": 716,
+  "whole_issue_accepted": false,
+  "status": "final wiring and focused proof executed; lead whole-issue actualdiff and four-criteria acceptance pending",
+  "source_revision": "b033962616a1b6361cf8e40287a0af45c83fb9c0",
+  "working_tree_changes_included": true,
+  "build_output": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716",
+  "preservation": {
+    "epic_issues": 55,
+    "original_acceptance_criteria": 4,
+    "prior_cli_families": 223,
+    "original_cli_identities": 265,
+    "previous_contract_ids": 1670,
+    "issue717": "retained; not reopened or reimplemented"
+  },
+  "executed": {
+    "combined_check": {
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/combined-check-final.log"
+    },
+    "combined_binary_build": {
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/combined-build.log"
+    },
+    "strict_contracts": {
+      "passed": true,
+      "revision": "b033962616a1b6361cf8e40287a0af45c83fb9c0",
+      "partitions": 38,
+      "operations": 1724,
+      "counts": {
+        "cli": 575,
+        "http": 701,
+        "mcp": 448
+      },
+      "all_prior1670_ids_and_schema_names_retained": true,
+      "all265_original_cli_keys_have_typed_sourcebound_contracts": true,
+      "exact_http_manifest": true,
+      "limit": "Declaration validation; lead actualdiff review and executedpositive/refusal/ownership receipts remain necessary for wholeissueclosure."
+    },
+    "protocol_generator_check": {
+      "passed": true,
+      "client_manifest_exact": true
+    },
+    "focused_cli": {
+      "passed": true,
+      "tests": 42,
+      "suites": 9,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/focused-tests-final.log"
+    },
+    "host_transfer": {
+      "passed": true,
+      "tests": 1,
+      "ignored_child": 1,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/host-tests.log"
+    },
+    "server_original716": {
+      "passed": true,
+      "tests": 5,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/server-tests.log"
+    },
+    "synthetic_operator": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "fresh init uses common owner",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "existing workspace refused, no replacement",
+          "exit": 1,
+          "ok": false
+        },
+        {
+          "name": "current schema read-only",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "current schema explicit operator apply",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "canonical views inspect",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "canonical views explicit no-op repair",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "first owner reservation and verification pipeline",
+          "exit": 0,
+          "ok": true
+        },
+        {
+          "name": "same owner reservation reconciles",
+          "exit": 0,
+          "ok": true
+        }
+      ],
+      "syntheticWorkspace": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/rentemester-original716-cli-rcguf38n/workspace",
+      "cliSha256": "46047d38f76cd488114a630c073eaee60c2abe00f06b2a74392280f1a95a033a",
+      "serverSha256": "34d835505f68355981c06946035dcbd87550aa1ff9d9044d1d13c28e4211246a",
+      "whole_issue_accepted": false
+    },
+    "syntax716": {
+      "passed": true,
+      "syntax_only": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/syntax716.log"
+    },
+    "graphify": {
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/graphify-extract-final.log"
+    }
+  },
+  "rejected_and_diagnosed": [
+    {
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716/whole-cli-tests.log",
+      "passed": false,
+      "tests_passed": 51,
+      "failures": [
+        "dated_reports::tests::actual_sdk_cli_dispatch_keeps_business1_and_server_refusal_streams",
+        "journal_history::tests::all_headers_roundtrip_and_cli_exit_classification",
+        "import_original::original_source::tests::directory_refuses_case_collisions_and_oversized_entries_before_network"
+      ],
+      "diagnosis": "First two in-module loopback fixtures use raw TcpListener without passive protocol negotiation; third assumes case-distinct filenames on the host case-insensitive filesystem. Files outside ownership, not changed."
+    },
+    {
+      "logs": [
+        "combined-check.log",
+        "combined-check-2.log",
+        "combined-check-3.log",
+        "focused-tests.log",
+        "focused-tests-2.log",
+        "focused-tests-3.log",
+        "focused-tests-4.log",
+        "operator-accept.log"
+      ],
+      "root": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue716-finish-20261025T184129.810492000/final_wire716",
+      "retained": true,
+      "diagnosis": "Concrete transfer FromSql signed count conversion and CLI serialize feature repaired; canonical temp fixture paths repaired without weakening no-symlink guard; fixture CLI-only signed selector expectation corrected to actual typed HTTP body; synthetic first-use supplied bank details to avoid genuine source warning."
+    }
+  ],
+  "limits": [
+    "No live migration, cutover, provider approval or publication performed.",
+    "No whole CLI suite PASS: three unowned fixture failures retained.",
+    "Linux broker/genuine hosted environment and final installed desktop acceptance not established.",
+    "Declaration and leaf syntax success are not all four original acceptance criteria.",
+    "No commit per bounded-worker handoff mandate."
+  ]
+}

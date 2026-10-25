@@ -3,7 +3,7 @@
   "partition": "dimensions_cfo",
   "status": "specified",
   "unresolved": [],
-  "operationCount": 64,
+  "operationCount": 66,
   "method": "Graphify query FIRST, then actual Rust native/original HTTP, global CLI/MCP guard, SDK transport and application/host/storage producers. Source-only; no Cargo/server/provider/effect replay.",
   "sourceRefs": [
     {
@@ -33,7 +33,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -68,7 +68,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "pub fn dimensions("
     },
     {
@@ -148,7 +148,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -195,11 +195,43 @@
       "path": "crates/rentemester-mcp/src/dimensions_original.rs",
       "sha256": "f4b93069943d6d7d51f96375e2119ed79240c685a6722158a4cc92bbcc466c93",
       "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/cfo_original89.rs",
+      "sha256": "7cfc996ac1d628da91392cfd2f6260dd1c3e95a5b46899852afae158f23339bd",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "9e7e163c1c77d05f960763b92a535965100e6e9e26a77c5ce30922d91da73935",
+      "needle": "assert_original_workspace89"
+    },
+    {
+      "path": "src/cli/report.ts",
+      "needle": "dispatch.on(\"report\", \"analytics\"",
+      "sha256": "2e864ca3ea6d726c9f7bab4fac5cd65fcffddc5b5410fba023d4f859b946d924"
+    },
+    {
+      "path": "crates/rentemester-cli/src/report_analytics_original.rs",
+      "needle": "pub fn execute(",
+      "sha256": "fd923711d6c1958e399abc9f26196f2681fcc02d33b92a6aacfb8da338fe9b5f"
+    },
+    {
+      "path": "crates/rentemester-client/src/cfo_analytics.rs",
+      "needle": "pub async fn cfo_analytics(",
+      "sha256": "38aa954abd06ebe2529966ca8cf8132e976404caecbe61ec9fb7c191126d469e"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "needle": "pub fn assert_original_workspace89(",
+      "sha256": "9e7e163c1c77d05f960763b92a535965100e6e9e26a77c5ce30922d91da73935"
     }
   ],
   "acceptance": "Existing strict oracle checks source hashes and shapes, not semantic or runtime acceptance; lead owns integration/acceptance. All55/J01-J07/finaldesktop/release/cutover/retirement remain; no global issue closure.",
   "checks": {
     "strictOracle": "PASS exactselected dimensions_cfo 64 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
     "graphifyExtract": "Completed --code-only --no-cluster under independent SGD_BUILD_DIR/graphify (34009 nodes,107681 edges); generated observations outside owned code."
-  }
+  },
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

@@ -10401,6 +10401,147 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "Original716_opening_balance_post_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "opening-balance post"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--company": {
+              "type": "string"
+            },
+            "--input": {
+              "type": "string"
+            },
+            "--server": {
+              "type": "string"
+            },
+            "--local-profile": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--actor-via": {
+              "type": "string"
+            },
+            "--example": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_opening_balance_post_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "cutOverDate": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "cutOverDate",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_opening_balance_post_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

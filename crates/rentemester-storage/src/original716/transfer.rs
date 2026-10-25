@@ -96,10 +96,10 @@ pub fn validate_stats(bytes: &[u8], manifest: &[u8]) -> Result<(), Error> {
         ("documents", "documents"),
         ("bank_transactions", "bankTransactions"),
     ] {
-        let count: u64 = db
+        let count: i64 = db
             .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))
             .map_err(|_| err())?;
-        if v["ledgerStats"][key].as_u64() != Some(count) {
+        if v["ledgerStats"][key].as_u64() != u64::try_from(count).ok() {
             return Err(err());
         }
     }

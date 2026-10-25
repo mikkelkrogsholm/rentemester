@@ -21,7 +21,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn response("
     },
     {
@@ -66,7 +66,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -128,8 +128,45 @@
       "path": "crates/rentemester-mcp/src/bank_accounts_original.rs",
       "sha256": "490306c366442e5501249a3bdd90d922cfd95916c59bd95c452476686e2a2b65",
       "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_queries.rs",
+      "sha256": "25d3069cd5e1c2f765b631c30862cfb2c38d749146b76e0bd7dcb8222d3fe443",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_accounts_original.rs",
+      "sha256": "ef1ed859a46a52ca6df1354554ec73028a9a66b5c823fedb81ce9283f2c35e83",
+      "needle": "pub fn create("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_queries.rs",
+      "sha256": "25d3069cd5e1c2f765b631c30862cfb2c38d749146b76e0bd7dcb8222d3fe443",
+      "needle": "pub fn report("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank.rs",
+      "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank.rs",
+      "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+      "needle": "pub fn accounts("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank.rs",
+      "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+      "needle": "pub fn create_account("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bank.rs",
+      "sha256": "131bfeb583029c20071093c40d1fb1945f2cde78e9e22113e27a3a5f1d224cf8",
+      "needle": "pub(super) async fn query_handle"
     }
   ],
   "acceptance": "Strict oracle structural/source freshness only; parent independent semantic review required. Prior419/18 unchanged; whole677/all55/J01-J07/desktop/release/cutover/retirement retained.",
-  "leadCompletion": "Recovered source-bound35rows from preserved generator after correcting decode re-export needle; separated native/originalreceipt/service and decoder/semantic shapes; original failedreceipt remains."
+  "leadCompletion": "Recovered source-bound35rows from preserved generator after correcting decode re-export needle; separated native/originalreceipt/service and decoder/semantic shapes; original failedreceipt remains.",
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

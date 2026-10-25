@@ -31,7 +31,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "match run(args)"
     },
     {
@@ -41,17 +41,17 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn send("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "impl fmt::Display for Error"
     },
     {
@@ -91,7 +91,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "pub async fn companies"
     },
     {
@@ -106,7 +106,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": ".merge(product_http::router(backend.clone(), &origin))"
     },
     {
@@ -116,7 +116,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn control_auth<T>("
     },
     {
@@ -161,7 +161,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "workspace_context: Some(Box::new(move |proof|"
     },
     {
@@ -176,12 +176,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": ".route(\"/api/workspace/invitations\",get(workspace_access::handle).post(workspace_access::handle))"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "async fn companies("
     },
     {
@@ -331,12 +331,12 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "service_lifecycle: Some(Box::new"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "fn unwrap<T>"
     },
     {
@@ -346,7 +346,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn control_auth<T>"
     },
     {
@@ -356,7 +356,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": "protocol::install(router, connected)"
     },
     {
@@ -371,7 +371,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "let args = match local_binding::prepare(args)"
     }
   ],
@@ -385,5 +385,8 @@
     "rejectedCommit": "81be2af5c6ee36747887feb170948f551eb22328",
     "diagnosis": "main local_binding stage supports explicit local-profile before remote parsing, and context reads ignore --vat-or-cvr; public and normalized schemas now separate.",
     "newModelAttempt": false
-  }
+  },
+  "operationCount": 8,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

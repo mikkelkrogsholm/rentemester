@@ -30,7 +30,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -40,7 +40,7 @@
     },
     {
       "path": "protocol/http-v1.json",
-      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
       "needle": "/api/companies/{slug}/vies/validate"
     },
     {
@@ -180,7 +180,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -195,7 +195,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "fn main()"
     },
     {
@@ -312,6 +312,111 @@
       "path": "crates/rentemester-mcp/src/eu_sales.rs",
       "sha256": "2ba80b6841b9e17e6353309807d58501f99c7f8a8eaa8878635afdbfc42cdedf",
       "needle": "use "
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/master-data/original/customers"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/master-data/original/cvr-lookup"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/master-data/original/customer-validate-vat"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/company"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/vendors"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/cvr-lookup"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/system/cvr-status"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/customers/{id}"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/vendors/{id}"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/import"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/sync-cvr"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "needle": "/api/companies/{slug}/master-data/original/vendors"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_creation.rs",
+      "sha256": "b9e7f0a0357a8456cb921429b204139105615e2a594e4bdd053aa76299370537",
+      "needle": "pub vat_period_type: Value,"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/profile_original89.rs",
+      "sha256": "babf5d45d88aa9a5e60c4cbde6465b1fffd8185af9c5a13bfa11bed56a946b86",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "src/mcp/tools/portfolio.ts",
+      "needle": "company_add",
+      "sha256": "8665e307b7aa1eed4a2549b7d8b0d07cf25aa82b8bfd4574a7704e8f15616f0c"
+    },
+    {
+      "path": "crates/rentemester-client/src/company_creation.rs",
+      "needle": "create_company_original116",
+      "sha256": "165937723492cc976d546135b8106784bb70f93cd1e1c0c7b7fb0b411994c0b0"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/company_creation.rs",
+      "needle": "pub async fn call_original",
+      "sha256": "033a59c7660e9b005b7e015bb9266d0bb99998a8375bb58a69bd5b8a47c58d73"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "needle": "async fn negotiate",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "needle": "assert_original_workspace89",
+      "sha256": "9e7e163c1c77d05f960763b92a535965100e6e9e26a77c5ce30922d91da73935"
     }
   ],
   "operations": [
@@ -390,5 +495,8 @@
     "extension": "Optional defaultRole only for existing native body; explicit original header policy, strict omitted-field behavior retained. Exactly two original CLI keys, not import run/archive.",
     "evidence": "Independent cargo test -p rentemester-cli --test original_import_contacts716: 5 passed; compiled HTTP and private Unix fixtures, no live providers. Combined catalogue qualification remains lead-owned.",
     "remaining": "Whole #716 remains open; 46 other literal keys plus overview/rootbootstrap/path/full265 and all epic final gates remain. Historical snapshot catalogue counts are unchanged."
-  }
+  },
+  "operationCount": 64,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

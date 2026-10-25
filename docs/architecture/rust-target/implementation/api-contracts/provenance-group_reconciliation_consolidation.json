@@ -89,7 +89,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -159,7 +159,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -169,7 +169,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "match run(args)"
     },
     {
@@ -226,8 +226,16 @@
       "path": "crates/rentemester-mcp/src/consolidation.rs",
       "sha256": "df7932d313c98421bcfa108fe2c466d56f23dfe40d9f27e5a5a2ff38c8d6addf",
       "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/original716.rs",
+      "needle": "pub(super) async fn group_overview",
+      "sha256": "9c6f351f4d104356a193ea6378ca1dcd0fd667da7f6d63ed1a6e61ab1eb6bbed"
     }
   ],
   "scope": "Source-only selected contracts; main owns semantic review/integration/acceptance; whole677 remains open.",
-  "leadReviewRepair": "Lead source review: added reachable global report-selector RPC pair; rawHTTP manifest nested Group and consolidation reportingLine now use existing input tuple/object variants while output and SDK forms stay distinct. Removed duplicate exact-action oneOf refs that rejected legitimate lifecycle bodies; per-action rules/authority and all partial-report evidence retained."
+  "leadReviewRepair": "Lead source review: added reachable global report-selector RPC pair; rawHTTP manifest nested Group and consolidation reportingLine now use existing input tuple/object variants while output and SDK forms stay distinct. Removed duplicate exact-action oneOf refs that rejected legitimate lifecycle bodies; per-action rules/authority and all partial-report evidence retained.",
+  "operationCount": 59,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

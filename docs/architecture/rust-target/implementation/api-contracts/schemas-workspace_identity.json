@@ -1222,6 +1222,135 @@
         "invitation"
       ],
       "additionalProperties": false
+    },
+    "Original716_workspace_access_bootstrap_first_Input": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "workspace-access bootstrap-first"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--workspace": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--name": {
+              "type": "string"
+            },
+            "--email": {
+              "type": "string"
+            },
+            "--password-file": {
+              "type": "string"
+            },
+            "--confirm": {
+              "type": "string"
+            },
+            "--runtime-config": {
+              "type": "string"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_access_bootstrap_first_Success": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "userId": {
+          "type": "string"
+        },
+        "reservationStatus": {
+          "type": "string"
+        },
+        "workspaceRole": {
+          "const": "workspace_owner"
+        },
+        "companyRole": {
+          "const": "owner"
+        },
+        "companySlug": {
+          "type": "string"
+        },
+        "verificationNextStep": {
+          "const": "check_verification_email"
+        }
+      },
+      "required": [
+        "ok",
+        "userId",
+        "reservationStatus",
+        "workspaceRole",
+        "companyRole",
+        "companySlug",
+        "verificationNextStep"
+      ],
+      "additionalProperties": false
+    },
+    "Original716_workspace_access_bootstrap_first_Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
     }
   }
 }

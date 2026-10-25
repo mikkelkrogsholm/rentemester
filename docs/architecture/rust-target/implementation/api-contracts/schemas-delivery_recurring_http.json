@@ -509,17 +509,17 @@
             "sourceRefs": [
               {
                 "path": "protocol/http-v1.json",
-                "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
+                "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
                 "needle": "/api/recurring-invoices/run-workspace"
               },
               {
                 "path": "crates/rentemester-server/src/main.rs",
-                "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+                "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
                 "needle": "protocol::install(router, connected)"
               },
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
-                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
                 "needle": "fn proof("
               },
               {
@@ -539,7 +539,7 @@
               },
               {
                 "path": "crates/rentemester-host/src/lib.rs",
-                "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+                "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
                 "needle": "fn document_action<T>"
               },
               {

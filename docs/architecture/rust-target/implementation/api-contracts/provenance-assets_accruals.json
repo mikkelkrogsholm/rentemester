@@ -25,7 +25,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "local_binding::prepare(args)"
     },
     {
@@ -177,9 +177,76 @@
       "path": "crates/rentemester-mcp/src/assets.rs",
       "sha256": "07641fdc7c8fd62e62c9f6849132026228e160dc1a4c78b7aecdc1550e21fadc",
       "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-storage/src/accrual_original.rs",
+      "sha256": "532658579125a66298e50dbc044d42ac0c030985aa2bfd870b911d5d151f7223",
+      "needle": "pub fn recognize("
+    },
+    {
+      "path": "crates/rentemester-storage/src/accrual_original.rs",
+      "sha256": "532658579125a66298e50dbc044d42ac0c030985aa2bfd870b911d5d151f7223",
+      "needle": "pub fn register("
+    },
+    {
+      "path": "crates/rentemester-storage/src/asset_original.rs",
+      "sha256": "6d6b943b73fd69b96ca0fd948178a2004d20cd5b0665df36acd17dcee7a42ed3",
+      "needle": "pub fn depreciate("
+    },
+    {
+      "path": "crates/rentemester-storage/src/asset_original.rs",
+      "sha256": "6d6b943b73fd69b96ca0fd948178a2004d20cd5b0665df36acd17dcee7a42ed3",
+      "needle": "pub fn register("
+    },
+    {
+      "path": "crates/rentemester-storage/src/asset_original.rs",
+      "sha256": "6d6b943b73fd69b96ca0fd948178a2004d20cd5b0665df36acd17dcee7a42ed3",
+      "needle": "pub fn report("
+    },
+    {
+      "path": "crates/rentemester-storage/src/accruals.rs",
+      "sha256": "f718ae913db0f82f7259d6eeeee6b38689d9c5b8d77c8c1b0fcd0cec0d8b6406",
+      "needle": "pub fn preview("
+    },
+    {
+      "path": "crates/rentemester-storage/src/accruals.rs",
+      "sha256": "f718ae913db0f82f7259d6eeeee6b38689d9c5b8d77c8c1b0fcd0cec0d8b6406",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/assets.rs",
+      "sha256": "66ad09840ac4425676c7cb184e803a3ce54dab7ad104a8b31d143fb23dd5387a",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/assets.rs",
+      "sha256": "66ad09840ac4425676c7cb184e803a3ce54dab7ad104a8b31d143fb23dd5387a",
+      "needle": "pub fn depreciate("
+    },
+    {
+      "path": "crates/rentemester-storage/src/assets.rs",
+      "sha256": "66ad09840ac4425676c7cb184e803a3ce54dab7ad104a8b31d143fb23dd5387a",
+      "needle": "pub fn next("
+    },
+    {
+      "path": "crates/rentemester-storage/src/accruals.rs",
+      "sha256": "f718ae913db0f82f7259d6eeeee6b38689d9c5b8d77c8c1b0fcd0cec0d8b6406",
+      "needle": "pub fn recognize("
+    },
+    {
+      "path": "crates/rentemester-storage/src/asset_disposal.rs",
+      "sha256": "fe8fae325c0f0a7771b744a88703dff1e3ce9767247f2ba21529107e21c1181b",
+      "needle": "pub fn receipt("
+    },
+    {
+      "path": "crates/rentemester-storage/src/asset_disposal.rs",
+      "sha256": "fe8fae325c0f0a7771b744a88703dff1e3ce9767247f2ba21529107e21c1181b",
+      "needle": "pub fn preview("
     }
   ],
   "operationCount": 58,
   "retainedScope": "Prior626operations22partitions unchanged; all55/J01-J07/finaldesktop/release/cutover/retirement retained.",
-  "verification": "Source-only; strict oracle shapes/refs/hashes/IDs, main semantic acceptance; no effects replay."
+  "verification": "Source-only; strict oracle shapes/refs/hashes/IDs, main semantic acceptance; no effects replay.",
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

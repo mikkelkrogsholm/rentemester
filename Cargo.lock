@@ -6906,6 +6906,7 @@ dependencies = [
  "rentemester-engine",
  "rentemester-runtime",
  "rentemester-storage",
+ "rusqlite",
  "serde_json",
  "tokio",
 ]

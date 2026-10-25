@@ -19240,5 +19240,16 @@
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
     "last_closed_issue": 714
+  },
+  "issue716_final_wire716": {
+    "state": "focused_proof_passed_whole_acceptance_pending",
+    "whole_issue_accepted": false,
+    "evidence": "issue716-evidence.json",
+    "contractCounts": {
+      "cli": 575,
+      "http": 701,
+      "mcp": 448
+    },
+    "remaining": "Lead actualdiff review, repair/execute unowned whole-CLI fixtures, all four original criteria and genuine-environment acceptance. Prior receipts and rejected logs preserved."
   }
 }

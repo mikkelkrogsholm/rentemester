@@ -6,17 +6,17 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
+      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
       "needle": "/api/recurring-invoices/run-workspace"
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": "protocol::install(router, connected)"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -36,7 +36,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn document_action<T>"
     },
     {
@@ -86,7 +86,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "pub(crate) fn lock_company("
     },
     {
@@ -176,8 +176,48 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
-      "sha256": "7c5752a06a60681d8e61923bbc9ee4b1d226303f6a43147e0d3fa7d1e4573f84",
+      "sha256": "d93ee89a9f0014edc8e8bb3aa38a61a8f34d27d2891de0215b40044c2d5783db",
       "needle": "pub(super) fn drive("
+    },
+    {
+      "path": "crates/rentemester-application/src/recurring_invoices.rs",
+      "sha256": "2d866dd5011f55249ec552267a82f9393a4760fdbd7db054fc4a0ecd2892ba7e",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+      "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+      "needle": "pub fn create("
+    },
+    {
+      "path": "crates/rentemester-client/src/recurring_original.rs",
+      "sha256": "3d8c79b8fa2a6ec4d602ca4bbd71c6ca644fc481b72c9a324240646fac2ad6bd",
+      "needle": "pub fn recurring_original_schema("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "needle": "pub async fn call",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "needle": "pub fn router",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "needle": "invoice_send_email",
+      "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/original717.rs",
+      "needle": "fn wrap",
+      "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+    },
+    {
+      "path": "crates/rentemester-client/src/original717.rs",
+      "needle": "invoice_send_email",
+      "sha256": "a87a12059360fc9e85928b8242932a2aa0500a368d2576f31007cb2ded8237f3"
     }
   ],
   "method": "Source-only full native advertisement -> global protocol -> product proof/parser -> Owner -> application current fences -> storage producer and recovery. SDK input discovery is not exact success proof.",
@@ -192,10 +232,13 @@
   "r59_source_correction": {
     "source": {
       "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
-      "sha256": "7c5752a06a60681d8e61923bbc9ee4b1d226303f6a43147e0d3fa7d1e4573f84",
+      "sha256": "d93ee89a9f0014edc8e8bb3aa38a61a8f34d27d2891de0215b40044c2d5783db",
       "needle": "pub(super) async fn handle("
     },
     "behavior": "Early public HEAD405AllowGET before credentials/body/Owner/provider; GET/POST unchanged. Delivery partition source SHA refresh only; no delivery behavior changed.",
     "runtimeEvidence": "Existing macos_local fixture64HEADcases31routes RED401/GREEN405; no provider or financial effects."
-  }
+  },
+  "operationCount": 16,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

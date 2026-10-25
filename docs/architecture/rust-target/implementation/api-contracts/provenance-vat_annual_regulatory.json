@@ -10,5 +10,305 @@
   "retainedScope": "Prior 821 operations / 26 partitions and all55 / J01-J07 / finaldesktop / release / cutover / retirement unchanged; main owns integration and acceptance.",
   "leadReviewRepair": {
     "scope": "Actual tax bounds JSON, HEAD protocol409 body stripping, regulatory500 object errors, original EU CompanyExternalLookup, and exact original SAF-T dispatcher/materializer source refs. No accounting/provider effects replayed."
-  }
+  },
+  "operationCount": 60,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265,
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-cli/src/regulatory.rs",
+      "sha256": "78f113d6428ed2b51f8577da9b4bfc49e317a3f8d3ed5f0ce2c1e3a3334b98c5",
+      "needle": "pub fn run(args: &[String]) -> Result<Value, (u8, Error)> {"
+    },
+    {
+      "path": "crates/rentemester-client/src/regulatory.rs",
+      "sha256": "2ba383521cca6e661ba36541582dbbb5609ead37c51e5ea7a001703cbdb11029",
+      "needle": "//! Thin read adapters; static coverage grants no company authority."
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "needle": "fn main("
+    },
+    {
+      "path": "crates/rentemester-storage/src/compliance.rs",
+      "sha256": "b7e2c4d5f7d16b3ecd927300aec77ef6e09c4ebd3588f64b467ba5105ed86aa2",
+      "needle": "pub fn read(tx: &Transaction<'_>, slug: &str, as_of: &str) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-engine/src/regulatory.rs",
+      "sha256": "32d23e837d1bf35f1d0b4bb81ed67884b9d850b40c36316c69c33d144fc3a8e4",
+      "needle": "pub fn bundled_coverage()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/annual_reports.rs",
+      "sha256": "ec4767bdfd65a5a0e824da50d9aacb1a7af9daceef7cdbf14c678b27e4488b8a",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-client/src/annual_reports.rs",
+      "sha256": "f30f33a884a7dca7b811ae547f081b389c463fc5ea5df2c21f9668a55f670aba",
+      "needle": "pub fn valid_annual_bounds(start: &str, end: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/annual_report.rs",
+      "sha256": "a4a93a785506c366935049e925471de04707623cfea1e40ac47da9e58e6e016b",
+      "needle": "pub fn read(tx: &Transaction<'_>, slug: &str, start: &str, end: &str) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-engine/src/annual_report.rs",
+      "sha256": "d09c4174006a8f49d1dc84e747644ad10fb37dc80c2717349771229620d5d6de",
+      "needle": "pub fn placeholders("
+    },
+    {
+      "path": "crates/rentemester-cli/src/eu_sales.rs",
+      "sha256": "80f8f1b14fd13bf9d595fbd41737108fa6706eb5d89e62d12d6d2cdbc653edac",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-client/src/eu_sales.rs",
+      "sha256": "e1c66fb5aed2c3ee78aa57539dc5f04d2826e6b1ce363d43b9072708abfb3aa5",
+      "needle": "//! Explicit VIES observation and dated immutable EU sales report."
+    },
+    {
+      "path": "crates/rentemester-storage/src/eu_sales.rs",
+      "sha256": "63d0ea0106254644ae6f87e3677f0b017c9aaac44b85594d387e600ac26e11bf",
+      "needle": "pub fn read(tx: &Transaction<'_>, from: Date, to: Date) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/oss_report.rs",
+      "sha256": "54082477ab05cbe39ff5a8c427ffa953c1d64d1d3e8b6934b6ce87d441df6bd1",
+      "needle": "pub fn help() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-client/src/oss_report.rs",
+      "sha256": "1186dcf031a9d2f806a036c9ec26ff30f17142f4efd99755fba1a30d61139f8f",
+      "needle": "//! Canonical dated OSS base-only report."
+    },
+    {
+      "path": "crates/rentemester-storage/src/oss_report.rs",
+      "sha256": "04b4423c656aa1d2e6001e79aa524a94d3a829a15e17d9c55fb328680083de07",
+      "needle": "pub fn read(tx: &Transaction<'_>, from: Date, to: Date) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "d0597301ec891c87bf05699d733d5f55707291de6157facab205f5e7fb147cfd",
+      "needle": "pub fn run(args: &[String]) -> Result<Value, Failure> {"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
+      "needle": "pub struct ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/vat_report.rs",
+      "sha256": "7212195bf7906af265d0fa6ec395ea850fe529d30019d70f96b938602c33cd72",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-cli/src/annual_exports.rs",
+      "sha256": "5d8d1e6305fe19fbc2106c80f9a77aba16ed1ffa2c30262e29c430e80d2b7791",
+      "needle": "pub fn help() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-client/src/annual_exports.rs",
+      "sha256": "8beca68c762693e3a2a92ecd76a59830ebb054ca7f5aec028b0075f8bfc6d7e0",
+      "needle": "//! Server-owned closed-year tax preparation and deterministic iXBRL. No local files or accounting."
+    },
+    {
+      "path": "crates/rentemester-storage/src/annual_exports.rs",
+      "sha256": "1cb9553fad9a1b90f635fd686a275ec1c97074d364ac4f831964534af31dd55c",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-engine/src/tax_return.rs",
+      "sha256": "1d60ddcf8869ef48155d70264deaa51cbc770ca78b13bf78ed8c64970cdbefb5",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/handoff_export.rs",
+      "sha256": "eaf441ec82865fdd9bde3f0b814511ad5ad10df4cca111074006620a916813ec",
+      "needle": "pub fn help() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-client/src/handoff_export.rs",
+      "sha256": "2ef1bd509bcaf658307c1dacfb6401b0c5f97817a41c94fd6395c9e4b0b3c166",
+      "needle": "pub fn handoff_body_schema() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/accountant.rs",
+      "sha256": "66f91c29263361abcda5405731a8ebd8b5e5a089a3397a3550d616732bf8a009",
+      "needle": "pub struct Input {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/saft_artifact.rs",
+      "sha256": "b78e17ef64d84c954694c818f77d6565a84a4049836194b9acbf94d148cf966a",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-client/src/saft.rs",
+      "sha256": "26706c987cab0511a4a52cac4a9cd2aeada778160d30804101c5e52f09b10e3e",
+      "needle": "pub fn saft_body_schema() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/saft.rs",
+      "sha256": "57f8d95d8a495e7aeb2432125f53e42b1bbb5c15ad4ed90c542f7d8c4efdee2c",
+      "needle": "pub struct Input {"
+    },
+    {
+      "path": "crates/rentemester-client/src/saft_artifact.rs",
+      "sha256": "40111eaf4dc5133e61b50abffea230bee09d4bf32d93530155d9dcbf5740c26d",
+      "needle": "pub fn write_saft_package("
+    },
+    {
+      "path": "crates/rentemester-cli/src/vat_original.rs",
+      "sha256": "2719b86194b8c1916e1196e290fcec73cc31aaf47e5d8302d43edba1a96f722e",
+      "needle": "pub fn accepts(args: &[String]) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-client/src/vat_original.rs",
+      "sha256": "4b819291521c4acdf0271abb74d8deb2d8153245b164959c82ad69b1043707f0",
+      "needle": "pub fn validate_original_vat_result(op: &str, v: &Value, success: bool) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/vat_original.rs",
+      "sha256": "00b33bcadb66d363dfe73a7f8590c8c25eaaf66d27d75a2c864155045748b2e7",
+      "needle": "pub fn report(tx: &Transaction<'_>, from: &str, to: &str) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-application/src/vat_original.rs",
+      "sha256": "17c072467886f71dc0ffdeb4ee71e599b3cb5fe7e24a74d2668e6f71f841ec24",
+      "needle": "Self::EuSalesList => Permission::CompanyExternalLookup,"
+    },
+    {
+      "path": "crates/rentemester-cli/src/vat_purchase_original.rs",
+      "sha256": "fdbed58780c023a8e296c38c8e6cada7c912e00b925022f3aa362a1d00790db9",
+      "needle": "pub fn accepts(args: &[String]) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-client/src/vat_purchase_original.rs",
+      "sha256": "fcda09841b9220b89a917823645bfb6e186881352ae0407f6d79d0e3ae76701c",
+      "needle": "pub fn original_vat_purchase_schema(representation: bool) -> Value {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/vat_purchase_original.rs",
+      "sha256": "a0cbe0981be878a475659887239b25f75dc4db93537316cd6d6b5a0291345d11",
+      "needle": "pub struct Input {"
+    },
+    {
+      "path": "crates/rentemester-application/src/vat_purchase_original.rs",
+      "sha256": "ecd48e107fd8037b394d35d30d1403749e14c06aa360225c6a5c6c6f76c7118f",
+      "needle": "fn parse("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/annual_exports.rs",
+      "sha256": "25bf2d9fdda38134b1c7543f0e1cbaba53738f1268de1670090cef428471e2e8",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/annual_report.rs",
+      "sha256": "deb2e4703cfb9b34e18f143c2456932a89a7e593fc81bd25de964506abcb2b31",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/compliance.rs",
+      "sha256": "2ecb55e856b3e2e1ea2c88518601af4472a02b9b60efef36ac61de5d52511849",
+      "needle": "//! Static repository data grants no authority. Company report uses current CompanyRead."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/eu_sales.rs",
+      "sha256": "5c1d813af5b239f4c49c4a0fe1f8dc588e4e9df81cb44fb5caea111bfcb810da",
+      "needle": "//! Explicit VIES lookup and read-only EU sales preparation, never tax submission."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/vat_original.rs",
+      "sha256": "0335c8c73ad71cb504035830d2896b881e0bf14a64eeb9669ee91de9d4d5955b",
+      "needle": "//! Fixed source VAT GET routes; strict parsing runs only after current authority."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "1cc9d7fc77a6bab427107b687d4a2725d1d6c44f6f60b56866cac21a6b336ee8",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/oss_report.rs",
+      "sha256": "bdd155681e143b7005a3d71ad12a8b5bedcd0a0fa00c9d5ccc7354f1c2eea789",
+      "needle": "//! Dated read-only OSS base report. No VAT computation or tax submission."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/vat.rs",
+      "sha256": "7205b1e2b180f4fa32ea27581b84898da49ab4e684038e2366ba8650bc21ebe7",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/accountant.rs",
+      "sha256": "15a1559fe7086c33a49c57225e24dabce25c1f86d405ff79818d2742ef1c09f8",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/vat_purchase_original.rs",
+      "sha256": "f33f7c09fefb94e3995d58c4ab2b71e27a21884ce5bb473fb6307077ee87e267",
+      "needle": "//! Fixed original VAT POST routes; all decoding follows current ledger authority."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/saft.rs",
+      "sha256": "2f6a1b4495572761f477d45c2333005950c3903937a323799d7621b255c0b236",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/annual_reports.rs",
+      "sha256": "5104bcc7c6327a1bee05f61f4eae7665cc8b71c137867ecb2a35023b47222f4b",
+      "needle": "pub fn tools() -> Vec<Value> {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/eu_sales.rs",
+      "sha256": "2ba80b6841b9e17e6353309807d58501f99c7f8a8eaa8878635afdbfc42cdedf",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/saft.rs",
+      "sha256": "7b0277b3a473ce71941c0e24cf9356118902110697bf9a82210663944bee8a6d",
+      "needle": "pub fn tools() -> Vec<Value> {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/handoff_export.rs",
+      "sha256": "1bfeb7272da3ad87640abf9b78ce244b1fd02f9dbe0d9960522bd5d833aeedc9",
+      "needle": "pub fn tools() -> Vec<Value> {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/annual_exports.rs",
+      "sha256": "ef1bccdd63cd7b9c248444da4e9e4c651bccef819806eac02312ac1a1e006b96",
+      "needle": "pub fn tools() -> Vec<Value> {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/periods.rs",
+      "sha256": "c0d33756f078e8156b4be8be5f0a95a2834fe429e69d3723c191afc95eb6aae0",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/vat_original.rs",
+      "sha256": "6fce323239a26915ef34f8ac4f41389912fc0efb071f69280638d607939735b1",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/vat_purchase_original.rs",
+      "sha256": "82cb468731e21ace4490e919f49a62ac8f71f9b78585134aae2465f480e90737",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    }
+  ]
 }

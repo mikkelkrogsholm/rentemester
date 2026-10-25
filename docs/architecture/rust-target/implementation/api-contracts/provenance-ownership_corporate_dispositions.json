@@ -26,7 +26,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
+      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
       "needle": "fn proof("
     },
     {
@@ -146,7 +146,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
+      "sha256": "1cd53ebdadc28472985063b4cd20e186a364d96de78477a3af429f449980f68e",
       "needle": "async fn request("
     },
     {
@@ -156,7 +156,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
       "needle": "fn main()"
     },
     {
@@ -248,6 +248,436 @@
       "path": "src/cli/group.ts",
       "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
       "needle": "dispatch.on(\"group\", \"plan-disposition\""
+    },
+    {
+      "path": "crates/rentemester-cli/src/corporate_records_original.rs",
+      "sha256": "72901522c8ccbc40d48144037f5c3d57d25054024852c2e2f43ca8333cf80df3",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
+      "needle": "let registry_args"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "6b061f2fdd75d6c4b88e2240c45a7811a0d1b0db0bcf787bc4e08bad2d7e0dfe",
+      "needle": "fn migrated"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
+      "needle": "pub fn help"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "8aaf9f3194b723c0bf06dae7b1f367f45a7700190f1a337b113fb24e4f0d293d",
+      "needle": "let mut workspace_assertion"
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"download\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"enrich\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"ingest\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"inspect\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"link\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"list\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"corporate-record\", \"supersede\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group apply-elimination"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "export function register"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group apply-manifest"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"apply-manifest\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group approve-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"approve-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group approve-elimination"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group approve-mapping"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"approve-mapping\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group approve-profile"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"approve-profile\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group consolidated-report"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"consolidated-report\""
+    },
+    {
+      "path": "crates/rentemester-engine/src/consolidation.rs",
+      "sha256": "2f512ca54f1a2c56212746036661662f13422fc3e364af89e27be4b656faf1f9",
+      "needle": "pub fn calculate("
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f",
+      "needle": "impl Serialize for Money"
+    },
+    {
+      "path": "crates/rentemester-client/src/consolidation.rs",
+      "sha256": "1473f4c12f969be41ccac4a90683df85b66c01c69ed57ab34456304e8de84b15",
+      "needle": "pub async fn group_consolidated_report"
+    },
+    {
+      "path": "src/core/consolidated-reports.ts",
+      "sha256": "03904bc4a46b2838d83a7a77aac79527727ce443759cc7cbacbf2a9492a6ac19",
+      "needle": "export function buildConsolidatedReport"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group disposition-status"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"disposition-status\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group eliminations"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"eliminations\""
+    },
+    {
+      "path": "crates/rentemester-client/src/intercompany.rs",
+      "sha256": "d692d50720a2d9d7da1db2d9e3c21e125e9cd557f8af14d0ea710412369e046b",
+      "needle": "pub async fn intercompany("
+    },
+    {
+      "path": "crates/rentemester-engine/src/intercompany.rs",
+      "sha256": "07a819be5635492113fb385ccd90db3a276db936463712ed827763f13c81d784",
+      "needle": "pub struct Mapping"
+    },
+    {
+      "path": "crates/rentemester-engine/src/consolidation.rs",
+      "sha256": "2f512ca54f1a2c56212746036661662f13422fc3e364af89e27be4b656faf1f9",
+      "needle": "pub struct Profile"
+    },
+    {
+      "path": "crates/rentemester-host/src/intercompany.rs",
+      "sha256": "1cbd60a163466d502a7b3867e332c6882446d0a93c66967bf81876823d26cb51",
+      "needle": "rows.push(json!"
+    },
+    {
+      "path": "crates/rentemester-application/src/eliminations.rs",
+      "sha256": "cf27b2a9e621fd88b846afe3b5ad893312f430b53d6e78e522467203bd7d242e",
+      "needle": "Action::Overview(d)"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group link-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"link-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group overview"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"overview\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group propose-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"propose-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group propose-elimination"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"propose-elimination\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group propose-mapping"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"propose-mapping\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group propose-profile"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"propose-profile\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group reconcile"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"reconcile\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group reject-elimination"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group reopen-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"reopen-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group reverse-elimination"
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group revoke-mapping"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"revoke-mapping\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group revoke-profile"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"revoke-profile\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group settle-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"settle-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group supersede-disposition"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"supersede-disposition\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group validate-manifest"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"validate-manifest\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group validate-mapping"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"validate-mapping\""
+    },
+    {
+      "path": "src/cli-meta/group-specs.ts",
+      "sha256": "c257f2d16dbe5a8ae3daa0ffa4611ccdd0c067f3d7fdb52b7d8b9db709bf46e2",
+      "needle": "group validate-profile"
+    },
+    {
+      "path": "src/cli/group.ts",
+      "sha256": "e83eee8fe6518e92183d73b5ba0776bdbec476d3b707283c477b5d500dde4d58",
+      "needle": "dispatch.on(\"group\", \"validate-profile\""
+    },
+    {
+      "path": "crates/rentemester-cli/src/ownership_original.rs",
+      "sha256": "9b5d85997c89944654f34367604a555ca6618204096ae237aa92c8d6bea38b47",
+      "needle": "pub fn execute"
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"apply\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"history\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"projection\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"propose\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"query\""
+    },
+    {
+      "path": "src/cli/workspace-registry.ts",
+      "sha256": "8f5bfbb9462847192110fd41d649198cad4ddeb483dfd20e8388039d33c6d8cb",
+      "needle": "dispatch.on(\"ownership\", \"review\""
+    },
+    {
+      "path": "crates/rentemester-mcp/src/registry_original717.rs",
+      "sha256": "8feaf49a76785721282c121e827d9da55f53fcdd84243a74d119c5cc31e0c408",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/registry_original717.rs",
+      "sha256": "4bcf311c641b656cf6d67e0c6c116d37ac97a30ff13bc502116e54a8d3e78472",
+      "needle": "#[test]"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/intercompany_original717.rs",
+      "sha256": "0d82858df4eb46e5ed97832c5d445d7fc4daaf8e540d92c9a6f74797dd45d0df",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/intercompany_original717.rs",
+      "sha256": "05eb38d8b4de47873191d5dd15b865933ed30a819b63b6a97ca424711cf592b8",
+      "needle": "fn all_eight_project_original_receipts_once"
+    },
+    {
+      "path": "src/mcp/tools/intercompany-dispositions.ts",
+      "sha256": "78decae933142096361af65ec75d744158643e4e0e81c72b20a2fcb40df0903d",
+      "needle": "intercompany_disposition_plan"
+    },
+    {
+      "path": "src/core/intercompany-dispositions.ts",
+      "sha256": "8509d24ff2a7328d147d9c7c024a130a27d95cb6441393eec6b8df5d1b37f33d",
+      "needle": "export function planIntercompanyDisposition"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/knowledge_ownership_original717.rs",
+      "sha256": "6d62a20fb804f5191df8c4d1179c2bbf102ac4fda9997fec102667d94301c444",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/tests/knowledge_ownership_original717.rs",
+      "sha256": "6ed6a598144afd1c5a0b6dfb17fec3eaeb0bacec76ebf0fecaeabb4f15a1fdc7",
+      "needle": "#[test]"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "2ca78085abe240400901f6807af7f568f530ed6b37bec6bdff701498d96e2a39",
+      "needle": "pub fn sha256_bytes"
     }
   ],
   "leafMapping": {
@@ -506,7 +936,7 @@
     "sourceRefs": [
       {
         "path": "crates/rentemester-cli/src/main.rs",
-        "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
+        "sha256": "730b128f8e13394a6a0118f2fba29d19e95e9c1ec3a017b12d24519fe4de018f",
         "needle": "let registry_args"
       },
       {
@@ -516,7 +946,7 @@
       },
       {
         "path": "crates/rentemester-cli/src/original_discovery.rs",
-        "sha256": "51bcf3faa487cda5292c89c1f4827a0e97c14dfefe37cc53fdda1d2a84aaa549",
+        "sha256": "61ba59ba1f9f9acc323eb87ba885536e8cfbbf4b7b454354b9b200a234958d0e",
         "needle": "pub fn help"
       },
       {
@@ -2401,5 +2831,7 @@
       "whole716Accepted": false,
       "strictOracle": "PASS existing /tmp/r05-677-strict-contract-oracle.py Oracle.row for each of five new rows: strict schemas/refs/source SHA/needle/wire/refusal/retry checks. Exact27group identities asserted. No runtime replay."
     }
-  }
+  },
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

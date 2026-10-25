@@ -106,9 +106,10 @@ impl Owner {
                 };
                 let count = |t: &str| {
                     db.query_row(&format!("SELECT count(*) FROM {t}"), [], |r| {
-                        r.get::<_, u64>(0)
+                        r.get::<_, i64>(0)
                     })
                     .map_err(error)
+                    .and_then(|n| u64::try_from(n).map_err(error))
                 };
                 let p = rentemester_storage::backup_state::original717::provenance(db)?;
                 provenance = Some(p.clone());

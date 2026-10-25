@@ -754,3 +754,6 @@ mod profile_tests {
 
 #[path = "original716_cli/schema.rs"]
 pub(crate) mod original716_schema;
+
+#[path = "original716_cli/transfer.rs"]
+pub(crate) mod original716_transfer;

@@ -2028,6 +2028,16 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-registrer-test-afsender",
+      "capability": "POST /api/companies/{slug}/original-efaktura-registrer-test-afsender"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-registrer-test-gln",
+      "capability": "POST /api/companies/{slug}/original-efaktura-registrer-test-gln"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/original-gdpr-audit-log",
       "capability": "POST /api/companies/{slug}/original-gdpr-audit-log"
     },
@@ -2108,8 +2118,23 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-signed",
+      "capability": "POST /api/companies/{slug}/original-system-backup-signed"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/original-system-backup-verify-remote-placement",
       "capability": "POST /api/companies/{slug}/original-system-backup-verify-remote-placement"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-export-public-key",
+      "capability": "POST /api/companies/{slug}/original-system-export-public-key"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-rotate-backup-keypair",
+      "capability": "POST /api/companies/{slug}/original-system-rotate-backup-keypair"
     },
     {
       "method": "POST",
@@ -2480,6 +2505,26 @@
       "method": "POST",
       "path": "/api/companies/{slug}/original/vat/representation-purchase",
       "capability": "POST /api/companies/{slug}/original/vat/representation-purchase"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original716-compliance-report",
+      "capability": "POST /api/companies/{slug}/original716-compliance-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original716-erase",
+      "capability": "POST /api/companies/{slug}/original716-erase"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original716-export",
+      "capability": "POST /api/companies/{slug}/original716-export"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original716-retention",
+      "capability": "POST /api/companies/{slug}/original716-retention"
     },
     {
       "method": "GET",
@@ -3183,6 +3228,16 @@
     },
     {
       "method": "GET",
+      "path": "/api/group/overview",
+      "capability": "GET /api/group/overview"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group/overview",
+      "capability": "HEAD /api/group/overview"
+    },
+    {
+      "method": "GET",
       "path": "/api/health",
       "capability": "GET /api/health"
     },
@@ -3210,6 +3265,11 @@
       "method": "POST",
       "path": "/api/original-system-restore-backup",
       "capability": "POST /api/original-system-restore-backup"
+    },
+    {
+      "method": "POST",
+      "path": "/api/original-system-verify-backup-signature",
+      "capability": "POST /api/original-system-verify-backup-signature"
     },
     {
       "method": "GET",
@@ -3452,5 +3512,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "e8962a7afc115dfa9c78bda2cc65cc35009581b23aa276472b07f5a33b381e97"
+  "manifestId": "331de7328c127fbaeda4302f1f7980b4b9e2a66f3d169a4e75dfccf043604f0d"
 }

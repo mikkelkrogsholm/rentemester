@@ -130,12 +130,12 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "service_lifecycle: Some(Box::new"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
+      "sha256": "333d265d918fbd312d3027bf9042c0aadcb0321a91e1731ff7821069de89d77b",
       "needle": "fn unwrap<T>"
     },
     {
@@ -145,7 +145,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
+      "sha256": "d51557054403e6bf5f4c5bbce8db4d111e6449a90be35b122af66d4f5a9f23f9",
       "needle": "fn control_auth<T>"
     },
     {
@@ -160,7 +160,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+      "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
       "needle": "protocol::install(router, connected)"
     }
   ],
@@ -169,5 +169,8 @@
     "protocol": "Existing accepted master 686324...; not rerun",
     "identity712": "d95949983f76072a57570f73387097f4cc0c0ba420199e668d3d73c5a85b7abd actual HTTPS/OS Keychain accepted; not rerun"
   },
-  "limits": "Six selected HTTP operations only, not complete interface/registry or #677 closure; no CLI/MCP contract. Structural oracle does not establish runtime or acceptance."
+  "limits": "Six selected HTTP operations only, not complete interface/registry or #677 closure; no CLI/MCP contract. Structural oracle does not establish runtime or acceptance.",
+  "operationCount": 6,
+  "original716AddedIdentities": [],
+  "currentCliIdentityCount": 265
 }

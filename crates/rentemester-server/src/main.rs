@@ -32,6 +32,9 @@ use tower_http::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if let Some(code) = backend::original716_transfer::execute(&arguments) {
+        std::process::exit(code);
+    }
     if let Some(code) = original716_cli::bootstrap::execute(&arguments).await {
         std::process::exit(code);
     }
