@@ -3093,6 +3093,36 @@
     },
     {
       "method": "GET",
+      "path": "/api/original/agent-about",
+      "capability": "GET /api/original/agent-about"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/original/agent-about",
+      "capability": "HEAD /api/original/agent-about"
+    },
+    {
+      "method": "GET",
+      "path": "/api/original/agent-capabilities",
+      "capability": "GET /api/original/agent-capabilities"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/original/agent-capabilities",
+      "capability": "HEAD /api/original/agent-capabilities"
+    },
+    {
+      "method": "GET",
+      "path": "/api/original/agent-workflows/{id}",
+      "capability": "GET /api/original/agent-workflows/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/original/agent-workflows/{id}",
+      "capability": "HEAD /api/original/agent-workflows/{id}"
+    },
+    {
+      "method": "GET",
       "path": "/api/portfolio",
       "capability": "GET /api/portfolio"
     },
@@ -3297,5 +3327,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "bf7d7d4d753ca514bfa092b095c90908b886a064ba15840834bb34f3de43768a"
+  "manifestId": "34299c01db99638afaafb85164dfee22870716da28314c3b44cf1cbd38ac3914"
 }

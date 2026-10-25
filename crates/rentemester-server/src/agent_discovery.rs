@@ -9,11 +9,19 @@ use axum::{
 };
 use serde_json::{Value, json};
 
+mod original123;
+
 pub fn router(connected: bool) -> Router {
     Router::new()
         .route("/api/agent-about", get(handle))
         .route("/api/agent-capabilities", get(handle))
         .route("/api/agent-workflows/{id}", get(handle))
+        .route("/api/original/agent-about", get(original123::handle))
+        .route("/api/original/agent-capabilities", get(original123::handle))
+        .route(
+            "/api/original/agent-workflows/{id}",
+            get(original123::handle),
+        )
         .with_state(connected)
 }
 fn response(status: StatusCode, body: Value) -> Response {
