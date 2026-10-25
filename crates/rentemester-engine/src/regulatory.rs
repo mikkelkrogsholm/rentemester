@@ -4,7 +4,13 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 mod assets;
+mod metadata;
 mod parsers;
+/// Public read-only metadata from the compile-time rule bundles and source catalog.
+/// This does not evaluate citation coverage or assert legal compliance.
+pub fn bundled_rules_metadata() -> Result<Value, Error> {
+    metadata::compute(assets::CATALOG, assets::RULES)
+}
 mod provisions;
 fn invalid(s: &str) -> Error {
     Error::new("regulatory_invalid", s)

@@ -1,5 +1,14 @@
 //! Static repository data grants no authority. Company report uses current CompanyRead.
 use super::*;
+pub(super) async fn rules() -> Response {
+    match rentemester_engine::regulatory::bundled_rules_metadata() {
+        Ok(metadata) => response(StatusCode::OK, metadata),
+        Err(error) => response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            json!({"ok":false,"errors":[{"code":error.code,"error":error.message}]}),
+        ),
+    }
+}
 pub(super) async fn coverage() -> Response {
     static_report(false)
 }
