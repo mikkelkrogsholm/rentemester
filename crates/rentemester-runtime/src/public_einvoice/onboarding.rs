@@ -16,6 +16,7 @@ impl Direction {
 }
 pub struct Authorization {
     constraint: Option<String>,
+    test_gln: String,
 }
 impl Authorization {
     pub fn permits(&self, key: &str) -> bool {
@@ -68,6 +69,7 @@ impl Client {
         }
         Ok(Authorization {
             constraint: v.company_key_constraint,
+            test_gln: v.test_gln_number,
         })
     }
     pub fn register_direction(
@@ -95,6 +97,51 @@ impl Client {
         Ok(ParticipantRegistration {
             registered_on_network: true,
             webhook_registered: false,
+        })
+    }
+}
+
+impl Client {
+    /// CLI-only test-license operation. The GLN is private validate-auth evidence,
+    /// never request input, a serialized result, or persisted company state.
+    pub fn original716_test_registration(
+        &self,
+        authorization: &Authorization,
+        key: &str,
+        sender_cvr: Option<&str>,
+        network: Network,
+    ) -> Result<ParticipantRegistration, Error> {
+        if self.environment() != Environment::Test
+            || !company_key(key)
+            || !authorization.permits(key)
+        {
+            return Err(Error::InvalidInput);
+        }
+        let (direction, kind, id, network) = match sender_cvr {
+            Some(cvr) if cvr.len() == 8 && cvr.bytes().all(|b| b.is_ascii_digit()) => {
+                ("outbound", "DK:CVR", cvr, Network::Peppol)
+            }
+            Some(_) => return Err(Error::InvalidInput),
+            None => ("inbound", "GLN", authorization.test_gln.as_str(), network),
+        };
+        let body = serde_json::to_vec(&json!({"direction":direction,"participantType":kind,
+            "participantId":id,"companyKey":key,"webhookUrl":null,
+            "documentProfiles":format!("default-{}",network.name())}))
+        .map_err(|_| Error::InvalidInput)?;
+        let (status, bytes) = self.request(
+            self.url(&["v2", "register-participant", network.name()])?,
+            Some(("application/json", body)),
+        )?;
+        if status != 200 {
+            return Err(Error::Refused { status });
+        }
+        let v: Value = serde_json::from_slice(&bytes).map_err(|_| Error::Protocol)?;
+        if v["registeredOnNetwork"] != true {
+            return Err(Error::Protocol);
+        }
+        Ok(ParticipantRegistration {
+            registered_on_network: true,
+            webhook_registered: v["webhookRegistered"] == true,
         })
     }
 }

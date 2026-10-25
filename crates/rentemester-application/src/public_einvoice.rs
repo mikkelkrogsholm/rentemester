@@ -18,6 +18,7 @@ use rentemester_runtime::public_einvoice::{
     onboarding::{Authorization, Direction},
 };
 pub enum Intent {
+    Original716TestRegistration { sender: bool, network: Network },
     RegisterPair(Network),
     OriginalRegister(Value, Network),
     Onboard(Network),
@@ -45,6 +46,8 @@ pub struct Admission {
     step: Step,
 }
 enum Step {
+    TestAuth(TestCompany, bool, Network),
+    TestRegister(TestCompany, bool, Network),
     Auth(Identity),
     FindDirection(Identity, String, Network, Direction),
     Direction(Identity, String, Network, Direction),
@@ -57,6 +60,12 @@ enum Step {
     Observe(Source, i64, String),
 }
 pub enum Request<'a> {
+    Original716TestRegistration {
+        authorization: &'a Authorization,
+        company_key: &'a str,
+        sender_cvr: Option<&'a str>,
+        network: Network,
+    },
     Auth,
     FindDirection {
         cvr: &'a str,
@@ -111,6 +120,7 @@ pub enum Discovery<T> {
     Failed,
 }
 pub enum Outcome {
+    Original716TestRegistration(Option<bool>),
     Auth(Option<Authorization>),
     DirectionFound(Discovery<()>),
     Direction(bool),
@@ -125,6 +135,20 @@ pub enum Outcome {
 impl Admission {
     pub fn request(&self) -> Request<'_> {
         match &self.step {
+            Step::TestAuth(..) => Request::Auth,
+            Step::TestRegister(c, sender, n) => Request::Original716TestRegistration {
+                authorization: self
+                    .authorization
+                    .as_ref()
+                    .expect("admitted provider proof"),
+                company_key: &c.key,
+                sender_cvr: if *sender {
+                    Some(c.participant.strip_prefix("DK").unwrap_or(&c.participant))
+                } else {
+                    None
+                },
+                network: *n,
+            },
             Step::Auth(_) => Request::Auth,
             Step::FindDirection(i, k, n, d) => Request::FindDirection {
                 cvr: &i.cvr,
@@ -287,6 +311,32 @@ pub fn start(
                 }
             }
             let step = match intent {
+                Intent::Original716TestRegistration { sender, network } => {
+                    if environment != "test" {
+                        return Ok(Next::Complete(
+                            json!({"ok":false,"errors":["Digisense test registration requires test environment"]}),
+                        ));
+                    }
+                    let c = match test_company(tx) {
+                        Ok(c) => c,
+                        Err(_) => {
+                            return Ok(Next::Complete(
+                                json!({"ok":false,"errors":["Exactly one existing local Digisense company is required"]}),
+                            ));
+                        }
+                    };
+                    if sender {
+                        let i = store::identity(tx)?;
+                        if c.kind != "DK:CVR"
+                            || c.participant.strip_prefix("DK").unwrap_or(&c.participant) != i.cvr
+                        {
+                            return Ok(Next::Complete(
+                                json!({"ok":false,"errors":["A Danish local Digisense company is required"]}),
+                            ));
+                        }
+                    }
+                    Step::TestAuth(c, sender, network)
+                }
                 Intent::Onboard(_) => Step::Auth(store::identity(tx)?),
                 Intent::RegisterPair(n) | Intent::OriginalRegister(_, n) => {
                     let i = store::identity(tx)?;
@@ -384,7 +434,7 @@ pub fn finish(
     admission: Admission,
     outcome: Outcome,
 ) -> Result<Committed<Next>, Failure> {
-    let delivery = matches!(admission.step, Step::Deliver(..));
+    let delivery = matches!(admission.step, Step::Deliver(..) | Step::TestRegister(..));
     let result = control_fence::execute_cookie_subject(
         control,
         company,
@@ -405,6 +455,40 @@ pub fn finish(
             }
             let now = at(&context)?;
             match (&admission.step, outcome) {
+                (Step::TestAuth(c, sender, n), Outcome::Auth(auth)) => {
+                    check_test_company(tx, c, *sender)?;
+                    let Some(auth) = auth else {
+                        return Ok(Next::Complete(test_failure(*sender)));
+                    };
+                    if !auth.permits(&c.key) {
+                        return Ok(Next::Complete(json!({"ok":false,"errors":[if *sender {
+                            "Digisense test license is not authorized for the local company"
+                        } else { "Digisense test GLN is not authorized for the local company" }]})));
+                    }
+                    test_audit(tx, *sender, "intended", "requested", actor, &now)?;
+                    let step = Step::TestRegister(c.clone(), *sender, *n);
+                    let mut a = admission;
+                    a.authorization = Some(auth);
+                    Ok(pending(a, step))
+                }
+                (
+                    Step::TestRegister(c, sender, _),
+                    Outcome::Original716TestRegistration(webhook),
+                ) => {
+                    check_test_company(tx, c, *sender)?;
+                    if webhook.is_none() {
+                        test_audit(tx, *sender, "failed", "failed", actor, &now)?;
+                        return Ok(Next::Complete(test_failure(*sender)));
+                    }
+                    if *sender {
+                        // Source sender receipt only: do not manufacture native onboarding
+                        // attestations or persist provider response/GLN/license metadata.
+                        tx.execute("INSERT INTO digisense_participants(company_key,network,direction,participant_type,participant_id,webhook_url,registered_on_network,webhook_registered,registered_at) VALUES(?,'peppol','outbound','DK:CVR',?,NULL,1,?,?) ON CONFLICT(company_key,network,direction) DO UPDATE SET participant_type=excluded.participant_type,participant_id=excluded.participant_id,webhook_url=NULL,registered_on_network=1,webhook_registered=excluded.webhook_registered,registered_at=excluded.registered_at",
+                            rusqlite::params![c.key,c.participant.strip_prefix("DK").unwrap_or(&c.participant),*webhook == Some(true),now]).map_err(|_| refused())?;
+                    }
+                    test_audit(tx, *sender, "succeeded", "completed", actor, &now)?;
+                    Ok(Next::Complete(json!({"ok":true,"registered":true})))
+                }
                 (Step::Auth(i), Outcome::Auth(Some(auth))) => {
                     if store::identity(tx)? != *i {
                         return Err(refused());
@@ -818,3 +902,69 @@ fn check_pair(tx: &Connection, a: &Admission, i: &Identity, key: &str) -> Result
 }
 
 pub mod original717;
+
+#[derive(Clone, PartialEq, Eq)]
+struct TestCompany {
+    key: String,
+    kind: String,
+    participant: String,
+    name: String,
+    registered: String,
+}
+fn test_company(db: &Connection) -> Result<TestCompany, Error> {
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM digisense_companies", [], |r| r.get(0))
+        .map_err(|_| refused())?;
+    if count != 1 {
+        return Err(refused());
+    }
+    let c = db.query_row("SELECT company_key,company_type,participant_id,company_name,registered_at FROM digisense_companies", [], |r| Ok(TestCompany {
+        key:r.get(0)?,kind:r.get(1)?,participant:r.get(2)?,name:r.get(3)?,registered:r.get(4)?
+    })).map_err(|_| refused())?;
+    if c.key.trim().is_empty() || c.key.trim() != c.key {
+        return Err(refused());
+    }
+    Ok(c)
+}
+fn check_test_company(db: &Connection, c: &TestCompany, sender: bool) -> Result<(), Error> {
+    if test_company(db)? != *c {
+        return Err(refused());
+    }
+    if sender
+        && (c.kind != "DK:CVR"
+            || store::identity(db)?.cvr
+                != c.participant.strip_prefix("DK").unwrap_or(&c.participant))
+    {
+        return Err(refused());
+    }
+    Ok(())
+}
+fn test_failure(sender: bool) -> Value {
+    json!({"ok":false,"errors":[if sender {"Digisense test sender registration failed"} else {"Digisense test GLN registration failed"}]})
+}
+fn test_audit(
+    tx: &Transaction<'_>,
+    sender: bool,
+    event: &str,
+    message: &str,
+    actor: &str,
+    now: &str,
+) -> Result<(), Error> {
+    let kind = if sender { "sender" } else { "gln" };
+    let label = if sender { "sender" } else { "GLN" };
+    tx.execute(
+        "INSERT INTO audit_log(event_type,entity_type,message,actor,created_at) VALUES(?,?,?,?,?)",
+        rusqlite::params![
+            format!("digisense_test_{kind}_registration_{event}"),
+            format!("digisense_test_{kind}"),
+            format!("Digisense test {label} registration {message}"),
+            actor,
+            now
+        ],
+    )
+    .map_err(|_| refused())?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod original716_tests;

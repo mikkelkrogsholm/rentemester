@@ -285,3 +285,60 @@ mod original717_provider_tests {
         assert!(!source_status(&bad));
     }
 }
+
+impl ApiClient {
+    /// Two original CLI-only operations; not additions to the frozen MCP catalogue.
+    pub async fn original716_test_registration(
+        &self,
+        name: &str,
+        args: &Value,
+    ) -> Result<Value, Error> {
+        if !matches!(name, "registrer-test-gln" | "registrer-test-afsender")
+            || !args.as_object().is_some_and(|o| {
+                o.keys().all(|k| {
+                    matches!(k.as_str(), "company" | "confirm")
+                        || name == "registrer-test-gln" && k == "network"
+                })
+            })
+            || args["confirm"] != true
+            || args
+                .get("network")
+                .is_some_and(|v| v != "nemhandel" && v != "peppol")
+        {
+            return Err(Error::InvalidInput("invalid original716 test registration"));
+        }
+        let company = self.diagnostics_company_original118(
+            args["company"]
+                .as_str()
+                .ok_or(Error::InvalidInput("company required"))?,
+        )?;
+        let mut body = args.clone();
+        body.as_object_mut()
+            .ok_or(Error::Protocol)?
+            .remove("company");
+        let value = self
+            .request(
+                Method::POST,
+                &company_path(&company, &format!("original-efaktura-{name}"))?,
+                &[],
+                Some(serde_json::to_vec(&body).map_err(|_| Error::Protocol)?),
+            )
+            .await?;
+        let r = &value["result"];
+        if value["ok"] != true {
+            return Err(Error::Protocol);
+        }
+        if r["ok"] == true && r["registered"] == true {
+            // Deliberately project only the public source receipt.
+            Ok(json!({"ok":true,"registered":true}))
+        } else if r["ok"] == false
+            && r["errors"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+        {
+            Ok(json!({"ok":false,"errors":r["errors"]}))
+        } else {
+            Err(Error::Protocol)
+        }
+    }
+}

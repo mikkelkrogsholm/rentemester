@@ -351,3 +351,62 @@ mod boundary_tests {
         assert!(matches!(result, Err(Error::InvalidInput(_))));
     }
 }
+
+impl ApiClient {
+    /// CLI boundary reuses source schemas, file admission and result verification;
+    /// the immutable MCP catalogue and its validator remain unchanged.
+    pub async fn original716_intake(&self, name: &str, args: &Value) -> Result<Value, Error> {
+        if !matches!(name, "mail_intake_ingest" | "imap_intake_poll") {
+            return Err(Error::InvalidInput("unknown original716 intake"));
+        }
+        validate_original717(name, args)?;
+        // Runtime connection decoder uses bounded u16 ports and u32 UIDs.
+        if name == "imap_intake_poll"
+            && (args
+                .get("imapPort")
+                .is_some_and(|v| v.as_u64().is_none_or(|n| n == 0 || n > 65535))
+                || args
+                    .get("sinceUid")
+                    .is_some_and(|v| v.as_u64().is_none_or(|n| n > u32::MAX as u64)))
+        {
+            return Err(Error::InvalidInput("invalid IMAP port or UID"));
+        }
+        // original717 already implements private messages/core, transport bounds,
+        // metadataPerMessage and ephemeral IMAP fields for these source schemas.
+        self.original717(name, args).await
+    }
+}
+
+#[cfg(test)]
+mod original716_tests {
+    use super::*;
+    #[test]
+    fn original716_intake_source_metadata_and_override_schema_remains_frozen() {
+        for (name, args) in [
+            (
+                "mail_intake_ingest",
+                json!({"company":"synthetic","source":"synthetic.eml","confirm":true,"metadataPerMessage":{"<synthetic@example.invalid>":{"invoiceNo":"SYN-1","sourceExtension":true}}}),
+            ),
+            (
+                "imap_intake_poll",
+                json!({"company":"synthetic","confirm":true,"imapHost":"imap.example.invalid","imapPort":993,"imapUsername":"synthetic","imapMailbox":"Receipts","sinceUid":0,"metadataPerMessage":{"<synthetic@example.invalid>":{"currency":"DKK"}}}),
+            ),
+        ] {
+            assert!(validate_original717(name, &args).is_ok());
+        }
+        for args in [
+            json!({"company":"synthetic","imapPassword":"not-admitted"}),
+            json!({"company":"synthetic","imapPort":1.5}),
+            json!({"company":"synthetic","metadataPerMessage":{"<x>":[]}}),
+            json!({"company":"synthetic","sinceUid":-1}),
+            json!({"company":"synthetic","actor":"user:forged"}),
+        ] {
+            assert!(validate_original717("imap_intake_poll", &args).is_err());
+        }
+        assert!(
+            !original717_tools()
+                .iter()
+                .any(|v| v["name"].as_str().unwrap().contains("registrer-test"))
+        );
+    }
+}
