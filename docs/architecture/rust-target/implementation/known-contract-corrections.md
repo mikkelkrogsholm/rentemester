@@ -646,3 +646,26 @@ bevares som observeret historisk fejl; readiness-PASS er ikke produktbevis.
 Ingen historisk ledger omskrives, og accepterede finansielle handlinger
 gentages ikke. Aktuelle R04-kontrakter korrigeres fremadrettet; R02 kræver
 fortsat effektiv kontrakt-/effekt-/risikoafstemning samt klient/storage-negativkontrol.
+
+## Leverandøridentitet på en bevaret kassebon
+
+R121s faktiske ejerforløb viste, at kassebonens rå metadata indeholdt det
+kontrollerede land, identitetstype og CVR, mens de afledte identitetskolonner
+var tomme. Den oprindelige kilde begrænser denne projektion til køb/salg
+(`src/core/documents.ts`) og benytter en legacy-bro ved momskontrol
+(`src/core/supplier-identity.ts`). Rusts ubetingede krav om den projicerede
+`resolved`-markering gjorde de dokumenterede oplysninger ubrugelige.
+
+Den fælles Rust-læsning accepterer derfor kassebonens bevarede, validerede
+kildemetadata, når status, land og identitetstype i projektionen alle mangler.
+Den almindelige leverandørvalidator skal kunne løse kilden, og det gemte
+identifikationsfelt skal give præcis samme land, type og identitet. Læsning
+og bogføringsgrundlag bruger samme beslutning. En eksplicit uafklaret status,
+en delvis projektion, modstridende identitet eller ugyldig kilde afvises stadig.
+EU-moms kræver fortsat den eksisterende aktuelle udbyderevidens.
+
+Der udføres ingen backfill, ændring af originalfil, metadata, historiske hashes
+eller revisionsspor. Valideringen af eksisterende berigelseshistorik bevares.
+Det er en rettelse af det eksisterende kassebonforløb; ingen ny dokumenttype,
+leverandørgætning eller svagere fradragsregel. De målrettede regressioner har
+præfikset `receipt121_` i `purchase_preflight/tests.rs`.
