@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R113 existing Rust release implementation accepted through SGD; actual hosted release and whole725 remain open. R113b preserves runner disk guard and repairs acceptance build cache caller.",
-  "code_revision": "dfb0c4ace61fc45ae6a483e54f33634176421720",
+  "current_increment": "R115 actual retained normalMFA/shared company setup\u2192first reviewed bank/equity posting\u2192report\u2192independently verified signed snapshot\u2192Rustrestart/freshMFA/exact readback accepted. Prior accepted effects not repeated; full718/all55 remain.",
+  "code_revision": "fe6c48d341369c0cd6e396688702702a8b84754f",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "rust_release725_implementation_component_accepted",
+  "state": "actual_first_bookkeeping718_component_accepted",
   "issues_closed": 41,
-  "next": "Prioritize first real bookkeeping: complete shared company/chart/bank setup718 and retained recovery acceptance; finish necessary original CLI/MCP compatibility in bounded whole flows. Preserve41closed/14open and final installed desktop LAST.",
+  "next": "Finish existing original MCP first-use company_add\u2192profile\u2192bookkeeping_workbench over same common server.15original names/29workflow descriptions plus classified unresolved signatures remain; preserve corrected contract profiles and alloriginalscope. Finalinstalleddesktop LAST.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -15,7 +15,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R111 owner manual purchase unknown-provider/read-only-route/reload/restart/manualrelease actual accepted, zero financial writes and one provider effect; prior R104onejournal retained. Full718/all55 remain.",
+  "previous_verified_increment": "R113 existing Rust release implementation accepted through SGD; actual hosted release and whole725 remain open. R113b preserves runner disk guard and repairs acceptance build cache caller.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -19071,6 +19071,19 @@
         "Original MCP/CLI/workflow compatibility and fullCoverage release gates remain fail-closed; structural differences require classification against documented native corrections, never a blanket waiver",
         "HTTPS proxy/cookie/client-IP and recovery obligations, full55 original issues/J01-J07/cutover and final installed desktop LAST"
       ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "fe6c48d341369c0cd6e396688702702a8b84754f",
+      "report": "/tmp/rentemester-rust-reports/r115-owner-first-bookkeeping718-component-accepted.json",
+      "sha256": "72a62910af9f897e92b3de14708fdb223b70b9e86245561dd2308863bca12368",
+      "scope": "Actual existing R112 creator normalpassword/MFA; retained company not recreated,11 explicit React accounts/10roles/mapped bank, one new nonVAT company/isolation/memberdenial; inert review/cancel thenexactly1new bank/equity capitaljournal with2lines/ordinaryrecoveryack; trialbalance rendered; signed backup independentlyverified with exact fullcompanytable equality; Rustrestart/newnormalMFA/exactjournal+trialbalance,0additionalfinancialrequests.",
+      "remaining": [
+        "Full718 everyoriginalUI/capability/file/keyboard/local-hosted/failure acceptance remains; no closure on this component",
+        "This snapshot signature/fullinventory verified, no newsourcefreerestore; retained valid prior707/Backup117 recovery proof not replayed",
+        "Full55/J01-J07/migration/release/cutover/finalinstalleddesktop LAST remain;41closed14open"
+      ]
     }
   ],
   "scope_clarifications": [
@@ -19089,7 +19102,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 725,
+    "current_issue": 718,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
