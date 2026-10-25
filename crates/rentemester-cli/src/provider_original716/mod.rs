@@ -426,15 +426,6 @@ async fn run(args: &[String], s: &Value) -> Output {
             }
         }
     }
-    // The checkout has no admitted SDK adapter for these provider operations.
-    if matches!(cmd, "registrer-test-gln" | "registrer-test-afsender") {
-        return refusal(
-            s,
-            &f,
-            "Common SDK adapter unavailable for DigiSense test registration; no provider request was sent",
-            1,
-        );
-    }
     let company = get("--company")
         .map(str::to_owned)
         .or_else(|| std::env::var("RENTEMESTER_COMPANY").ok());
@@ -491,9 +482,12 @@ async fn run(args: &[String], s: &Value) -> Output {
         request["company"] = json!(company);
     }
     let result = match (family, cmd) {
+        ("efaktura", "registrer-test-gln" | "registrer-test-afsender") => {
+            api.original716_test_registration(cmd, &request).await
+        }
         ("efaktura", "konfigurer") => api.original717("efaktura_konfigurer", &request).await,
-        ("mail-intake", _) => api.original717("mail_intake_ingest", &request).await,
-        ("imap-intake", _) => api.original717("imap_intake_poll", &request).await,
+        ("mail-intake", _) => api.original716_intake("mail_intake_ingest", &request).await,
+        ("imap-intake", _) => api.original716_intake("imap_intake_poll", &request).await,
         ("invoice", _) => api.original717("invoice_send_email", &request).await,
         ("efaktura", "status" | "leveringsstatus") => {
             let company = match api.original717_company_selector(company.as_deref().unwrap()) {

@@ -378,3 +378,27 @@ fn both_delivery_literals_use_source_status_once_and_keep_failure() {
         assert_eq!(b["companyKey"], "--key=a");
     }
 }
+
+#[test]
+fn cli_only_test_registration_executes_and_returns_only_public_receipt() {
+    for cmd in ["registrer-test-gln", "registrer-test-afsender"] {
+        let route = format!("POST /api/companies/synthetic/original-efaktura-{cmd} ");
+        let (o, b) = fixture(
+            &["efaktura", cmd, "--confirm=yes", "--json"],
+            &route,
+            json!({"ok":true,"result":{"ok":true,"registered":true}}),
+        );
+        assert!(o.status.success(), "{o:?}");
+        assert_eq!(value(&o), json!({"ok":true,"registered":true}));
+        assert_eq!(b["confirm"], true);
+        for secret in [
+            "testGlnNumber",
+            "participantId",
+            "companyKey",
+            "apiLicenseKey",
+        ] {
+            assert!(b.get(secret).is_none());
+            assert!(value(&o).get(secret).is_none());
+        }
+    }
+}
