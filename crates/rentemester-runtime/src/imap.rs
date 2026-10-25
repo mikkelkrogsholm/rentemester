@@ -415,7 +415,9 @@ async fn session<S: AsyncRead + AsyncWrite + Unpin>(
     }
     let validity = validity.ok_or(Failure::Protocol)?;
     let start = match cursor {
-        Some(old) if old.uid_validity == validity => old.last_uid.checked_add(1),
+        Some(old) if old.uid_validity == validity || old.uid_validity == 0 => {
+            old.last_uid.checked_add(1)
+        }
         _ => Some(1),
     };
     let mut batch = Batch {
@@ -497,3 +499,5 @@ async fn session<S: AsyncRead + AsyncWrite + Unpin>(
 }
 #[cfg(test)]
 mod tests;
+
+pub mod original717;

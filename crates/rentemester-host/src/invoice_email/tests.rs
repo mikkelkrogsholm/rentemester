@@ -410,3 +410,202 @@ fn signed_backup_preserves_exact_history_originals_without_dispatch_or_old_autho
     assert_eq!(store::rows(db(&r)).unwrap(), saved);
     assert_eq!(f.calls, 2);
 }
+
+#[test]
+fn original717_invoice_send_email_happy_duplicate_missing_config_live_refusal_and_unknown() {
+    use std::os::unix::fs::PermissionsExt;
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let id = invoice(&mut owner, &proof);
+    let body = json!({"documentId":id,"confirm":true,"to":"buyer@example.invalid"});
+    let run = |o: &mut Owner| {
+        o.original717_invoice_send_email(&proof, &Fixed(NOW), &body)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+    };
+    assert!(
+        run(&mut owner)["errors"][0]
+            .as_str()
+            .unwrap()
+            .contains("missing SMTP config")
+    );
+    let path = owner.root.join("a/config/smtp.json");
+    let save = |dry: bool| {
+        std::fs::write(&path,serde_json::to_vec(&json!({"host":"smtp.example.invalid","port":465,"fromAddress":"sender@example.invalid","dryRun":dry})).unwrap()).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+    };
+    save(false);
+    assert!(
+        run(&mut owner)["errors"][0]
+            .as_str()
+            .unwrap()
+            .contains("dryRun only")
+    );
+    save(true);
+    let sent = run(&mut owner);
+    assert_eq!(sent["ok"], true);
+    assert_eq!(sent["duplicate"], false);
+    let again = run(&mut owner);
+    assert_eq!(again["duplicate"], true);
+    assert_eq!(again["messageId"], sent["messageId"]);
+    // Different reminder native unknown evidence must block a source retry.
+    let mut fake = Fake::new(Handoff::Unknown);
+    let input = store::Send {
+        invoice_document_id: id,
+        to: "other@example.invalid".into(),
+        kind: Some("reminder".into()),
+        confirm: true,
+    };
+    owner
+        .send_invoice_email(&proof, &Fixed(NOW), &input, &mut fake)
+        .unwrap()
+        .outcome
+        .unwrap();
+    let blocked = owner
+        .original717_invoice_send_email(
+            &proof,
+            &Fixed(NOW),
+            &json!({"documentId":id,"kind":"reminder","to":"other@example.invalid","confirm":true}),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(blocked["ok"], false);
+    assert_eq!(fake.calls, 1);
+}
+
+#[test]
+fn original717_efaktura_konfigurer_secret_happy_default_duplicate_and_refusal() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    owner.held.0.as_mut().unwrap().company.as_mut().unwrap().execute("UPDATE companies SET cvr='12345678',name='Synthetic Public Company',address='Synthetic 1',country='DK' WHERE id=1",[]).unwrap();
+    let body = json!({"apiLicenseKey":"synthetic-secret-original717","confirm":true});
+    let saved = owner
+        .original717_efaktura_konfigurer(&proof, &Fixed(NOW), &body)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(saved["environment"], "test");
+    let view = owner
+        .public_einvoice_configuration(&proof, &Fixed(NOW), None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(view["publicEInvoice"]["configured"], true);
+    assert_eq!(view["publicEInvoice"]["environment"], "test");
+    assert!(!view.to_string().contains("synthetic-secret"));
+
+    assert!(
+        saved["configPath"]
+            .as_str()
+            .unwrap()
+            .ends_with("a/config/digisense.json")
+    );
+    assert!(!saved.to_string().contains("synthetic-secret"));
+    let bytes = owner
+        .original717_digisense_secret(&proof, &Fixed(NOW))
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+        .unwrap();
+    let client =
+        rentemester_runtime::public_einvoice::original717::client_from_admitted_secret(&bytes.0)
+            .unwrap();
+    assert_eq!(
+        client.environment(),
+        rentemester_runtime::public_einvoice::Environment::Test
+    );
+    owner
+        .original717_efaktura_konfigurer(&proof, &Fixed(NOW), &body)
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(
+        owner
+            .original717_digisense_secret(&proof, &Fixed(NOW))
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+            .unwrap()
+            .0,
+        bytes.0
+    );
+
+    owner.original717_efaktura_konfigurer(&proof,&Fixed(NOW),&json!({"apiLicenseKey":"synthetic-rotated-secret","environment":"production","confirm":true})).unwrap().outcome.unwrap();
+    let rotated = owner
+        .public_einvoice_configuration(&proof, &Fixed(NOW), Some("test"))
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(
+        rotated["publicEInvoice"]["environment"], "production",
+        "saved generation overrides stale native fallback"
+    );
+    assert!(!rotated.to_string().contains("secret"));
+    let refused = owner
+        .original717_efaktura_konfigurer(
+            &proof,
+            &Fixed(NOW),
+            &json!({"apiLicenseKey":"never-save","confirm":false}),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(refused["ok"], false);
+    let company = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let leaks:i64=company.query_row("SELECT count(*) FROM audit_log WHERE message LIKE '%synthetic-secret%' OR message LIKE '%never-save%'",[],|r|r.get(0)).unwrap();
+    assert_eq!(leaks, 0);
+    use std::os::unix::fs::PermissionsExt;
+    assert_eq!(
+        std::fs::metadata(saved["configPath"].as_str().unwrap())
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o777,
+        0o600
+    );
+}
+#[test]
+fn original717_efaktura_config_audit_failure_after_secret_publication_is_unknown() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    owner
+        .original717_efaktura_konfigurer(
+            &proof,
+            &Fixed(NOW),
+            &json!({"apiLicenseKey":"synthetic-old","confirm":true}),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    owner.held.0.as_mut().unwrap().company.as_mut().unwrap().execute_batch("CREATE TRIGGER reject_config_audit BEFORE INSERT ON audit_log WHEN NEW.event_type='original717_digisense_config' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END;").unwrap();
+    let attempted = owner
+        .original717_efaktura_konfigurer(
+            &proof,
+            &Fixed(NOW),
+            &json!({"apiLicenseKey":"synthetic-new","confirm":true}),
+        )
+        .unwrap();
+    let failure = match attempted.outcome {
+        Err(f) => f,
+        Ok(_) => panic!("audit abort accepted"),
+    };
+    assert_eq!(
+        failure.stage,
+        rentemester_application::control_fence::FailureStage::OutcomeUnknown
+    );
+    assert!(
+        owner
+            .original717_digisense_secret(&proof, &Fixed(NOW))
+            .unwrap()
+            .outcome
+            .is_err(),
+        "file/audit generation mismatch must fail closed"
+    );
+}

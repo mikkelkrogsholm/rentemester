@@ -45,8 +45,8 @@ impl Owner {
         >,
         OwnerError,
     > {
-        self.document_action(cookie, clock, |c, l, _g, context| {
-            app::configuration(c, l, context, environment)
+        self.document_action(cookie, clock, |c, l, g, context| {
+            app::original717::configuration(c, l, g, context, environment)
         })
     }
     pub fn start_public_einvoice(
@@ -81,3 +81,5 @@ impl Owner {
 
 #[cfg(all(test, target_os = "macos"))]
 mod tests;
+
+mod original717;
