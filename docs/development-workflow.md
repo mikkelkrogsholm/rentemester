@@ -40,6 +40,57 @@ SGD-trin inden for GitHub-forløbet; der indføres ingen nye statuslabels.
 | done | GitHub bekræfter closed og flow:done. Vælg derefter næste nødvendige issue. | Ingen ekstra perfektioneringsrunde. Genåbn kun ved konkret påvist fejl. |
 | blocked / brugerstop | Bevar kode, kvitteringer, fejl og præcis restaccept. | Ingen blind retry eller nyt navn til samme forsøg. Afklar én konkret årsag. Brugerstop er bindende; planændringer genstarter ikke arbejdet. |
 
+## SGD: én beslutning pr. state
+
+Tabellen ovenfor viser GitHub-forløbet. Nedenfor er **SGD's faktiske states**,
+som hovedagenten skal reagere på. Der indføres ingen nye engine-states, labels
+eller lokal opgavekø.
+
+| SGD-state | Gør dette nu | Færdig, når | Fokusguard |
+| --- | --- | --- | --- |
+| `pending` | Start en afgrænset opgave, når dens afhængigheder og filansvar er klare. | SGD har startet den ansvarlige worker. | Hver leverance peger på et oprindeligt acceptpunkt. Ingen bred kortlægning eller ekstra abstraktioner før start. Er arbejdet allerede implementeret og reviewet, bruges `tasks: []` og eksisterende acceptchecks. |
+| `running` | Implementér kun det manglende resultat, og kør mindste relevante check. | Den aftalte kode og konkret bevis er afleveret én gang. | Stop med at tilføje arbejde, når kontrakten er dækket. Nye fund skal være en påvist acceptmangel for at komme med. Ingen ny testplatform, framework eller valgfri polish. |
+| `submitted` | Hovedagenten læser faktisk diff og resultater og vælger approve eller reject for det præcise commit. | Der foreligger en konkret reviewbeslutning. | Afvis kun med en påvist kontraktfejl eller nødvendig kontrol. Ingen stilrunde eller bred ekstra audit. Efter 10 minutters uafklaret review navngives det præcise manglende bevis; review udvides ikke automatisk. Tid er aldrig grund til at godkende. |
+| `integrated` | Kontrollér det nødvendige samspil i den samlede kode. | Alle aftalte leverancer er integreret, og den aftalte samlede accept består. | Genbrug gyldigt bevis. Ret kun konkrete samspilsfejl; genstart ikke accepterede workers eller gentag uændrede fulde tests. |
+| `blocked` | Læs fejlen, diagnosticér én årsag, og vælg en afgrænset rettelse eller præcis ekstern blokering. | En begrundet retry eller scoped `submit-repair` kan udføres. | Ingen uændret genkørsel. En lille rettelse foretages af hovedagenten uden nyt modelkald. 15 minutter eller to fejl i testopsætning stopper den voksende opsætningsrunde. Manglende bevis må ikke omdøbes til accept. |
+| `reconcile` | Afstem levende proces, kvittering og Git for den eksisterende opgave. | SGD ved, hvem der ejer arbejdet, eller har opsamlet den eksisterende aflevering. | Ingen ny worker, mens den gamle stadig kan eje filer eller effekter. Ingen genafspilning af accepterede handlinger. |
+| run `done` | Publicér den accepterede leverance og gennemfør samme issues GitHub-lukningskontrol. | GitHub bekræfter `closed` og `flow:done` for hele issuet. | Lokal `done` er ikke en lukket issue. Ingen ny produktkode eller perfektioneringsrunde. Nødvendige kontrakt-/dokumentationsændringer skal være planlagt sammen med koden; lukningskvitteringen skal genbruge det færdige bevis. Er lukning ikke afklaret efter 10 minutter, angives præcis restaccept eller publiceringsfejl. |
+| run `cancelled` | Bevar kode, kvitteringer og afsluttede effekter. | En udtrykkeligt autoriseret genoptagelse er afstemt. | Planændringer, en ny heartbeat eller et nyt opgavenavn må ikke genstarte arbejdet. |
+
+Go håndhæver afhængigheder, filansvar, præcis commitgodkendelse, checks,
+forsøgsgrænser og worker-timeout. De semantiske fokusguards og reviewets
+10-minutters kontrolpunkt er hovedagentens ansvar; et SessionStart-hook er en
+påmindelse, ikke en automatisk detector for overengineering.
+
+### Små hele issues først
+
+Før ny dispatch bruges højst 10 minutters første triage: læs det oprindelige
+scope, genbrug accepteret evidens, og angiv konkret restaccept. Luk straks,
+hvis alle oprindelige krav allerede er opfyldt. Prioritér derefter det mindste
+**hele** issue med kendt acceptvej og opfyldte afhængigheder. Få checkbokse eller
+mange afleverede komponenter gør ikke et issue lille. Der oprettes ikke små
+erstatningsissues for at få lukketælleren op, og oprindelige krav flyttes ikke ud.
+
+Hvis kun store eller blokerede issues er tilbage, sig det tydeligt og vælg det
+næste nødvendige, udførbare issue. Desktopaccept rykkes ikke frem for at få en
+hurtig lukning. Triage bliver ikke til en ny rapporterings- eller infrastrukturrunde.
+
+For en lille ny leverance er udgangspunktet `max_attempts: 1`,
+`timeout_seconds: 900` og checks med en kendt, afgrænset køretid. Brug de
+eksisterende felter i `.sgd/work.json`; tilføj ikke nye budget- eller køfiler.
+Vælg kun flere workers til reelt uafhængige leverancer. En nødvendig længere
+opgave kræver en konkret forklaring ved planlægningen, ikke en tavs forlængelse
+efter timeout. Bevar den afleverede kode ved timeout og diagnosticér den.
+
+Ved hvert phaseskift kontrollerer hovedagenten kun tre ting:
+
+1. Hvilket oprindeligt acceptpunkt mangler stadig?
+2. Hvad er den mindste konkrete handling, der lukker det hul?
+3. Er næste trin en rettelse, en acceptbeslutning eller faktisk GitHub-lukning?
+
+Hvis svaret blot er mere polish, generel hardening, gentagen testopsætning eller
+en ny rapport uden manglende accept, udføres handlingen ikke.
+
 Der skal være præcis én statuslabel pr. issue. `flow:blocked` er en ekstra
 markering med en selvstændig linje `Flow-Blocked: konkret årsag` i issue-body;
 den erstatter ikke status. Fjern markeringen og årsagen, når blokeringen er
