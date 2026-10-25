@@ -116,3 +116,35 @@ missing/unavailable-bank negative controls; all37 relevant UI/API cases and
 proper design/TypeScript/bundler build pass. No new full actual setup or
 financial replay was performed. R105's explicitly missing fresh actuals and
 all original whole718/55/release/cutover/final-desktop requirements remain.
+
+## 2026-10-25 — Preserve the actual service principal on payable effects
+
+Two existing actor constructors incorrectly labelled a service-account payable
+journal and its keyed receipt audit as user. Both now use the trusted explicit
+PrincipalKind, consistently with the payable audit. Human calls remain user;
+service calls use service_account. Credential permissions, stored principal/key
+identity, physical bill/bank verification, amounts/VAT/period guards, immutable
+hashes and replay behavior are unchanged. Historical entries are never relabelled.
+
+The corrected expectations reproduced two failures before the fix. All14
+compiled storage payable cases now pass, including partial/full payments,
+exact replay, hash verification, source refusal, crash and concurrent writes.
+The existing real service-credential application fixture additionally verifies
+typed journal/receipt actors, exactly two entries and one payment, canonical
+replays, changed physical bill/bank refusal and revoked access. Its first added
+cross-crate hash assertion was inaccessible; hash verification remains in the
+passing storage fixture, and the repaired application fixture passes. No new
+HTTP route/schema/engine, UI setup or financial replay was introduced.
+
+All1613 prior operation contracts/schemas remain unchanged except source pins.
+This repairs a prerequisite of the full original CLI agent run; it does not
+implement a reduced producer loop or complete712. The exact remaining712 gate
+is final installed Tauri/WebKit save/read/forget/cancel acceptance. Separate
+accepted HTTP cancellation and actual OS Keychain proofs do not substitute
+for it; the existing installed bundle predates the vault integration.
+
+The existing native payable alias also encoded the incorrect user prefix in its
+service test. Its corrected attribution case, reader/quota refusal and changed
+original/revoked-key cases all pass (three additional compiled application cases).
+Both original and native aliases therefore exercise the same corrected writer;
+there is no additional accounting implementation.

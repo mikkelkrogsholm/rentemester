@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R107existing Agent-forslag humanreview accepted: actualsharedReact/Rust threeauditeddecisions/nofinancialeffects/acceptedreplylost noreplay; current1613contracts; nativeproducer/full718open",
-  "code_revision": "573ea3e850aaf1c3cfcfc9033563c5f888c1390c",
+  "current_increment": "R108servicepayable journal/keyedreceipt principal fixed;14storage+4actualservice application cases/current1613contracts; whole712finalinstalledacceptance/nativeagent716remain",
+  "code_revision": "500957c21adf02e21879772a2f2b2f4b358473e3",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "owner_agent_review718_accepted",
+  "state": "service_payable_principal712_repaired",
   "issues_closed": 41,
   "next": [
-    "Native agent proposal producers are not ported by R107. Existing public producer entry is CLI agent run under716; no original standalone overdue-sync/MCP/HTTP binding. Preserve full AgentRunReport/phases and actual posting behavior; do not invent proposal-only flag/endpoint or claim a partial loop complete.",
-    "Whole718 all original41company+13static screens/files/local-hosted keyboard/accessibility/actionablefailures/J03/J04 remain, including explicitly missing R105 fresh providerloss/reader/restart/restore.",
-    "All55originalissues/release/cutover/finalmanualdesktop remain; no live workspace/default launcher switched."
+    "Whole712 still requires final revision-bound installed Tauri/WebKit OS save/read/forget and cancel/restore acceptance. Existing R41 actual HTTP cancellation/real Keychain and source-bound R44 identity proof retained; installed bundle predates session_vault, so no false installed acceptance.",
+    "Full original CLI agent run716 remains unported: ordered intake/book/route/payables/reconcile/deadlines/report, exact flags/report/format/errors and safe explicit company-local account rules. R108 repairs its existing payable attribution prerequisite, not a partial replacement loop.",
+    "All55originalissues/J01-J07/release/cutover/finalmanualdesktop remain; no live workspace/default launcher changed."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R106native boundinternalvoucher UIregression repaired;37targetedUI/API/build, unchanged Rustbank/date/exemptcontrols;R105actualgaps/whole718open",
+  "previous_verified_increment": "R107existing Agent-forslag humanreview accepted: actualsharedReact/Rust threeauditeddecisions/nofinancialeffects/acceptedreplylost noreplay; current1613contracts; nativeproducer/full718open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16653,6 +16653,10 @@
     "r107_agent_review718": {
       "path": "/private/tmp/rentemester-rust-reports/r107-owner-agent-review718-component-accepted.json",
       "sha256": "65d5921ebfcec199882c78c58784d26c076643fedae1bf663eb7b33992889626"
+    },
+    "r108_service_payable712": {
+      "path": "/private/tmp/rentemester-rust-reports/r108-service-payable-principal712-accepted.json",
+      "sha256": "664fe7ab2614613004dd72d8f221a61d619be5155350500bd00118562ac92583"
     }
   },
   "verified_history": [
@@ -19001,6 +19005,19 @@
         "Native agent proposal producers are not ported by R107. Existing public producer entry is CLI agent run under716; no original standalone overdue-sync/MCP/HTTP binding. Preserve full AgentRunReport/phases and actual posting behavior; do not invent proposal-only flag/endpoint or claim a partial loop complete.",
         "Whole718 all original41company+13static screens/files/local-hosted keyboard/accessibility/actionablefailures/J03/J04 remain, including explicitly missing R105 fresh providerloss/reader/restart/restore.",
         "All55originalissues/release/cutover/finalmanualdesktop remain; no live workspace/default launcher switched."
+      ]
+    },
+    {
+      "issue": 712,
+      "wholeIssueClosed": false,
+      "source_revision": "500957c21adf02e21879772a2f2b2f4b358473e3",
+      "report": "/tmp/rentemester-rust-reports/r108-service-payable-principal712-accepted.json",
+      "sha256": "664fe7ab2614613004dd72d8f221a61d619be5155350500bd00118562ac92583",
+      "scope": "Existing payable registration/payment journal actor and keyed idempotency audit actor now follow explicit trusted PrincipalKind: service_account for services, user for humans. Account/VAT/amount/period/physical-source/authority/replay logic and key/principal identity unchanged; no historical entry or receipt rewritten.",
+      "remaining": [
+        "Whole712 still requires final revision-bound installed Tauri/WebKit OS save/read/forget and cancel/restore acceptance. Existing R41 actual HTTP cancellation/real Keychain and source-bound R44 identity proof retained; installed bundle predates session_vault, so no false installed acceptance.",
+        "Full original CLI agent run716 remains unported: ordered intake/book/route/payables/reconcile/deadlines/report, exact flags/report/format/errors and safe explicit company-local account rules. R108 repairs its existing payable attribution prerequisite, not a partial replacement loop.",
+        "All55originalissues/J01-J07/release/cutover/finalmanualdesktop remain; no live workspace/default launcher changed."
       ]
     }
   ],
