@@ -155,7 +155,7 @@ async fn original116_company_sdk_verified_local_workspace_matches_exact_root() {
     assert!(matches!(api.create_company_original116(json!({"name":"Synthetic","confirm":true,"workspace":root.join("other")})).await,Err(Error::InvalidInput(_))));
     listener.set_nonblocking(true).unwrap();assert!(listener.accept().is_err());listener.set_nonblocking(false).unwrap();
     let task=thread::spawn(move || {
-        let(mut s,_)=listener.accept().unwrap();let mut b=vec![];
+        let(mut s,_)=common::unix_accept(&listener).unwrap();let mut b=vec![];
         loop {let mut buf=[0;4096];let n=s.read(&mut buf).unwrap();assert!(n>0);b.extend_from_slice(&buf[..n]);if b.ends_with(br#"{"name":"Synthetic"}"#) {break;}}
         assert!(String::from_utf8(b).unwrap().starts_with("POST /api/companies HTTP/1.1"));
         let reply=r#"{"ok":true,"company":{"slug":"synthetic","name":"Synthetic"}}"#;

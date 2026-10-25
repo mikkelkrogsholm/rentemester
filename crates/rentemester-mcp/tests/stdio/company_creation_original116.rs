@@ -82,7 +82,7 @@ fn original_first_use116_company_verified_local_profile_success_and_mismatch() {
     fs::write(root.join("r.json"),json!({"format":"rentemester-local-runtime/1","origin":"http://127.0.0.1:9","socket":"r.sock","workspaceRoot":root.join("workspace"),"workspaceId":root.join("other")}).to_string()).unwrap();
     fs::set_permissions(root.join("r.json"),fs::Permissions::from_mode(0o600)).unwrap();
     let task=thread::spawn(move || {
-        let(mut s,_)=listener.accept().unwrap();let mut b=vec![];
+        let(mut s,_)=super::protocol_common::unix_accept(&listener).unwrap();let mut b=vec![];
         loop {let mut buf=[0;4096];let n=s.read(&mut buf).unwrap();assert!(n>0);b.extend_from_slice(&buf[..n]);if b.ends_with(br#"{"name":"Synthetic"}"#) {break;}}
         assert!(String::from_utf8(b).unwrap().starts_with("POST /api/companies HTTP/1.1"));
         let reply=r#"{"ok":true,"company":{"slug":"synthetic","name":"Synthetic"}}"#;

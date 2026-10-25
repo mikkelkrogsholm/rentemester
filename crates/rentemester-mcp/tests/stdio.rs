@@ -1,4 +1,7 @@
 use serde_json::{Value, json};
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod protocol_common;
+
 
 // Registry includes the required bookkeeping_batch_dry_run alias.
 const EXPECTED_NATIVE_TOOLS: usize = 434;
@@ -112,7 +115,7 @@ fn call(id: i32, name: &str, args: Value) -> Value {
     json!({"jsonrpc":"2.0","id":id,"method":"tools/call","params":{"name":name,"arguments":args}})
 }
 fn http(response: &'static str) -> (String, mpsc::Receiver<Vec<u8>>, thread::JoinHandle<()>) {
-    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let listener = protocol_common::TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let (send, recv) = mpsc::channel();
     let task = thread::spawn(move || {
