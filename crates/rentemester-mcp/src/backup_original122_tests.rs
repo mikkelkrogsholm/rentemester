@@ -60,8 +60,9 @@ fn backup_original122_original_catalogue_flat_schema_and_annotations() {
         );
     }
 }
-#[tokio::test]
-async fn backup_original122_missing_confirm_is_source_envelope_without_request() {
+#[test]
+fn backup_original122_missing_confirm_is_source_envelope_without_request() {
+    tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(async {
     for args in [
         json!({"company":"synthetic"}),
         json!({"company":"synthetic","confirm":false,"at":"bad","graceDays":-1.5}),
@@ -72,9 +73,11 @@ async fn backup_original122_missing_confirm_is_source_envelope_without_request()
             &json!({"ok":false,"errors":["confirm: true required for write tool system_backup_lock"],"code":"CONFIRM_REQUIRED"})
         );
     }
+    });
 }
-#[tokio::test]
-async fn backup_original122_structural_args_are_original_sdk_tool_errors() {
+#[test]
+fn backup_original122_structural_args_are_original_sdk_tool_errors() {
+    tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(async {
     for (name, args) in [
         (
             "system_backup_status",
@@ -115,6 +118,7 @@ async fn backup_original122_structural_args_are_original_sdk_tool_errors() {
         assert_eq!(response["result"], invalid);
         assert!(response.get("error").is_none());
     }
+    });
 }
 #[test]
 fn backup_original122_wrap_removes_core_fields_and_omits_false_data() {
