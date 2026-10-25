@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "bun:test";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DocumentIngestModal } from "./DocumentIngestModal";
 import { mockFetch } from "../test/fixtures";
@@ -9,6 +9,109 @@ function noop() {}
 function receiptFile(name = "kvittering.txt") {
   return new File(["Kasseboner\n12,00 DKK\n"], name, { type: "text/plain" });
 }
+
+function pendingOriginal(name: string, type = "text/plain") {
+  let resolve!: (buffer: ArrayBuffer) => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<ArrayBuffer>((yes, no) => { resolve = yes; reject = no; });
+  const file = new File(["not read yet"], name, { type });
+  Object.defineProperty(file, "arrayBuffer", { value: () => promise });
+  return {
+    file,
+    finish: (text: string) => act(async () => { resolve(new TextEncoder().encode(text).buffer as ArrayBuffer); }),
+    fail: () => act(async () => { reject(new Error("Synthetic unreadable original")); }),
+  };
+}
+
+async function originalPicker() {
+  mockFetch({});
+  const submit = vi.fn(async (_input: unknown, _mime: string) => ({ documentNo: "DOC-SELECTED" }));
+  render(<DocumentIngestModal slug="acme-aps" onClose={noop} onIngested={noop} submit={submit} />);
+  await pickReceiptType();
+  return { submit, input: screen.getByLabelText("Bilagsfil"), button: screen.getByRole("button", { name: "Indlæs bilag" }) };
+}
+
+function expectSelectedOriginal(submit: ReturnType<typeof vi.fn>, name: string, bytes: string, mime: string) {
+  expect(submit).toHaveBeenCalledTimes(1);
+  const [input, sentMime] = submit.mock.calls[0] as unknown as [{ fileName: string; fileBase64: string }, string];
+  expect(input.fileName).toBe(name);
+  expect(atob(input.fileBase64)).toBe(bytes);
+  expect(sentMime).toBe(mime);
+}
+
+describe("selected original", () => {
+  test("replacement reading blocks submission of an already loaded original", async () => {
+    const { submit, input, button } = await originalPicker();
+    await userEvent.upload(input, receiptFile("old.txt"));
+    await waitFor(() => expect(button).not.toBeDisabled());
+    const replacement = pendingOriginal("current.pdf", "application/pdf");
+    await userEvent.upload(input, replacement.file);
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+    expect(submit).not.toHaveBeenCalled();
+    await replacement.finish("%PDF-current original");
+    await userEvent.click(button);
+    await screen.findByText("Bilaget er indlæst som DOC-SELECTED.");
+    expectSelectedOriginal(submit, "current.pdf", "%PDF-current original", "application/pdf");
+  });
+
+  test("a superseded late success cannot replace the current original", async () => {
+    const { submit, input, button } = await originalPicker();
+    const old = pendingOriginal("old.txt");
+    await userEvent.upload(input, old.file);
+    await userEvent.upload(input, receiptFile("current.txt"));
+    await waitFor(() => expect(button).not.toBeDisabled());
+    await old.finish("obsolete bytes");
+    expect(screen.getByText("Valgt: current.txt")).toBeInTheDocument();
+    await userEvent.click(button);
+    await screen.findByText("Bilaget er indlæst som DOC-SELECTED.");
+    expectSelectedOriginal(submit, "current.txt", "Kasseboner\n12,00 DKK\n", "text/plain");
+  });
+
+  test("a superseded late failure cannot clear the current original", async () => {
+    const { submit, input, button } = await originalPicker();
+    const old = pendingOriginal("old.txt");
+    await userEvent.upload(input, old.file);
+    await userEvent.upload(input, receiptFile("current.txt"));
+    await waitFor(() => expect(button).not.toBeDisabled());
+    await old.fail();
+    expect(screen.queryByText("Filen kunne ikke læses.")).toBeNull();
+    expect(button).not.toBeDisabled();
+    await userEvent.click(button);
+    await screen.findByText("Bilaget er indlæst som DOC-SELECTED.");
+    expectSelectedOriginal(submit, "current.txt", "Kasseboner\n12,00 DKK\n", "text/plain");
+  });
+
+  test("current read failure clears old bytes and a fresh choice recovers once", async () => {
+    const { submit, input, button } = await originalPicker();
+    await userEvent.upload(input, receiptFile("old.txt"));
+    await waitFor(() => expect(button).not.toBeDisabled());
+    const bad = pendingOriginal("unreadable.txt");
+    await userEvent.upload(input, bad.file);
+    await bad.fail();
+    expect(screen.getByText("Filen kunne ikke læses.")).toBeInTheDocument();
+    expect(button).toBeDisabled();
+    expect(submit).not.toHaveBeenCalled();
+    await userEvent.upload(input, receiptFile("recovered.txt"));
+    await waitFor(() => expect(button).not.toBeDisabled());
+    expect(screen.queryByText("Filen kunne ikke læses.")).toBeNull();
+    await userEvent.click(button);
+    await screen.findByText("Bilaget er indlæst som DOC-SELECTED.");
+    expectSelectedOriginal(submit, "recovered.txt", "Kasseboner\n12,00 DKK\n", "text/plain");
+  });
+
+  test("clearing selection prevents a late read from becoming submittable", async () => {
+    const { submit, input, button } = await originalPicker();
+    const old = pendingOriginal("old.txt");
+    await userEvent.upload(input, old.file);
+    await userEvent.upload(input, []);
+    await old.finish("cleared original");
+    expect(screen.queryByText("Valgt: old.txt")).toBeNull();
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+    expect(submit).not.toHaveBeenCalled();
+  });
+});
 
 /** Routes the document-ingest POST to a success result. */
 function ingestRoute(over: Record<string, unknown> = {}) {

@@ -16,7 +16,7 @@ import { Button, Dialog, Input, Select, Textarea, MoneyInput } from "./ui";
 // rendering — it mirrors `ConfirmDialog`'s shape and reuses the shared
 // `LockBanner` for a 409 backup-lock rejection.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type DocumentIngestMetadata, type DocumentIngestInput } from "../lib/api";
 import { Banner } from "./Feedback";
 import { useAsync } from "../lib/useAsync";
@@ -80,6 +80,9 @@ export function DocumentIngestModal({
   const [mimeType, setMimeType] = useState("application/octet-stream");
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
+  const [readingFile, setReadingFile] = useState(false);
+  const fileSelection = useRef(0);
+  useEffect(() => () => { fileSelection.current++; }, []);
   const [documentType, setDocumentType] =
     useState<DocumentIngestMetadata["documentType"] | "">(initialType);
   const [source, setSource] = useState(initialSource);
@@ -112,25 +115,29 @@ export function DocumentIngestModal({
 
 
   const outcome = useMutationOutcome(onIngested);
-  const guard = useDiscardGuard(!done && (Boolean(fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingConfirmed || purchaseVatLines.length) || currency !== initialCurrency || documentType !== initialType || source !== initialSource), onDismiss);
+  const guard = useDiscardGuard(!done && (Boolean(fileName || fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingConfirmed || purchaseVatLines.length) || currency !== initialCurrency || documentType !== initialType || source !== initialSource), () => { fileSelection.current++; onDismiss(); });
   const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    const selection = ++fileSelection.current;
     setError(null);
-    if (!file) {
-      setFileName(null);
-      setFileBase64(null);
-      return;
-    }
+    setFileName(file?.name ?? null);
+    setFileBase64(null);
+    setMimeType(file?.type || "application/octet-stream");
+    setReadingFile(Boolean(file));
+    if (!file) return;
     try {
-      setFileBase64(await fileToBase64(file));
-      setFileName(file.name);
-      setMimeType(file.type || "application/octet-stream");
+      const bytes = await fileToBase64(file);
+      if (selection !== fileSelection.current) return;
+      setFileBase64(bytes);
     } catch {
+      if (selection !== fileSelection.current) return;
       setError("Filen kunne ikke læses.");
       setFileName(null);
       setFileBase64(null);
+    } finally {
+      if (selection === fileSelection.current) setReadingFile(false);
     }
   }
 
@@ -140,7 +147,7 @@ export function DocumentIngestModal({
   const isInternalVoucher = documentType === "internal_voucher";
 
   async function handleIngest() {
-    if (outcome.isBlocked()) return;
+    if (busy || readingFile || outcome.isBlocked()) return;
     if (!metadataReview && (!fileBase64 || !fileName)) {
       setError("Vælg en bilagsfil først.");
       return;
@@ -325,6 +332,7 @@ export function DocumentIngestModal({
                 Valgt: {fileName}
               </p>
             )}
+            {readingFile && <p role="status">Læser bilagsfil…</p>}
 
             <div className="modal-field-grid">
               <label className="modal-field">
@@ -622,7 +630,7 @@ export function DocumentIngestModal({
                 type="button"
                 className="btn"
                 onClick={handleIngest}
-                disabled={outcome.blocked || busy || (metadataReview ? !metadataConfirmed || !documentType || !currency.trim() : !fileBase64)}
+                disabled={outcome.blocked || busy || readingFile || (metadataReview ? !metadataConfirmed || !documentType || !currency.trim() : !fileBase64)}
               >
                 {busy ? "Gemmer…" : metadataReview ? "Gem gennemgåede kildeoplysninger" : "Indlæs bilag"}
               </Button>
