@@ -1,0 +1,19 @@
+   Compiling rentemester-desktop v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/crates/rentemester-desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.96s
+     Running unittests src/shell.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/target/debug/deps/rentemester_desktop-2ac94fdd395be7fa)
+
+running 1 test
+test local_backend::tests::actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile ... 
+thread 'local_backend::tests::actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile' (55575535) panicked at crates/rentemester-desktop/src/local_backend.rs:939:53:
+called `Result::unwrap()` on an `Err` value: "Lokal server afviste opstart (unsafe_broker_namespace). Datamappen er bevaret."
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    local_backend::tests::actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p rentemester-desktop --bin rentemester-desktop`

@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "socketBytes": 133,
+  "stderr": "Error: Custom { kind: Other, error: \"Local runtime socket pathname exceeds 103 bytes\" }\n"
+}

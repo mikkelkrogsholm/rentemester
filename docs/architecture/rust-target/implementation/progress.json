@@ -16724,6 +16724,14 @@
         "cli": 533,
         "mcp": 448
       }
+    },
+    "issue719_managed_lifecycle": {
+      "issue": 719,
+      "whole_issue_accepted": false,
+      "status": "Actual currentTauri Managed + current Rustchild fault recovery accepted; original final installed desktop J01/J02/J07 remains",
+      "source_revision": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+      "report": "docs/architecture/rust-target/implementation/issue719-evidence.json",
+      "sgdRun": "issue719-managed-lifecycle-20261025T224308.373188000"
     }
   },
   "verified_history": [

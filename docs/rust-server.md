@@ -4184,3 +4184,14 @@ Alle tre oprindelige R13-kriterier er accepteret; #685 er lukket. Der er nu
 kompilering; det tidligere afviste privilegerede Docker-værktøj blev ikke kørt.
 Hele epic'en, fuld interface-/release-/cutoveraccept og manuel desktopaccept
 forbliver åbne. Næste sammenhængende restforløb er R35/R36's lokale scheduler-J07.
+
+### Lokal desktopserver ved tvangslukning
+
+Den aktuelle Tauri-vært starter den fælles Rust-server med en privat parent-pipe
+(`--managed-parent-stdin`, kun sammen med `--local-runtime-dir`). Hvis værten
+forsvinder, udløser EOF serverens eksisterende kontrollerede HTTP-/workerstop
+og frigiver workspace-ejerskabet. Almindelig serverdrift har ingen stdin-monitor.
+`architecture/rust-target/implementation/issue719-evidence.json` dokumenterer faktisk create/reopen,
+konkurrerende ejer, servercrash, optaget port og SIGKILL af Managed-ejeren.
+Det er komponentaccept; installeret offline/J01/J02/J07- og fysisk sleepaccept
+ligger fortsat i den afsluttende nativeprøve.

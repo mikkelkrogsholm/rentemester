@@ -1,0 +1,56 @@
+   Compiling rentemester-server v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.12s
+   Compiling rentemester-server v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.24s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/target/debug/deps/rentemester_server-c28347787bcf07f9)
+
+running 2 tests
+test shutdown::tests::stopped_or_disconnected_worker_never_starts_a_pass ... ok
+test shutdown::tests::stop_drains_admitted_blocking_pass_without_starting_another ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 128 filtered out; finished in 0.00s
+
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.21s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/target/debug/deps/rentemester_server-c28347787bcf07f9)
+
+running 2 tests
+test managed_parent::tests::managed_option_is_local_only_and_never_shares_credential_stdin ... ok
+test managed_parent::tests::shutdown_parent_eof_not_data_and_disabled_never_signals ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 128 filtered out; finished in 0.04s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running unittests src/shell.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue719-managed-lifecycle-20261025T224308.373188000/lifecycle719/target/debug/deps/rentemester_desktop-2ac94fdd395be7fa)
+
+running 1 test
+test local_backend::tests::actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 7.11s
+

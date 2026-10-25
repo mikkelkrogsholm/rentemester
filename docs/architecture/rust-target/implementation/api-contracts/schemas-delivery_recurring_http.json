@@ -514,7 +514,7 @@
               },
               {
                 "path": "crates/rentemester-server/src/main.rs",
-                "sha256": "7a9af9273b7b8fe1fcbc495fff3db646475782f50a5959fe089e85e707d8cfdb",
+                "sha256": "cfa374a910d5eee374b0b5c1233c28f613f489b1e66e4cc5469b2cfdbed3b47a",
                 "needle": "protocol::install(router, connected)"
               },
               {
@@ -1767,7 +1767,7 @@
               "const": "delivery_unknown"
             },
             "message": {
-              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg."
             }
           },
           "required": [
@@ -1791,7 +1791,7 @@
               "const": "delivery_unknown"
             },
             "message": {
-              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg."
             },
             "usage": {
               "enum": [
@@ -1836,7 +1836,7 @@
               "const": "delivery_refused"
             },
             "message": {
-              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
             }
           },
           "required": [
@@ -1860,7 +1860,7 @@
               "const": "delivery_refused"
             },
             "message": {
-              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
             },
             "usage": {
               "enum": [

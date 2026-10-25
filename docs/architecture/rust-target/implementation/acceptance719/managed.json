@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "sourceCommit": "6582d53e2a778c6d101428937bc0d4d373d52ea2",
+  "sourceTree": "2332746d5dc5dac57ef746bce5064c5491e6b461",
+  "serverSha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+  "webIndexSha256": "741c2ba4bf49b982caa84969c49544fde3d4efe354525e7bf8e7a6745c8cadc1",
+  "scope": "Actual current Tauri Managed component with real Rustchild/shutdown/faults; no installedGUI/onboarding/sleep/platform qualification."
+}

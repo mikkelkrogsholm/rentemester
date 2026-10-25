@@ -1,0 +1,74 @@
+{
+  "issue": 719,
+  "whole_issue_accepted": false,
+  "managed_lifecycle_portion_accepted": true,
+  "checkedAt": "2026-10-25T23:00:18.375270+00:00",
+  "source_revision": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+  "tested_source_revision": "6582d53e2a778c6d101428937bc0d4d373d52ea2",
+  "tested_source_tree": "2332746d5dc5dac57ef746bce5064c5491e6b461",
+  "server_sha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+  "web_index_sha256": "741c2ba4bf49b982caa84969c49544fde3d4efe354525e7bf8e7a6745c8cadc1",
+  "sgdRun": "issue719-managed-lifecycle-20261025T224308.373188000",
+  "sgdPhase": "done",
+  "proofs": {
+    "managed.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance719/managed.json",
+      "sha256": "304997de4c9d28d3cd2e9c18dc8e55d06413427196b3f28e50a9d55edd9e32c6"
+    },
+    "failed-long-socket-fixture.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance719/failed-long-socket-fixture.json",
+      "sha256": "d0e1e9aeb78109f5f60935d8651b074c0d22ccc9add4dad6f7843917031591bf"
+    },
+    "managed.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance719/managed.log",
+      "sha256": "ca168fa6cc266c1dab7dead548bed5387d08700e74dd666bb8fca9c01eeea1e2"
+    },
+    "failed-public-tmp-fixture.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance719/failed-public-tmp-fixture.log",
+      "sha256": "a95b57dc6869aebb49d26f57d668f1f62385b345903b9712e7d37384d837eb01"
+    }
+  },
+  "review": "Main reviewed actual3file diff. Current Tauri Managed holds the sole private stdin writer; opt-in local-runtime-only EOF channel triggers existing HTTP/worker drain and namespace cleanup. Default standalone/hosted server does not watch stdin. No second engine, new process manager, credential log or ledger mutation.",
+  "accepted": [
+    "Actual current Tauri Managed component with current real Rustchild: create/readiness, competing owner refusal, normal stop/reopen with exact configuration, backend SIGKILL/reopen, occupied previous loopback port/restart on different origin with listener untouched, genuine owner-subprocess SIGKILL followed by product child exit and normal successor reopening the same profile.",
+    "Two existing shutdown tests and two parent option/EOF tests passed. Seven existing private Managed admission/key/stop tests retained; no installer window claimed.",
+    "Combined SGD acceptance verifies exactly the tested candidate Git tree and actual server byte hash; no duplicate broad financial/provider test."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "disposition": "pending_final_installed_desktop",
+      "missing": "Fresh offline installed native app, no Bun/Node/Docker; original J01/J02 full user setup/accounting/backup remains final."
+    },
+    {
+      "criterion": 2,
+      "disposition": "managed_component_faults_accepted_final_installed_pending",
+      "accepted": "Two owners, occupied port, backend SIGKILL, real Managed owner SIGKILL and successor recovery. Prior source-bound R103 updater interruption preserved.",
+      "missing": "Complete installed desktop lifecycle faults and platform qualification."
+    },
+    {
+      "criterion": 3,
+      "disposition": "retained_sourcebound_evidence_final_native_pending",
+      "accepted": "Private local keys/credentials and explicit remote-no-local-fallback source/evidence retained; new channel contains no credentials.",
+      "missing": "Final installed native local/remote cookie/vault/profile qualification with original #712/#678."
+    },
+    {
+      "criterion": 4,
+      "disposition": "pending_final_installed_desktop",
+      "missing": "Full original native J01/J02 VAT/non-VAT/shifted fiscal year/actor/account plan/bank/import/opening/review/report/verified backup without JSON/CLI."
+    },
+    {
+      "criterion": 5,
+      "disposition": "retained_shared_automation_pending_final_native",
+      "accepted": "R35/#690 closure/reopen/DST/catch-up/no-implied-service evidence retained.",
+      "missing": "Actual installed app closure, physical sleep and restart with explicit local automation status; no implied background service."
+    }
+  ],
+  "preservedFailures": [
+    "First actual fixture133byte Darwin socket path refused before workspace creation;103byte guard unchanged.",
+    "Canonical /private/tmp short fixture correctly refused public ancestor. After two setup failures, stopped growing setup, inspected existing namespace policy and reused admitted private home ancestry with explicit103byte bound; isolated actual test then PASS4.08s and formal supervisor PASS7.11s. No financial/provider replay."
+  ],
+  "wholeIssueClosureBlocker": "Only original final installed desktop/offline/J01/J02/J07/platform and #678/#712 native gates remain for this component; no unlock request now. Historical GPUI/mocks do not qualify Tauri.",
+  "remaining55OriginalIssues": 12,
+  "closed55OriginalIssues": 43
+}
