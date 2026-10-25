@@ -47,3 +47,54 @@ The post-preprocessor CLI flag schemas are not raw argv arrays. `original_args` 
 Validation receipt: `python3 /tmp/r51-677-oracle.py voucher_party_extraction_expense` passed the frozen52 coverage/sourcehash/strict-schema check. `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed successfully into worker build observations (34003 nodes/107665 edges at extraction). These are source/structure receipts only, not semantic acceptance or live-provider/runtime proof. No commit was made by the worker; the runner owns capture with Work-Issue:#677.
 
 Lead semantic correction: original Confirm sequence length1..2 follows omitted-default/customString semantics. Native CLI retained code-bearing false results use a distinct nested refusal envelope. Positive i64 raw HTTP event IDs remain separate from JS-safe original SDK projections; document input limits are unchanged. Framing RPC errors have null IDs; Session request IDs are bounded UTF-8 strings or i64/u64. Only selected reachable RPC parser messages are advertised. Native tuple declaration order and scalar original SDK projections verified in final worker candidate are retained. No runtime/provider/finance effects were executed.
+
+## 2026-10-25 — Shared owner purchase VAT preflight binding
+
+The existing bill-booking form now chooses the original Rust preflight route
+from the verified native backend profile. The native GET/POST result is a flat
+14-field source snapshot, including meaningful HTTP200 ok:false states. A
+scoped, source-validating transport opt-in permits only that checked 2xx domain
+result. Default transport, auth/non2xx refusals, protocol admission and the
+legacy Bun route/envelope remain. No server route or accounting engine changed.
+
+The UI shows required evidence, failures, cache expiry and exception action.
+It freezes bill/supplier/company/auth/options context before explicit provider
+confirmation. The existing ConfirmDialog owns one canonical persisted barrier
+shared with the form; reads/remounts cannot release it, and explicit human
+reconciliation sends no POST. The existing Rust purchase writer is retained.
+
+75 distinct targeted cases and the proper app-directory design/TypeScript/
+bundler build passed. A lead-added case checks the critical accepted-but-lost
+reply scenario: even a valid canonical GET after remount must keep booking
+blocked until explicit reconciliation. Production code did not change during
+that test repair.
+
+The current actual browser reached normal two-user MFA, inert read/cancel,
+a genuine unavailable-provider result with durable exception, a new explicit
+validation obtaining real synthetic evidence, and one bill/bank-linked EU
+purchase journal. Independent read-only ledger inspection confirms exactly
+2documents,1journal,4lines,1reconciliation,6VATevents and3exceptions. The
+allocation is expense125/bank125 plus input/reverse-chargeVAT31.25. Original
+bytes and the two provider responses are retained. These synthetic observations
+are not live provider or tax-eligibility approval.
+
+The larger current macro is FAILED, not a full actual PASS. Its first attempt
+matched two headings before any provider/financial effects; the precise main
+heading was reproduced independently. Its second attempt expected an inner
+reader-denial heading where the outer route already fences the reader. The
+previously committed purchase is retained. At two setup failures the lead
+stopped the growing full setup: no third full run and no financial replay.
+Fresh provider-loss/reader/restart/restore assertions in that macro were not
+executed and remain explicit whole718 gaps. The original168 purchase-VAT
+runtime/signed-restore proof and currentR102 shared-barrier actual are reused
+only with their relevant source paths verified unchanged. No fresh complete
+macro, installed-desktop or live-use acceptance is claimed.
+
+All1609 existing wire contracts remain unchanged except current source pins.
+Whole718 still requires its complete original screen/file/error/keyboard/
+local-hosted/J03/J04 evidence. The existing R01 map has41company screens and
+13static routes; mock navigation alone is not Rust capability acceptance.
+The next concrete source gap is Agent-forslag: the existing React read/decision
+URLs are not registered in Rust. Reuse existing exceptions semantics; approval
+is an audited human decision, never automatic posting or a new agent engine.
+All55 scopes and release/cutover/final manual installed desktop gates remain.

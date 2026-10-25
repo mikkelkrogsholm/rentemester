@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R102/R103 owner immediate-writeoff in shared React/Rust accepted; actual2journals4lines/source refusal/lost accepted reply lock/restart/signed recovery; whole718 remains",
-  "code_revision": "a532b90a7fa6201909da9d0f60ac3bdb5ec3392e",
+  "current_increment": "R104/R105 bounded owner VAT UI binding accepted:75cases/properbuild/actualproviderfailure-recovery-onejournal, unchangedruntime-barrierreuse; fresh fullmacro FAILED/stopped and whole718 open",
+  "code_revision": "55df1c9516ea4ecda553d961b5ff20ca5e6f9c6a",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "owner_immediate_writeoff718_component_accepted",
+  "state": "owner_purchase_vat718_binding_accepted_actual_gaps_retained",
   "issues_closed": 41,
   "next": [
-    "718: all other original React screens/capabilities/file/export/local-hosted/keyboard/actionable-error acceptance and full J03/J04 must be mapped to accepted evidence; this flow alone does not close718.",
-    "All55 original issues/J01-J07/release/cutover/manual installed desktop LAST remain.41closed14open. No live/default launcher or installed app switched."
+    "718: fresh providerloss/reader/restart-restorematrix gap retained exactly above, plus full original41company+13static screens/files/local-hosted/keyboard/errors/J03/J04 coverage. Agent-forslag is next concrete unbound originalread/decision route; reuse existing exceptions semantics, no newagentengine.",
+    "All55originalissues/J01-J07/release/cutover/finalinstalleddesktop remain.41closed14open; no live/defaultlauncher/installedapp switch."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R100/R101 original efaktura_status accepted: atomiccurrentbinding/verifiedACKcache/oneObserve/pendingfalse;27actualcases/correctserverBIN/current1609;whole717open",
+  "previous_verified_increment": "R102/R103 owner immediate-writeoff in shared React/Rust accepted; actual2journals4lines/source refusal/lost accepted reply lock/restart/signed recovery; whole718 remains",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16640,6 +16640,10 @@
     "r103_owner_writeoff718": {
       "path": "/private/tmp/rentemester-rust-reports/r103-owner-writeoff718-current-contracts-qualified.json",
       "sha256": "9749adaa416dd8d284cf70a3d5f5969b1ea2181351da5f5aa7a4d1d8d0e81bd6"
+    },
+    "r105_owner_purchase_vat718": {
+      "path": "/private/tmp/rentemester-rust-reports/r105-owner-purchase-vat718-current-contracts-qualified.json",
+      "sha256": "770e746a75ba817982671063d27b0576b2227a2b30bd0dc80002af870522d3aa"
     }
   },
   "verified_history": [
@@ -18946,6 +18950,22 @@
       "remaining": [
         "718: all other original React screens/capabilities/file/export/local-hosted/keyboard/actionable-error acceptance and full J03/J04 must be mapped to accepted evidence; this flow alone does not close718.",
         "All55 original issues/J01-J07/release/cutover/manual installed desktop LAST remain.41closed14open. No live/default launcher or installed app switched."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "55df1c9516ea4ecda553d961b5ff20ca5e6f9c6a",
+      "report": "/tmp/rentemester-rust-reports/r105-owner-purchase-vat718-current-contracts-qualified.json",
+      "sha256": "770e746a75ba817982671063d27b0576b2227a2b30bd0dc80002af870522d3aa",
+      "scope": "ExistingUI->originalRustpreflight;sourceflattrue/false/currentreview/onebarrier/existingpurchasewriter.75cases;actualpositivepartial/layeredunchangedreuse. Two harness failures/stopped/no thirdfullrun/no financialreplay.",
+      "missing_new_actual": [
+        "Reader route currently rejected by outer route policy; harness expected an inner form denial heading, so new reader UI assertion did not complete. Existing current-role/refusal evidence remains.",
+        "Fresh provider-accepted-response-loss UI and this fixture restart/signedrestore were not executed after the second setup failure. API/UI regression and unchanged shared-barrier/purchase-runtime actual evidence are retained; no fresh macro PASS claim."
+      ],
+      "remaining": [
+        "718: fresh providerloss/reader/restart-restorematrix gap retained exactly above, plus full original41company+13static screens/files/local-hosted/keyboard/errors/J03/J04 coverage. Agent-forslag is next concrete unbound originalread/decision route; reuse existing exceptions semantics, no newagentengine.",
+        "All55originalissues/J01-J07/release/cutover/finalinstalleddesktop remain.41closed14open; no live/defaultlauncher/installedapp switch."
       ]
     }
   ],
