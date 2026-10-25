@@ -5,6 +5,7 @@ use serde_json::{Value, json};
 pub fn list() -> Value {
     let mut tools = Vec::new();
     tools.extend(crate::diagnostics_original118::tools());
+    tools.extend(crate::backup_original122::tools());
     tools.push(tool("meta_about", "Identify the native Rust runtime and partial catalogue; no ledger access", json!({"type":"object","properties":{},"additionalProperties":false}), true));
     tools.push(tool("agent_capability_search", "Search native implemented capabilities; partial coverage is explicit", json!({"type":"object","properties":{"query":{"type":"string","maxLength":200},"cursor":{"type":"integer","minimum":0,"maximum":1000000},"limit":{"type":"integer","minimum":1,"maximum":50}},"additionalProperties":false}), true));
     tools.push(tool("agent_workflow_describe", "Describe a native workflow and actual operation/recovery contracts without executing it", json!({"type":"object","required":["id"],"properties":{"id":{"type":"string","maxLength":128}},"additionalProperties":false}), true));
@@ -294,6 +295,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::backup_original122::accepts(name) { return crate::backup_original122::call(api, name, args).await; }
     if crate::diagnostics_original118::accepts(name) { return crate::diagnostics_original118::call(api, name, args).await; }
     if name == "company_add" { return crate::company_creation::call_original(api,args).await; }
     if crate::invoice_public_original717::accepts(name) { return crate::invoice_public_original717::call(api,name,args).await; }

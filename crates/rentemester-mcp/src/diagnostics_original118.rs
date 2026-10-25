@@ -2,7 +2,7 @@
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value, json};
 
-const OUTPUT_SCHEMA: &str = r###"{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}"###;
+pub(crate) const OUTPUT_SCHEMA: &str = r###"{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}"###;
 pub fn accepts(name: &str) -> bool {
     matches!(name, "retention_status" | "system_healthcheck")
 }
@@ -15,10 +15,10 @@ pub fn tools() -> Vec<Value> {
             json!({"name":name,"title":title,"description":description,"inputSchema":schema,"outputSchema":serde_json::from_str::<Value>(OUTPUT_SCHEMA).expect("original envelope schema"),"annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false}})
         }).collect()
 }
-fn result(envelope: Value) -> Value {
+pub(crate) fn result(envelope: Value) -> Value {
     json!({"isError":envelope["ok"] != true,"content":[{"type":"text","text":envelope.to_string()}],"structuredContent":envelope})
 }
-fn failure(error: Error) -> Value {
+pub(crate) fn failure(error: Error) -> Value {
     let code = match error {
         Error::InvalidInput(_) => "invalid_input",
         Error::Refused { .. } => "server_refused",
