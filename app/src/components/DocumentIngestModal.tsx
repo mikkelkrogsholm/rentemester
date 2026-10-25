@@ -141,8 +141,8 @@ export function DocumentIngestModal({
     }
   }
 
-  // A cash-register receipt is exempt from the full statutory field set, so
-  // those inputs are only required (and only shown as required) for køb/salg.
+  // Cash receipts omit invoice-only fields, but expense posting still needs
+  // documented supplier evidence. Retain the same explicit identity controls.
   const isPurchaseSale = documentType === "purchase_sale";
   const isInternalVoucher = documentType === "internal_voucher";
 
@@ -518,8 +518,9 @@ export function DocumentIngestModal({
               </fieldset>
             )}
 
-            {isPurchaseSale && (
+            {(isPurchaseSale || documentType === "cash_register_receipt") && (
               <>
+                {documentType === "cash_register_receipt" && <p className="muted">Leverandøren skal være dokumenteret, før kassebonen kan bogføres. Udfyld kun oplysninger, du har kontrolleret på bilaget.</p>}
                 {contacts.loading && <p className="muted" role="status">Henter leverandører…</p>}
                 {contacts.error && <p className="muted">Leverandører kunne ikke hentes. Udfyld afsenderoplysningerne manuelt.</p>}
                 {!!contacts.data?.vendors.length && <label className="modal-field">
@@ -572,6 +573,10 @@ export function DocumentIngestModal({
                     disabled={outcome.blocked || (busy)}
                   />
                 </label>
+              </>
+            )}
+            {isPurchaseSale && (
+              <>
                 <div className="modal-field-grid">
                   <label className="modal-field">
                     Modtager

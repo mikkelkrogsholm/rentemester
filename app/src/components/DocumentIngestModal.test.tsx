@@ -159,14 +159,37 @@ describe("DocumentIngestModal", () => {
     );
   });
 
-  test("the purchase/sale party fields hide for a cash-register receipt", async () => {
+  test("a cash receipt exposes supplier evidence without invoice-only fields", async () => {
     render(
       <DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} />,
     );
     // køb/salg (the default) shows the sender/recipient fields.
     expect(screen.getByLabelText("Afsender")).toBeInTheDocument();
     await pickReceiptType();
-    expect(screen.queryByLabelText("Afsender")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Afsender")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Modtager")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Beskrivelse af leverance")).not.toBeInTheDocument();
+  });
+
+  test("a cash receipt sends reviewed supplier evidence only on explicit upload", async () => {
+    mockFetch({});
+    const submit = vi.fn(async (_input: unknown, _mime: string) => ({ documentNo: "DOC-RECEIPT" }));
+    render(<DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} submit={submit} />);
+    await pickReceiptType();
+    await userEvent.upload(screen.getByLabelText("Bilagsfil"), receiptFile());
+    await userEvent.type(screen.getByLabelText("Afsender"), "Synthetic receipt supplier");
+    await userEvent.type(screen.getByLabelText("Afsender CVR/moms"), "12345678");
+    await userEvent.type(screen.getByLabelText("Leverandørland (ISO)"), "dk");
+    await userEvent.selectOptions(screen.getByLabelText("Identitetstype"), "dk_cvr");
+    expect(submit).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Indlæs bilag" }));
+    await screen.findByText("Bilaget er indlæst som DOC-RECEIPT.");
+    const metadata = (submit.mock.calls[0]![0] as { metadata: Record<string, unknown> }).metadata;
+    expect(metadata.documentType).toBe("cash_register_receipt");
+    expect(metadata.sender).toEqual({name:"Synthetic receipt supplier",vatOrCvr:"12345678",countryCode:"DK",identifierKind:"dk_cvr"});
+    expect(metadata).not.toHaveProperty("recipient");
+    expect(metadata).not.toHaveProperty("deliveryDescription");
+    expectSelectedOriginal(submit, "kvittering.txt", "Kasseboner\n12,00 DKK\n", "text/plain");
   });
 
   test("ingesting POSTs the file as base64 with metadata and confirm:true", async () => {
