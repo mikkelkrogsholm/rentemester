@@ -194,3 +194,66 @@ mod tests {
         assert_eq!(p["rules"]["digest"].as_str().unwrap().len(), 71);
     }
 }
+
+/// Validate a retained SQLite byte image, never a live pathname or caller-supplied receipt.
+/// tempfile owns a new 0600 inode, so closing this connection cannot release live writer locks.
+pub fn validate_image(
+    bytes: &[u8],
+    uuid: &str,
+    files: &std::collections::BTreeMap<String, Vec<u8>>,
+) -> Result<[i64; 3], Error> {
+    use std::io::Write;
+    if bytes.is_empty() || bytes.len() > 64 * 1024 * 1024 {
+        return Err(invalid());
+    }
+    let mut file = tempfile::NamedTempFile::new().map_err(|_| invalid())?;
+    file.write_all(bytes).map_err(|_| invalid())?;
+    // macOS exposes its private temp directory through /var -> /private/var.
+    // Resolve our own temporary file before SQLITE_OPEN_NOFOLLOW, retaining the guard.
+    let image_path = file.path().canonicalize().map_err(|_| invalid())?;
+    let mut db = Connection::open_with_flags(
+        image_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+    )
+    .map_err(|_| invalid())?;
+    db.execute_batch("PRAGMA trusted_schema=OFF;PRAGMA foreign_keys=ON;")
+        .map_err(|_| invalid())?;
+    let validated = crate::portable_backup::company(&db)?;
+    if validated.uuid != uuid {
+        return Err(invalid());
+    }
+    for (path, expected) in validated.originals {
+        let path = path.replacen("documents/originals/", "documents-originals/", 1);
+        let bytes = files.get(&path).ok_or_else(invalid)?;
+        if format!("{:x}", Sha256::digest(bytes)) != expected {
+            return Err(invalid());
+        }
+    }
+    let tx = db.transaction().map_err(|_| invalid())?;
+    activity_ids(&tx)
+}
+
+/// Source receipts live in the company audit, not the native workspace receipt stream.
+pub fn placements(company: &Transaction<'_>, destination: &str) -> Result<Vec<Value>, Error> {
+    let mut q = company.prepare("SELECT message FROM audit_log WHERE event_type='original717_backup_placement' AND entity_type='backup_destination' AND entity_id=? ORDER BY id").map_err(|_|invalid())?;
+    let mut out = Vec::new();
+    for row in q
+        .query_map([destination], |r| r.get::<_, String>(0))
+        .map_err(|_| invalid())?
+    {
+        let wire = row.map_err(|_| invalid())?;
+        if wire.len() > 16384 {
+            return Err(invalid());
+        }
+        let p: Value = serde_json::from_str(&wire).map_err(|_| invalid())?;
+        if !p["backupId"].is_string()
+            || !p["archiveSha256"].is_string()
+            || !p["verified"].is_boolean()
+            || !p["placedAt"].is_string()
+        {
+            return Err(invalid());
+        }
+        out.push(p);
+    }
+    Ok(out)
+}

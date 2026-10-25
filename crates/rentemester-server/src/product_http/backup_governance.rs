@@ -43,3 +43,6 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         ),
     }
 }
+pub(super) async fn original717(state: State<Product>, request: Request) -> Response {
+    super::backup_registration::original717(state, request).await
+}

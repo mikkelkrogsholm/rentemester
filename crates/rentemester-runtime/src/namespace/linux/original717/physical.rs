@@ -646,3 +646,70 @@ mod bounded_tests {
         assert!(!id("latest/other"));
     }
 }
+
+/// Fixed-resource read proof. Paths come exclusively from the two admitted SQLite handles.
+/// Deliberately does not acquire another lease or open either live SQLite inode.
+pub(crate) fn observe_retained(
+    control: &Path,
+    company: &Path,
+    slug: &str,
+) -> Result<Vec<VerifiedOriginal717>, Error> {
+    if !id(slug)
+        || slug.contains('.')
+        || control.file_name().and_then(|s| s.to_str()) != Some("workspace-control.sqlite")
+        || control
+            .parent()
+            .and_then(Path::file_name)
+            .and_then(|s| s.to_str())
+            != Some(".rentemester")
+    {
+        return Err(Error::Invalid);
+    }
+    let root = control
+        .parent()
+        .and_then(Path::parent)
+        .ok_or(Error::Invalid)?;
+    if company != root.join(slug).join("data/ledger.sqlite") {
+        return Err(Error::Invalid);
+    }
+    let uid = rustix::process::geteuid().as_raw();
+    #[cfg(target_os = "macos")]
+    process_profile(uid, NamespaceProfile::LocalUserMacos)?;
+    #[cfg(target_os = "linux")]
+    process_profile(uid, NamespaceProfile::DedicatedLinux)?;
+    let directory = backup_directory(&root.join(slug), uid)?;
+    let backups = backup_directory(&root.join(slug).join("backups"), uid)?;
+    let candidates = names(&backups)?;
+    let mut out = Vec::new();
+    // An empty backup directory requires no key and observation never creates one.
+    if candidates.is_empty() {
+        return Ok(out);
+    }
+    let text = zeroize::Zeroizing::new(read_bounded(&directory, uid, ".backup-manifest.key", 65)?);
+    let key = zeroize::Zeroizing::new(
+        codec::symmetric_key(std::str::from_utf8(&text).map_err(|_| Error::Invalid)?)
+            .map_err(|_| Error::Invalid)?,
+    );
+    for name in &candidates {
+        let st = statat(&backups, name.as_str(), AtFlags::SYMLINK_NOFOLLOW)
+            .map_err(|_| Error::Invalid)?;
+        if FileType::from_raw_mode(st.st_mode) != FileType::Directory {
+            continue;
+        }
+        if !id(name) {
+            return Err(Error::Invalid);
+        }
+        let dir = backup_directory(&root.join(slug).join("backups").join(name), uid)?;
+        let mut files = Files::new();
+        inventory(&dir, uid, "", &mut files)?;
+        let proof = codec::verify(&files, &key, None).map_err(|_| Error::Invalid)?;
+        if proof.manifest().backup_id != *name {
+            return Err(Error::Invalid);
+        }
+        out.push(proof);
+    }
+    if names(&backups)? != candidates {
+        return Err(Error::Changed);
+    }
+    Ok(out)
+}

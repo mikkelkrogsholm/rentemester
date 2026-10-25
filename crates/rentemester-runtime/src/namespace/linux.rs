@@ -467,3 +467,4 @@ pub(super) fn backup_file_acl(file: &File) -> Result<(), Error> {
     acl_walk_fd(file, false)
 }
 pub use original717::Original717RestoreStage;
+pub(crate) use original717::observe_retained as observe_original717;

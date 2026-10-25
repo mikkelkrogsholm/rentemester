@@ -73,3 +73,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         ),
     }
 }
+mod original717;
+pub(super) async fn original717(state: State<Product>, request: Request) -> Response {
+    original717::handle(state, request).await
+}
