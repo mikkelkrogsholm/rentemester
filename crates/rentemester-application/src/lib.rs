@@ -188,3 +188,7 @@ pub mod compliance;
 pub mod mileage_posting;
 
 pub mod digisense_received;
+
+pub mod agent_finance;
+
+pub mod agent_run;
