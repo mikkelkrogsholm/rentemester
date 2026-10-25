@@ -275,6 +275,14 @@ fn poll(state: &Product, slug: &str, cookie: &VerifiedCookie, input: &Input) -> 
     result
 }
 fn workspace(state: &Product, cookie: &VerifiedCookie, input: &Input) -> Response {
+    workspace_result(state, cookie, input, false)
+}
+fn workspace_result(
+    state: &Product,
+    cookie: &VerifiedCookie,
+    input: &Input,
+    original: bool,
+) -> Response {
     let catalog = {
         let Ok(mut owner) = state.native.owner.lock() else {
             return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable");
@@ -318,7 +326,12 @@ fn workspace(state: &Product, cookie: &VerifiedCookie, input: &Input) -> Respons
             Some("archived")
         } else if entry["initialized"] != true {
             Some("not initialized")
-        } else if state.native.public_einvoice.get(slug).is_none() {
+        } else if state.native.public_einvoice.get(slug).is_none()
+            && super::public_einvoice::original717::secret(state, slug, cookie)
+                .ok()
+                .flatten()
+                .is_none()
+        {
             Some("not configured")
         } else {
             None
@@ -330,7 +343,15 @@ fn workspace(state: &Product, cookie: &VerifiedCookie, input: &Input) -> Respons
         let value = poll(state, slug, cookie, input);
         companies.push(if value["ok"]==true {json!({"slug":slug,"status":"polled","documentsIngested":value["documentsIngested"]})} else {json!({"slug":slug,"status":"failed","reason":"receive failed; inspect authoritative documents and dedup before any further action"})});
     }
-    response(StatusCode::OK, json!({"ok":true,"companies":companies}))
+    let core = json!({"ok":true,"companies":companies});
+    response(
+        StatusCode::OK,
+        if original {
+            json!({"ok":true,"result":core})
+        } else {
+            core
+        },
+    )
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     if service_company::requested(&request) {
@@ -415,4 +436,9 @@ mod tests {
         assert_eq!(v["documentsQuarantined"], 1);
         assert_eq!(v["documentsIngested"], 1);
     }
+}
+
+mod original717;
+pub(super) async fn original717(State(state): State<Product>, request: Request) -> Response {
+    original717::handle(State(state), request).await
 }

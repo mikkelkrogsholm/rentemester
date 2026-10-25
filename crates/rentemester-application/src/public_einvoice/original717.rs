@@ -114,7 +114,7 @@ pub fn configuration(
                             &bytes,
                         )
                         .map_err(|_| refused())?;
-                    Ok(match config.environment() {
+                    Ok::<_, rentemester_engine::Error>(match config.environment() {
                         rentemester_runtime::public_einvoice::Environment::Test => "test",
                         rentemester_runtime::public_einvoice::Environment::Production => {
                             "production"
@@ -133,4 +133,111 @@ pub fn configuration(
         });
     }
     super::configuration(control, company, context, observed.value.or(fallback))
+}
+
+/// Exact source readiness uses a complete pair on one network, not an OR of directions.
+pub fn onboarding(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    fallback: Option<&str>,
+) -> Result<Committed<Value>, Failure> {
+    control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        selection(&context),
+        Permission::CompanyRead,
+        |tx, _| {
+            let saved = read_secret(tx, guard)?;
+            let environment = saved
+                .as_ref()
+                .map(|(bytes, _)| {
+                    let config =
+                        rentemester_runtime::public_einvoice::original717::from_admitted_secret(
+                            bytes,
+                        )
+                        .map_err(|_| refused())?;
+                    Ok::<_, rentemester_engine::Error>(match config.environment() {
+                        rentemester_runtime::public_einvoice::Environment::Test => "test",
+                        rentemester_runtime::public_einvoice::Environment::Production => {
+                            "production"
+                        }
+                    })
+                })
+                .transpose()?
+                .or(fallback);
+            let identity = store::identity(tx).ok();
+            let key = if identity.is_some() {
+                environment
+                    .map(|e| store::load_bound(tx, e))
+                    .transpose()?
+                    .flatten()
+            } else {
+                None
+            };
+            let mut pair = false;
+            if let (Some(env), Some(key)) = (environment, key.as_deref()) {
+                for network in ["nemhandel", "peppol"] {
+                    pair |= store::direction_registered(tx, env, key, network, "inbound")?
+                        && store::direction_registered(tx, env, key, network, "outbound")?;
+                }
+            }
+            let mut blockers = vec![];
+            if environment.is_none() {
+                blockers.push("Digisense API credentials are not configured.");
+            }
+            if identity.is_none() {
+                blockers.push("DigiSense requires the ledger's company profile to contain both CVR and legal company name before any network operation.");
+            }
+            if identity.is_some() && key.is_none() {
+                blockers.push("No DigiSense company is registered for this ledger's profile CVR.");
+            }
+            if key.is_some() && !pair {
+                blockers.push("Inbound participant is not registered.");
+                blockers.push("Outbound participant is not registered.");
+            }
+            Ok(
+                json!({"configured":environment.is_some(),"environment":environment,"identity":identity,"companyKeyConfigured":key.is_some(),"inboundReady":pair,"outboundReady":pair,"ready":blockers.is_empty(),"blockers":blockers}),
+            )
+        },
+    )
+}
+
+pub fn registration_result(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    environment: &str,
+    network: Network,
+) -> Result<Committed<Value>, Failure> {
+    control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Fresh,
+        },
+        selection(&context),
+        Permission::CompanyExternalSend,
+        |tx, _| {
+            let identity = store::identity(tx)?;
+            let key = store::load_bound(tx, environment)?.ok_or_else(refused)?;
+            let mut directions = vec![];
+            for direction in ["outbound", "inbound"] {
+                if store::direction_registered(tx, environment, &key, network.name(), direction)? {
+                    directions.push(direction);
+                }
+            }
+            Ok(
+                json!({"ok":directions.len()==2,"companyKey":key,"directionsRegistered":directions,"network":network.name(),"participantType":"DK:CVR","participantId":identity.cvr}),
+            )
+        },
+    )
 }
