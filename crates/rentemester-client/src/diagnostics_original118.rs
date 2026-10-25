@@ -57,7 +57,7 @@ fn valid_core(core: &Value, retention: bool) -> bool {
 impl ApiClient {
     // Path selectors are assertions against a freshly verified explicit local root,
     // not filesystem discovery, target-ledger admission or caller authority.
-    fn diagnostics_company_original118(&self, company: &str) -> Result<String, Error> {
+    pub(crate) fn diagnostics_company_original118(&self, company: &str) -> Result<String, Error> {
         let selected = if std::path::Path::new(company).is_absolute() {
             let local = self.local.as_ref().ok_or(Error::InvalidInput(
                 "absolute company requires explicit verified local profile",
