@@ -449,6 +449,7 @@ impl NamespaceGuard {
 
 mod documents;
 mod imap_config;
+mod original717;
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests;
@@ -465,3 +466,4 @@ pub(super) fn backup_directory(path: &Path, uid: u32) -> Result<File, Error> {
 pub(super) fn backup_file_acl(file: &File) -> Result<(), Error> {
     acl_walk_fd(file, false)
 }
+pub use original717::Original717RestoreStage;

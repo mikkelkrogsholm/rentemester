@@ -156,6 +156,13 @@ pub fn admit_unix_peer(router: Router, owner_uid: u32) -> Router {
         },
     ))
 }
+/// Read-only OS-verified same-user Unix transport fact; never an accounting grant.
+pub fn verified_local_uid(request: &Request) -> Option<u32> {
+    #[cfg(unix)]
+    { request.extensions().get::<VerifiedUnixPeer>().map(|peer| peer.0) }
+    #[cfg(not(unix))]
+    { let _ = request; None }
+}
 struct StateData {
     origin: String,
     authority: String,
@@ -670,3 +677,14 @@ async fn body_bytes(request: Request) -> Result<Zeroizing<Vec<u8>>, StatusCode> 
 #[cfg(all(test, unix))]
 #[path = "local_runtime/peer_tests.rs"]
 mod local_peer_tests;
+
+#[cfg(test)]
+mod original717_transport_tests {
+    use super::*;
+    #[test]
+    fn original717_tcp_and_forged_headers_have_no_local_proof() {
+        let request = Request::builder().header("x-verified-local-uid", "501")
+            .header("x-forwarded-for", "127.0.0.1").body(axum::body::Body::empty()).unwrap();
+        assert_eq!(verified_local_uid(&request), None);
+    }
+}

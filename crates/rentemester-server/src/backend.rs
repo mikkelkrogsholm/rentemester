@@ -98,7 +98,10 @@ pub struct RestoreRequest {
     pub transfer: bool,
 }
 
+mod original717;
+
 pub struct Backend {
+    original_restore_operator: Option<rentemester_runtime::bootstrap::Operator>,
     pub(crate) agent_policies: std::collections::BTreeMap<String, rentemester_engine::agent_run::Policy>,
     local_identity: Option<crate::local_runtime::Identity>,
     pub(crate) owner: Mutex<Owner>,
@@ -411,6 +414,7 @@ impl Backend {
             None
         };
         Ok(Arc::new(Self {
+            original_restore_operator: original717::operator(&config),
             local_identity,
             owner: Mutex::new(owner),
             agent_policies: config.agent_policies.clone(),

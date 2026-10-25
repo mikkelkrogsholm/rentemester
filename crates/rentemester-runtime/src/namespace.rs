@@ -90,6 +90,13 @@ impl NamespaceGuard {
     pub fn rollback_document(&mut self, _: PublishedDocument) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn read_smtp_config(&mut self) -> Result<Option<Vec<u8>>, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn read_digisense_config(&mut self) -> Result<Option<Vec<u8>>, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn write_digisense_config(&mut self, _: &[u8]) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn snapshot_original717_inventory(&mut self) -> Result<crate::backup_artifact::original717::Files, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn original717_manifest_key(&mut self) -> Result<zeroize::Zeroizing<Vec<u8>>, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn retain_original717(&mut self, _: &crate::backup_artifact::original717::VerifiedOriginal717) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn load_original717(&mut self, _: Option<&str>, _: Option<&[u8]>) -> Result<crate::backup_artifact::original717::VerifiedOriginal717, NamespaceError> { Err(NamespaceError::Unsupported) }
     pub fn read_imap_config(&mut self) -> Result<Option<Vec<u8>>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
@@ -252,4 +259,15 @@ pub(crate) fn backup_directory(
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 pub(crate) fn backup_file_acl(file: &std::fs::File) -> Result<(), NamespaceError> {
     linux::backup_file_acl(file)
+}
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub use linux::Original717RestoreStage;
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub struct Original717RestoreStage { _private: () }
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+impl Original717RestoreStage {
+    pub fn create(_: &Path, _: u32, _: NamespaceProfile, _: &crate::backup_artifact::original717::VerifiedOriginal717) -> Result<Self, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn publish(&mut self, _: &Path) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn publish_into_empty(&mut self, _: &Path) -> Result<(), NamespaceError> { Err(NamespaceError::Unsupported) }
 }

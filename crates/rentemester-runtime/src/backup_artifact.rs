@@ -557,3 +557,6 @@ pub fn verify(wire: &[u8], trusted: &TrustedPublicKey) -> Result<VerifiedArtifac
 }
 #[cfg(test)]
 mod tests;
+
+/// Original company codec, separate from native workspace artifacts.
+pub mod original717;
