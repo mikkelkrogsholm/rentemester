@@ -3,6 +3,7 @@ mod agent_run;
 mod budget_original;
 mod master_data_original;
 mod backup_status;
+mod backup_original122;
 mod backup_governance;
 mod backup_registration;
 mod manual_post_recovery;
@@ -223,6 +224,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/backup-registrations",get(backup_registration::handle).post(backup_registration::handle))
         .route("/api/companies/{slug}/backup-registrations/operations/{operation}",get(backup_registration::handle))
         .route("/api/companies/{slug}/backup-governance",get(backup_governance::handle))
+        .route("/api/companies/{slug}/system-backup-status",get(backup_original122::handle))
+        .route("/api/companies/{slug}/system-backup-lock",post(backup_original122::handle))
         .route("/api/companies/{slug}/backup-status",get(backup_status::handle))
         .route("/api/companies/{slug}/backup-lock",post(backup_status::handle))
         .route("/api/workspace/backup-destinations",get(backup_destinations::handle))

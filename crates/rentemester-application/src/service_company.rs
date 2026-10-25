@@ -247,6 +247,10 @@ pub(crate) fn execute_operation<T>(
 pub(crate) fn execute_recovery<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,apply:impl FnOnce(&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
     execute_operation_mode(control,company,context,permission,true,true,|_, tx, subject, rejection| apply(tx, subject, rejection))
 }
+/// Narrow backup policy recovery: normal transfer/auth guards and usage remain enforced.
+pub(crate) fn execute_recovery_both<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,apply:impl FnOnce(&Transaction<'_>,&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
+ execute_operation_mode(control,company,context,permission,true,true,apply)
+}
 /// Same single-charge admission and live recheck, retaining both held transactions.
 pub(crate) fn execute_operation_both<T>(
     control: &mut Connection, company: &mut Connection, context: Context<'_>,
