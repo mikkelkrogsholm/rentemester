@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R110 original report analytics CLI accepted over unchanged canonical CFO producer; exact verified workspace/argv/source-flat output. Full716/all55 remain.",
-  "code_revision": "d078b2385646f00bd2968d419e8e599be02bf299",
+  "current_increment": "R111 owner manual purchase unknown-provider/read-only-route/reload/restart/manualrelease actual accepted, zero financial writes and one provider effect; prior R104onejournal retained. Full718/all55 remain.",
+  "code_revision": "50d1fd7f57ece94527026137f2ac817ec865cf0b",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_analytics_cli716_component_accepted",
+  "state": "owner_manual_purchase_uncertainty718_component_accepted",
   "issues_closed": 41,
-  "next": "Prioritize actual owner manual bookkeeping readiness under718; preserve prior manual posting and accepted runtime evidence. Full716 has42 absent literal keys plus group overview producer gap; all original cutover/J01-J07 requirements retained.",
+  "next": "Finish remaining whole supported UI journeys under718, preserving accepted manual book/agent/native evidence. MCP717 has15missing original names/29workflow descriptions; next useful bounded adapter is bookkeeping_workbench over existing server. CLI71642missing keys plus group overview. Full55/cutover/installed desktopLAST remain.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -15,7 +15,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R109 FULLoriginalAgentRun716 accepted: commonRustCLI/server guardedexpense/payable/nativeproposals/sharedReact; exactactual5journals14lines andnoreplay,1615contracts. Full716/all55remain.",
+  "previous_verified_increment": "R110 original report analytics CLI accepted over unchanged canonical CFO producer; exact verified workspace/argv/source-flat output. Full716/all55 remain.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16661,6 +16661,10 @@
     "r110_original_analytics_cli716": {
       "path": "/private/tmp/rentemester-rust-reports/r110-original-analytics-cli716-component-accepted.json",
       "sha256": "9aec0b62215cd4862da3a927205c868437cf2a4c6360457ea06ff04495095614"
+    },
+    "r111_owner_manual_purchase_uncertainty718": {
+      "path": "/private/tmp/rentemester-rust-reports/r111-owner-manual-unknown718-component-accepted.json",
+      "sha256": "344043dfe953e1521f993e68342ad9b2e70c2ae61afdcf769e21963e8310551e"
     }
   },
   "verified_history": [
@@ -19045,6 +19049,15 @@
       "sha256": "9aec0b62215cd4862da3a927205c868437cf2a4c6360457ea06ff04495095614",
       "scope": "Original report analytics company/portfolio/group argv, verified local workspace assertion, current canonical CFO producer, source-flat JSON/human result and refusal. Native remote cfo-analytics preserved. No new calculations, engine, server identity producer or workspace discovery.",
       "remaining": "42 original literal CLI keys absent, plus group overview unsupported native producer and broader full716 acceptance. 41of55 closed/14open; all original scope/J01-J07, cutover, installed desktop LAST retained."
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "50d1fd7f57ece94527026137f2ac817ec865cf0b",
+      "report": "/tmp/rentemester-rust-reports/r111-owner-manual-unknown718-component-accepted.json",
+      "sha256": "344043dfe953e1521f993e68342ad9b2e70c2ae61afdcf769e21963e8310551e",
+      "scope": "Missing owner manual purchase VAT uncertainty combination only: normal two-user MFA, actual outer-route read-only denial, explicit review/cancel, one actual accepted provider mutation whose response is lost, successful read/reload keeps durable unknown lock, actual Rust restart and fresh MFA preserves lock, explicit human reconciliation releases without any provider retry or financial write.",
+      "remaining": "Full718 all original screens/capabilities/files, keyboard/accessibility and local/hosted failure journeys, full55/J01-J07/cutover and final installed desktop acceptance remain. MCP717 still15absent original names and29workflow descriptions; originalCLI71642absent keys plus group overview producer gap."
     }
   ],
   "scope_clarifications": [
