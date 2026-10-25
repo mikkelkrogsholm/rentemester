@@ -10,7 +10,7 @@ use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     fs::{self, OpenOptions},
-    io::{Read, Write},
+    io::{IsTerminal, Read, Write},
     os::unix::fs::{MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
     process::Command,
@@ -41,6 +41,57 @@ impl Drop for Config {
         self.cookie_key.zeroize();
         self.mfa_key.zeroize();
     }
+}
+fn output(value: &Value, f: &Flags<'_>) -> (String, String) {
+    let machine = f.contains_key("--json")
+        || f.get("--format") == Some(&"json")
+        || (f.get("--format") != Some(&"human") && !std::io::stdout().is_terminal());
+    if machine {
+        return (
+            format!(
+                "{}\n",
+                serde_json::to_string_pretty(value).expect("operator JSON")
+            ),
+            String::new(),
+        );
+    }
+    if value["ok"] == true {
+        let text = value["message"].as_str().unwrap_or("Handlingen er udført");
+        let mut lines = vec![format!("✔ {text}")];
+        for key in [
+            "companyRoot",
+            "workspace",
+            "workspaceSlug",
+            "userId",
+            "verificationNextStep",
+            "url",
+        ] {
+            if let Some(v) = value[key].as_str() {
+                lines.push(format!("  {key}: {v}"));
+            }
+        }
+        (format!("{}\n", lines.join("\n")), String::new())
+    } else {
+        let errors = value["errors"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(Value::as_str)
+                    .map(|e| format!("  → {e}"))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
+            .unwrap_or_default();
+        (
+            String::new(),
+            format!("✘ Handlingen blev afvist\n{errors}\n"),
+        )
+    }
+}
+fn emit(value: &Value, f: &Flags<'_>) {
+    let (out, err) = output(value, f);
+    print!("{out}");
+    eprint!("{err}");
 }
 fn config(path: &Path) -> Result<Config, Error> {
     #[cfg(target_os = "macos")]
@@ -382,7 +433,17 @@ async fn serve(f: &Flags<'_>, local: bool, root: &Path, path: &Path) -> Result<V
         .ok_or("server executable parent unavailable")?
         .join("app/dist");
     // A packaged UI can be selected explicitly; never invoke a build tool.
-    let web = f.get("--web-dir").map(PathBuf::from).unwrap_or(web);
+    let web = f
+        .get("--web-dir")
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("RENTEMESTER_WEB_DIR").map(PathBuf::from))
+        .unwrap_or_else(|| {
+            if web.join("index.html").is_file() {
+                web
+            } else {
+                PathBuf::from("app/dist")
+            }
+        });
     if !web.join("index.html").is_file() {
         return Err("existing React cockpit build missing; pass --web-dir <built-app-dist>".into());
     }
@@ -405,13 +466,13 @@ async fn serve(f: &Flags<'_>, local: bool, root: &Path, path: &Path) -> Result<V
     } else {
         Value::Null
     };
-    println!(
-        "{}",
-        serde_json::to_string_pretty(&if local {
+    emit(
+        &if local {
             json!({"ok":true,"message":format!("Local cockpit listening on {origin}"),"mode":"local-single-company","url":origin,"dataLocation":root,"company":company,"host":host,"port":port,"authRequired":true,"deploymentProfile":"local","browserOpenAttempted":!f.contains_key("--no-open")})
         } else {
             json!({"ok":true,"message":format!("Cockpit backend listening on {origin}"),"url":origin,"host":host,"port":port,"workspace":root,"authRequired":true,"deploymentProfile":if ip.is_loopback(){"local"}else{"hosted"}})
-        })?
+        },
+        f,
     );
     if local && !f.contains_key("--no-open") {
         #[cfg(target_os = "macos")]
@@ -530,9 +591,25 @@ pub async fn execute(args: &[String]) -> Option<i32> {
         );
         return Some(1);
     }
+    let root = match workspace(&f) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{e}");
+            return Some(2);
+        }
+    };
+    if init && f.get("--company").is_none_or(|v| v.is_empty()) {
+        eprintln!("--company is required");
+        return Some(2);
+    }
+    if init {
+        if let Err(e) = settings(&f, false) {
+            eprintln!("{e}");
+            return Some(2);
+        }
+    }
     rentemester_runtime::original716::bootstrap::private_process();
     let result: Result<Value, Error> = async {
-        let root = workspace(&f)?;
         let path = f
             .get("--runtime-config")
             .map(PathBuf::from)
@@ -556,7 +633,7 @@ pub async fn execute(args: &[String]) -> Option<i32> {
         Ok(value) => {
             let exit = if value["ok"] == true { 0 } else { 1 };
             if value.get("stopped").is_none() {
-                println!("{}", serde_json::to_string_pretty(&value).unwrap());
+                emit(&value, &f);
             }
             if init && value["hasPaymentDetails"] == false {
                 eprintln!(
@@ -573,8 +650,8 @@ pub async fn execute(args: &[String]) -> Option<i32> {
                 );
                 1
             } else {
-                eprintln!("{e}");
-                2
+                emit(&json!({"ok":false,"errors":[e.to_string()]}), &f);
+                1
             }
         }
     })
@@ -585,6 +662,27 @@ mod tests {
     use super::*;
     fn args(a: &[&str]) -> Vec<String> {
         a.iter().map(|s| s.to_string()).collect()
+    }
+    #[test]
+    fn original716_human_success_and_refusal_use_source_streams_json_overrides() {
+        let mut f = Flags::new();
+        f.insert("--format", "human");
+        let (out, err) = output(
+            &json!({"ok":true,"message":"Synthetic initialized","workspace":"/synthetic"}),
+            &f,
+        );
+        assert!(out.starts_with("✔ Synthetic initialized"));
+        assert!(err.is_empty());
+        let (out, err) = output(
+            &json!({"ok":false,"errors":["synthetic owner unavailable"]}),
+            &f,
+        );
+        assert!(out.is_empty());
+        assert!(err.contains("synthetic owner unavailable"));
+        f.insert("--json", "true");
+        let (out, err) = output(&json!({"ok":false,"errors":["synthetic"]}), &f);
+        assert_eq!(serde_json::from_str::<Value>(&out).unwrap()["ok"], false);
+        assert!(err.is_empty());
     }
     #[test]
     fn original716_settings_match_common_validation_before_creation() {
