@@ -220,7 +220,7 @@ fn service_payable_domain_flow_uses_current_fence_exact_original_and_attribution
     assert_eq!(f.count("payable_payments"), 1);
     let actor = format!("service_account:{}", f.subject);
     assert_eq!(f.company.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type IN ('payable_register','payable_payment_apply') AND actor=?1",[actor],|r|r.get(0)).unwrap(),2);
-    assert_eq!(f.company.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by=?1 AND created_by_program='service-principal'",[format!("user:{}",f.subject)],|r|r.get(0)).unwrap(),2);
+    assert_eq!(f.company.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by=?1 AND created_by_program='service-principal'",[format!("service_account:{}",f.subject)],|r|r.get(0)).unwrap(),2);
     let failure = f.run(Action::Pay(id, &payment)).err().unwrap();
     assert_eq!(failure.business, BusinessStage::NotCommitted);
     assert_eq!(f.count("journal_entries"), 2);
