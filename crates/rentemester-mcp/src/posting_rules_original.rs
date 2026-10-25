@@ -59,11 +59,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     let o = args.as_object().ok_or("object required")?;
     let company = args["company"]
         .as_str()
-        .filter(|s| {
-            !s.is_empty()
-                && s.bytes()
-                    .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
-        })
+        .filter(|s| !s.is_empty())
         .ok_or("invalid company")?;
     let op = operation(name);
     let s = schema(name);
@@ -85,9 +81,17 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             json!({"ok":false,"errors":[format!("confirm: true required for write tool {name}")],"code":"CONFIRM_REQUIRED"}),
         ));
     }
+    let company = match api.original717_company_selector(company) {
+        Ok(company) => company,
+        Err(error) => {
+            return Ok(result(
+                json!({"ok":false,"errors":[error.to_string()],"code":"invalid_input"}),
+            ));
+        }
+    };
     Ok(
         match api
-            .original_posting_rules(company, op, &body, None, None)
+            .original_posting_rules(&company, op, &body, None, None)
             .await
         {
             Ok(core) => wrap(core),

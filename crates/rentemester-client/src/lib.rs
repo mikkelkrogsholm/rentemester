@@ -621,3 +621,6 @@ mod backup_original122;
 pub use backup_original122::system_backup_lock_original122_body_schema;
 
 mod original_discovery123;
+
+mod original717;
+pub use original717::{original717_tools, validate_original717};

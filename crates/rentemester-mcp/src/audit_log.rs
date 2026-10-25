@@ -1,9 +1,9 @@
-use crate::tools::{company_schema, tool};
+use crate::tools::tool;
 use rentemester_client::{ApiClient, AuditLogQuery, Error, audit_log_query_schema};
 use serde_json::{Value, json};
 pub fn tools() -> Vec<Value> {
     let mut schema = audit_log_query_schema();
-    schema["properties"]["company"] = company_schema();
+    schema["properties"]["company"] = json!({"type":"string","minLength":1,"description":"Company slug, or absolute company path inside the verified local workspace"});
     schema["required"] = json!(["company"]);
     let mut t = tool(
         "audit_log_list",
@@ -21,7 +21,7 @@ pub async fn call(api: &ApiClient, mut args: Value) -> Result<Result<Value, Erro
         .and_then(|v| v.as_str().map(str::to_owned))
         .ok_or("audit_log_list requires company and only typed audit filters")?;
     let query:AuditLogQuery=serde_json::from_value(args).map_err(|_|"audit_log_list requires only company/limit/offset/fromDate/toDate/eventTypeLike/actorLike; no null or authority fields")?;
-    Ok(api.audit_log(&company, &query).await)
+    Ok(api.audit_log_original717(&company, &query).await)
 }
 #[cfg(test)]
 mod tests {

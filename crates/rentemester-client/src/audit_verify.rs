@@ -51,6 +51,14 @@ fn checked(value: Value, company: &str) -> Result<Value, Error> {
     Ok(value)
 }
 impl ApiClient {
+    pub async fn audit_verify_original717(&self, company: &str) -> Result<Value, Error> {
+        let company = self.diagnostics_company_original118(company)?;
+        let value = self.audit_verify(&company).await?;
+        let audit = &value["audit"];
+        Ok(
+            serde_json::json!({"ok":audit["ok"],"errors":audit["errors"],"data":{"entries":audit["entries"]}}),
+        )
+    }
     pub async fn audit_verify(&self, company: &str) -> Result<Value, Error> {
         checked(
             self.get(&company_path(company, "audit-verify")?, &[])

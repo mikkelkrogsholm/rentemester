@@ -179,6 +179,18 @@ fn response(value: Value, company: &str, query: &AuditLogQuery) -> Result<Value,
     Ok(value)
 }
 impl ApiClient {
+    pub async fn audit_log_original717(
+        &self,
+        company: &str,
+        query: &AuditLogQuery,
+    ) -> Result<Value, Error> {
+        let company = self.diagnostics_company_original118(company)?;
+        let mut value = self.audit_log(&company, query).await?;
+        let o = value.as_object_mut().ok_or(Error::Protocol)?;
+        o.remove("ok");
+        o.remove("slug");
+        Ok(json!({"ok":true,"errors":[],"data":value}))
+    }
     pub async fn audit_log(&self, company: &str, query: &AuditLogQuery) -> Result<Value, Error> {
         let path = company_path(company, "audit-log")?;
         query.validate()?;
@@ -246,7 +258,6 @@ mod tests {
     async fn cookie_and_service_reads_encode_filters_and_preserve_server_pagination() {
         use std::{
             io::{Read, Write},
-
             thread,
         };
         for service in [false, true] {
