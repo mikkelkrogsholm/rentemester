@@ -1,5 +1,5 @@
 import type { DocumentsResponse } from "../types";
-import { request, type ReadRequestOptions } from "./_shared";
+import { ApiError, request, type ReadRequestOptions } from "./_shared";
 
 export const documentsApi = {
   documents: (slug: string, options?: ReadRequestOptions) =>
@@ -103,6 +103,13 @@ export const documentsApi = {
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight`,
       options,
     ).then((r) => r.preflight),
+
+  /** Native source snapshot: HTTP 200 domain refusals are reviewable, not transport success claims. */
+  nativeDocumentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) =>
+    nativePreflight(slug, documentId, undefined, options),
+
+  applyNativeDocumentVatPreflight: (slug: string, documentId: number, confirmation: { confirm: true }) =>
+    confirmation?.confirm === true ? nativePreflight(slug, documentId, confirmation) : Promise.reject(new Error("Bekræft momsvalideringen først.")),
 
   /** Actor-attributed provider call, gated by the same mutation boundary as posting. */
   applyDocumentVatPreflight: (slug: string, documentId: number) =>
@@ -293,3 +300,44 @@ export type DocumentIngestInput = {
   vendorId?: number;
   force?: boolean;
 };
+
+/** Exact safe source wire; never expose private provider payloads through this binding. */
+export type NativeDocumentVatPreflight = DocumentVatPreflight & {
+  documentId: number;
+  classification: DocumentVatPreflight["derivedRegion"];
+  cached: boolean;
+  evidenceExpiresAt: string | null;
+  wouldCallProvider: boolean;
+  evidence: Array<{ id: number; event_type: string; classification: DocumentVatPreflight["derivedRegion"]; provider_status: string; evidence_expires_at: string | null; created_at: string; actor: string | null }>;
+};
+const preflightObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+const preflightKeys = (v: Record<string, unknown>, keys: string) => {
+  const names = keys.split(",");
+  return Object.keys(v).length === names.length && names.every(k => Object.hasOwn(v, k));
+};
+const preflightId = (v: unknown): v is number => typeof v === "number" && Number.isSafeInteger(v) && v > 0;
+const preflightNullableString = (v: unknown) => v === null || typeof v === "string";
+const preflightRegion = (v: unknown) => typeof v === "string" && ["DK", "EU", "NON_EU", "CONFLICT"].includes(v);
+function validNativePreflight(v: unknown, id: number): v is NativeDocumentVatPreflight {
+  if (!preflightObject(v) || !preflightKeys(v, "ok,documentId,classification,cached,evidenceExpiresAt,wouldCallProvider,errors,derivedRegion,requiredValidation,cache,applyWouldCallProvider,evidence,exception")
+    || !preflightId(v.documentId) || v.documentId !== id || !preflightRegion(v.classification) || v.derivedRegion !== v.classification
+    || typeof v.ok !== "boolean" || !Array.isArray(v.errors) || !v.errors.every(e => typeof e === "string") || v.ok !== (v.errors.length === 0)
+    || typeof v.cached !== "boolean" || !preflightNullableString(v.evidenceExpiresAt) || v.cached !== (v.evidenceExpiresAt !== null)
+    || typeof v.wouldCallProvider !== "boolean" || v.applyWouldCallProvider !== v.wouldCallProvider || v.wouldCallProvider !== (v.classification === "EU" && !v.cached)
+    || !preflightNullableString(v.requiredValidation) || !preflightObject(v.cache) || !preflightKeys(v.cache, "reused,freshUntil") || v.cache.reused !== v.cached || v.cache.freshUntil !== v.evidenceExpiresAt
+    || (v.classification === "CONFLICT" && v.cached) || v.ok !== (v.classification !== "CONFLICT" && (v.classification !== "EU" || v.cached))
+    || !Array.isArray(v.evidence) || v.evidence.length > 20 || !v.evidence.every(row => preflightObject(row) && preflightKeys(row, "id,event_type,classification,provider_status,evidence_expires_at,created_at,actor")
+      && preflightId(row.id) && typeof row.event_type === "string" && preflightRegion(row.classification) && typeof row.provider_status === "string" && preflightNullableString(row.evidence_expires_at) && typeof row.created_at === "string" && preflightNullableString(row.actor))) return false;
+  const e = v.exception;
+  return e === null || (preflightObject(e) && preflightKeys(e, "id,status,severity,message,requiredAction,createdAt") && preflightId(e.id) && typeof e.status === "string" && typeof e.severity === "string" && typeof e.message === "string" && preflightNullableString(e.requiredAction) && typeof e.createdAt === "string");
+}
+async function nativePreflight(slug: string, id: number, confirmation?: { confirm: true }, options?: ReadRequestOptions): Promise<NativeDocumentVatPreflight> {
+  if (!preflightId(id)) throw new Error("Ugyldigt bilags-ID.");
+  if (confirmation !== undefined && (!preflightObject(confirmation) || !preflightKeys(confirmation, "confirm") || confirmation.confirm !== true)) throw new Error("Bekræft momsvalideringen først.");
+  const value = await request<unknown>(`/api/companies/${encodeURIComponent(slug)}/expense/original/vat-preflight/${id}`, {
+    ...(confirmation === undefined ? { signal: options?.signal } : { method: "POST", body: JSON.stringify({ confirm: true }) }),
+    acceptDomainFalse: body => validNativePreflight(body, id),
+  });
+  if (!validNativePreflight(value, id)) throw new ApiError("internal", "Momsvalideringens resultat kunne ikke bekræftes. Kontrollér evidens og revisionsspor før en ny handling.", 0);
+  return value;
+}
