@@ -1998,6 +1998,46 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-konfigurer",
+      "capability": "POST /api/companies/{slug}/original-efaktura-konfigurer"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-imap-intake",
+      "capability": "POST /api/companies/{slug}/original-imap-intake"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-invoice-send-email",
+      "capability": "POST /api/companies/{slug}/original-invoice-send-email"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-mail-intake",
+      "capability": "POST /api/companies/{slug}/original-mail-intake"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup",
+      "capability": "POST /api/companies/{slug}/original-system-backup"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-archive",
+      "capability": "POST /api/companies/{slug}/original-system-backup-archive"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-place",
+      "capability": "POST /api/companies/{slug}/original-system-backup-place"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-verify-remote-placement",
+      "capability": "POST /api/companies/{slug}/original-system-backup-verify-remote-placement"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/original/accounting-draft/approve-and-post",
       "capability": "POST /api/companies/{slug}/original/accounting-draft/approve-and-post"
     },
@@ -3092,6 +3132,11 @@
       "capability": "HEAD /api/me"
     },
     {
+      "method": "POST",
+      "path": "/api/original-system-restore-backup",
+      "capability": "POST /api/original-system-restore-backup"
+    },
+    {
       "method": "GET",
       "path": "/api/original/agent-about",
       "capability": "GET /api/original/agent-about"
@@ -3327,5 +3372,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "34299c01db99638afaafb85164dfee22870716da28314c3b44cf1cbd38ac3914"
+  "manifestId": "01be5fb396275fdaa0a978c029fafcaa34b391c20664a7b918898ef742cb758e"
 }

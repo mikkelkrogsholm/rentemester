@@ -20,7 +20,7 @@ struct Input {
 pub async fn call(api: &ApiClient, args: Value) -> Result<Result<Value, Error>, &'static str> {
     let input: Input =
         serde_json::from_value(args).map_err(|_| "audit_verify requires only company")?;
-    Ok(api.audit_verify(&input.company).await)
+    Ok(api.audit_verify_original717(&input.company).await)
 }
 #[cfg(test)]
 mod tests {

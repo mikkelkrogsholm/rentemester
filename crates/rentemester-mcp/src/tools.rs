@@ -7,6 +7,7 @@ pub fn list() -> Value {
     tools.extend(crate::diagnostics_original118::tools());
     tools.extend(crate::backup_original122::tools());
     tools.extend(crate::original_discovery123::tools());
+    tools.extend(crate::original717::tools());
 
     for (name, description) in [
         ("me", "Current authenticated user and workspace context"),
@@ -290,6 +291,7 @@ struct DomainWriteArgs {
 
 /// Invalid RPC tool/arguments are protocol errors; HTTP/domain failures are tool results.
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    if crate::original717::accepts(name) { return crate::original717::call(api,name,args).await; }
     if crate::original_discovery123::accepts(name) { return crate::original_discovery123::call(api, name, args).await; }
     if !args.is_object() {
         return Err("expected arguments object");
@@ -560,7 +562,12 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         }
         _ => return Err("unknown tool"),
     };
+    if matches!(name,"cvr_lookup"|"company_sync_cvr") && matches!(&outcome,Err(Error::InvalidInput(message)) if message.contains("confirmation required")) {
+        let value=json!({"ok":false,"errors":[format!("confirm: true required for write tool {name}")],"code":"CONFIRM_REQUIRED"});
+        return Ok(json!({"isError":true,"content":[{"type":"text","text":value.to_string()}],"structuredContent":value}));
+    }
     let value = match outcome {
+        Ok(data) if matches!(name,"audit_verify"|"audit_log_list") => data,
         Ok(data) => {
             json!({"ok":data.get("ok").and_then(Value::as_bool).unwrap_or(true),"data":data})
         }

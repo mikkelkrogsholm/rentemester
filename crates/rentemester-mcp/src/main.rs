@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod original717;
 mod invoice_public_original717;
 mod profile_original89;
 mod archives_original89;
@@ -487,3 +488,7 @@ mod backup_original122_tests;
 mod original_discovery123;
 #[cfg(test)]
 mod original_discovery123_tests;
+
+#[cfg(test)]
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod original717_transport;

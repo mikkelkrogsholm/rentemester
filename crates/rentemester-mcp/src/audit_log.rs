@@ -21,7 +21,7 @@ pub async fn call(api: &ApiClient, mut args: Value) -> Result<Result<Value, Erro
         .and_then(|v| v.as_str().map(str::to_owned))
         .ok_or("audit_log_list requires company and only typed audit filters")?;
     let query:AuditLogQuery=serde_json::from_value(args).map_err(|_|"audit_log_list requires only company/limit/offset/fromDate/toDate/eventTypeLike/actorLike; no null or authority fields")?;
-    Ok(api.audit_log(&company, &query).await)
+    Ok(api.audit_log_original717(&company, &query).await)
 }
 #[cfg(test)]
 mod tests {

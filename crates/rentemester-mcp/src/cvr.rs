@@ -17,13 +17,13 @@ pub fn tools() -> Vec<Value> {
         tool(
             "cvr_lookup",
             "Explicit CompanyExternalLookup: look up caller CVR text through the operator provider or retained company-scoped cache. Can retain a raw CVR snapshot; confirmed operation, not read-only. Exact inner business result/errors/fetchedAt; no caller credentials/endpoint, forced refresh, retries or automatic contact creation.",
-            json!({"type":"object","required":["company","cvr","confirm"],"properties":{"company":company_schema(),"cvr":{"type":"string","maxLength":128},"confirm":{"const":true}},"additionalProperties":false}),
+            json!({"type":"object","required":["company","cvr"],"properties":{"company":company_schema(),"cvr":{"type":"string","maxLength":128},"confirm":{"type":"boolean"}},"additionalProperties":false}),
             false,
         ),
         tool(
             "company_sync_cvr",
             "Explicit current CompanyMasterData and CompanyExternalLookup: synchronize the company's own current CVR master data and audit the action. Never changes fiscal year, payment settings or accounting. Returns exact inner business result including mismatch warning and errors. No caller source data, credentials, keys or automatic retry; read canonical profile after uncertainty.",
-            json!({"type":"object","required":["company","confirm"],"properties":{"company":company_schema(),"confirm":{"const":true}},"additionalProperties":false}),
+            json!({"type":"object","required":["company"],"properties":{"company":company_schema(),"confirm":{"type":"boolean"}},"additionalProperties":false}),
             false,
         ),
     ]
@@ -36,12 +36,14 @@ struct Empty {}
 struct Lookup {
     company: String,
     cvr: String,
+    #[serde(default)]
     confirm: bool,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Sync {
     company: String,
+    #[serde(default)]
     confirm: bool,
 }
 pub async fn call(
@@ -77,7 +79,7 @@ mod tests {
         assert_eq!(t[0]["annotations"]["readOnlyHint"], true);
         for t in &t[1..] {
             assert_eq!(t["annotations"]["readOnlyHint"], false);
-            assert_eq!(t["inputSchema"]["properties"]["confirm"]["const"], true);
+            assert_eq!(t["inputSchema"]["properties"]["confirm"]["type"], "boolean");
             assert_eq!(t["inputSchema"]["additionalProperties"], false);
         }
     }
