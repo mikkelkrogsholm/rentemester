@@ -1,5 +1,5 @@
 import type { ExceptionsResponse } from "../types";
-import { request, type ReadRequestOptions } from "./_shared";
+import { ApiError, request, type ReadRequestOptions } from "./_shared";
 
 export const exceptionsApi = {
   /**
@@ -26,40 +26,27 @@ export const exceptionsApi = {
     ).then((r) => r.exception),
 };
 
-// --- Agent-forslag → menneskelig godkendelse (#346) ----------------------
-//
-// The agent loop + the exception sync functions raise `AGENT_*` exceptions
-// whenever a deterministic agent run needs a human decision. These API
-// methods drive the dedicated cockpit view that lists them, approves them,
-// or rejects them. Approve/reject NEVER post on their own — they only
-// resolve the underlying exception with a Danish decision note, so the
-// audit trail records WHO decided and WHY. The actual ledger action
-// (e.g. "Beregn afskrivning", "payable pay") lives on the deep-linked view.
+// Review existing AGENT_ exceptions only. This consumer never posts bookkeeping.
+async function decide(slug: string, id: number, decision: "approve" | "reject", note?: string) {
+  if (!Number.isSafeInteger(id) || id <= 0) throw new ApiError("bad_request", "Ugyldigt forslag-ID.", 400);
+  if (note !== undefined && typeof note !== "string") throw new ApiError("bad_request", "Noten skal være tekst.", 400);
+  const body = await request<unknown>(
+    `/api/companies/${encodeURIComponent(slug)}/agent-suggestions/${id}/${decision}`,
+    { method: "POST", body: JSON.stringify(note?.trim() ? { note: note.trim() } : {}) },
+  );
+  const receipt = body as import("../types").AgentSuggestionDecisionResponse | null;
+  const expected = decision === "approve" ? "approved" : "rejected";
+  if (receipt?.ok !== true || receipt.suggestion?.id !== id || receipt.suggestion.decision !== expected || receipt.suggestion.resolved !== true || Object.keys(receipt).sort().join(",") !== "ok,suggestion" || Object.keys(receipt.suggestion).sort().join(",") !== "decision,id,resolved") {
+    throw new ApiError("internal", "Serverens beslutning kunne ikke bekræftes. Kontrollér status før en ny handling.", 200);
+  }
+  return receipt.suggestion;
+}
 
 export const agentSuggestionsApi = {
-  /** GET /api/companies/:slug/agent-suggestions — the open agent-forslag queue. */
   agentSuggestions: (slug: string, options?: ReadRequestOptions) =>
     request<import("../types").AgentSuggestionsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/agent-suggestions`, options,
     ).then((r) => r.agentSuggestions),
-
-  /** POST .../agent-suggestions/:id/approve — owner accepts the suggestion. */
-  approveAgentSuggestion: (slug: string, exceptionId: number, note?: string) =>
-    request<import("../types").AgentSuggestionDecisionResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions/${exceptionId}/approve`,
-      {
-        method: "POST",
-        body: JSON.stringify(note ? { note } : {}),
-      },
-    ).then((r) => r.suggestion),
-
-  /** POST .../agent-suggestions/:id/reject — owner declines the suggestion. */
-  rejectAgentSuggestion: (slug: string, exceptionId: number, note?: string) =>
-    request<import("../types").AgentSuggestionDecisionResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions/${exceptionId}/reject`,
-      {
-        method: "POST",
-        body: JSON.stringify(note ? { note } : {}),
-      },
-    ).then((r) => r.suggestion),
+  approveAgentSuggestion: (slug: string, id: number, note?: string) => decide(slug, id, "approve", note),
+  rejectAgentSuggestion: (slug: string, id: number, note?: string) => decide(slug, id, "reject", note),
 };

@@ -1,30 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, PageHeader } from "../components/ui";
-// Agent-forslag → menneskelig godkendelse-flow (#346).
-//
-// Rentemester's narrative is: agent surfaces, human decides, ledger enforces.
-// The agent loop and the exception sync functions raise `AGENT_*` exceptions
-// whenever a deterministic agent run needs the owner's call — an overdue
-// kreditorpost, a periodeafgrænsnings-periode der er klar til bogføring, et
-// muligt anlæg over kapitaliseringsgrænsen, et needs-review-punkt på
-// oplysningsskemaet. The dashboard already shows them collapsed as a count;
-// this view makes them individually visible and gives the owner two explicit
-// actions per row:
-//
-//   * "Godkend" — accepts the suggestion. The view resolves the underlying
-//     exception with a "Godkendt af ejer i cockpit"-note, then deep-links to
-//     the action-specific view (Anlæg, Leverandørfaktura, Posteringer) where
-//     the owner actually books the entry. Approve here NEVER posts on its own.
-//
-//   * "Afvis" — rejects the suggestion with a free-text reason. The exception
-//     is resolved with an "Afvist af ejer i cockpit"-note carrying the reason
-//     so the audit trail preserves WHY the owner declined.
-//
-// All approvals and rejections go through the SAME `resolveException` core
-// that the existing "Løs"-button uses, so the audit chain stays intact. The
-// cockpit never re-implements the underlying bookkeeping.
-
-import { useState } from "react";
+// Consumer review of existing exceptions; native production is outside this flow.
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -33,6 +10,8 @@ import type {
   CompanyAgentSuggestions,
 } from "../lib/types";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useOptionalAuth } from "../lib/auth-context";
+import { useCapabilities } from "../lib/useCapabilities";
 import { ErrorState, Loading } from "../components/Feedback";
 
 const SEVERITY_LABEL: Record<AgentSuggestionRow["severity"], string> = {
@@ -43,11 +22,16 @@ const SEVERITY_LABEL: Record<AgentSuggestionRow["severity"], string> = {
 
 export function SuggestionsView() {
   const { slug = "" } = useParams();
+  const auth = useOptionalAuth();
+  const capabilities = useCapabilities(slug);
+  const readable = !auth?.loading && capabilities.can("company.read");
   const state = useAsync<CompanyAgentSuggestions>(
-    (signal) => api.agentSuggestions(slug, { signal }),
-    [slug],
+    (signal) => readable
+      ? api.agentSuggestions(slug, { signal })
+      : Promise.reject(new ApiError("access_denied", "Din adgang til forslagene kunne ikke bekræftes. Kontrollér din session og adgang.", 403)),
+    [slug, auth?.session?.id, auth?.currentSessionId, auth?.context, readable],
   );
-  const [actionError, setActionError] = useState<string | null>(null);
+
 
   if (state.loading && !state.data)
     return <Loading label="Henter agent-forslag…" />;
@@ -76,10 +60,9 @@ export function SuggestionsView() {
       </PageHeader>
 
       <p className="statement-asof muted">
-        Agenten foreslår — du beslutter. Hvert forslag er deterministisk
-        afledt af en regel i <code>rules/dk/*.yaml</code> og bogføres aldrig
-        uden et eksplicit klik fra dig. Godkendelse løser forslaget; den
-        konkrete postering laver du på den linkede side.
+        Her gennemgår du eksisterende åbne Agent-forslag. En regel vises kun, når
+        den findes i kildegrundlaget. Godkendelse og afvisning løser kun
+        undtagelsen og gemmer beslutningen på revisionssporet. Ingen bogføring udføres her.
       </p>
 
       <div className="status-grid invoices-summary">
@@ -113,20 +96,11 @@ export function SuggestionsView() {
         </div>
       </div>
 
-      {actionError ? (
-        <div className="card archived-notice" role="alert">
-          <p className="muted">{actionError}</p>
-        </div>
-      ) : null}
-
       <h3 {...stylex.props(viewStyles.site0)}>Forslag</h3>
       {data.rows.length === 0 ? (
         <div className="card archived-notice">
           <p className="muted">
-            Agenten har ingen åbne forslag. Hver gang en automatisk kørsel
-            løber ind i en sag, der kræver din vurdering — fx en overforfalden
-            kreditorpost, et muligt anlæg, eller en periodeafgrænsning klar
-            til bogføring — dukker forslaget op her.
+            Der er ingen åbne forslag.
           </p>
         </div>
       ) : (
@@ -144,11 +118,13 @@ export function SuggestionsView() {
             <tbody>
               {data.rows.map((row) => (
                 <SuggestionRowView
-                  key={row.exceptionId}
+                  key={`${slug}:${row.exceptionId}`}
                   row={row}
                   slug={slug}
                   onChanged={() => state.reload()}
-                  onError={setActionError}
+                  revision={data}
+                  refreshing={state.loading}
+                  companyName={data.company.name}
                 />
               ))}
             </tbody>
@@ -167,54 +143,42 @@ export function SuggestionsView() {
   );
 }
 
-function SuggestionRowView({
-  row,
-  slug,
-  onChanged,
-  onError,
-}: {
+function sourceText(value: unknown): string {
+  return value == null ? "Ikke registreret" : typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+function SuggestionRowView({ row, slug, onChanged, revision, refreshing, companyName }: {
   row: AgentSuggestionRow;
   slug: string;
   onChanged: () => void;
-  onError: (msg: string) => void;
+  revision: CompanyAgentSuggestions;
+  refreshing: boolean;
+  companyName: string;
 }) {
-  const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
-  const [pending, setPending] = useState<"approve" | "reject" | null>(null);
-
-  async function doApprove() {
-    setBusy("approve");
-    try {
-      await api.approveAgentSuggestion(slug, row.exceptionId);
-      onChanged();
-    } catch (err) {
-      onError(
-        err instanceof ApiError
-          ? err.message
-          : "Kunne ikke godkende forslaget.",
-      );
-      throw err;
-    } finally {
-      setBusy(null);
-    }
+  const auth = useOptionalAuth();
+  const capabilities = useCapabilities(slug);
+  const allowed = capabilities.can("company.review") && !auth?.loading;
+  const [pending, setPending] = useState<{
+    decision: "approve" | "reject";
+    revision: CompanyAgentSuggestions;
+    auth: typeof auth;
+    context: unknown;
+  } | null>(null);
+  const current = useRef({ allowed, auth, context: auth?.context, revision, refreshing, slug });
+  current.current = { allowed, auth, context: auth?.context, revision, refreshing, slug };
+  const valid = pending && allowed && !refreshing && pending.revision === revision && pending.auth === auth && pending.context === auth?.context;
+  useEffect(() => { if (pending && !valid) setPending(null); }, [pending, valid]);
+  function review(decision: "approve" | "reject") {
+    setPending({ decision, revision, auth, context: auth?.context });
   }
-
-  async function doReject(note: string) {
-    setBusy("reject");
-    try {
-      await api.rejectAgentSuggestion(
-        slug,
-        row.exceptionId,
-        note.length > 0 ? note : undefined,
-      );
-      onChanged();
-    } catch (err) {
-      onError(
-        err instanceof ApiError ? err.message : "Kunne ikke afvise forslaget.",
-      );
-      throw err;
-    } finally {
-      setBusy(null);
+  async function decide(note: string) {
+    const now = current.current;
+    if (!pending || !now.allowed || now.refreshing || now.slug !== slug || now.revision !== pending.revision || now.auth !== pending.auth || now.context !== pending.context) {
+      throw new ApiError("conflict", "Konteksten er ændret. Hent og gennemgå forslaget igen.", 409);
     }
+    const captured = now;
+    await (pending.decision === "approve" ? api.approveAgentSuggestion : api.rejectAgentSuggestion)(slug, row.exceptionId, note);
+    if (current.current.slug === captured.slug && current.current.auth === captured.auth && current.current.revision === captured.revision) onChanged();
   }
 
   const severityLabel = SEVERITY_LABEL[row.severity];
@@ -267,56 +231,48 @@ function SuggestionRowView({
           <Button requiredPermission="company.review"
             type="button"
             className="btn"
-            onClick={() => setPending("approve")}
-            disabled={busy !== null}
+            onClick={() => review("approve")}
+            disabled={refreshing || !allowed}
             aria-label={`Godkend ${row.kindLabel}`}
           >
-            {busy === "approve" ? "Godkender…" : "Godkend"}
+            Godkend
           </Button>
           <Button requiredPermission="company.review" variant="secondary"
             type="button"
             className="btn secondary"
-            onClick={() => setPending("reject")}
-            disabled={busy !== null}
+            onClick={() => review("reject")}
+            disabled={refreshing || !allowed}
             aria-label={`Afvis ${row.kindLabel}`}
           >
-            {busy === "reject" ? "Afviser…" : "Afvis"}
+            Afvis
           </Button>
         </div>
-        {pending === "approve" && (
+        {!allowed && <p className="muted">Kun læseadgang. Bed workspace-ejeren om rettigheden company.review for at beslutte forslag.</p>}
+        {valid && (
           <ConfirmDialog
-            title={`Godkend forslag: ${row.kindLabel}`}
-            body={
-              <p>
-                Forslaget løses som godkendt — du bogfører selv den konkrete
-                handling bagefter. Godkendelsen gemmes på revisionssporet.
-              </p>
-            }
-            confirmLabel="Godkend"
-            onConfirm={async () => {
-              await doApprove();
-            }}
-            onClose={() => setPending(null)} onRefresh={onChanged}
-          />
-        )}
-        {pending === "reject" && (
-          <ConfirmDialog
-            title={`Afvis forslag: ${row.kindLabel}`}
-            body={
-              <p>
-                Skriv eventuelt en kort begrundelse — den gemmes på
-                revisionssporet, så agenten kan lære af afvisningen. Du kan
-                også lade feltet stå tomt.
-              </p>
-            }
-            confirmLabel="Afvis forslag"
-            confirmKind="danger"
+            title={`Beslut forslag #${row.exceptionId}`}
+            operationScope={`/companies/${slug}/agent-suggestions`}
+            // One resource lock across decisions; the frozen pending review binds the decision.
+            operationKey={String(row.exceptionId)}
+            body={<>
+              <p><strong>{pending.decision === "approve" ? "Godkend" : "Afvis"}: {row.kindLabel}</strong></p>
+              <p>Virksomhed: {companyName} ({slug}) · ID #{row.exceptionId}</p>
+              <p>Dette løser kun undtagelsen med audit. Ingen bogføring udføres.</p>
+              <dl>
+                <dt>Vurdering</dt><dd>{row.rationale}</dd>
+                <dt>Foreslået handling</dt><dd>{row.requiredAction ?? "Ikke registreret"}</dd>
+                <dt>Regel</dt><dd>{row.ruleId ?? "Ikke registreret"}</dd>
+                <dt>Kildegrundlag</dt><dd><pre>{sourceText(row.sourceEvidence)}</pre></dd>
+                <dt>Posteringsforslag (udføres ikke)</dt><dd><pre>{sourceText(row.postingPreview)}</pre></dd>
+                <dt>Registreret af / program</dt><dd>{row.agentActor ?? "Ikke registreret"} / {row.agentProgram ?? "Ikke registreret"}</dd>
+              </dl>
+            </>}
+            confirmLabel={pending.decision === "approve" ? "Godkend" : "Afvis forslag"}
+            confirmKind={pending.decision === "approve" ? "primary" : "danger"}
             noteLabel="Begrundelse (valgfri)"
-            notePlaceholder="fx 'ikke et nyt anlæg — direkte i drift'"
-            onConfirm={async (note) => {
-              await doReject(note);
-            }}
-            onClose={() => setPending(null)} onRefresh={onChanged}
+            onConfirm={decide}
+            onClose={() => setPending(null)}
+            onRefresh={onChanged}
           />
         )}
       </td>
