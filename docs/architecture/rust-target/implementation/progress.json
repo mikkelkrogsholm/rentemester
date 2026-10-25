@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R120 actualoriginal upload/currentRustserver/canonicalbytes/restart accepted; cashreceipt supplier UI gapfixed20cases+build. Fullbank→expense helper stopped beforeeffects ondiagnosed mapped-account selection; full718open.",
-  "code_revision": "47b012d3c1ddc11fd11605cbc539947a38be14a1",
+  "current_increment": "R121 actualsharedReact receipt→mappedstatement→oneexpense→bankdifference0→verifiedsignedbackup accepted; sourcecashsupplier reader/history gap corrected6+4tests. Full718 remainsopen.",
+  "code_revision": "3a632b50ed9e27ced2703f78b85551530e6b41fa",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_upload_cash_supplier718_component_accepted",
+  "state": "first_receipt_bookkeeping718_journey_accepted",
   "issues_closed": 41,
-  "next": "Use diagnosed exact existing synthetic-mapped-account112 for sharedReact supplier→statement→expense→bankreconciliation→signedbackup. Never reupload original120; no furtherfullruntime setup in currentboundary. Preserveall55/finaldesktopLAST.",
+  "next": "Close existing717 original backup/mail tool families and workflow/ABI gaps; reuse accepted daily owner flow and full55scope, finaldesktopLAST. Full718 alloriginalscreens/files/keyboard/local-hosted refusal acceptance remains.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -19135,6 +19135,20 @@
         "Extended flow helper failed before mutations because two bankaccounts were present; exact existingmapped account now isolated/diagnosed. Preserve failedreceipt, no furtherfullruntime setup inthisboundary.",
         "Originalno-supplier receipt correctlyremains unresolved andunbooked; do not alterit silently or weakenVAT/party controls.",
         "Full718 allscreen/file/keyboard/local-hosted errors, full55/J01-J07/cutover/finaldesktopLAST remain."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "3a632b50ed9e27ced2703f78b85551530e6b41fa",
+      "report": "/tmp/rentemester-rust-reports/r121-first-receipt-bookkeeping718-component-accepted.json",
+      "sha256": "e8210d5470ee618bca786b62f1684e0b0622a89c612cdf2eb2e373f35db01608",
+      "scope": "Actual ordinary-MFA sharedReact receipt→exactmappedstatement→oneexpense→bankdifference0→signedbackup, resuming preservedoriginal2 without reupload/rescan. Commoncashsupplier reader corrected with source/history/explicitrefusal controls.",
+      "remaining": [
+        "Full718 original allscreen/file/keyboard/local-hosted/failure acceptance remains, no wholeissueclosure.",
+        "This new signed snapshot has exact current3company tables/original and native signature/inventory verified; no newsourcefree restore or post-expense freshMFArestart claimed. Retain priorvalidrecovery proof.",
+        "Original receipt1 remains unresolved/unposted; no silent correction or accounting replay.",
+        "All55/J01-J07/release/cutover and finalinstalleddesktopLAST retained."
       ]
     }
   ],
