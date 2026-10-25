@@ -273,6 +273,21 @@
     },
     {
       "method": "GET",
+      "path": "/api/companies/{slug}/agent-suggestions",
+      "capability": "GET /api/companies/{slug}/agent-suggestions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/agent-suggestions/{id}/approve",
+      "capability": "POST /api/companies/{slug}/agent-suggestions/{id}/approve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/agent-suggestions/{id}/reject",
+      "capability": "POST /api/companies/{slug}/agent-suggestions/{id}/reject"
+    },
+    {
+      "method": "GET",
       "path": "/api/companies/{slug}/annual-exports",
       "capability": "GET /api/companies/{slug}/annual-exports"
     },
