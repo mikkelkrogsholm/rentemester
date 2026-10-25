@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R118 original retention/health diagnostics integrated;18 actual cases and generated protocol pass, exact436tools/1624typed operations. Native original directory provisioning gap remains; full717 open.",
-  "code_revision": "43d904d6a16a5c2813d253f8c8e1961ac3cbec0f",
+  "current_increment": "R119 fresh/add/restored companies now have original private intake/bank/invoice/export layout;3actual cases pass incl signed archivedcompany restore and byte-preserving no-overwrite. Full718 remains open.",
+  "code_revision": "4a6ab444365a11f0c40ed96c0bc51aa6fc4802a7",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_diagnostics717_component_accepted",
+  "state": "original_company_layout718_component_accepted",
   "issues_closed": 41,
-  "next": "Prioritize usable daily bookkeeping: protected original-compatible fresh-company layout, then shared-UI original upload/bookkeeping/readback with retained valid evidence. Full55/final desktop LAST retained.",
+  "next": "Complete sharedUI original upload/bookkeeping/readback against rebuiltcommonRustserver with normalMFA; retain priorvalidflow/backup/restart evidence. All55/cutover/finaldesktopLAST remain.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -19109,6 +19109,19 @@
         "No new actual normal-MFA live diagnostic journey or qualified server rebuild. Current retained qualified binary remains R109; no runtime/browser setup growth after diagnosed setup faults.",
         "All55 original scope/J01-J07/release/cutover and final installed desktop LAST remain."
       ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "4a6ab444365a11f0c40ed96c0bc51aa6fc4802a7",
+      "report": "/tmp/rentemester-rust-reports/r119-original-company-layout718-component-accepted.json",
+      "sha256": "30bdb3a00744ae89481a3e3c74e962dcb57dea6c5c2b32825c93a698cdec254c",
+      "scope": "Protected original company layout on fresh/add/verifiedrestore; concrete daily-bookkeeping prerequisite fixed.",
+      "remaining": [
+        "Existing admitted workspaces are not automatically repaired; original R115 profile remains unchanged.",
+        "No new live full original upload/bookkeeping/restart journey yet; retain prioracceptedproof and actualserverrebuildrequired.",
+        "Full718 allscreens/files/keyboard/local-hosted failureacceptance; all55/cutover/finalinstalleddesktopLAST remain."
+      ]
     }
   ],
   "scope_clarifications": [
@@ -19127,7 +19140,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 717,
+    "current_issue": 718,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
