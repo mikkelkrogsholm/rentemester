@@ -171,6 +171,18 @@ fn original717_audit_and_posting_selectors_reject_remote_paths() {
 async fn audit_selectors() {
     let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
     for name in ["audit_verify", "audit_log_list"] {
+        let catalogue = crate::tools::list();
+        let tool = catalogue["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["name"] == name)
+            .unwrap();
+        assert!(
+            tool["inputSchema"]["properties"]["company"]
+                .get("pattern")
+                .is_none()
+        );
         let v = crate::tools::call(&api, name, json!({"company":"/outside/synthetic"}))
             .await
             .unwrap();

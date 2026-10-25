@@ -1,9 +1,9 @@
-use crate::tools::{company_schema, tool};
+use crate::tools::tool;
 use rentemester_client::{ApiClient, AuditLogQuery, Error, audit_log_query_schema};
 use serde_json::{Value, json};
 pub fn tools() -> Vec<Value> {
     let mut schema = audit_log_query_schema();
-    schema["properties"]["company"] = company_schema();
+    schema["properties"]["company"] = json!({"type":"string","minLength":1,"description":"Company slug, or absolute company path inside the verified local workspace"});
     schema["required"] = json!(["company"]);
     let mut t = tool(
         "audit_log_list",

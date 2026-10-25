@@ -1,12 +1,12 @@
-use crate::tools::{company_schema, tool};
+use crate::tools::tool;
 use rentemester_client::{ApiClient, Error};
 use serde::Deserialize;
 use serde_json::{Value, json};
 pub fn tools() -> Vec<Value> {
     let mut value = tool(
         "audit_verify",
-        "Read-only current CompanyRead full accounting observation: journal/reversals/audit history, bank and invoice linkage, protected originals and admitted schema/SQLite checks. Human MFA cookie or scoped service with current quota/access. Inspect data.audit.ok, available and every component/errors; successful transport does not mean clean accounting. No paths, figures, query, repair or actor authority.",
-        json!({"type":"object","required":["company"],"properties":{"company":company_schema()},"additionalProperties":false}),
+        "Read-only CompanyRead through the common accounting verifier. Inspect ok/errors as the business verdict and data.entries as the checked entry count. Human MFA cookie or scoped service with current access. An absolute company path requires the verified local profile; remote callers use a slug. No repair or caller authority.",
+        json!({"type":"object","required":["company"],"properties":{"company":{"type":"string","minLength":1,"description":"Company slug, or absolute company path inside the verified local workspace"}},"additionalProperties":false}),
         true,
     );
     value["annotations"]["openWorldHint"] = json!(false);

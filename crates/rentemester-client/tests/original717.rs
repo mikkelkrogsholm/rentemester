@@ -230,6 +230,11 @@ async fn original717_system_restore_backup_local_operator_wire_and_reconnect() {
     std::fs::set_permissions(path.join("r.json"), std::fs::Permissions::from_mode(0o600)).unwrap();
     let local = rentemester_client::LocalRuntime::load(&path).unwrap();
     let api = ApiClient::new_local(&local, Some("session=synthetic".into())).unwrap();
+    assert_eq!(
+        api.original717_company_selector(path.join("workspace/synthetic").to_str().unwrap())
+            .unwrap(),
+        "synthetic"
+    );
     let cwd = std::env::current_dir().unwrap();
     let target = cwd.join("synthetic-restored");
     let a = json!({"backupDir":"./synthetic-backup","targetCompany":"./unused/../synthetic-restored","verifyKey":"./synthetic-key","confirm":true,"confirmText":"RESTORE ./unused/../synthetic-restored"});
