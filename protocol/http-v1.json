@@ -2663,6 +2663,16 @@
     },
     {
       "method": "GET",
+      "path": "/api/companies/{slug}/retention-status",
+      "capability": "GET /api/companies/{slug}/retention-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/retention-status",
+      "capability": "HEAD /api/companies/{slug}/retention-status"
+    },
+    {
+      "method": "GET",
       "path": "/api/companies/{slug}/reviewed-bank",
       "capability": "GET /api/companies/{slug}/reviewed-bank"
     },
@@ -2805,6 +2815,16 @@
       "method": "POST",
       "path": "/api/companies/{slug}/sync-cvr",
       "capability": "POST /api/companies/{slug}/sync-cvr"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/system-healthcheck",
+      "capability": "GET /api/companies/{slug}/system-healthcheck"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/system-healthcheck",
+      "capability": "HEAD /api/companies/{slug}/system-healthcheck"
     },
     {
       "method": "GET",
@@ -3262,5 +3282,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "e9ba1f8a669ba08c4436bddea232aed4a75ad5ff2073fb721adf3ff98177ba41"
+  "manifestId": "117fae1d14ddac6333678a1b7550c5a6b68ab0546291a76370827b1e0524b227"
 }

@@ -346,6 +346,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/knowledge/review",post(company_knowledge::handle))
         .route("/api/companies/{slug}/knowledge/supersede",post(company_knowledge::handle))
         .route("/api/companies", get(companies).post(company_creation::handle))
+        .route("/api/companies/{slug}/retention-status", get(diagnostics_original118::handle))
+        .route("/api/companies/{slug}/system-healthcheck", get(diagnostics_original118::handle))
         .route("/api/companies/{slug}/retention", get(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/export", post(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/erase", post(gdpr::handle))
@@ -1099,3 +1101,5 @@ mod accounts_original;
 mod accounting_draft_original;
 
 mod compliance;
+
+mod diagnostics_original118;
