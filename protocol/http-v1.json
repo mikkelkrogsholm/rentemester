@@ -2003,6 +2003,46 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-modtag",
+      "capability": "POST /api/companies/{slug}/original-efaktura-modtag"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-onboard",
+      "capability": "POST /api/companies/{slug}/original-efaktura-onboard"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original-efaktura-onboarding-status",
+      "capability": "GET /api/companies/{slug}/original-efaktura-onboarding-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original-efaktura-onboarding-status",
+      "capability": "HEAD /api/companies/{slug}/original-efaktura-onboarding-status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-efaktura-registrer",
+      "capability": "POST /api/companies/{slug}/original-efaktura-registrer"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-gdpr-audit-log",
+      "capability": "POST /api/companies/{slug}/original-gdpr-audit-log"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-gdpr-discover",
+      "capability": "POST /api/companies/{slug}/original-gdpr-discover"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-gdpr-export",
+      "capability": "POST /api/companies/{slug}/original-gdpr-export"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/original-imap-intake",
       "capability": "POST /api/companies/{slug}/original-imap-intake"
     },
@@ -2025,6 +2065,41 @@
       "method": "POST",
       "path": "/api/companies/{slug}/original-system-backup-archive",
       "capability": "POST /api/companies/{slug}/original-system-backup-archive"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-confirm-placement",
+      "capability": "POST /api/companies/{slug}/original-system-backup-confirm-placement"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-destination-add",
+      "capability": "POST /api/companies/{slug}/original-system-backup-destination-add"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original-system-backup-destination-list",
+      "capability": "GET /api/companies/{slug}/original-system-backup-destination-list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original-system-backup-destination-list",
+      "capability": "HEAD /api/companies/{slug}/original-system-backup-destination-list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original-system-backup-destination-remove",
+      "capability": "POST /api/companies/{slug}/original-system-backup-destination-remove"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original-system-backup-governance",
+      "capability": "GET /api/companies/{slug}/original-system-backup-governance"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original-system-backup-governance",
+      "capability": "HEAD /api/companies/{slug}/original-system-backup-governance"
     },
     {
       "method": "POST",
@@ -3327,6 +3402,11 @@
       "capability": "POST /api/workspace/members/company"
     },
     {
+      "method": "POST",
+      "path": "/api/workspace/original-efaktura-modtag",
+      "capability": "POST /api/workspace/original-efaktura-modtag"
+    },
+    {
       "method": "GET",
       "path": "/api/workspace/service-principals",
       "capability": "GET /api/workspace/service-principals"
@@ -3372,5 +3452,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "01be5fb396275fdaa0a978c029fafcaa34b391c20664a7b918898ef742cb758e"
+  "manifestId": "e8962a7afc115dfa9c78bda2cc65cc35009581b23aa276472b07f5a33b381e97"
 }
