@@ -1800,3 +1800,6 @@ table.statement-table td.num.muted {
   position: relative;
   display: block;
 }
+
+/* Keep the active canonical server visible beside the existing company/account context. */
+.server-identity { min-width: 0; overflow-wrap: anywhere; }

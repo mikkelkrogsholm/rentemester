@@ -11,6 +11,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "./App";
 import { mockFetch } from "./test/fixtures";
+import { stubGlobal } from "./test/globals";
 
 function renderApp(route = "/help") {
   return render(
@@ -41,6 +42,7 @@ describe("App topbar", () => {
   });
 
   test("the /help route renders a help page with docs, contact and feedback links", async () => {
+    mockFetch({});
     renderApp("/help");
     // Headline visible
     expect(
@@ -60,3 +62,18 @@ describe("App topbar", () => {
     expect(screen.getByText(/Kom i gang/i)).toBeInTheDocument();
   });
 });
+
+for (const [href, origin] of [
+  ["http://127.0.0.1:63811/companies/synthetic?year=2026", "http://127.0.0.1:63811"],
+  ["https://synthetic-user:synthetic-secret@accounts.example.invalid:8443/private?token=synthetic-token#synthetic-fragment", "https://accounts.example.invalid:8443"],
+]) {
+  test(`connected header names only the active canonical server ${origin}`, async () => {
+    mockFetch({});
+    stubGlobal("location", new URL(href));
+    renderApp("/help");
+    await screen.findByRole("heading", { name: /Hjælp og support/i });
+    const identity = screen.getByTitle("Aktiv server");
+    expect(identity).toHaveTextContent(`Server: ${origin}`);
+    expect(identity.textContent).not.toMatch(/synthetic-user|synthetic-secret|synthetic-token|synthetic-fragment|private|companies|year=/);
+  });
+}

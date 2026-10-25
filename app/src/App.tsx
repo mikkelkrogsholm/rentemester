@@ -193,6 +193,7 @@ function CockpitApp() {
       <header className="topbar">
         <SkipLink />
         <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
+        <span className="server-identity muted" title="Aktiv server">{`Server: ${globalThis.location.origin}`}</span>
         <nav className="global-navigation" aria-label="Workspace"><details><summary>Workspace</summary><div className="global-links">
           <NavLink to="/" end>
             Portefølje
