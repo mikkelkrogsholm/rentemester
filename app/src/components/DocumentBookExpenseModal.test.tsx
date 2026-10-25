@@ -184,6 +184,36 @@ describe("native purchase VAT owner review", () => {
     expect(providerPosts()).toHaveLength(1);
     sessionStorage.clear();
   });
+  test("a validated canonical read after a lost accepted provider reply cannot release the write barrier", async () => {
+    sessionStorage.clear(); nativeFixture();
+    const original = globalThis.fetch;
+    let accepted = false;
+    const valid = { ...NATIVE_NEEDED, ok: true, cached: true, evidenceExpiresAt: "2027-01-01", wouldCallProvider: false, errors: [], cache: { reused: true, freshUntil: "2027-01-01" }, applyWouldCallProvider: false,
+      evidence: [{ id: 3, event_type: "preflight_passed", classification: "EU", provider_status: "valid", evidence_expires_at: "2027-01-01", created_at: "2026-10-25", actor: "user:synthetic" }] };
+    stubGlobal("fetch", vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input) === NATIVE_PATH && init?.method === "POST") { accepted = true; return Promise.reject(new TypeError("accepted reply lost")); }
+      if (String(input) === NATIVE_PATH && accepted) return Promise.resolve(Response.json(valid));
+      return original(input, init);
+    }));
+    const first = render(<NativeForm />);
+    const dialog = await openProviderReview();
+    await userEvent.click(dialog.getByRole("button", { name: "Hent momsvalidering" }));
+    await dialog.findByText(/En ny skrivning er blokeret/);
+    first.unmount(); render(<NativeForm />);
+    await screen.findByText(/Momsoplysningerne er valideret/);
+    expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
+    expect(screen.getByLabelText("Udgiftskonto")).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Kontrollér status" }));
+    await screen.findByText(/Momsoplysningerne er valideret/);
+    expect(screen.getByLabelText("Udgiftskonto")).toBeDisabled();
+    expect(providerPosts()).toHaveLength(1);
+    await userEvent.click(screen.getByRole("button", { name: "Resultatet er afklaret" }));
+    await userEvent.click(screen.getByRole("button", { name: "Jeg har kontrolleret resultatet" }));
+    expect(screen.getByLabelText("Udgiftskonto")).toBeEnabled();
+    expect(providerPosts()).toHaveLength(1);
+    expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.some(c => String(c[0]).endsWith("/documents/book-expense") && c[1]?.method === "POST")).toBe(false);
+    sessionStorage.clear();
+  });
   test("context change invalidates an open review without dispatch", async () => {
     sessionStorage.clear();
     nativeFixture();
