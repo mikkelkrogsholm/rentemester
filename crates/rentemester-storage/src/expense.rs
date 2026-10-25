@@ -708,7 +708,7 @@ pub fn post_with_principal(
     latest: Date,
     principal_kind: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
-    post_mode_at(tx, input, subject, latest, principal_kind, None)
+    post_mode_at(tx, input, subject, latest, principal_kind, None, None)
 }
 /// Canonical posting with the caller's admitted trusted timestamp.
 pub fn post_at(
@@ -725,6 +725,7 @@ pub fn post_at(
         latest,
         crate::idempotency::PrincipalKind::User,
         Some(now),
+        None,
     )
 }
 fn post_mode_at(
@@ -734,6 +735,7 @@ fn post_mode_at(
     latest: Date,
     principal_kind: crate::idempotency::PrincipalKind,
     now: Option<&str>,
+    program_override: Option<&str>,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let Prepared {
@@ -761,7 +763,7 @@ fn post_mode_at(
         latest,
         crate::journal_post::Actor {
             subject: &actor,
-            program,
+            program: program_override.unwrap_or(program),
         },
     )?;
     if result["ok"] != true {
@@ -945,4 +947,23 @@ mod fx_tests {
             vec![("X".into(), 746.25, 0.0), ("A".into(), 0.0, 746.25)]
         );
     }
+}
+
+/// Trusted agent attribution through the canonical allocation and journal writer.
+pub(crate) fn post_agent(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    kind: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
+    post_mode_at(
+        tx,
+        input,
+        subject,
+        latest,
+        kind,
+        None,
+        Some(rentemester_engine::agent_run::PROGRAM),
+    )
 }

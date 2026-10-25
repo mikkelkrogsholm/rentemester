@@ -57,6 +57,16 @@ fn post(
     latest: Date,
     principal: PrincipalKind,
 ) -> Result<Value, Error> {
+    post_program(tx, request, actor, latest, principal, None)
+}
+fn post_program(
+    tx: &Transaction<'_>,
+    request: &ManualJournal,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+    program: Option<&str>,
+) -> Result<Value, Error> {
     let result = crate::journal_post::post(
         tx,
         request,
@@ -70,10 +80,10 @@ fn post(
                     PrincipalKind::ServiceAccount => "service_account",
                 }
             ),
-            program: match principal {
+            program: program.unwrap_or(match principal {
                 PrincipalKind::User => "rentemester-rust",
                 PrincipalKind::ServiceAccount => "service-principal",
-            },
+            }),
         },
     )?;
     if result["ok"] != true {
@@ -385,7 +395,7 @@ pub fn pay_with_principal(
     latest: Date,
     principal: PrincipalKind,
 ) -> Result<Value, Error> {
-    pay_inner(tx, id, input, actor, latest, None, principal)
+    pay_inner(tx, id, input, actor, latest, None, principal, None)
 }
 pub(crate) fn pay_corrected(
     tx: &Transaction<'_>,
@@ -404,6 +414,7 @@ pub(crate) fn pay_corrected(
         latest,
         Some(proof),
         PrincipalKind::User,
+        None,
     )
 }
 fn pay_inner(
@@ -414,6 +425,7 @@ fn pay_inner(
     latest: Date,
     proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
     principal: PrincipalKind,
+    program: Option<&str>,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || id <= 0 || input.bank_transaction_id <= 0 {
@@ -521,7 +533,7 @@ fn pay_inner(
             "Bankbetaling".into(),
         )?,
     ];
-    let result = post(tx, &journal, actor, latest, principal)?;
+    let result = post_program(tx, &journal, actor, latest, principal, program)?;
     let payment:i64=tx.query_row("INSERT INTO payable_payments(payable_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,input.bank_transaction_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),input.note],|r|r.get(0)).map_err(invalid)?;
     audit(tx, "payable_payment_apply", id, actor, principal)?;
     Ok(
@@ -789,4 +801,24 @@ mod tests {
             );
         }
     }
+}
+
+pub(crate) fn pay_agent(
+    tx: &Transaction<'_>,
+    id: i64,
+    input: &Payment,
+    actor: &str,
+    latest: Date,
+    kind: PrincipalKind,
+) -> Result<Value, Error> {
+    pay_inner(
+        tx,
+        id,
+        input,
+        actor,
+        latest,
+        None,
+        kind,
+        Some(rentemester_engine::agent_run::PROGRAM),
+    )
 }

@@ -161,7 +161,7 @@ pub fn depreciate(
     ))
 }
 /// Known-edge clamping is a ported workflow guardrail, not a tax eligibility assessment.
-fn threshold(year: u32) -> u32 {
+pub(crate) fn threshold(year: u32) -> u32 {
     if year <= 2024 {
         33100
     } else if year == 2025 {

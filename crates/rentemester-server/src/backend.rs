@@ -21,6 +21,8 @@ type Failure = rentemester_application::password_login::Failure;
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Config {
+    #[serde(default)]
+    agent_policies: std::collections::BTreeMap<String, rentemester_engine::agent_run::Policy>,
     root: PathBuf,
     broker_uid: u32,
     #[serde(default)]
@@ -97,6 +99,7 @@ pub struct RestoreRequest {
 }
 
 pub struct Backend {
+    pub(crate) agent_policies: std::collections::BTreeMap<String, rentemester_engine::agent_run::Policy>,
     local_identity: Option<crate::local_runtime::Identity>,
     pub(crate) owner: Mutex<Owner>,
     pub(crate) document_scanner: Option<rentemester_runtime::document_scanner::HttpJsonScanner>,
@@ -410,6 +413,7 @@ impl Backend {
         Ok(Arc::new(Self {
             local_identity,
             owner: Mutex::new(owner),
+            agent_policies: config.agent_policies.clone(),
             document_scanner,
             invoice_extractor,
             document_pdf_worker,

@@ -94,7 +94,11 @@ fn run_fixture(
     let task = thread::spawn(move || {
         let mut manifest: Value =
             serde_json::from_str(include_str!("../../../protocol/http-v1.json")).unwrap();
-        manifest["operations"].as_array_mut().unwrap().push(json!({"method":"POST","path":"/api/companies/{slug}/agent/original/run","capability":"POST /api/companies/{slug}/agent/original/run"}));
+        if !manifest["operations"].as_array().unwrap().iter().any(|op| {
+            op["method"] == "POST" && op["path"] == "/api/companies/{slug}/agent/original/run"
+        }) {
+            manifest["operations"].as_array_mut().unwrap().push(json!({"method":"POST","path":"/api/companies/{slug}/agent/original/run","capability":"POST /api/companies/{slug}/agent/original/run"}));
+        }
         let mut bodies = vec![];
         for (path, status, v) in steps {
             let Some(mut s) = bounded_accept(&l) else {

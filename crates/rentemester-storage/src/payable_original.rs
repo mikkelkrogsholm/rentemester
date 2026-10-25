@@ -168,6 +168,30 @@ pub fn mutate(
     latest: Date,
     now: i64,
 ) -> Result<Value, Error> {
+    mutate_program(tx, action, subject, kind, latest, now, false)
+}
+pub fn mutate_agent(
+    tx: &Transaction<'_>,
+    action: Action<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+    latest: Date,
+    now: i64,
+) -> Result<Value, Error> {
+    if !matches!(action, Action::Pay(_)) {
+        return Err(invalid());
+    }
+    mutate_program(tx, action, subject, kind, latest, now, true)
+}
+fn mutate_program(
+    tx: &Transaction<'_>,
+    action: Action<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+    latest: Date,
+    now: i64,
+    agent: bool,
+) -> Result<Value, Error> {
     let (key, operation, payload) = match action {
         Action::Register(i) => {
             i.validate()?;
@@ -203,14 +227,12 @@ pub fn mutate(
                 payables::register_original(tx, &i.native(), subject, latest, kind)?
             }
             Action::Pay(i) => {
-                let mut value = payables::pay_with_principal(
-                    tx,
-                    i.payable_id,
-                    &i.native(),
-                    subject,
-                    latest,
-                    kind,
-                )?;
+                let mut value =
+                    (if agent {
+                        payables::pay_agent
+                    } else {
+                        payables::pay_with_principal
+                    })(tx, i.payable_id, &i.native(), subject, latest, kind)?;
                 value["appliedRules"] = json!(["DK-PAYABLE-PAYMENT-001"]);
                 value
             }
@@ -238,7 +260,11 @@ pub fn mutate(
             subject,
             payload: &payload,
             created_by: &actor,
-            created_by_program: "rentemester-original-payable",
+            created_by_program: if agent {
+                rentemester_engine::agent_run::PROGRAM
+            } else {
+                "rentemester-original-payable"
+            },
             now_ms: now,
         },
         write,

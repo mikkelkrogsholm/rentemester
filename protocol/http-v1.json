@@ -292,6 +292,11 @@
       "capability": "POST /api/companies/{slug}/agent-suggestions/{id}/reject"
     },
     {
+      "method": "POST",
+      "path": "/api/companies/{slug}/agent/original/run",
+      "capability": "POST /api/companies/{slug}/agent/original/run"
+    },
+    {
       "method": "GET",
       "path": "/api/companies/{slug}/annual-exports",
       "capability": "GET /api/companies/{slug}/annual-exports"
@@ -3257,5 +3262,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "b09969b26a49fc31e8a7703e83c628c81f48f18e465e1ea2621d41f866dd4fc2"
+  "manifestId": "e9ba1f8a669ba08c4436bddea232aed4a75ad5ff2073fb721adf3ff98177ba41"
 }
