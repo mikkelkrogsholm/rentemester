@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R119 fresh/add/restored companies now have original private intake/bank/invoice/export layout;3actual cases pass incl signed archivedcompany restore and byte-preserving no-overwrite. Full718 remains open.",
-  "code_revision": "4a6ab444365a11f0c40ed96c0bc51aa6fc4802a7",
+  "current_increment": "R120 actualoriginal upload/currentRustserver/canonicalbytes/restart accepted; cashreceipt supplier UI gapfixed20cases+build. Fullbank→expense helper stopped beforeeffects ondiagnosed mapped-account selection; full718open.",
+  "code_revision": "47b012d3c1ddc11fd11605cbc539947a38be14a1",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_company_layout718_component_accepted",
+  "state": "original_upload_cash_supplier718_component_accepted",
   "issues_closed": 41,
-  "next": "Complete sharedUI original upload/bookkeeping/readback against rebuiltcommonRustserver with normalMFA; retain priorvalidflow/backup/restart evidence. All55/cutover/finaldesktopLAST remain.",
+  "next": "Use diagnosed exact existing synthetic-mapped-account112 for sharedReact supplier→statement→expense→bankreconciliation→signedbackup. Never reupload original120; no furtherfullruntime setup in currentboundary. Preserveall55/finaldesktopLAST.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -19121,6 +19121,20 @@
         "Existing admitted workspaces are not automatically repaired; original R115 profile remains unchanged.",
         "No new live full original upload/bookkeeping/restart journey yet; retain prioracceptedproof and actualserverrebuildrequired.",
         "Full718 allscreens/files/keyboard/local-hosted failureacceptance; all55/cutover/finalinstalleddesktopLAST remain."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "47b012d3c1ddc11fd11605cbc539947a38be14a1",
+      "report": "/tmp/rentemester-rust-reports/r120-original-upload-and-cash-supplier718-component-accepted.json",
+      "sha256": "b473f66f7fd6ae60842d0185162691015a8b405fea4a97ccd640b9c7c5de3220",
+      "scope": "Actual one selectedoriginal throughrequiredscanner/canonicalbytes/restart oncurrentRustserver; sharedReact cashsupplier field gapfixed with20actualcases andcurrentUIbuild.",
+      "remaining": [
+        "New supplier UI controls have not completed a fresh whole bank→expense journey; tests/UIbuild qualify exact sender payload, not full runtime acceptance.",
+        "Extended flow helper failed before mutations because two bankaccounts were present; exact existingmapped account now isolated/diagnosed. Preserve failedreceipt, no furtherfullruntime setup inthisboundary.",
+        "Originalno-supplier receipt correctlyremains unresolved andunbooked; do not alterit silently or weakenVAT/party controls.",
+        "Full718 allscreen/file/keyboard/local-hosted errors, full55/J01-J07/cutover/finaldesktopLAST remain."
       ]
     }
   ],
