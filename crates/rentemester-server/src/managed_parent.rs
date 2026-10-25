@@ -61,6 +61,7 @@ mod tests {
         assert!(validate_flags(false, false, true).is_ok());
     }
 
+    #[cfg(unix)]
     #[tokio::test]
     async fn shutdown_parent_eof_not_data_and_disabled_never_signals() {
         assert!(monitor(false).unwrap().is_none());

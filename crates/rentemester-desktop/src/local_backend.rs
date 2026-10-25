@@ -926,7 +926,9 @@ mod tests {
         let web = PathBuf::from(
             std::env::var_os("RENTEMESTER_TEST_LOCAL_WEB").expect("set built browser path"),
         );
-        let path = temporary();
+        // Darwin Unix socket names are limited to103bytes; long per-user TMPDIR
+        // paths cannot represent this supported private-runtime fixture.
+        let path = PathBuf::from("/private/tmp").join(format!("rm719-{}", random_key().unwrap()));
         let input = |create| Start {
             profile: path.clone(),
             create,
