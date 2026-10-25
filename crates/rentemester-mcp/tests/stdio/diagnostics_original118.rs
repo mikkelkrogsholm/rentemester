@@ -68,7 +68,7 @@ fn original_diagnostics118_flat_arguments_text_only_and_global_object_guard_with
         ] {
             let rows = parsed(&run(
                 &origin,
-                &[init("2025-11-25"), ready(), call(2, name, args)],
+                &[init("2025-11-25"), ready(), call(2, name, args.clone())],
             ));
             if !args.is_object() {
                 assert_eq!(rows[1]["error"]["code"], -32602);
