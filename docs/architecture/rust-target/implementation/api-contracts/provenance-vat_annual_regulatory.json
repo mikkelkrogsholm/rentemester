@@ -5,13 +5,13 @@
   "evidenceScope": "Current actual source only; strict oracle is structural, not semantic acceptance or runtime replay.",
   "graphQuery": "graphify query \"vat annual regulatory\"",
   "accepted": false,
-  "selectedOperations": 60,
+  "selectedOperations": 62,
   "sourcePolicy": "Per-operation focused current SHA-256 and literal constructor needles; references only own or previously accepted partitions.",
   "retainedScope": "Prior 821 operations / 26 partitions and all55 / J01-J07 / finaldesktop / release / cutover / retirement unchanged; main owns integration and acceptance.",
   "leadReviewRepair": {
     "scope": "Actual tax bounds JSON, HEAD protocol409 body stripping, regulatory500 object errors, original EU CompanyExternalLookup, and exact original SAF-T dispatcher/materializer source refs. No accounting/provider effects replayed."
   },
-  "operationCount": 60,
+  "operationCount": 62,
   "original716AddedIdentities": [],
   "currentCliIdentityCount": 265,
   "sourceRefs": [
@@ -37,7 +37,7 @@
     },
     {
       "path": "crates/rentemester-engine/src/regulatory.rs",
-      "sha256": "32d23e837d1bf35f1d0b4bb81ed67884b9d850b40c36316c69c33d144fc3a8e4",
+      "sha256": "da41fe10ef2c957058b5407a8497b68926e3ea4843881845db2c1b7d84ffc22a",
       "needle": "pub fn bundled_coverage()"
     },
     {
@@ -207,7 +207,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "fn proof("
     },
     {
@@ -217,7 +217,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/compliance.rs",
-      "sha256": "2ecb55e856b3e2e1ea2c88518601af4472a02b9b60efef36ac61de5d52511849",
+      "sha256": "d6160ab21eb4acc3c4a6bee2497685a7b21010a0017e0d464d03f84e73a4a92d",
       "needle": "//! Static repository data grants no authority. Company report uses current CompanyRead."
     },
     {
@@ -310,5 +310,12 @@
       "sha256": "82cb468731e21ace4490e919f49a62ac8f71f9b78585134aae2465f480e90737",
       "needle": "pub fn accepts(name: &str) -> bool {"
     }
-  ]
+  ],
+  "rules718Addition": {
+    "ids": [
+      "http:GET /api/rules",
+      "http:HEAD /api/rules"
+    ],
+    "scope": "Public original flat RulesResponse; closed exact producer schema, no authority/filing claims."
+  }
 }

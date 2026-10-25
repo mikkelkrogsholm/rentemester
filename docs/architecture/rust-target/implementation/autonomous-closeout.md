@@ -55,3 +55,5 @@ change, actual blocker or necessary user action. No unattended manual-desktop
 requests, production promotion, live migration or self-certification of external
 review. Stop the autonomous series when only those unavailable gates remain or
 the user stops it; do not keep polling an unchanged blocker.
+
+Browserdelen af #718 er nu accepteret med kilde- og binærbundet bevis i `issue718-evidence.json`: faktisk lovgrundlag, filer, tastatur, fejl, CFO-koncern/paginering og de manglende metadatahandlinger. Hele issuet holdes åbent for den oprindelige J03-nativeaccept og #712; installeret Tauri-accept ligger fortsat sidst. Næste udførbare arbejde er #725s uafhængige serverpakkeaccept mod den accepterede web/server-kontrakt; dette ophæver ingen GitHub-afhængighed eller menneskelig/provider-promotiongate.

@@ -235,7 +235,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": ".route(\"/api/companies/{slug}/workspace-parties/create-identity\",get(parties::handle).post(parties::handle))"
     },
     {
@@ -260,12 +260,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "workspace-parties/{id}/approve-merge"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "workspace-parties/{id}/propose-merge"
     },
     {
@@ -573,31 +573,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -642,31 +642,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -784,31 +784,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -890,31 +890,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -973,31 +973,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -1051,31 +1051,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -1122,31 +1122,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -1255,31 +1255,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -1340,31 +1340,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },
@@ -1487,31 +1487,31 @@
           "additionalProperties": false,
           "properties": {
             "appliedRules": {
-              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for bogførings-tools; udeladt ellers.",
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "code": {
-              "description": "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik — agenten kan branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
               "type": "string"
             },
             "data": {
               "additionalProperties": {},
-              "description": "Kerne-resultatet ved ok=true. Den præcise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
               "properties": {},
               "type": "object"
             },
             "errors": {
-              "description": "Menneskelæsbare fejl-/forudsætnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "ok": {
-              "description": "true ⇒ kaldet lykkedes og `data` er sat; false ⇒ se `errors`.",
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
               "type": "boolean"
             }
           },

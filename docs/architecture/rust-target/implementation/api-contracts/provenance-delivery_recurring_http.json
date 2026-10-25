@@ -6,7 +6,7 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "sha256": "fa11367f1ad8d8f3a7c25b2254c578ffe2a2ef615f4746fd1a6c0dbde3e5d35f",
       "needle": "/api/recurring-invoices/run-workspace"
     },
     {
@@ -16,7 +16,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "fn proof("
     },
     {
@@ -202,7 +202,7 @@
     {
       "path": "crates/rentemester-server/src/product_http.rs",
       "needle": "pub fn router",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
     },
     {
       "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",

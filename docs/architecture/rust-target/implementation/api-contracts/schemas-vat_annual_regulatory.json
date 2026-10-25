@@ -8186,6 +8186,167 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "RulesBundle": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "ruleCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vatCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "ruleCount",
+        "sources",
+        "vatCodes"
+      ],
+      "additionalProperties": false
+    },
+    "RulesCitation": {
+      "type": "object",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "textHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "textHash"
+      ],
+      "additionalProperties": false
+    },
+    "RulesSummary": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "bundle": {
+          "type": "string"
+        },
+        "sourceId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "provisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RulesCitation"
+          }
+        }
+      },
+      "required": [
+        "ruleId",
+        "bundle",
+        "sourceId",
+        "name",
+        "explanation",
+        "severity",
+        "category",
+        "provisions"
+      ],
+      "additionalProperties": false
+    },
+    "RulesLegalSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "authority": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "xmlUrl": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "authority",
+        "category",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "RulesMetadata": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "ruleBundles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RulesBundle"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RulesSummary"
+          }
+        },
+        "legalSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RulesLegalSource"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "ruleBundles",
+        "rules",
+        "legalSources"
+      ],
+      "additionalProperties": false
     }
   }
 }

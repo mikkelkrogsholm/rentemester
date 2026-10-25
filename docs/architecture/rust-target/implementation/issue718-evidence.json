@@ -1,13 +1,20 @@
 {
   "issue": 718,
   "whole_issue_accepted": false,
-  "accepted_component": "Exact known native413 actionable guidance; no retry, status/code and unknown-write guards retained.",
+  "accepted_component": "Scoped actual Rust/browser restaccept: actionable file413; fresh ordinary owner/reviewer MFA; current legal metadata + browser search; approved group/CFO display + real100+2cursor paging. Whole original718 remains open.",
   "source_base": "6b784b41164fe989b524ece809515c18b3915894",
   "source_sha256": {
     "app/src/lib/api/_shared.ts": "95491a85a30a180c2ffb60ed1eb92440a7772e75e1f5aa2deebe5a5afdfbc4f2",
-    "app/src/lib/api/_shared.test.ts": "d5ff09c38d43e3c1d02f7642b94fbbd9ac5eb149901cdaf583cf03c10f8ffb3a"
+    "app/src/lib/api/_shared.test.ts": "d5ff09c38d43e3c1d02f7642b94fbbd9ac5eb149901cdaf583cf03c10f8ffb3a",
+    "crates/rentemester-engine/src/regulatory.rs": "da41fe10ef2c957058b5407a8497b68926e3ea4843881845db2c1b7d84ffc22a",
+    "crates/rentemester-engine/src/regulatory/metadata.rs": "685b19d401873a10e3b9539c6f1bb5e8f55c76e36bcf69a4e239459423e99cc3",
+    "crates/rentemester-server/src/product_http.rs": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
+    "crates/rentemester-server/src/product_http/compliance.rs": "d6160ab21eb4acc3c4a6bee2497685a7b21010a0017e0d464d03f84e73a4a92d",
+    "protocol/http-v1.json": "fa11367f1ad8d8f3a7c25b2254c578ffe2a2ef615f4746fd1a6c0dbde3e5d35f",
+    "scripts/rust/check-native-cfo-approved.ts": "5e0d5f2387d9edf4a6d61cd95833aa5649cc5c957c629ed12a6d1f77f3602334",
+    "scripts/rust/check-native-rest-actions718.ts": "6ae7d22d1805f0455f9d8110c80b7122a8aa3c4519c8c671c43deb3e95dcb2bf"
   },
-  "scope": "Original718 criterion2 only; full718 remains developing.",
+  "scope": "Scoped original718 restaccept; full718 remains developing and is not closed.",
   "proof": {
     "red": {
       "path": "/tmp/issue718-upload-proven-red.log",
@@ -21,9 +28,143 @@
     }
   },
   "remaining": [
-    "Full original screen/capability browser proof and local/hosted/J03/J04 criteria.",
-    "Original/file keyboard/cancel/large-file actual Rust browser proof with fresh ordinary owner/MFA; preserved401fixture route stopped, no offline identity seeds."
+    "Only retained original J03 native/Tauri boundary and original #712 dependency remain after source-bound browser disposition. Installed manual native/menu/Keychain/WebKit-cookie/close-reopen/cancel acceptance remains LAST; no GPUI/mock substitute or hidden fallback.",
+    "Whole #718 stays OPEN until that original gate is actually accepted; browser completion does not waive dependencies or release/cutover requirements."
   ],
   "series": "autonomous-closeout.md",
-  "automatic_followup": "rentemester-luk-resterende-rust-issues"
+  "automatic_followup": "rentemester-luk-resterende-rust-issues",
+  "runtime_20261025": {
+    "codeLeavesRevision": "2a689060bd2caf561657d17ef4cdfba7ab95ec2f",
+    "sgdRun": "issue718-rules-cfo-20261025T211705.997162000",
+    "leafChecksOnly": "SGD combined syntax718 passed; lead independently reviewed both diffs and4engine metadata tests. This is not whole718 acceptance.",
+    "freshSyntheticFixture": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs",
+    "ordinaryMfa": "Real owner verification/enrollment and independent reviewer invitation/claim/verification/enrollment, no identity seeds.",
+    "rulesServerSha256": "f98b5f3946346d1019fe2c0b2d9cc2df8bb609ea65ad9fd1d4952276453ae4d1",
+    "earlierCfoAndFileServerSha256": "f040eb301d6668962b7399a340a646fb3b95ee18ab63db4bc88ee1270569f300",
+    "sameReactIndexSha256": "741c2ba4bf49b982caa84969c49544fde3d4efe354525e7bf8e7a6745c8cadc1",
+    "staticBrowser": {
+      "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/static-browser718.json",
+      "sha256": "3ca4142fc6b530cc6c36387d5b107d529208c6c4fd1bf83ba81c2f487e4c0b40"
+    },
+    "cfoBrowser": {
+      "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/cfo718/native-cfo-approved718-report.json",
+      "sha256": "13bf5151a278a0f3c79245e6d671bbb238c07763f3ff030e2b874e7e8092b091"
+    },
+    "independentReviewerSetup": {
+      "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/reviewer-setup-report.json",
+      "sha256": "38b87bcbb38f9c8633e13640b11f71b77e078270b213b9e7aa06feef8033ca52"
+    },
+    "filePartialAssertions": {
+      "proof": {
+        "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/resumed-file-report.json",
+        "sha256": "a9e0ed26270c9dfce4990d1f38265aa7166702d539d960406cd1bf302a618993"
+      },
+      "scope": "Completed413DOMguidance/singlePOST/noautomaticretry/unchangedjournal/help assertions retained. Combined report subsequently failed on actual missing rules route; it is not an overall PASS."
+    },
+    "initialOriginalAndKeyboard": {
+      "proof": {
+        "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/browser-report.json",
+        "sha256": "525318cb5e56eebf4cc23fde4689392ad60bc8bdd9e9ea2d52714667853e296c"
+      },
+      "scope": "Completed exact original/list/duplicate/MIME/anonymous refusal + keyboard original/cancel assertions. Later harness failure retained; not overall PASS."
+    },
+    "preservedFailures": [
+      "static-browser718-first-table-scope-failure.json",
+      "static-browser718-early-workspace-lock-failure.json",
+      "static-browser718-exact-bundle-label-failure.json",
+      "resumed-file-report.json.inspector-cache-failure"
+    ],
+    "diagnosedSimplifications": [
+      "Large response inspector cache evicted: use actual HTTP413status plus exact productionDOMcode-specificguidance and unchangedledger, not replay accepted upload.",
+      "Bundle table scope excludes nested rules tables. Await normal workspace active before keyboard focus; first focus correctly refused while safety gate still loading. Use existing native select directly rather than ambiguous implicit label including option text."
+    ],
+    "newFinancialEffects": "Exactly one NEW synthetic102line journal (51DKKasset/equity) in fresh fixture, explicitly persisted unique posting intent. No historical receipts or provider effects replayed.",
+    "typedCatalog": {
+      "operations": 1726,
+      "http": 703,
+      "cli": 575,
+      "mcp": 448,
+      "new": [
+        "http:GET /api/rules",
+        "http:HEAD /api/rules"
+      ],
+      "prior1670Retained": true,
+      "priorContractsUnchangedExceptCurrentSourceHash": true,
+      "receipt": {
+        "path": "/tmp/issue718-contract-accepted.json",
+        "sha256": "c4dbeee92831fadb307bfed100753bd712597d010bceb8cc16014f2815ad42b2"
+      }
+    },
+    "restActions": {
+      "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-718-e_w3fkjs/rest718/rest-actions718-report.json",
+      "sha256": "aca7a26694f75f4e698489bab73ecc4c1ba39903e28380d1cf6276d46db2325f",
+      "completed": [
+        "actual rule disable with reason and canonical reload",
+        "actual create/revise/submit/independent reject/correct v3; unposted",
+        "actual confirmed GDPR hold release; no erasure requested"
+      ],
+      "financialAndOriginalStateUnchanged": true,
+      "heldAndReleasedHistoryVerified": true,
+      "staleSubmitRefused": true,
+      "repair": "Missing API version read from canonical rule list; wait for displayed v2 before submit. Recovered only uncompleted actions, no financial/provider replay."
+    },
+    "nativeServerBuild": {
+      "path": "/tmp/issue718-server-build.log",
+      "sha256": "dc61450ae5d6df3407bcf6e59b15f01c2f12d53bc5fc2c960a91d1228c6bef52",
+      "result": "guarded server-only build PASS;30GiB minimum retained,2jobs,existing worker target reused,1m52s",
+      "source": "2a689060 + generated703HTTPmanifest; no other native source changes"
+    },
+    "setupFailureLimits": "Stopped broad failed setup after two failures, isolated actual native fieldset pending safety gate and ambiguous bundle label, then used existing simpler scoped browser proof. No new platform/dependencies. Preserved exact refused effect receipts and resumed only uncompleted metadata actions."
+  },
+  "retainedAcceptedProof": [
+    {
+      "path": "/tmp/rentemester-rust-reports/r111-owner-manual-unknown718-component-accepted.json",
+      "sha256": "344043dfe953e1521f993e68342ad9b2e70c2ae61afdcf769e21963e8310551e",
+      "scope": "Existing accepted receipt retained; current scoped browser extension does not replay its financial/provider effects."
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r121-first-receipt-bookkeeping718-component-accepted.json",
+      "sha256": "e8210d5470ee618bca786b62f1684e0b0622a89c612cdf2eb2e373f35db01608",
+      "scope": "Existing accepted receipt retained; current scoped browser extension does not replay its financial/provider effects."
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r17-vat689-accepted.json",
+      "sha256": "95e658affe47ab9617ab31ad539d1bb65319d7a823abbbf1f9bb8842e0d35270",
+      "scope": "Existing accepted receipt retained; current scoped browser extension does not replay its financial/provider effects."
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r17-vat689-recorded-restart-7cb6692c.json",
+      "sha256": "b26f9bf5a1c6c36cfbf8a527b5739dc989086917a5925e526046d8dc2add0528",
+      "scope": "Existing accepted receipt retained; current scoped browser extension does not replay its financial/provider effects."
+    },
+    {
+      "path": "/tmp/rentemester-rust-reports/r34-privacy708-accepted.json",
+      "sha256": "e6b1a667189450fb7acd2439e27546cdac38f2d67ebb82be086a955ab596966b",
+      "scope": "Existing accepted receipt retained; current scoped browser extension does not replay its financial/provider effects."
+    }
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "browserDisposition": "accepted",
+      "basis": "Existing accepted R01 company/static/file/export/browser journeys plus fresh legal/search/wildcard/original file and real CFO group/paging; concrete missing supported UI disable/revise/reject/release now passed. Do not invent CLI-only supersede/bank-edit browser actions."
+    },
+    {
+      "criterion": 2,
+      "browserDisposition": "accepted",
+      "basis": "Retained R111 normal MFA/role denial/cancel/uncertain response/reload/restart lock with explicit reconciliation; current singlePOST413 guidance/no retry/unchangedjournal; current actual stale draft version422 and fresh v2 recovery. Prior accepted expired-session/revocation behavior preserved."
+    },
+    {
+      "criterion": 3,
+      "browserDisposition": "accepted",
+      "wholeCriterionDisposition": "blocked_final_native_J03",
+      "basis": "Shared React/native Rust browser keyboard focus/original/cancel/search/wildcard/currenthostedMFA and retained local/hosted journeys use actual Rust, not app/e2e mock fallback. Original J03 native login/menu/Keychain/WebKit-cookie/close-reopen/cancel proof depends on #712 and final installed Tauri acceptance, intentionally LAST."
+    },
+    {
+      "criterion": 4,
+      "browserDisposition": "accepted",
+      "basis": "Retained full #689/J04 actual calculated\u2192reviewed/locked\u2192externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
+    }
+  ],
+  "browser_portion_accepted": true
 }

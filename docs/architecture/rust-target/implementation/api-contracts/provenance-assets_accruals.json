@@ -25,7 +25,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "fn proof("
     },
     {

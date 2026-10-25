@@ -9884,7 +9884,7 @@
         },
         "metadata": {
           "additionalProperties": true,
-          "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+          "description": "DocumentMetadata-payload (uden 'source') der anvendes p\u00e5 vedh\u00e6ftningerne \u2014 se examples/bilagsmail.metadata.json",
           "properties": {
             "accountingRationale": {
               "description": "Required for internal_voucher: the accounting reason for the posting.",
@@ -9893,7 +9893,7 @@
               "type": "string"
             },
             "amountIncVat": {
-              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             },
             "currency": {
@@ -9938,7 +9938,7 @@
               "type": "string"
             },
             "paymentDetails": {
-              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "description": "Free-text payment details, e.g. 'Bankoverf\u00f8rsel 2026-05-17'.",
               "type": "string"
             },
             "purchaseVatLines": {
@@ -10052,7 +10052,7 @@
               "type": "integer"
             },
             "vatAmount": {
-              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             }
           },
@@ -10069,7 +10069,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+                "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10092,7 +10092,7 @@
         "metadataPerMessage": {
           "additionalProperties": {
             "additionalProperties": true,
-            "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+            "description": "DocumentMetadata-payload (uden 'source') der anvendes p\u00e5 vedh\u00e6ftningerne \u2014 se examples/bilagsmail.metadata.json",
             "properties": {
               "accountingRationale": {
                 "description": "Required for internal_voucher: the accounting reason for the posting.",
@@ -10101,7 +10101,7 @@
                 "type": "string"
               },
               "amountIncVat": {
-                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
                 "type": "number"
               },
               "currency": {
@@ -10146,7 +10146,7 @@
                 "type": "string"
               },
               "paymentDetails": {
-                "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+                "description": "Free-text payment details, e.g. 'Bankoverf\u00f8rsel 2026-05-17'.",
                 "type": "string"
               },
               "purchaseVatLines": {
@@ -10260,7 +10260,7 @@
                 "type": "integer"
               },
               "vatAmount": {
-                "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "description": "VAT amount, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
                 "type": "number"
               }
             },
@@ -10277,7 +10277,7 @@
                 {
                   "path": "crates/rentemester-server/src/product_http.rs",
                   "needle": "pub fn router",
-                  "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+                  "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
                 },
                 {
                   "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10297,7 +10297,7 @@
               ]
             }
           },
-          "description": "Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked",
+          "description": "Metadata pr. message-id; overstyrer 'metadata' for den p\u00e5g\u00e6ldende besked",
           "propertyNames": {
             "type": "string"
           },
@@ -10466,7 +10466,7 @@
         },
         "metadata": {
           "additionalProperties": true,
-          "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+          "description": "DocumentMetadata-payload (uden 'source') der anvendes p\u00e5 vedh\u00e6ftningerne \u2014 se examples/bilagsmail.metadata.json",
           "properties": {
             "accountingRationale": {
               "description": "Required for internal_voucher: the accounting reason for the posting.",
@@ -10475,7 +10475,7 @@
               "type": "string"
             },
             "amountIncVat": {
-              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             },
             "currency": {
@@ -10520,7 +10520,7 @@
               "type": "string"
             },
             "paymentDetails": {
-              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "description": "Free-text payment details, e.g. 'Bankoverf\u00f8rsel 2026-05-17'.",
               "type": "string"
             },
             "purchaseVatLines": {
@@ -10634,7 +10634,7 @@
               "type": "integer"
             },
             "vatAmount": {
-              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             }
           },
@@ -10651,7 +10651,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+                "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10674,7 +10674,7 @@
         "metadataPerMessage": {
           "additionalProperties": {
             "additionalProperties": true,
-            "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+            "description": "DocumentMetadata-payload (uden 'source') der anvendes p\u00e5 vedh\u00e6ftningerne \u2014 se examples/bilagsmail.metadata.json",
             "properties": {
               "accountingRationale": {
                 "description": "Required for internal_voucher: the accounting reason for the posting.",
@@ -10683,7 +10683,7 @@
                 "type": "string"
               },
               "amountIncVat": {
-                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
                 "type": "number"
               },
               "currency": {
@@ -10728,7 +10728,7 @@
                 "type": "string"
               },
               "paymentDetails": {
-                "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+                "description": "Free-text payment details, e.g. 'Bankoverf\u00f8rsel 2026-05-17'.",
                 "type": "string"
               },
               "purchaseVatLines": {
@@ -10842,7 +10842,7 @@
                 "type": "integer"
               },
               "vatAmount": {
-                "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "description": "VAT amount, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
                 "type": "number"
               }
             },
@@ -10859,7 +10859,7 @@
                 {
                   "path": "crates/rentemester-server/src/product_http.rs",
                   "needle": "pub fn router",
-                  "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+                  "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
                 },
                 {
                   "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
@@ -10879,7 +10879,7 @@
               ]
             }
           },
-          "description": "Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked",
+          "description": "Metadata pr. message-id; overstyrer 'metadata' for den p\u00e5g\u00e6ldende besked",
           "propertyNames": {
             "type": "string"
           },
@@ -10887,7 +10887,7 @@
           "properties": {}
         },
         "sinceUid": {
-          "description": "Valgfri UID-nedre grænse",
+          "description": "Valgfri UID-nedre gr\u00e6nse",
           "maximum": 9007199254740991,
           "minimum": 0,
           "type": "integer"
@@ -10976,7 +10976,7 @@
       "additionalProperties": false,
       "properties": {
         "apiLicenseKey": {
-          "description": "Digisense API license-key (én nøgle for hele licensen). Gemmes kun i config/digisense.json, aldrig i ledger'en.",
+          "description": "Digisense API license-key (\u00e9n n\u00f8gle for hele licensen). Gemmes kun i config/digisense.json, aldrig i ledger'en.",
           "minLength": 1,
           "type": "string"
         },
@@ -11406,7 +11406,7 @@
           "type": "string"
         },
         "network": {
-          "description": "Netværket participant-registreringen sker på; standard 'nemhandel'.",
+          "description": "Netv\u00e6rket participant-registreringen sker p\u00e5; standard 'nemhandel'.",
           "enum": [
             "nemhandel",
             "peppol"
@@ -11544,19 +11544,19 @@
           "type": "boolean"
         },
         "limit": {
-          "description": "Side-størrelse (<=100); standard 100",
+          "description": "Side-st\u00f8rrelse (<=100); standard 100",
           "exclusiveMinimum": 0,
           "maximum": 100,
           "type": "integer"
         },
         "maxTimestamp": {
-          "description": "Valgfrit øvre tidsstempel som ISO 8601 (fx '2026-06-01T00:00:00Z'); videresendt urørt til Digisense' list-received-documents for at begrænse pollen tidsmæssigt.",
+          "description": "Valgfrit \u00f8vre tidsstempel som ISO 8601 (fx '2026-06-01T00:00:00Z'); videresendt ur\u00f8rt til Digisense' list-received-documents for at begr\u00e6nse pollen tidsm\u00e6ssigt.",
           "minLength": 1,
           "type": "string"
         },
         "metadata": {
           "additionalProperties": true,
-          "description": "Valgfri DocumentMetadata-payload (uden 'source') der OVERSTYRER de UBL-/listning-afledte felter på hvert modtaget bilag.",
+          "description": "Valgfri DocumentMetadata-payload (uden 'source') der OVERSTYRER de UBL-/listning-afledte felter p\u00e5 hvert modtaget bilag.",
           "properties": {
             "accountingRationale": {
               "description": "Required for internal_voucher: the accounting reason for the posting.",
@@ -11565,7 +11565,7 @@
               "type": "string"
             },
             "amountIncVat": {
-              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             },
             "currency": {
@@ -11610,7 +11610,7 @@
               "type": "string"
             },
             "paymentDetails": {
-              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "description": "Free-text payment details, e.g. 'Bankoverf\u00f8rsel 2026-05-17'.",
               "type": "string"
             },
             "purchaseVatLines": {
@@ -11724,7 +11724,7 @@
               "type": "integer"
             },
             "vatAmount": {
-              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals \u2014 NOT \u00f8re).",
               "type": "number"
             }
           },
@@ -11741,7 +11741,7 @@
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
                 "needle": "pub fn router",
-                "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45"
+                "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e"
               },
               {
                 "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",

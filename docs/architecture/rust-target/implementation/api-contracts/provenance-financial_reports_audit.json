@@ -66,7 +66,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "fn proof("
     },
     {
@@ -151,7 +151,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "09286877cb8550389691c9e5957608ba0bd2b72123f9aa7135b5dc1992608b45",
+      "sha256": "ab26719c2504fa9696e416fde99b585d757228989d1c0e967d04687c9d31d51e",
       "needle": "pub fn router(native: Arc<Backend>, origin: &str) -> Router {"
     },
     {
@@ -296,7 +296,7 @@
     },
     {
       "path": "crates/rentemester-engine/src/regulatory.rs",
-      "sha256": "32d23e837d1bf35f1d0b4bb81ed67884b9d850b40c36316c69c33d144fc3a8e4",
+      "sha256": "da41fe10ef2c957058b5407a8497b68926e3ea4843881845db2c1b7d84ffc22a",
       "needle": "pub fn bundled_coverage"
     },
     {

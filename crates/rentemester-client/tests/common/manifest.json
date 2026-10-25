@@ -3357,6 +3357,16 @@
       "capability": "HEAD /api/regulatory/coverage"
     },
     {
+      "method": "GET",
+      "path": "/api/rules",
+      "capability": "GET /api/rules"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/rules",
+      "capability": "HEAD /api/rules"
+    },
+    {
       "method": "POST",
       "path": "/api/setup/first-owner",
       "capability": "POST /api/setup/first-owner"
@@ -3512,5 +3522,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "331de7328c127fbaeda4302f1f7980b4b9e2a66f3d169a4e75dfccf043604f0d"
+  "manifestId": "f4044e6565d2c977c80e0fed70edf091948b8c45630cf81f9c927393c3183b26"
 }

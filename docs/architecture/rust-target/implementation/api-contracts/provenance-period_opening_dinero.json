@@ -200,7 +200,7 @@
     },
     {
       "path": "protocol/http-v1.json",
-      "sha256": "d87154151e78d00326de57b01eed23233e7ed945763d7b9c2349972af5e8c650",
+      "sha256": "fa11367f1ad8d8f3a7c25b2254c578ffe2a2ef615f4746fd1a6c0dbde3e5d35f",
       "needle": "/api/companies/{slug}/import-original"
     },
     {
