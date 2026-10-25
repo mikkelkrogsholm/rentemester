@@ -1,4 +1,7 @@
 //! Source operator family. Only implemented keys are claimed; no registered-name parity.
+pub mod bootstrap;
+pub mod custody;
+pub mod schema;
 use crate::dated_reports::Output;
 use rentemester_client::LocalRuntime;
 use serde_json::{Value, json};

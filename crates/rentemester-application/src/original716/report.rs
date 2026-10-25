@@ -194,8 +194,11 @@ mod tests {
     }
     #[test]
     fn original716_report_actual_read_fence_hash_metadata_and_actor() {
-        let mut c = Connection::open_in_memory().unwrap();
-        let mut l = Connection::open_in_memory().unwrap();
+        // Exercise the real connection fence: in-memory journal mode is deliberately
+        // not an admitted Owner connection.
+        let dir = tempfile::tempdir().unwrap();
+        let mut c = Connection::open(dir.path().join("control.sqlite")).unwrap();
+        let mut l = Connection::open(dir.path().join("company.sqlite")).unwrap();
         rentemester_storage::fresh::initialize_empty_pair(&mut c, &mut l, "Synthetic <Report>")
             .unwrap();
         c.execute_batch("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt,twoFactorEnabled)VALUES('u','Synthetic','u@example.invalid',1,'2026-01-01','2026-01-01',1);INSERT INTO session(id,expiresAt,token,createdAt,updatedAt,userId)VALUES('s','2026-01-01T12:00:00.000Z','synthetic-token','2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z','u');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('u','activate','member','agent:synthetic');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','reader','agent:synthetic');").unwrap();

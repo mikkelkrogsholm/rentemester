@@ -1,3 +1,6 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use std::process::Command;
 const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
 #[test]
@@ -24,7 +27,6 @@ fn original_discovery_and_usage_stay_separate_from_native() {
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},

@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod original716;
 mod agent_run;
 mod budget_original;
 mod master_data_original;
@@ -245,7 +246,18 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/original-imap-intake",post(bilagsmail::original717))
         .route("/api/companies/{slug}/original-invoice-send-email",post(invoice_email::original717))
         .route("/api/companies/{slug}/original-efaktura-konfigurer",post(public_einvoice::original717))
+        .route("/api/companies/{slug}/original-efaktura-registrer-test-gln",post(public_einvoice::handle))
+        .route("/api/companies/{slug}/original-efaktura-registrer-test-afsender",post(public_einvoice::handle))
         .route("/api/original-system-restore-backup",post(backup_original122::original717))
+        .route("/api/group/overview",get(original716::group_overview))
+        .route("/api/companies/{slug}/original-system-backup-signed",post(original716::custody::handle))
+        .route("/api/companies/{slug}/original-system-export-public-key",post(original716::custody::handle))
+        .route("/api/companies/{slug}/original-system-rotate-backup-keypair",post(original716::custody::handle))
+        .route("/api/original-system-verify-backup-signature",post(original716::custody::handle))
+        .route("/api/companies/{slug}/original716-compliance-report",post(original716::report::handle))
+        .route("/api/companies/{slug}/original716-retention",post(original716::report::handle))
+        .route("/api/companies/{slug}/original716-export",post(original716::report::handle))
+        .route("/api/companies/{slug}/original716-erase",post(original716::report::handle))
         .route("/api/companies/{slug}/system-backup-status",get(backup_original122::handle))
         .route("/api/companies/{slug}/system-backup-lock",post(backup_original122::handle))
         .route("/api/companies/{slug}/backup-status",get(backup_status::handle))

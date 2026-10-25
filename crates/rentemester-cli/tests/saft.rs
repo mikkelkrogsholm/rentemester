@@ -1,6 +1,8 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Stdio},
     thread,
 };

@@ -387,3 +387,14 @@ assertion must exactly match the verified local profile root or ID. Original rem
 workspace assertions remain unavailable; `remote cfo-analytics` stays remote-capable.
 No local ledger reads, inferred workspace, client calculations or automatic retries.
 This closes one command gap in #716; full CLI parity and cutover remain open.
+
+### Standardlauncher og eksplicit historisk CLI
+
+`bin/rentemester` starter nu `rentemester-rust` (pakket søskendebinær eller PATH).
+`RENTEMESTER_RUST_CLI=/absolut/sti/rentemester-rust` vælger et eksplicit Rust-artefakt.
+Launcher bygger ikke og falder aldrig automatisk tilbage til TypeScript ved fejl.
+Kun det eksplicitte historiske kald `RENTEMESTER_LEGACY_CLI=1 bin/rentemester …`
+benytter Bun og `src/cli.ts`; det er ikke en Rust-fejlgendannelse eller migration.
+Private operatorhandlinger anvender samme Rust-server og Owner, aldrig en ekstra
+motor. `--actor` er kun en assertion mod aktuelle credentials; schema/bootstrap
+kræver den private serverkonfigurations tilladte operator. Paths giver ikke adgang.

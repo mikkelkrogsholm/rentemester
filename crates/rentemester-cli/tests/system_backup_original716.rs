@@ -192,6 +192,17 @@ fn literal_values_are_not_rewritten_and_missing_transport_remains_usage() {
 }
 #[test]
 fn signed_backup_and_public_key_export_use_common_source_routes() {
+    let temp = std::env::temp_dir().join(format!("backup716-public-{}", std::process::id()));
+    std::fs::create_dir(&temp).unwrap();
+    #[cfg(unix)] {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&temp, std::fs::Permissions::from_mode(0o700)).unwrap();
+    }
+    let temp = std::fs::canonicalize(temp).unwrap();
+    let out = temp.join("public.pem");
+    let out_flag = format!("--out={}", out.display());
+    let key = rentemester_runtime::original716::custody::CompanyKey::generate().unwrap();
+    let pem = key.public_pem().to_owned();
     for (cmd, extra, suffix, result) in [
         (
             "backup",
@@ -201,9 +212,9 @@ fn signed_backup_and_public_key_export_use_common_source_routes() {
         ),
         (
             "export-public-key",
-            vec!["--out=/synthetic/public.pem"],
+            vec![out_flag.as_str()],
             "original-system-export-public-key",
-            json!({"ok":true,"out":"/synthetic/public.pem"}),
+            json!({"ok":true,"publicKeyPem":pem,"publicKeyHint":key.hint()}),
         ),
     ] {
         let listener = common::TcpListener::bind("127.0.0.1:0").unwrap();
@@ -216,7 +227,11 @@ fn signed_backup_and_public_key_export_use_common_source_routes() {
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&cookie, std::fs::Permissions::from_mode(0o600)).unwrap();
         }
-        let expected = result.clone();
+        let mut expected = result.clone();
+        if cmd == "export-public-key" {
+            expected.as_object_mut().unwrap().remove("publicKeyPem");
+            expected["outPath"] = json!(out);
+        }
         let server = std::thread::spawn(move || {
             let (mut stream, _) = listener.accept().unwrap();
             let (h, b) = read_request(&mut stream);
@@ -251,5 +266,9 @@ fn signed_backup_and_public_key_export_use_common_source_routes() {
             serde_json::from_slice::<Value>(&o.stdout).unwrap(),
             expected
         );
+        if cmd == "export-public-key" {
+            assert_eq!(std::fs::read_to_string(&out).unwrap(), pem);
+        }
     }
+    std::fs::remove_dir_all(temp).unwrap();
 }

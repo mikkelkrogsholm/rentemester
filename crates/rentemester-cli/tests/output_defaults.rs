@@ -1,9 +1,11 @@
 //! Source stdout defaults exercised against actual pipes and a real PTY.
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use serde_json::{Value, json};
 use std::{
     fs,
     io::{Read, Write},
-    net::TcpListener,
     process::{Command, Output},
     thread,
 };

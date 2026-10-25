@@ -1,3 +1,7 @@
+mod operator_original716;
+mod remaining_original716;
+mod provider_original716;
+mod system_original716;
 mod report_analytics_original;
 mod agent_original;
 mod import_original;
@@ -332,6 +336,48 @@ fn main() -> ExitCode {
     if let Some(args) = agent_original::prepare(&raw) {
         let o = agent_original::execute(&args);
         print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
+    if let Some(args) = operator_original716::bootstrap::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(operator_original716::bootstrap::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = operator_original716::schema::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(operator_original716::schema::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = operator_original716::custody::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(operator_original716::custody::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = operator_original716::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(operator_original716::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = remaining_original716::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(remaining_original716::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = provider_original716::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(provider_original716::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
+    }
+    if let Some(args) = system_original716::prepare(&raw) {
+        let runtime = tokio::runtime::Runtime::new().expect("CLI runtime");
+        if let Some(o) = runtime.block_on(system_original716::execute(&args)) {
+            print!("{}", o.stdout); eprint!("{}", o.stderr); return ExitCode::from(o.exit);
+        }
     }
     let args = match original_args::prepare_with_output(
         raw,

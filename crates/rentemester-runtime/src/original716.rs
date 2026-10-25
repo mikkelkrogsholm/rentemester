@@ -48,3 +48,7 @@ mod tests {
         assert_eq!(read_bootstrap_password(&alias).unwrap_err(), PASSWORD_ERROR);
     }
 }
+
+pub mod bootstrap;
+pub mod custody;
+pub mod report;

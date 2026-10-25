@@ -172,7 +172,7 @@ fn connection(f: &Flags<'_>, company: &str) -> Result<(ApiClient, String), Outpu
         let local = rentemester_client::LocalRuntime::load(Path::new(profile)).map_err(usage)?;
         let company =
             rentemester_client::knowledge_company_selector(Some(&local), company).map_err(usage)?;
-        local.install_process().map_err(usage)?;
+        local.clone().install_process().map_err(usage)?;
         let api = crate::remote::credential_client(local.origin(), true, f, false).map_err(
             |(exit, e)| Output {
                 stdout: String::new(),

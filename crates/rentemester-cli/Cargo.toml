@@ -15,6 +15,7 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 rentemester-engine = { path = "../rentemester-engine" }
 rentemester-storage = { path = "../rentemester-storage" }
 serde_json.workspace = true
+rentemester-runtime = { path = "../rentemester-runtime" }
 
 [lints]
 workspace = true

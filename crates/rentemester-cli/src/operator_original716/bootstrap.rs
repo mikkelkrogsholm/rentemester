@@ -213,7 +213,7 @@ pub async fn execute(args: &[String]) -> Option<Output> {
         Ok(status) => Output {
             stdout: String::new(),
             stderr: String::new(),
-            exit: status.code().unwrap_or(1),
+            exit: u8::try_from(status.code().unwrap_or(1)).unwrap_or(1),
         },
         Err(_) => usage(
             "native rentemester-server could not be launched; install the sibling binary or set explicit RENTEMESTER_SERVER_BIN (no fallback)",

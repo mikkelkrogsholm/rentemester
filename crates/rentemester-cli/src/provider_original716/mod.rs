@@ -227,7 +227,7 @@ async fn run(args: &[String], s: &Value) -> Output {
     }
     let family = args[0].as_str();
     let cmd = args[1].as_str();
-    let get = |k| f.get(k).copied();
+    let get = |k: &str| f.get(k).copied();
     // Preserve real source valued-confirm gates, including the two case-sensitive test gates.
     let confirmation = if family == "efaktura" {
         match cmd {

@@ -212,7 +212,7 @@ fn catalogue() -> Value {
 pub fn about() -> Value {
     let catalogue = catalogue();
     json!({"serverName":"rentemester","serverVersion":env!("CARGO_PKG_VERSION"),
-        "toolCount":null,"ruleBundleVersion":null,"ruleBundleVersionReason":RULE_REASON,
+        "currentCli":current_cli716(),"toolCount":null,"ruleBundleVersion":null,"ruleBundleVersionReason":RULE_REASON,
         "build":catalogue["build"],"provenance":catalogue["provenance"],
         "contractDocs":["docs/mcp-agent-contract.md","docs/mcp-tool-surface.md","docs/confirm-contract.md","docs/cli-contract.md"],
         "catalogue":catalogue,"fullCoverage":false})
@@ -558,4 +558,12 @@ mod tests {
             json!([WORKFLOW, bank::WORKFLOW])
         );
     }
+}
+
+/// Current source CLI registration metadata, separate from the immutable #123 receipt.
+/// Registration is not authorization or proof of whole-product acceptance.
+pub fn current_cli716() -> &'static Value {
+    static CURRENT: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    CURRENT.get_or_init(|| serde_json::from_str(include_str!("../fixtures/current-cli716.json"))
+        .expect("current CLI registry"))
 }

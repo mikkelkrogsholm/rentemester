@@ -1,8 +1,10 @@
+#[path = "../../rentemester-client/tests/common/mod.rs"]
+mod common;
+use common::TcpListener;
 use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
-    net::TcpListener,
     path::Path,
     process::{Command, Output},
     thread,
