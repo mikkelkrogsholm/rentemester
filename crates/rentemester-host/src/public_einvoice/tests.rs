@@ -1,6 +1,7 @@
 //! Physical current-role checks between provider discovery and registration.
 //! Synthetic unit fixture only; no provider I/O or ordinary-login qualification.
 use super::*;
+use serde_json::json;
 use app::{Discovery, Request};
 use rentemester_runtime::auth::{AuthError, CookieProfile, CookieVerifier};
 struct Fixed(i64);
@@ -960,4 +961,130 @@ fn original_status_observe_only_binding_cache_pending_failed_and_revocation() {
                 .is_err()
         );
     }
+}
+
+#[test]
+fn original717_digisense_profile_assertions_status_and_revocation() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let status = owner
+        .original717_onboarding_status(&proof, &Fixed(NOW), None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(status["identity"]["cvr"], "12345678");
+    assert_eq!(
+        status["identity"]["companyName"],
+        "Synthetic Public Company"
+    );
+    assert_eq!(status["configured"], false);
+    assert_eq!(status["ready"], false);
+    assert!(!status["blockers"].as_array().unwrap().is_empty());
+    let mismatch = owner
+        .start_public_einvoice(
+            &proof,
+            &Fixed(NOW),
+            Intent::OriginalRegister(
+                json!({"cvr":"87654321","companyName":"Synthetic Public Company"}),
+                rentemester_runtime::public_einvoice::Network::Nemhandel,
+            ),
+            "test",
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert!(matches!(mismatch,Next::Complete(v) if v["ok"]==false));
+    let accepted = owner
+        .start_public_einvoice(
+            &proof,
+            &Fixed(NOW),
+            Intent::OriginalRegister(
+                json!({"cvr":"DK12345678","companyName":" Synthetic Public Company "}),
+                rentemester_runtime::public_einvoice::Network::Nemhandel,
+            ),
+            "test",
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert!(matches!(
+        pending(accepted).request(),
+        Request::FindCompany { .. }
+    ));
+    revoke(&mut owner);
+    assert!(
+        owner
+            .original717_onboarding_status(&proof, &Fixed(NOW), Some("test"))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}
+
+#[test]
+fn original717_digisense_registration_pair_real_owner_phases() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let network = rentemester_runtime::public_einvoice::Network::Peppol;
+    let initial = owner
+        .start_public_einvoice(
+            &proof,
+            &Fixed(NOW),
+            Intent::OriginalRegister(
+                json!({"cvr":"12345678","companyName":"Synthetic Public Company"}),
+                network,
+            ),
+            "test",
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let mut phase = pending(initial);
+    // Controlled fake-provider observations cross the actual Owner workflow.
+    for outcome in [
+        Outcome::CompanyFound(Discovery::Missing),
+        Outcome::Company(Some("synthetic-provider-key".into())),
+        Outcome::DirectionFound(Discovery::Missing),
+        Outcome::Direction(true),
+        Outcome::DirectionFound(Discovery::Missing),
+        Outcome::Direction(true),
+    ] {
+        let next = owner
+            .finish_public_einvoice(&proof, &Fixed(NOW), phase, outcome)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        match next {
+            Next::Pending(a) => phase = *a,
+            Next::Complete(v) => {
+                assert_eq!(v["ok"], true);
+                break;
+            }
+        }
+    }
+    let result = owner
+        .original717_registration_result(&proof, &Fixed(NOW), "test", network)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(result["companyKey"], "synthetic-provider-key");
+    assert_eq!(
+        result["directionsRegistered"],
+        json!(["outbound", "inbound"])
+    );
+    assert_eq!(result["network"], "peppol");
+    let status = owner
+        .original717_onboarding_status(&proof, &Fixed(NOW), Some("test"))
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(status["companyKeyConfigured"], true);
+    assert_eq!(status["inboundReady"], true);
+    assert_eq!(status["outboundReady"], true);
+    assert_eq!(status["ready"], true);
 }

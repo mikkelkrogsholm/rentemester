@@ -20,12 +20,16 @@ pub fn accepts(name: &str) -> bool {
     )
 }
 pub fn tools() -> Vec<Value> {
-    let mut tools = vec![];
+    let mut tools: Vec<Value> = original717::tools()
+        .into_iter()
+        .filter(|t| {
+            !matches!(
+                t["name"].as_str(),
+                Some("efaktura_modtag" | "efaktura_modtag_workspace")
+            )
+        })
+        .collect();
     for (name, description) in [
-        (
-            "efaktura_onboarding_status",
-            "Read local inbound/per-network/technicalReady status without provider I/O. Technical registration is not external candidate approval.",
-        ),
         (
             "public_invoice_config",
             "Read safe public-invoice configured/environment/registered/outbound state; no credentials, provider I/O or effects.",
@@ -39,8 +43,6 @@ pub fn tools() -> Vec<Value> {
     }
     for (name, action) in [
         ("register_public_invoice", Action::Register),
-        ("efaktura_registrer", Action::RegisterPair),
-        ("efaktura_onboard", Action::Onboard),
         ("send_public_invoice", Action::Send),
         ("refresh_public_invoice_status", Action::RefreshStatus),
     ] {
@@ -69,8 +71,11 @@ pub async fn call(
 ) -> Result<Result<Value, Error>, &'static str> {
     if matches!(
         name,
-        "efaktura_onboarding_status" | "public_invoice_config" | "public_invoice_submissions"
+        "efaktura_registrer" | "efaktura_onboard" | "efaktura_onboarding_status"
     ) {
+        return original717::call(api, name, args).await;
+    }
+    if matches!(name, "public_invoice_config" | "public_invoice_submissions") {
         let i: Read = serde_json::from_value(args)
             .map_err(|_| "public-invoice read requires only company")?;
         return Ok(if name != "public_invoice_submissions" {
@@ -93,3 +98,7 @@ pub async fn call(
         .mutate_public_invoice(&i.company, action, i.body.into_bytes(), i.confirm)
         .await)
 }
+
+pub(crate) mod original717;
+
+pub use original717::tool_result as original717_tool_result;

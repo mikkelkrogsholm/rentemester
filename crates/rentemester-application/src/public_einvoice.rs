@@ -19,6 +19,7 @@ use rentemester_runtime::public_einvoice::{
 };
 pub enum Intent {
     RegisterPair(Network),
+    OriginalRegister(Value, Network),
     Onboard(Network),
     Setup,
     Send(i64),
@@ -258,7 +259,7 @@ pub fn start(
         return Err(fail(refused()));
     }
     let pair = match &intent {
-        Intent::RegisterPair(n) | Intent::Onboard(n) => Some(*n),
+        Intent::RegisterPair(n) | Intent::OriginalRegister(_, n) | Intent::Onboard(n) => Some(*n),
         _ => None,
     };
     let original = matches!(&intent, Intent::OriginalSend(_));
@@ -274,9 +275,20 @@ pub fn start(
         Permission::CompanyExternalSend,
         |tx, actor| {
             let ledger = ledger(tx)?;
+            if let Intent::OriginalRegister(body, _) = &intent {
+                let identity = store::identity(tx)?;
+                let cvr = body["cvr"].as_str().unwrap_or("").trim();
+                if cvr.strip_prefix("DK").unwrap_or(cvr) != identity.cvr
+                    || body["companyName"].as_str().unwrap_or("").trim() != identity.company_name
+                {
+                    return Ok(Next::Complete(
+                        json!({"ok":false,"errors":["Registration identity does not match this ledger's company profile. Update the profile or omit caller-supplied identity."]}),
+                    ));
+                }
+            }
             let step = match intent {
                 Intent::Onboard(_) => Step::Auth(store::identity(tx)?),
-                Intent::RegisterPair(n) => {
+                Intent::RegisterPair(n) | Intent::OriginalRegister(_, n) => {
                     let i = store::identity(tx)?;
                     match store::registration(tx, environment)? {
                         store::Registration::Bound { company_key: k } => {

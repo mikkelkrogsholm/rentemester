@@ -130,3 +130,158 @@ mod tests {
         );
     }
 }
+
+impl ApiClient {
+    /// Exact source flat fields. One admitted request, no provider retries.
+    pub async fn original717_digisense(&self, name: &str, args: &Value) -> Result<Value, Error> {
+        let workspace = name == "efaktura_modtag_workspace";
+        let read = name == "efaktura_onboarding_status";
+        let path = if workspace {
+            self.assert_original_workspace89(
+                args["workspace"]
+                    .as_str()
+                    .ok_or(Error::InvalidInput("workspace required"))?,
+            )?;
+            "/api/workspace/original-efaktura-modtag".to_owned()
+        } else {
+            let company = self.diagnostics_company_original118(
+                args["company"]
+                    .as_str()
+                    .ok_or(Error::InvalidInput("company required"))?,
+            )?;
+            company_path(
+                &company,
+                match name {
+                    "efaktura_onboarding_status" => "original-efaktura-onboarding-status",
+                    "efaktura_onboard" => "original-efaktura-onboard",
+                    "efaktura_registrer" => "original-efaktura-registrer",
+                    "efaktura_modtag" => "original-efaktura-modtag",
+                    _ => return Err(Error::InvalidInput("unknown DigiSense source operation")),
+                },
+            )?
+        };
+        let mut input = args.clone();
+        let object = input
+            .as_object_mut()
+            .ok_or(Error::InvalidInput("object required"))?;
+        object.remove("company");
+        object.remove("workspace");
+        let bytes = if read {
+            None
+        } else {
+            if object.get("confirm").is_some_and(|v| !v.is_boolean()) {
+                return Err(Error::InvalidInput("boolean confirm required"));
+            }
+            if object.get("confirm") != Some(&json!(true)) {
+                return Ok(
+                    json!({"ok":false,"errors":["confirm: true is required"],"code":"CONFIRM_REQUIRED"}),
+                );
+            }
+            let bytes =
+                serde_json::to_vec(&input).map_err(|_| Error::InvalidInput("JSON required"))?;
+            if bytes.len() > 16384 {
+                return Err(Error::InvalidInput("DigiSense source body exceeds16KiB"));
+            }
+            Some(bytes)
+        };
+        let response = self
+            .request(
+                if read { Method::GET } else { Method::POST },
+                &path,
+                &[],
+                bytes,
+            )
+            .await?;
+        if response["ok"] != true {
+            return Err(Error::Protocol);
+        }
+        let core = response
+            .get("result")
+            .filter(|v| v.is_object())
+            .ok_or(Error::Protocol)?
+            .clone();
+        if core["ok"] == false {
+            if !core["errors"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+            {
+                return Err(Error::Protocol);
+            }
+            return Ok(core);
+        }
+        let valid = match name {
+            "efaktura_onboarding_status" => source_status(&core),
+            "efaktura_onboard" => core["companyKey"].is_string() && source_status(&core["status"]),
+            "efaktura_registrer" => {
+                core["companyKey"].is_string()
+                    && core["directionsRegistered"].is_array()
+                    && core["participantType"] == "DK:CVR"
+                    && core["participantId"].is_string()
+            }
+            "efaktura_modtag" => {
+                [
+                    "pagesFetched",
+                    "documentsListed",
+                    "documentsIngested",
+                    "documentsSkipped",
+                    "documentsQuarantined",
+                ]
+                .iter()
+                .all(|k| core[*k].as_u64().is_some())
+                    && core["documents"].is_array()
+                    && core["errors"].is_array()
+            }
+            "efaktura_modtag_workspace" => {
+                core["ok"] == true
+                    && core["companies"].as_array().is_some_and(|a| {
+                        a.iter().all(|v| {
+                            v["slug"].is_string()
+                                && matches!(
+                                    v["status"].as_str(),
+                                    Some("polled" | "skipped" | "failed")
+                                )
+                        })
+                    })
+            }
+            _ => false,
+        };
+        if !valid {
+            return Err(Error::Protocol);
+        }
+        Ok(core)
+    }
+}
+fn source_status(v: &Value) -> bool {
+    [
+        "configured",
+        "companyKeyConfigured",
+        "inboundReady",
+        "outboundReady",
+        "ready",
+    ]
+    .iter()
+    .all(|k| v[*k].is_boolean())
+        && (v["environment"].is_null()
+            || matches!(v["environment"].as_str(), Some("test" | "production")))
+        && (v["identity"].is_null()
+            || v["identity"]["cvr"].is_string() && v["identity"]["companyName"].is_string())
+        && v["blockers"]
+            .as_array()
+            .is_some_and(|a| a.iter().all(Value::is_string))
+}
+
+#[cfg(test)]
+mod original717_provider_tests {
+    use super::*;
+    #[test]
+    fn original717_digisense_status_schema_is_source_not_native_lookalike() {
+        let source = json!({"configured":true,"environment":"test","identity":{"cvr":"12345678","companyName":"Synthetic"},"companyKeyConfigured":true,"inboundReady":true,"outboundReady":true,"ready":true,"blockers":[]});
+        assert!(source_status(&source));
+        assert!(!source_status(
+            &json!({"ok":true,"publicEInvoice":{"configured":true,"technicalReady":true,"networks":{}}})
+        ));
+        let mut bad = source;
+        bad["blockers"] = json!([42]);
+        assert!(!source_status(&bad));
+    }
+}

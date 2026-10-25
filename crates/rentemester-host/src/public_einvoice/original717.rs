@@ -44,3 +44,37 @@ impl Owner {
         })
     }
 }
+
+impl Owner {
+    pub fn original717_onboarding_status(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        fallback: Option<&str>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            app::original717::onboarding(c, l, g, context, fallback)
+        })
+    }
+    pub fn original717_registration_result(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        environment: &str,
+        network: rentemester_runtime::public_einvoice::Network,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _g, context| {
+            app::original717::registration_result(c, l, context, environment, network)
+        })
+    }
+}
