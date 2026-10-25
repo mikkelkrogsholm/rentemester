@@ -9,10 +9,18 @@
 import { describe, expect, test, vi } from "bun:test";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MutationMemoryProvider } from "../lib/mutation-memory";
 import { SuggestionsView } from "./SuggestionsView";
 import { renderAt } from "../test/render";
 import { agentSuggestions, mockFetch } from "../test/fixtures";
+import { withProtocol } from "../test/protocol";
 import { stubGlobal } from "../test/globals";
+
+const capabilities = [
+  ["GET", "/api/companies/{slug}/agent-suggestions"],
+  ["POST", "/api/companies/{slug}/agent-suggestions/{id}/approve"],
+  ["POST", "/api/companies/{slug}/agent-suggestions/{id}/reject"],
+] as const;
 
 function route(over = {}) {
   return {
@@ -22,8 +30,14 @@ function route(over = {}) {
   };
 }
 
+function installRoute(over = {}) {
+  mockFetch(route(over));
+  const handler = globalThis.fetch;
+  stubGlobal("fetch", withProtocol(handler, capabilities));
+}
+
 function renderView() {
-  return renderAt(<SuggestionsView />, {
+  return renderAt(<MutationMemoryProvider><SuggestionsView /></MutationMemoryProvider>, {
     route: "/companies/acme-aps/agent-forslag",
     path: "/companies/:slug/agent-forslag",
   });
@@ -31,7 +45,7 @@ function renderView() {
 
 describe("SuggestionsView — Agent-forslag (#346)", () => {
   test("lists pending agent suggestions with kind, rule and severity", async () => {
-    mockFetch(route());
+    installRoute();
     renderView();
     expect(
       await screen.findByRole("heading", { name: "Forslag", level: 1 }),
@@ -50,7 +64,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
   });
 
   test("shows summary cards (kø / høj / mellem+lav)", async () => {
-    mockFetch(route());
+    installRoute();
     renderView();
     await screen.findByText("Forslag i kø");
     expect(screen.getByText("Forslag i kø")).toBeInTheDocument();
@@ -60,7 +74,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
   });
 
   test("renders the agent's rationale + foreslået handling for each row", async () => {
-    mockFetch(route());
+    installRoute();
     renderView();
     expect(
       await screen.findByText(/V-1001 til Software ApS/),
@@ -71,16 +85,14 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
   });
 
   test("shows the empty-state when the queue is empty", async () => {
-    mockFetch(
-      route({
+    installRoute({
         rows: [],
         count: 0,
         bySeverity: { high: 0, medium: 0, low: 0 },
-      }),
-    );
+      });
     renderView();
     expect(
-      await screen.findByText(/Agenten har ingen åbne forslag/),
+      await screen.findByText(/ingen åbne forslag/),
     ).toBeInTheDocument();
   });
 
@@ -135,7 +147,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
         );
       },
     );
-    stubGlobal("fetch", fetchMock);
+    stubGlobal("fetch", withProtocol(fetchMock, capabilities));
 
     renderView();
     const approveBtn = await screen.findByRole("button", {
@@ -145,7 +157,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
 
     // The cockpit now opens a ConfirmDialog instead of using window.confirm.
     const dialog = await screen.findByRole("dialog", {
-      name: /Godkend forslag: Overforfalden kreditorpost/,
+      name: /Beslut forslag #101/,
     });
     await userEvent.click(
       within(dialog as HTMLElement).getByRole("button", { name: /^Godkend$/ }),
@@ -154,7 +166,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
     // The list should reload after the approve completes, so the cleared row
     // disappears and the empty-state shows up.
     expect(
-      await screen.findByText(/Agenten har ingen åbne forslag/),
+      await screen.findByText(/ingen åbne forslag/),
     ).toBeInTheDocument();
     // GET was called twice (initial + reload after approve).
     expect(listCalls).toBeGreaterThanOrEqual(2);
@@ -217,7 +229,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
         );
       },
     );
-    stubGlobal("fetch", fetchMock);
+    stubGlobal("fetch", withProtocol(fetchMock, capabilities));
 
     renderView();
     const rejectBtn = await screen.findByRole("button", {
@@ -228,7 +240,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
     // The cockpit now opens a ConfirmDialog with a note textarea instead of
     // using window.prompt.
     const dialog = await screen.findByRole("dialog", {
-      name: /Afvis forslag: Periodeafgrænsning klar til bogføring/,
+      name: /Beslut forslag #102/,
     });
     const noteField = within(dialog as HTMLElement).getByRole("textbox");
     await userEvent.type(noteField, "ikke forfalden — bilaget er fejldatoet");
@@ -240,4 +252,49 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
     await waitFor(() => expect(rejected).toBe(true));
     expect(rejectBody).toEqual({ note: "ikke forfalden — bilaget er fejldatoet" });
   });
+});
+
+
+test("unknown source remains visible; read and cancel send no decision", async () => {
+  const row = { ...agentSuggestions().rows[0]!, exceptionId: 999, type: "AGENT_FUTURE_SYNTHETIC", kindLabel: "Agent-forslag", ruleId: null, agentActor: null, agentProgram: null, link: null, sourceEvidence: "<invalid synthetic evidence>", postingPreview: { synthetic: true } };
+  installRoute({ rows: [row], count: 1, bySeverity: { high: 1, medium: 0, low: 0 } });
+  const fetchMock = vi.fn(globalThis.fetch);
+  stubGlobal("fetch", fetchMock);
+  renderView();
+  await userEvent.click(await screen.findByRole("button", { name: "Godkend Agent-forslag" }));
+  const dialog = await screen.findByRole("dialog", { name: "Beslut forslag #999" });
+  expect(within(dialog).getByText("<invalid synthetic evidence>")).toBeInTheDocument();
+  expect(within(dialog).getByText(/"synthetic": true/)).toBeInTheDocument();
+  expect(within(dialog).getByText(row.rationale)).toBeInTheDocument();
+  expect(within(dialog).getByText(/Ingen bogføring/)).toBeInTheDocument();
+  await userEvent.click(within(dialog).getByRole("button", { name: "Annullér" }));
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+});
+
+test("unknown result locks both decisions across read and remount; manual release sends nothing", async () => {
+  sessionStorage.clear();
+  let posts = 0;
+  const handler = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === "POST") { posts++; return Response.json({ ok: true, suggestion: { id: 999, decision: "approved", resolved: true } }); }
+    return Response.json({ ok: true, agentSuggestions: agentSuggestions() });
+  });
+  stubGlobal("fetch", withProtocol(handler, capabilities));
+  const view = renderView();
+  await userEvent.click(await screen.findByRole("button", { name: /Godkend Overforfalden/ }));
+  let dialog = await screen.findByRole("dialog", { name: "Beslut forslag #101" });
+  await userEvent.click(within(dialog).getByRole("button", { name: "Godkend" }));
+  await screen.findByText(/En ny skrivning er blokeret/);
+  expect(posts).toBe(1);
+  await userEvent.click(within(dialog).getByRole("button", { name: "Kontrollér status" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  view.unmount();
+  renderView();
+  await userEvent.click(await screen.findByRole("button", { name: /Afvis Overforfalden/ }));
+  dialog = await screen.findByRole("dialog", { name: "Beslut forslag #101" });
+  expect(within(dialog).getByRole("button", { name: "Afvis forslag" })).toBeDisabled();
+  await userEvent.click(within(dialog).getByRole("button", { name: "Resultatet er afklaret" }));
+  await userEvent.click(await screen.findByRole("button", { name: "Jeg har kontrolleret resultatet" }));
+  expect(posts).toBe(1);
+  expect(within(dialog).getByRole("button", { name: "Afvis forslag" })).not.toBeDisabled();
+  sessionStorage.clear();
 });
