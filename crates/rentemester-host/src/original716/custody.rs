@@ -218,6 +218,14 @@ fn create_signed(
     let mut result = serde_json::json!({"ok":true,"backupId":id,"backupDir":path,"manifestPath":path.join("manifest.json"),"dbSnapshotPath":path.join("ledger.sqlite"),"appliedRules":[codec::RULE],"errors":[]});
     if input.archive.unwrap_or(false) {
         result["archive"] = original::archive(guard, &proof, None, operator, effect)?;
+        if result["archive"]["ok"] != true {
+            result["ok"] = json!(false);
+            let errors = result["archive"]["errors"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default();
+            result["errors"] = json!(errors);
+        }
     }
     Ok(result)
 }

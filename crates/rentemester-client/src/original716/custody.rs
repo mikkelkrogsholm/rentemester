@@ -2,6 +2,9 @@
 use crate::{ApiClient, Error, Method, company_path};
 use serde_json::{Value, json};
 impl ApiClient {
+    pub async fn original716_system(&self, command: &str, args: &Value) -> Result<Value, Error> {
+        self.original716_custody(command, args).await
+    }
     pub async fn original716_custody(&self, command: &str, args: &Value) -> Result<Value, Error> {
         let mut body = args.clone();
         let object = body
@@ -43,6 +46,7 @@ impl ApiClient {
         if value["ok"] != true || !value["result"]["ok"].is_boolean() {
             return Err(Error::Protocol);
         }
+        validate_receipt(command, &value["result"])?;
         let mut result = value["result"].clone();
         if command == "export-public-key" && result["ok"] == true {
             let out = out.ok_or(Error::InvalidInput("Missing required --out <file>"))?;
@@ -58,6 +62,73 @@ impl ApiClient {
             result["outPath"] = json!(out);
         }
         Ok(result)
+    }
+}
+fn validate_receipt(command: &str, result: &Value) -> Result<(), Error> {
+    if result["ok"] == false {
+        if result["errors"]
+            .as_array()
+            .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+            || command == "export-public-key" && result["error"].is_string()
+        {
+            return Ok(());
+        }
+        return Err(Error::Protocol);
+    }
+    let valid = match command {
+        "backup" => {
+            ["backupId", "backupDir", "manifestPath", "dbSnapshotPath"]
+                .iter()
+                .all(|k| result[*k].as_str().is_some_and(|s| !s.is_empty()))
+                && result.get("archive").is_none_or(|a| {
+                    a["ok"] == true
+                        && ["backupId", "archivePath", "archiveSha256", "sha256Path"]
+                            .iter()
+                            .all(|k| a[*k].is_string())
+                        && a["archiveSizeBytes"].is_u64()
+                })
+        }
+        "rotate-backup-keypair" => {
+            ["oldPublicKeyHint", "newPublicKeyHint"].iter().all(|k| {
+                result[*k]
+                    .as_str()
+                    .is_some_and(|s| s.len() == 16 && s.bytes().all(|b| b.is_ascii_hexdigit()))
+            }) && [
+                "archivedPrivateKeyPath",
+                "archivedPublicKeyPath",
+                "newPrivateKeyPath",
+                "newPublicKeyPath",
+            ]
+            .iter()
+            .all(|k| result[*k].is_string())
+        }
+        "verify-backup-signature" => {
+            result["backupId"].is_string()
+                && matches!(
+                    result["trustLevel"].as_str(),
+                    Some("third-party-authenticity" | "integrity-only")
+                )
+                && result["algorithms"].as_array().is_some_and(|a| {
+                    !a.is_empty()
+                        && a.iter()
+                            .all(|v| matches!(v.as_str(), Some("ed25519" | "hmac-sha256")))
+                })
+                && result["errors"].as_array().is_some_and(Vec::is_empty)
+        }
+        "export-public-key" => {
+            result["publicKeyPem"]
+                .as_str()
+                .is_some_and(|s| s.len() <= 1024 && s.starts_with("-----BEGIN PUBLIC KEY-----\n"))
+                && result["publicKeyHint"].is_string()
+        }
+        _ => false,
+    };
+    if valid {
+        Ok(())
+    } else if matches!(command, "backup" | "rotate-backup-keypair") {
+        Err(Error::OutcomeUnknown)
+    } else {
+        Err(Error::Protocol)
     }
 }
 fn write_public_new(path: &std::path::Path, bytes: &[u8]) -> Result<(), Error> {
@@ -112,11 +183,30 @@ fn write_public_new(path: &std::path::Path, bytes: &[u8]) -> Result<(), Error> {
 mod tests {
     use super::*;
     #[test]
+    fn original716_malformed_committed_receipts_are_not_success_or_retry_authority() {
+        for command in ["backup", "rotate-backup-keypair"] {
+            assert!(matches!(
+                validate_receipt(command, &json!({"ok":true})),
+                Err(Error::OutcomeUnknown)
+            ));
+        }
+        for command in ["verify-backup-signature", "export-public-key"] {
+            assert!(matches!(
+                validate_receipt(command, &json!({"ok":true})),
+                Err(Error::Protocol)
+            ));
+        }
+        assert!(
+            validate_receipt("backup", &json!({"ok":false,"errors":["archive failed"]})).is_ok()
+        );
+    }
+    #[test]
     fn original716_public_export_is_new_public_only_and_refuses_symlink_or_overwrite() {
         let root =
             std::env::temp_dir().join(format!("original716-public-export-{}", std::process::id()));
         // Fresh synthetic fixture; never overwrite an existing directory.
         std::fs::create_dir(&root).unwrap();
+        let root = std::fs::canonicalize(root).unwrap();
         let target = root.join("auditor/company.pub");
         let bytes =
             b"-----BEGIN PUBLIC KEY-----\nsynthetic-public-fixture\n-----END PUBLIC KEY-----\n";
