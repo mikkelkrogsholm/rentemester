@@ -20,7 +20,9 @@ fn catalogue() -> Value {
     }
     c["capabilityCount"] = json!(26);
     c["workflowCount"] = json!(31);
-    c["coverage"] = json!({"fullCoverage":false,"reason":"Original conceptual definitions, not whole product parity. Current registration facts are separate from frozen sourceCoverage; missing tools, 42 source CLI keys and nonmatching native HTTP remain unavailable."});
+    c["coverage"] = s["sourceCoverage"].clone();
+    c["coverage"]["fullCoverage"] = json!(false);
+    c["coverage"]["reason"] = json!("Original conceptual definitions, not whole product parity. Source baseline identities are separate from current registration facts; missing tools,42sourceCLI keys and nonmatching nativeHTTP remain unavailable.");
     c
 }
 pub fn about() -> Value {
@@ -100,6 +102,10 @@ fn fact(op: &Value, routes: &[Value], tools: Option<&[Value]>, connected: bool) 
             )
         }
         Some("mcp") => {
+            if !connected {
+                v["reason"] = json!("Workspace disconnected; product MCP availability is not attested.");
+                return v;
+            }
             let Some(tools) = tools else {
                 v["resolved"] = Value::Null;
                 v["reason"] = json!(
@@ -126,8 +132,8 @@ fn fact(op: &Value, routes: &[Value], tools: Option<&[Value]>, connected: bool) 
             (
                 safety,
                 json!(a["idempotentHint"] == true),
-                a["requiresActor"].as_bool().unwrap_or(!read),
-                a["requiresConfirmation"].as_bool().unwrap_or(!read),
+                !read,
+                !read,
                 false,
             )
         }
@@ -155,12 +161,13 @@ fn fact(op: &Value, routes: &[Value], tools: Option<&[Value]>, connected: bool) 
                 .as_str()
                 .or_else(|| legacy.and_then(|r| r["effect"].as_str()))
                 .unwrap_or("");
-            let safety = if effect == "destructive" || op["method"] == "DELETE" {
-                "destructive"
-            } else if effect == "read" || op["method"] == "GET" || op["method"] == "HEAD" {
-                "read"
-            } else {
-                "write"
+            let safety = match effect {
+                "destructive" => "destructive",
+                "read" => "read",
+                "write" | "external" => "write",
+                _ if op["method"] == "DELETE" => "destructive",
+                _ if op["method"] == "GET" || op["method"] == "HEAD" => "read",
+                _ => "write",
             };
             (
                 safety,
@@ -182,7 +189,12 @@ fn fact(op: &Value, routes: &[Value], tools: Option<&[Value]>, connected: bool) 
     v["idempotent"] = idem;
     v["requiresActor"] = json!(actor);
     v["requiresConfirmation"] = json!(confirm);
-    v["retryClass"] = json!(retry(&key, safety, external));
+    let mut retry_class=retry(&key, safety, external);
+    if op["surface"]=="mcp" && retry_class=="natural-idempotent" && v["idempotent"]!=true {
+        retry_class="unsafe-read-back";
+        v["retryEvidenceMismatch"]=json!("Reviewed natural-idempotency class lacks the required current idempotentHint evidence.");
+    }
+    v["retryClass"] = json!(retry_class);
     v["resolutionScope"] = json!(
         "Registration presence only; not authorization, provider configuration or per-argument acceptance."
     );
@@ -220,7 +232,7 @@ fn bindings(routes: &[Value], tools: Option<&[Value]>, connected: bool) -> Vec<V
             continue;
         }
         f["capabilityIds"] = json!(caps);
-        out.push(f);
+        out.push(json!({"id":f["id"],"capabilityIds":f["capabilityIds"],"safety":f["safety"],"idempotent":f["idempotent"],"requiresActor":f["requiresActor"],"requiresConfirmation":f["requiresConfirmation"],"retryClass":f["retryClass"]}));
     }
     sort(&mut out);
     out
@@ -297,7 +309,7 @@ pub fn search(
     let next = cursor.saturating_add(items.len() as u64);
     let more = next < matches.len() as u64;
     Ok(
-        json!({"catalogue":catalogue(),"total":matches.len(),"count":items.len(),"cursor":cursor,"limit":limit,"hasMore":more,"nextCursor":if more {json!(next)} else {Value::Null},"items":items}),
+        json!({"catalogue":catalogue(),"total":matches.len(),"count":items.len(),"cursor":cursor,"limit":limit,"hasMore":more,"nextCursor":if more {json!(next)} else {Value::Null},"items":items,"workspaceConnected":connected}),
     )
 }
 fn resolve_workflow(v: &mut Value, routes: &[Value], tools: Option<&[Value]>, connected: bool) {
@@ -306,9 +318,6 @@ fn resolve_workflow(v: &mut Value, routes: &[Value], tools: Option<&[Value]>, co
         let mut mismatches = Vec::new();
         for field in ["operation", "uncertainOutcomeReadBack"] {
             let Some(reference) = step.get(field) else {
-                if field == "uncertainOutcomeReadBack" && step["expectedSafety"] != "read" {
-                    problems.push(json!({"step":step["id"],"reason":"Missing uncertain-outcome readback; write recovery cannot be attested."}));
-                }
                 continue;
             };
             let resolved = if tools.is_some()
@@ -329,22 +338,33 @@ fn resolve_workflow(v: &mut Value, routes: &[Value], tools: Option<&[Value]>, co
                 mismatches.push(json!({"field":"uncertainOutcomeReadBack.safety","expected":"read","actual":resolved["safety"]}));
             }
             if field == "operation" && resolved["resolved"] == true {
-                if resolved["safety"] != step["expectedSafety"] {
-                    mismatches.push(json!({"field":"safety","expected":step["expectedSafety"],"actual":resolved["safety"]}));
+                let dry_run=resolved["surface"]=="cli" && step["requiredArguments"].as_array().is_some_and(|args|args.contains(&json!("--dry-run")));
+                let actual_safety=if dry_run{json!("read")}else{resolved["safety"].clone()};
+                if actual_safety != step["expectedSafety"] {
+                    mismatches.push(json!({"field":"safety","expected":step["expectedSafety"],"actual":actual_safety}));
                 }
-                if resolved["idempotent"] != step["expectedIdempotent"] {
+                if resolved["surface"]=="mcp" && resolved["idempotent"] != step["expectedIdempotent"] {
                     mismatches.push(json!({"field":"idempotent","expected":step["expectedIdempotent"],"actual":resolved["idempotent"]}));
+                }
+                for (actual,expected)in[("requiresActor","requiresActor"),("requiresConfirmation","requiresConfirmation")] {
+                    if resolved["surface"]!="http" && resolved[actual]!=step[expected] {
+                        mismatches.push(json!({"field":actual,"expected":step[expected],"actual":resolved[actual]}));
+                    }
+                }
+                if !dry_run && resolved["retryClass"]!=step["retryClass"] {
+                    mismatches.push(json!({"field":"retryClass","expected":step["retryClass"],"actual":resolved["retryClass"]}));
                 }
             }
             step[field] = resolved;
         }
         if !mismatches.is_empty() {
-            problems.push(json!({"step":step["id"],"reason":"Source expectation differs from actual runtime safety/idempotency metadata.","mismatches":mismatches}));
+            problems.push(json!({"step":step["id"],"id":step["operation"]["id"],"reason":"Source expectation differs from actual runtime safety/actor/confirmation/retry metadata.","mismatches":mismatches}));
         }
         step["runtimeExpectationMismatches"] = json!(mismatches);
     }
     v["workflow"]["live"] = json!(problems.is_empty());
-    v["workflow"]["unresolvedOperations"] = json!(problems);
+    v["workflow"]["unresolvedOperations"] = json!(problems.iter().filter_map(|p|p.get("id")).cloned().collect::<Vec<_>>());
+    v["workflow"]["runtimeResolutionProblems"] = json!(problems);
     v["workflow"]["resolutionReason"] = json!(
         "Every required operation and recovery must resolve positively with matching safety/idempotency; discovery grants no authority or provider configuration."
     );
@@ -370,7 +390,8 @@ pub fn decorate_mcp(mut value: Value, tools: &[Value]) -> Value {
     if value.get("serverName").is_some() {
         value["toolCount"] = json!(tools.len());
     }
-    let ops = bindings(&[], Some(tools), false);
+    let connected=value["workspaceConnected"]==true;
+    let ops = bindings(&[], Some(tools), connected);
     if let Some(items) = value["items"].as_array_mut() {
         for item in items {
             let cap = item["id"].clone();

@@ -148,3 +148,28 @@ fn original123_destructive_and_unknown_future_classification() {
             .any(|b| b["id"] == "mcp:future_company_accounting_magic")
     );
 }
+
+#[test]
+fn original123_optional_recovery_and_source_validators_preserve_real_availability(){
+ let tools=[json!({"name":"invoice_send_email","annotations":{"readOnlyHint":false,"idempotentHint":false,"requiresActor":false,"requiresConfirmation":false}})];
+ let step=json!({"id":"send","operation":{"surface":"mcp","name":"invoice_send_email"},"expectedSafety":"write","expectedIdempotent":false,"requiresActor":true,"requiresConfirmation":true,"retryClass":"unsafe-read-back"});
+ let mut v=json!({"workflow":{"steps":[step]},"workspaceConnected":true});
+ resolve_workflow(&mut v,&[],Some(&tools),true);assert_eq!(v["workflow"]["live"],true,"optional source readback must not become mandatory");
+ let mut wrong=v.clone();wrong["workflow"]["steps"][0]["requiresConfirmation"]=json!(false);resolve_workflow(&mut wrong,&[],Some(&tools),true);assert_eq!(wrong["workflow"]["live"],false);
+ let mut recovery=v.clone();recovery["workflow"]["steps"][0]["uncertainOutcomeReadBack"]=json!({"surface":"mcp","name":"missing"});resolve_workflow(&mut recovery,&[],Some(&tools),true);assert_eq!(recovery["workflow"]["live"],false);
+ let mut disconnected=v;resolve_workflow(&mut disconnected,&[],Some(&tools),false);assert_eq!(disconnected["workflow"]["live"],false);
+ let external=[json!({"method":"GET","path":"/api/provider","effect":"external"})];let op=fact(&json!({"surface":"http","method":"GET","pattern":"/api/provider"}),&external,None,true);assert_eq!(op["safety"],"write");assert_eq!(op["retryClass"],"external-provider-reconciled");
+}
+#[test]
+fn original123_binding_projection_and_retry_require_actual_evidence(){
+ let tools=[json!({"name":"invoice_render","annotations":{"readOnlyHint":false,"idempotentHint":false}})];
+ let binding=bindings(&[],Some(&tools),true).into_iter().find(|b|b["id"]=="mcp:invoice_render").unwrap();assert_eq!(binding.as_object().unwrap().len(),7);assert_eq!(binding["retryClass"],"unsafe-read-back");assert!(binding.get("annotations").is_none());
+ assert!(bindings(&[],Some(&tools),false).iter().all(|b|!b["id"].as_str().unwrap().starts_with("mcp:")));
+ let mut positive=tools;positive[0]["annotations"]["idempotentHint"]=json!(true);let good=fact(&json!({"surface":"mcp","name":"invoice_render"}),&[],Some(&positive),true);assert_eq!(good["retryClass"],"natural-idempotent");
+}
+
+#[test]
+fn original123_source_coverage_and_unresolved_string_shape_are_retained(){
+ let c=about()["catalogue"].clone();for(k,v)in source()["sourceCoverage"].as_object().unwrap(){assert_eq!(&c["coverage"][k],v);}
+ for w in source()["workflows"].as_array().unwrap(){let v=describe(w["id"].as_str().unwrap(),&[],false).unwrap();assert!(v["workflow"]["unresolvedOperations"].as_array().unwrap().iter().all(Value::is_string));assert!(v["workflow"]["runtimeResolutionProblems"].is_array());}
+}
