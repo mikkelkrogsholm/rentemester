@@ -18,6 +18,27 @@ pub(crate) fn authorized(
     kind: PrincipalKind,
     clock: &dyn Clock,
 ) -> Result<Value, Error> {
+    authorized_program(tx, guard, action, subject, kind, clock, false)
+}
+pub(crate) fn authorized_agent(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    action: Action<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+    clock: &dyn Clock,
+) -> Result<Value, Error> {
+    authorized_program(tx, guard, action, subject, kind, clock, true)
+}
+fn authorized_program(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    action: Action<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+    clock: &dyn Clock,
+    agent: bool,
+) -> Result<Value, Error> {
     let now = clock
         .now_unix_ms()
         .map_err(|e| Error::new(e.code(), "trusted payable clock unavailable"))?;
@@ -61,7 +82,11 @@ pub(crate) fn authorized(
     }
     let latest = rentemester_runtime::posting_time::latest_date(now, 45)
         .map_err(|e| Error::new(e.code(), "trusted payable posting horizon unavailable"))?;
-    storage::mutate(tx, action, subject, kind, Date::parse(&latest)?, now)
+    (if agent {
+        storage::mutate_agent
+    } else {
+        storage::mutate
+    })(tx, action, subject, kind, Date::parse(&latest)?, now)
 }
 #[cfg(test)]
 mod tests;

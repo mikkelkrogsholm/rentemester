@@ -422,6 +422,29 @@ fn book_tx(
     clock: &dyn Clock,
     service: bool,
 ) -> Result<Value, rentemester_storage::idempotency::Failure> {
+    book_tx_program(tx, guard, subject, input, expected, clock, service, false)
+}
+pub(crate) fn book_tx_agent(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    subject: &str,
+    input: &Input,
+    expected: Option<&str>,
+    clock: &dyn Clock,
+    service: bool,
+) -> Result<Value, rentemester_storage::idempotency::Failure> {
+    book_tx_program(tx, guard, subject, input, expected, clock, service, true)
+}
+fn book_tx_program(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    subject: &str,
+    input: &Input,
+    expected: Option<&str>,
+    clock: &dyn Clock,
+    service: bool,
+    agent: bool,
+) -> Result<Value, rentemester_storage::idempotency::Failure> {
     assert_actor(expected, &actor(subject, service))?;
     source(tx, guard, input.document_id)?;
     rentemester_storage::bank_original::verify_journals(tx)?;
@@ -434,7 +457,11 @@ fn book_tx(
     let now = now(clock)?;
     let latest =
         rentemester_runtime::posting_time::latest_date(now, 45).map_err(|_| unavailable())?;
-    rentemester_storage::expense_original::book(
+    (if agent {
+        rentemester_storage::expense_original::book_agent
+    } else {
+        rentemester_storage::expense_original::book
+    })(
         tx,
         input,
         subject,

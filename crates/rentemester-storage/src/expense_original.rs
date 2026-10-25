@@ -55,6 +55,44 @@ pub fn book(
     latest_date: Date,
     now_ms: i64,
 ) -> Result<Value, Failure> {
+    book_program(
+        tx,
+        input,
+        subject,
+        principal_kind,
+        latest_date,
+        now_ms,
+        false,
+    )
+}
+/// Trusted internal agent entrypoint; default source attribution remains unchanged.
+pub fn book_agent(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    principal_kind: PrincipalKind,
+    latest_date: Date,
+    now_ms: i64,
+) -> Result<Value, Failure> {
+    book_program(
+        tx,
+        input,
+        subject,
+        principal_kind,
+        latest_date,
+        now_ms,
+        true,
+    )
+}
+fn book_program(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    principal_kind: PrincipalKind,
+    latest_date: Date,
+    now_ms: i64,
+    agent: bool,
+) -> Result<Value, Failure> {
     crate::journal_post::require_current(tx)?;
     if subject.trim().is_empty() || subject.len() > 256 || subject.chars().any(char::is_control) {
         return Err(
@@ -66,7 +104,11 @@ pub fn book(
     // allocation before looking up a receipt, including on replay/conflict.
     expense::prepare_for_receipt(tx, &native, latest_date)?;
     let write = |tx: &Transaction<'_>| {
-        expense::post_with_principal(tx, &native, subject, latest_date, principal_kind)
+        if agent {
+            expense::post_agent(tx, &native, subject, latest_date, principal_kind)
+        } else {
+            expense::post_with_principal(tx, &native, subject, latest_date, principal_kind)
+        }
     };
     let Some(key) = input.idempotency_key.as_deref() else {
         return write(tx).map_err(Failure::from);
@@ -88,7 +130,11 @@ pub fn book(
             subject,
             payload: &payload,
             created_by: &actor,
-            created_by_program: "rentemester-original-expense",
+            created_by_program: if agent {
+                rentemester_engine::agent_run::PROGRAM
+            } else {
+                "rentemester-original-expense"
+            },
             now_ms,
         },
         write,
