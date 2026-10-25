@@ -15,10 +15,15 @@ function need(value: unknown, message: string): asserts value { if (!value) thro
 if (phase === "keys") {
   // The independent trust anchor is established BEFORE export, never read from an archive.
   const keys = generateKeyPairSync("ed25519");
-  writeFileSync(join(work, "signing.der"), keys.privateKey.export({ type: "pkcs8", format: "der" }), { mode: 0o600, flag: "wx" });
   const jwk = keys.publicKey.export({ format: "jwk" });
   need(jwk.x, "Independent Ed25519 public key missing");
-  writeFileSync(join(work, "trusted.pub"), Buffer.from(jwk.x, "base64url"), { mode: 0o600, flag: "wx" });
+  const publicBytes = Buffer.from(jwk.x, "base64url");
+  const seed = Buffer.from(keys.privateKey.export({ type: "pkcs8", format: "der" })).subarray(-32);
+  // Existing native ring contract is PKCS#8 v2 (public key included), as used
+  // by the established portable/adoption fixtures. Do not weaken native parsing.
+  const pkcs8v2 = Buffer.concat([Buffer.from("3051020101300506032b657004220420", "hex"), seed, Buffer.from("812100", "hex"), publicBytes]);
+  writeFileSync(join(work, "signing.der"), pkcs8v2, { mode: 0o600, flag: "wx" });
+  writeFileSync(join(work, "trusted.pub"), publicBytes, { mode: 0o600, flag: "wx" });
 } else {
   const base = process.env.RM_NATIVE_WEB_URL!;
   need(/^http:\/\/127\.0\.0\.1:\d+$/.test(base), "Explicit synthetic loopback origin required");
