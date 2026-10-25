@@ -7,6 +7,12 @@ on:
         description: "SemVer from package.json, without v"
         required: true
         type: string
+      runtime:
+        description: "Candidate runtime; Bun is an explicit legacy route"
+        required: true
+        type: choice
+        default: rust
+        options: [rust, bun]
       commit:
         description: "Full 40-character Git commit to build"
         required: true
@@ -32,7 +38,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     name: build and publish run-unique candidate
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     steps:
       - name: Checkout exact candidate commit
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -50,8 +56,10 @@ jobs:
         env:
           REQUESTED_COMMIT: ${{ inputs.commit }}
           REQUESTED_VERSION: ${{ inputs.version }}
+          REQUESTED_RUNTIME: ${{ inputs.runtime }}
         run: |
           set -euo pipefail
+          case "$REQUESTED_RUNTIME" in rust|bun) ;; *) echo "runtime must be rust or bun" >&2; exit 1 ;; esac
           if [[ ! "$REQUESTED_COMMIT" =~ ^[0-9a-fA-F]{40}$ ]]; then
             echo "commit must be a full 40-character Git id" >&2
             exit 1
@@ -66,13 +74,14 @@ jobs:
             exit 1
           fi
           git fetch --no-tags origin main
+          [ "$commit" = "$(git rev-parse origin/main)" ] || { echo "candidate must equal current main HEAD" >&2; exit 1; }
           if ! git merge-base --is-ancestor "$commit" origin/main; then
             echo "candidate commit must be reachable from origin/main" >&2
             exit 1
           fi
           version="$(bun run scripts/release/check-version.ts "$REQUESTED_VERSION")"
-          built_at="$(git show -s --format=%cI "$commit")"
           source_date_epoch="$(git show -s --format=%ct "$commit")"
+          built_at="$(SOURCE_DATE_EPOCH="$source_date_epoch" bun -e 'console.log(new Date(Number(process.env.SOURCE_DATE_EPOCH)*1000).toISOString().replace(".000Z","Z"))')"
           candidate_tag="candidate-v${version}-${commit}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -102,6 +111,7 @@ jobs:
         run: bun run supply-chain:licenses:rust
 
       - name: Create lockfile-bound supply-chain evidence
+        if: inputs.runtime == 'bun'
         id: supply_chain
         run: |
           bun run supply-chain:evidence > supply-chain-evidence.json
@@ -124,6 +134,7 @@ jobs:
           driver-opts: image=moby/buildkit:buildx-stable-1@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8
 
       - name: Verify reproducible OCI export
+        if: inputs.runtime == 'bun'
         env:
           RELEASE_VERSION: ${{ steps.identity.outputs.version }}
           RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
@@ -134,6 +145,7 @@ jobs:
         run: bun run container:reproducibility
 
       - name: Verify container readiness and persisted restart
+        if: inputs.runtime == 'bun'
         env:
           RELEASE_VERSION: ${{ steps.identity.outputs.version }}
           RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
@@ -142,6 +154,39 @@ jobs:
           RENTEMESTER_BUN_VERSION: ${{ env.BUN_VERSION }}
           RENTEMESTER_BASE_IMAGE_DIGEST: ${{ env.BUN_BASE_IMAGE_DIGEST }}
         run: bun run container:test
+
+      - name: Install packaged Rust browser acceptance runtime
+        if: inputs.runtime == 'rust'
+        run: bunx --no-install playwright install --with-deps chromium
+
+      - name: Verify clean candidate source
+        if: inputs.runtime == 'rust'
+        run: |
+          set -euo pipefail
+          source_status="$(git status --porcelain --untracked-files=normal)"
+          if [ -n "$source_status" ]; then
+            echo "Rust candidate source includes tracked changes or untracked inputs" >&2
+            printf '%s\n' "$source_status" >&2
+            exit 1
+          fi
+
+      - name: Verify independent cold Rust OCI exports
+        if: inputs.runtime == 'rust'
+        env:
+          RELEASE_VERSION: ${{ steps.identity.outputs.version }}
+          RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
+          RELEASE_BUILT_AT: ${{ steps.identity.outputs.built_at }}
+          SOURCE_DATE_EPOCH: ${{ steps.identity.outputs.source_date_epoch }}
+        run: bun run scripts/release/rust-candidate.ts reproducibility
+
+      - name: Verify Rust readiness, normal owner and persisted restart
+        if: inputs.runtime == 'rust'
+        env:
+          RELEASE_VERSION: ${{ steps.identity.outputs.version }}
+          RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
+          RELEASE_BUILT_AT: ${{ steps.identity.outputs.built_at }}
+          SOURCE_DATE_EPOCH: ${{ steps.identity.outputs.source_date_epoch }}
+        run: bun run scripts/release/rust-candidate.ts readiness
 
       - name: Refuse to overwrite a candidate tag
         env:
@@ -161,10 +206,11 @@ jobs:
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
-          file: Dockerfile
+          builder: ${{ inputs.runtime == 'rust' && format('rm-rust-{0}-{1}-first', github.run_id, github.run_attempt) || '' }}
+          file: ${{ inputs.runtime == 'rust' && 'Dockerfile.rust' || 'Dockerfile' }}
           platforms: linux/amd64
           tags: ${{ env.REGISTRY_IMAGE }}:${{ steps.identity.outputs.candidate_tag }}
-          outputs: type=registry,rewrite-timestamp=true
+          outputs: type=registry,rewrite-timestamp=true${{ inputs.runtime == 'rust' && ',oci-mediatypes=true' || '' }}
           build-args: |
             RENTEMESTER_VERSION=${{ steps.identity.outputs.version }}
             RENTEMESTER_GIT_COMMIT=${{ steps.identity.outputs.commit }}
@@ -172,12 +218,16 @@ jobs:
             RENTEMESTER_BUN_VERSION=${{ env.BUN_VERSION }}
             RENTEMESTER_BASE_IMAGE_DIGEST=${{ env.BUN_BASE_IMAGE_DIGEST }}
             SOURCE_DATE_EPOCH=${{ steps.identity.outputs.source_date_epoch }}
+            RENTEMESTER_SOURCE_DIRTY=false
+            CARGO_BUILD_JOBS=2
+            RUST_BUILD_CACHE_ID=release-${{ github.run_id }}-${{ github.run_attempt }}-first
           # BuildKit publishes an SPDX SBOM attestation bound to this OCI digest.
           sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Smoke the published candidate digest
+        if: inputs.runtime == 'bun'
         env:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
           EXPECTED_VERSION: ${{ steps.identity.outputs.version }}
@@ -217,6 +267,7 @@ jobs:
                 bun -e '\''const base="http://127.0.0.1:4319/"; let health; for(let i=0;i<100;i++){try{const response=await fetch(new URL("api/health",base)); if(response.ok){health=await response.json(); break}}catch{} await Bun.sleep(100)} if(!health) throw new Error("server did not become healthy"); if(health.build.version!==process.env.EXPECTED_VERSION||health.build.gitCommit!==process.env.EXPECTED_COMMIT||health.build.bunVersion!==process.env.EXPECTED_BUN_VERSION||health.build.baseImageDigest!==process.env.EXPECTED_BASE_IMAGE_DIGEST) throw new Error("wrong build identity"); const html=await fetch(base).then(r=>{if(!r.ok) throw new Error(`cockpit index ${r.status}`); return r.text()}); const asset=/src="([^"]+\.js)"/.exec(html)?.[1]; if(!asset) throw new Error("cockpit asset missing"); const js=await fetch(new URL(asset,base)).then(r=>{if(!r.ok) throw new Error(`cockpit asset ${r.status}`); return r.text()}); if(!js.includes(process.env.EXPECTED_VERSION)) throw new Error("cockpit version missing")'\'''
 
       - name: Render the published local-container cockpit
+        if: inputs.runtime == 'bun'
         env:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
@@ -256,6 +307,7 @@ jobs:
           done
 
       - name: Extract digest-bound SPDX SBOM evidence
+        if: inputs.runtime == 'bun'
         id: sbom
         env:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
@@ -269,6 +321,7 @@ jobs:
           echo "sha256=sha256:$(cut -d " " -f 1 sbom.spdx.json.sha256)" >> "$GITHUB_OUTPUT"
 
       - name: Verify packaged agent-discovery coverage identity
+        if: inputs.runtime == 'bun'
         id: agent_discovery
         env:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
@@ -293,6 +346,7 @@ jobs:
           echo "sha256=sha256:$(cut -d " " -f 1 agent-discovery-coverage-report.json.sha256)" >> "$GITHUB_OUTPUT"
 
       - name: Create digest-bound release manifest
+        if: inputs.runtime == 'bun'
         env:
           RELEASE_VERSION: ${{ steps.identity.outputs.version }}
           RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
@@ -312,6 +366,26 @@ jobs:
           bun run scripts/release/create-manifest.ts > release-manifest.json
           sha256sum release-manifest.json > release-manifest.json.sha256
 
+      - name: Verify published immutable Rust bytes
+        if: inputs.runtime == 'rust'
+        env:
+          RELEASE_VERSION: ${{ steps.identity.outputs.version }}
+          RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
+          RELEASE_BUILT_AT: ${{ steps.identity.outputs.built_at }}
+          SOURCE_DATE_EPOCH: ${{ steps.identity.outputs.source_date_epoch }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: bun run scripts/release/rust-candidate.ts smoke
+
+      - name: Qualify exact Rust package, SPDX and full original discovery
+        if: inputs.runtime == 'rust'
+        env:
+          RELEASE_VERSION: ${{ steps.identity.outputs.version }}
+          RELEASE_GIT_COMMIT: ${{ steps.identity.outputs.commit }}
+          RELEASE_BUILT_AT: ${{ steps.identity.outputs.built_at }}
+          SOURCE_DATE_EPOCH: ${{ steps.identity.outputs.source_date_epoch }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: bun run scripts/release/rust-candidate.ts qualify
+
       - name: Attest candidate image provenance
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
         with:
@@ -328,6 +402,12 @@ jobs:
           path: |
             release-manifest.json
             release-manifest.json.sha256
+            rust-build-identity.json
+            rust-build-identity.json.sha256
+            rust-package-evidence.json
+            rust-package-evidence.json.sha256
+            rust-license-evidence.json
+            rust-license-evidence.json.sha256
             sbom.spdx.json
             sbom.spdx.json.sha256
             supply-chain-evidence.json
@@ -344,26 +424,37 @@ jobs:
           COMMIT: ${{ steps.identity.outputs.commit }}
           DIGEST: ${{ steps.image.outputs.digest }}
           CANDIDATE_TAG: ${{ steps.identity.outputs.candidate_tag }}
+          CANDIDATE_RUNTIME: ${{ inputs.runtime }}
         run: |
           {
             echo "## Rentemester release candidate"
             echo
+            echo "- Runtime: $CANDIDATE_RUNTIME"
             echo "- Version: \`$VERSION\`"
             echo "- Commit: \`$COMMIT\`"
             echo "- Review status: **not reviewed by Digisense**"
             echo "- Candidate: \`$REGISTRY_IMAGE:$CANDIDATE_TAG\`"
             echo "- Immutable digest: \`$REGISTRY_IMAGE@$DIGEST\`"
             echo "- SPDX SBOM: BuildKit OCI attestation bound to the immutable digest"
-            echo "- Supply chain: clean audit and approved licenses bound to bun.lock"
+            echo "- Supply chain: runtime-specific exact evidence and locked license verification"
             echo
             echo "This candidate can be pulled and deployed before review. Pin the digest, not the tag:"
             echo
             echo "\`\`\`sh"
             echo "docker pull $REGISTRY_IMAGE@$DIGEST"
-            echo "RENTEMESTER_IMAGE=$REGISTRY_IMAGE@$DIGEST docker compose -f docker-compose.example.yml up -d"
+            if [ "$CANDIDATE_RUNTIME" = rust ]; then
+              echo "# Rust requires an explicit authenticated /config/server.json and persistent /state."
+              echo "# Use the native Rust deployment profile; the legacy compose example is Bun-only."
+            else
+              echo "RENTEMESTER_IMAGE=$REGISTRY_IMAGE@$DIGEST docker compose -f docker-compose.example.yml up -d"
+            fi
             echo "\`\`\`"
             echo
             echo "Deploying it does not make it Digisense-approved. Approval later promotes these exact bytes without rebuilding."
             echo
             echo "Download the release-candidate artifact and send the manifest digest, image digest, checked SPDX SBOM and supply-chain evidence to Digisense."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove completed Rust candidate builder
+        if: always() && inputs.runtime == 'rust'
+        run: docker buildx rm "rm-rust-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-first" 2>/dev/null || true
