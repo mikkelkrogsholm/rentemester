@@ -393,6 +393,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/gdpr/legal-hold", post(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/audit-log", post(gdpr::handle))
         .route("/api/companies/{slug}/compliance-report", get(compliance::handle))
+        .route("/api/rules", get(compliance::rules))
         .route("/api/regulatory/coverage", get(compliance::coverage))
         .route("/api/regulatory/citations", get(compliance::citations))
         .route("/api/companies/{slug}/dimensions", get(dimensions::handle))
