@@ -28121,6 +28121,2369 @@
           "$ref": "schemas-backup_transfer_restore.json#/$defs/OriginalBackup122_system_backup_lock_InputValidationFailure"
         }
       ]
+    },
+    "Source717_system_backup_Data": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "backupDir": {
+          "type": "string"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "dbSnapshotPath": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archivePath": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "sha256Path": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "const": []
+            }
+          },
+          "required": [
+            "backupId",
+            "archivePath",
+            "archiveSha256",
+            "sha256Path",
+            "archiveSizeBytes",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "backupId",
+        "backupDir",
+        "manifestPath",
+        "dbSnapshotPath"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "archive": {
+          "description": "When true, ALSO pack the backup into a single deterministic .tar (plus a .sha256 sidecar) ready for off-site placement. Default: false — the on-disk backup directory is created without an archive.",
+          "type": "boolean"
+        },
+        "at": {
+          "description": "Optional ISO-8601 timestamp the backup is created at (overrides the wall clock for deterministic testing). Default: current UTC time.",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_archive_Data": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "archivePath": {
+          "type": "string"
+        },
+        "archiveSha256": {
+          "type": "string"
+        },
+        "sha256Path": {
+          "type": "string"
+        },
+        "archiveSizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "backupId",
+        "archivePath",
+        "archiveSha256",
+        "sha256Path",
+        "archiveSizeBytes"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_archive_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "backupId": {
+          "description": "Backup id to pack (returned by `system_backup` or visible in `system_backup_status`). When omitted, the most recent backup is selected.",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "out": {
+          "description": "Optional output path for the .tar archive (default: alongside the backup directory). A .sha256 sidecar is always written next to it.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_archive_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_archive_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_archive_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_place_Data": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "const": true
+            },
+            "verifyMethod": {
+              "const": "sha256-reread"
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        "copiedTo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "placement",
+        "copiedTo"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_place_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "actorKind": {
+          "description": "Who is performing the placement: 'human' for a person clicking a button, 'agent' for an AI/automation. Default: 'agent'.",
+          "enum": [
+            "human",
+            "agent"
+          ],
+          "type": "string"
+        },
+        "archivePath": {
+          "description": "Absolute path to the .tar archive produced by `system_backup` with archive:true (or `system_backup_archive`). The .sha256 sidecar is located automatically next to it.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "at": {
+          "description": "Optional ISO-8601 timestamp recorded in the placement log (default: current UTC time).",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "destinationId": {
+          "description": "Destination id (from `system_backup_destination_list`) to copy the archive to. The destination's `location` must be a local or synced folder reachable by this process.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "note": {
+          "description": "Optional free-text note attached to the placement record.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "archivePath",
+        "destinationId"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_place_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_place_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_place_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_verify_remote_placement_Data": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "const": true
+            },
+            "verifyMethod": {
+              "const": "remote-provider"
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "remoteEvidence": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "const": "google-drive"
+                },
+                "objectId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "parentId": {
+                  "type": "string"
+                },
+                "checksumSha256": {
+                  "type": "string"
+                },
+                "metadataObservedAt": {
+                  "type": "string"
+                },
+                "verifiedAt": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "provider",
+                "objectId",
+                "name",
+                "parentId",
+                "checksumSha256",
+                "metadataObservedAt",
+                "verifiedAt",
+                "sizeBytes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note",
+            "remoteEvidence"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "placement"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_verify_remote_placement_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "actorKind": {
+          "description": "Who performed the placement; default agent.",
+          "enum": [
+            "human",
+            "agent"
+          ],
+          "type": "string"
+        },
+        "at": {
+          "description": "When the backup was placed; defaults to current UTC time and cannot be future-dated.",
+          "type": "string"
+        },
+        "backupId": {
+          "description": "Backup id returned by system_backup.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "destinationId": {
+          "description": "Destination id from system_backup_destination_list.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "maxMetadataAgeMs": {
+          "description": "Maximum acceptable provider metadata age; defaults to five minutes.",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "note": {
+          "description": "Optional placement note.",
+          "type": "string"
+        },
+        "remoteObjectId": {
+          "description": "Provider object id of the placed archive.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "destinationId",
+        "backupId",
+        "remoteObjectId"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_verify_remote_placement_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_verify_remote_placement_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_verify_remote_placement_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_restore_backup_Data": {
+      "type": "object",
+      "properties": {
+        "backupId": {
+          "type": "string"
+        },
+        "restoredAt": {
+          "type": "string"
+        },
+        "targetCompanyRoot": {
+          "type": "string"
+        },
+        "restoredDbPath": {
+          "type": "string"
+        },
+        "restoredFiles": {
+          "type": "object",
+          "properties": {
+            "documentsOriginals": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "invoicesIssued": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "config": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "documentsOriginals",
+            "invoicesIssued",
+            "config"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "backupId",
+        "restoredAt",
+        "targetCompanyRoot",
+        "restoredDbPath",
+        "restoredFiles"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_restore_backup_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "backupDir": {
+          "description": "Path to the backup directory (or .tar archive) to restore from. ON THE MCP SERVER'S FILESYSTEM. Never modified by the restore.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "confirmText": {
+          "description": "Destructive-confirmation text. Must be EXACTLY 'RESTORE <targetCompany>' — the literal word RESTORE, a space, then your targetCompany argument verbatim. Concrete example: for targetCompany='/data/acme', use confirmText='RESTORE /data/acme'. Deliberately schema-OPTIONAL (#307): a missing/empty value reaches the handler and yields the normal { ok:false, errors:[...] } envelope (with code:'CONFIRMTEXT_MISMATCH'), exactly like a mismatch — never a raw -32602. Any mismatch (or omission) rejects the call.",
+          "type": "string"
+        },
+        "publicKey": {
+          "description": "Optional path to the ASYMMETRIC ed25519 public key used to verify the backup manifest's ed25519 signature (the signature added by 'system backup --sign-with-ed25519'). Supplying it out-of-band lets an independent third party verify authenticity without the HMAC key. Distinct from verifyKey, which is the symmetric HMAC key. Mirrors the CLI's --public-key.",
+          "type": "string"
+        },
+        "targetCompany": {
+          "description": "Path to the company directory the backup is restored INTO. Existing files here may be overwritten.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "verifyKey": {
+          "description": "Optional path to the SYMMETRIC HMAC verification key (the '.backup-manifest.key' file) used to verify the backup manifest's HMAC tag. This is NOT the ed25519 public key — see publicKey for that. Typically required when backupDir is a .tar archive; for a backup directory still inside its company 'backups/' folder the key is otherwise inferred. Mirrors the CLI's --verify-key.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backupDir",
+        "targetCompany"
+      ],
+      "type": "object"
+    },
+    "Source717_system_restore_backup_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_restore_backup_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_restore_backup_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_status_Data": {
+      "type": "object",
+      "properties": {
+        "latestBackupAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latestBackupId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "backupDue": {
+          "type": "boolean"
+        },
+        "hasActivitySinceBackup": {
+          "type": "boolean"
+        },
+        "daysSinceLatestBackup": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "requiredBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checkedAt": {
+          "type": "string"
+        },
+        "backupsFound": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "latestJournalEntryAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestDocumentAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBankImportAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "latestJournalEntryAt",
+            "latestDocumentAt",
+            "latestBankImportAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "latestBackupAt",
+        "latestBackupId",
+        "backupDue",
+        "hasActivitySinceBackup",
+        "daysSinceLatestBackup",
+        "requiredBy",
+        "checkedAt",
+        "backupsFound",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_status_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "description": "Optional YYYY-MM-DD date to evaluate the backup compliance against (default: today UTC). Use this to ask 'were we compliant on 2026-03-31?'",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_status_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_status_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_status_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_governance_Data": {
+      "type": "object",
+      "properties": {
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "appliedRules": {
+              "const": [
+                "DK-BOOKKEEPING-BACKUP-001"
+              ]
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "latestBackupAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestBackupId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "hasActivitySinceBackup": {
+              "type": "boolean"
+            },
+            "daysSinceLatestBackup": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "requiredBy": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "backupsFound": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "latestJournalEntryAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestDocumentAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "latestBankImportAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "latestJournalEntryAt",
+                "latestDocumentAt",
+                "latestBankImportAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "errors",
+            "latestBackupAt",
+            "latestBackupId",
+            "backupDue",
+            "hasActivitySinceBackup",
+            "daysSinceLatestBackup",
+            "requiredBy",
+            "checkedAt",
+            "backupsFound",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        "lock": {
+          "type": "object",
+          "properties": {
+            "enforced": {
+              "type": "boolean"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "backupDue": {
+              "type": "boolean"
+            },
+            "graceDays": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "latestBackupAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "daysSinceLatestBackup": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "lockAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "checkedAt": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "enforced",
+            "locked",
+            "backupDue",
+            "graceDays",
+            "latestBackupAt",
+            "daysSinceLatestBackup",
+            "lockAt",
+            "checkedAt",
+            "reason",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "destinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "compliantDestinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hasCompliantDestination": {
+          "type": "boolean"
+        },
+        "latestBackupPlacedOffsite": {
+          "type": "boolean"
+        },
+        "latestBackupPlacementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkedAt": {
+          "type": "string"
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "local-folder",
+                  "dropbox",
+                  "google-drive",
+                  "ssh",
+                  "other"
+                ]
+              },
+              "location": {
+                "type": "string"
+              },
+              "nonRelatedParty": {
+                "type": "boolean"
+              },
+              "regionAttestation": {
+                "type": "object",
+                "properties": {
+                  "inEeaOrEu": {
+                    "type": "boolean"
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "attestedBy": {
+                    "type": "string"
+                  },
+                  "attestedAt": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "inEeaOrEu",
+                  "country",
+                  "attestedBy",
+                  "attestedAt",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              "itSecurityAttestation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "meetsRecognisedStandards": {
+                        "type": "boolean"
+                      },
+                      "attestedBy": {
+                        "type": "string"
+                      },
+                      "attestedAt": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "meetsRecognisedStandards",
+                      "attestedBy",
+                      "attestedAt",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "createdBy": {
+                "type": "string"
+              },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "backupId": {
+                          "type": "string"
+                        },
+                        "archiveSha256": {
+                          "type": "string"
+                        },
+                        "placedAt": {
+                          "type": "string"
+                        },
+                        "actor": {
+                          "type": "string"
+                        },
+                        "archiveSizeBytes": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "actorKind": {
+                          "enum": [
+                            "human",
+                            "agent"
+                          ]
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "verifyMethod": {
+                          "enum": [
+                            "declared",
+                            "sha256-reread",
+                            "remote-provider"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "remoteEvidence": {
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "const": "google-drive"
+                            },
+                            "objectId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "parentId": {
+                              "type": "string"
+                            },
+                            "checksumSha256": {
+                              "type": "string"
+                            },
+                            "metadataObservedAt": {
+                              "type": "string"
+                            },
+                            "verifiedAt": {
+                              "type": "string"
+                            },
+                            "sizeBytes": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "objectId",
+                            "name",
+                            "parentId",
+                            "checksumSha256",
+                            "metadataObservedAt",
+                            "verifiedAt",
+                            "sizeBytes"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "backupId",
+                        "archiveSha256",
+                        "placedAt",
+                        "actor",
+                        "archiveSizeBytes",
+                        "actorKind",
+                        "verified",
+                        "verifyMethod",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "kind",
+              "location",
+              "nonRelatedParty",
+              "regionAttestation",
+              "itSecurityAttestation",
+              "createdAt",
+              "createdBy",
+              "placements"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "compliance",
+        "lock",
+        "destinationCount",
+        "compliantDestinationCount",
+        "hasCompliantDestination",
+        "latestBackupPlacedOffsite",
+        "latestBackupPlacementCount",
+        "checkedAt",
+        "destinations"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_governance_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "description": "Optional YYYY-MM-DD date to evaluate governance status against (default: today UTC).",
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_governance_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_governance_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_governance_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_list_Data": {
+      "type": "object",
+      "properties": {
+        "destinationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "local-folder",
+                  "dropbox",
+                  "google-drive",
+                  "ssh",
+                  "other"
+                ]
+              },
+              "location": {
+                "type": "string"
+              },
+              "nonRelatedParty": {
+                "type": "boolean"
+              },
+              "regionAttestation": {
+                "type": "object",
+                "properties": {
+                  "inEeaOrEu": {
+                    "type": "boolean"
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "attestedBy": {
+                    "type": "string"
+                  },
+                  "attestedAt": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "inEeaOrEu",
+                  "country",
+                  "attestedBy",
+                  "attestedAt",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              "itSecurityAttestation": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "meetsRecognisedStandards": {
+                        "type": "boolean"
+                      },
+                      "attestedBy": {
+                        "type": "string"
+                      },
+                      "attestedAt": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "meetsRecognisedStandards",
+                      "attestedBy",
+                      "attestedAt",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "createdBy": {
+                "type": "string"
+              },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "backupId": {
+                          "type": "string"
+                        },
+                        "archiveSha256": {
+                          "type": "string"
+                        },
+                        "placedAt": {
+                          "type": "string"
+                        },
+                        "actor": {
+                          "type": "string"
+                        },
+                        "archiveSizeBytes": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "actorKind": {
+                          "enum": [
+                            "human",
+                            "agent"
+                          ]
+                        },
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "verifyMethod": {
+                          "enum": [
+                            "declared",
+                            "sha256-reread",
+                            "remote-provider"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "remoteEvidence": {
+                          "type": "object",
+                          "properties": {
+                            "provider": {
+                              "const": "google-drive"
+                            },
+                            "objectId": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "parentId": {
+                              "type": "string"
+                            },
+                            "checksumSha256": {
+                              "type": "string"
+                            },
+                            "metadataObservedAt": {
+                              "type": "string"
+                            },
+                            "verifiedAt": {
+                              "type": "string"
+                            },
+                            "sizeBytes": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "objectId",
+                            "name",
+                            "parentId",
+                            "checksumSha256",
+                            "metadataObservedAt",
+                            "verifiedAt",
+                            "sizeBytes"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "backupId",
+                        "archiveSha256",
+                        "placedAt",
+                        "actor",
+                        "archiveSizeBytes",
+                        "actorKind",
+                        "verified",
+                        "verifyMethod",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "kind",
+              "location",
+              "nonRelatedParty",
+              "regionAttestation",
+              "itSecurityAttestation",
+              "createdAt",
+              "createdBy",
+              "placements"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "destinationCount",
+        "destinations"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_list_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_destination_list_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_destination_list_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_list_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_add_Data": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "local-folder",
+                "dropbox",
+                "google-drive",
+                "ssh",
+                "other"
+              ]
+            },
+            "location": {
+              "type": "string"
+            },
+            "nonRelatedParty": {
+              "type": "boolean"
+            },
+            "regionAttestation": {
+              "type": "object",
+              "properties": {
+                "inEeaOrEu": {
+                  "type": "boolean"
+                },
+                "country": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "attestedBy": {
+                  "type": "string"
+                },
+                "attestedAt": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "inEeaOrEu",
+                "country",
+                "attestedBy",
+                "attestedAt",
+                "note"
+              ],
+              "additionalProperties": false
+            },
+            "itSecurityAttestation": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "meetsRecognisedStandards": {
+                      "type": "boolean"
+                    },
+                    "attestedBy": {
+                      "type": "string"
+                    },
+                    "attestedAt": {
+                      "type": "string"
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "meetsRecognisedStandards",
+                    "attestedBy",
+                    "attestedAt",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "createdBy": {
+              "type": "string"
+            },
+            "placements": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "backupId": {
+                        "type": "string"
+                      },
+                      "archiveSha256": {
+                        "type": "string"
+                      },
+                      "placedAt": {
+                        "type": "string"
+                      },
+                      "actor": {
+                        "type": "string"
+                      },
+                      "archiveSizeBytes": {
+                        "type": [
+                          "number",
+                          "null"
+                        ],
+                        "minimum": 0
+                      },
+                      "actorKind": {
+                        "enum": [
+                          "human",
+                          "agent"
+                        ]
+                      },
+                      "verified": {
+                        "type": "boolean"
+                      },
+                      "verifyMethod": {
+                        "enum": [
+                          "declared",
+                          "sha256-reread",
+                          "remote-provider"
+                        ]
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "remoteEvidence": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "const": "google-drive"
+                          },
+                          "objectId": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "parentId": {
+                            "type": "string"
+                          },
+                          "checksumSha256": {
+                            "type": "string"
+                          },
+                          "metadataObservedAt": {
+                            "type": "string"
+                          },
+                          "verifiedAt": {
+                            "type": "string"
+                          },
+                          "sizeBytes": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "objectId",
+                          "name",
+                          "parentId",
+                          "checksumSha256",
+                          "metadataObservedAt",
+                          "verifiedAt",
+                          "sizeBytes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "backupId",
+                      "archiveSha256",
+                      "placedAt",
+                      "actor",
+                      "archiveSizeBytes",
+                      "actorKind",
+                      "verified",
+                      "verifyMethod",
+                      "note"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "$ref": "schemas-backup_transfer_restore.json#/$defs/DeclareResult"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "kind",
+            "location",
+            "nonRelatedParty",
+            "regionAttestation",
+            "itSecurityAttestation",
+            "createdAt",
+            "createdBy",
+            "placements"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "destination"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_add_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "description": "Optional ISO-8601 timestamp for when the destination was added (default: now).",
+          "type": "string"
+        },
+        "attestedBy": {
+          "description": "Identity of the human making these attestations (e.g. an email). A human — not Rentemester — must attest where this backup is stored.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "inEeaOrEu": {
+          "description": "ATTESTATION (BEK 205/2024 § 4, stk. 2): true ⇒ you attest, as a human, that this destination's server is located inside the EU/EEA. Rentemester cannot determine this itself — you are legally attesting it.",
+          "type": "boolean"
+        },
+        "itSecurityMeetsStandards": {
+          "description": "ATTESTATION: true ⇒ you attest, as a human, that the destination meets recognised IT-security standards. Rentemester cannot verify this itself.",
+          "type": "boolean"
+        },
+        "itSecurityNote": {
+          "description": "Optional free-text note backing the IT-security attestation.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Destination kind: 'local-folder' = a folder on this machine; 'dropbox' / 'google-drive' = a synced desktop folder of that cloud service; 'ssh' = a remote host reached over SSH; 'other' = anything else.",
+          "enum": [
+            "local-folder",
+            "dropbox",
+            "google-drive",
+            "ssh",
+            "other"
+          ],
+          "type": "string"
+        },
+        "label": {
+          "description": "Human-readable name for this destination, e.g. 'Revisor Dropbox'.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "location": {
+          "description": "Path or URI of the destination, e.g. a local folder path or an ssh:// URI.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "nonRelatedParty": {
+          "description": "ATTESTATION: true (default) ⇒ you attest the destination is held by a non-related third party (not the company itself or a related party). Set false if the destination is a related party.",
+          "type": "boolean"
+        },
+        "regionCountry": {
+          "description": "Optional ISO country code where the destination's server is located, e.g. 'DK'.",
+          "type": "string"
+        },
+        "regionNote": {
+          "description": "Optional free-text note backing the EU/EEA region attestation.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "label",
+        "kind",
+        "location",
+        "inEeaOrEu",
+        "attestedBy"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_destination_add_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_destination_add_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_add_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_remove_Data": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_remove_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Destination id to remove. Get the id from `system_backup_destination_list`.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "id"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_destination_remove_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_destination_remove_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_destination_remove_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_confirm_placement_Data": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "type": "object",
+          "properties": {
+            "backupId": {
+              "type": "string"
+            },
+            "archiveSha256": {
+              "type": "string"
+            },
+            "placedAt": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "string"
+            },
+            "archiveSizeBytes": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "actorKind": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "verified": {
+              "type": "boolean"
+            },
+            "verifyMethod": {
+              "enum": [
+                "declared",
+                "sha256-reread"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "backupId",
+            "archiveSha256",
+            "placedAt",
+            "actor",
+            "archiveSizeBytes",
+            "actorKind",
+            "verified",
+            "verifyMethod",
+            "note"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "placement"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_confirm_placement_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "actorKind": {
+          "description": "Who performed the external placement: 'human' or 'agent'. Default: 'agent'.",
+          "enum": [
+            "human",
+            "agent"
+          ],
+          "type": "string"
+        },
+        "archiveSha256": {
+          "description": "Lowercase hex sha256 digest (64 chars) of the placed .tar archive. If the destination is reachable from this process, the digest is re-verified server-side before the placement is recorded.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "archiveSizeBytes": {
+          "description": "Optional file size in bytes of the placed .tar archive. Recorded alongside the sha256 for audit.",
+          "type": "number"
+        },
+        "at": {
+          "description": "Optional ISO-8601 timestamp recorded in the placement log (default: current UTC time).",
+          "type": "string"
+        },
+        "backupId": {
+          "description": "Backup id (returned by `system_backup`) the archive was produced from.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "destinationId": {
+          "description": "Destination id (from `system_backup_destination_list`) the agent placed the archive at.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "note": {
+          "description": "Optional free-text note attached to the placement record.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "destinationId",
+        "backupId",
+        "archiveSha256"
+      ],
+      "type": "object"
+    },
+    "Source717_system_backup_confirm_placement_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-backup_transfer_restore.json#/$defs/Source717_system_backup_confirm_placement_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_system_backup_confirm_placement_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

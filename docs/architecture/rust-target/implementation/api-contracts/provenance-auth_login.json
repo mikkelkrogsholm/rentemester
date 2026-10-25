@@ -22,32 +22,32 @@
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "fn admission_for"
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "fn response"
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "async fn body_bytes"
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn admitted"
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn incompatible"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "let handlers = AuthHandlers"
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn admit_auth"
     },
     {

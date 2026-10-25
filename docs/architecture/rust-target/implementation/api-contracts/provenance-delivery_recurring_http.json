@@ -6,7 +6,7 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "611961e905b87ed6a8ee9cbdde0bf9a15c7a45b11f1fdca420053367da5b06a0",
+      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
       "needle": "/api/recurring-invoices/run-workspace"
     },
     {
@@ -16,7 +16,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "fn proof("
     },
     {
@@ -31,12 +31,12 @@
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn admitted("
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn document_action<T>"
     },
     {
@@ -46,22 +46,22 @@
     },
     {
       "path": "crates/rentemester-application/src/service_company.rs",
-      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "sha256": "1cc9d7fc77a6bab427107b687d4a2725d1d6c44f6f60b56866cac21a6b336ee8",
       "needle": "pub enum UsageStage"
     },
     {
       "path": "crates/rentemester-server/src/product_http/invoice_email.rs",
-      "sha256": "fbfc6603f9063d5b3a2e2173652a6996c78571657b318cdd107afb1f335fd7bd",
+      "sha256": "54cf35a7f20cf4368d3c0ea8eaa8579a188836b9040af22210ca2a084cd0df04",
       "needle": "pub(super) async fn handle("
     },
     {
       "path": "crates/rentemester-host/src/invoice_email.rs",
-      "sha256": "db25aa1b526fac97f17f8f6ded7057ad05799b469b17821e9a22553ba3c6052a",
+      "sha256": "5cc365af8a84eb06a11cf1de1852c00dfe0a067b57717be9f94a27121c4598e7",
       "needle": "pub fn invoice_email_status("
     },
     {
       "path": "crates/rentemester-application/src/invoice_email.rs",
-      "sha256": "b68f8d5b08be276526a30a398b445be4c35a08b4cb142de0b0bc75c336689677",
+      "sha256": "fa9eafa6c8920321817f2f7a6df6d03907e61ab7355acf4b1567a8705705ae31",
       "needle": "pub fn status("
     },
     {
@@ -76,7 +76,7 @@
     },
     {
       "path": "crates/rentemester-runtime/src/invoice_mail.rs",
-      "sha256": "6839953998892259472b9a22d332c03e5155e1d62c2d18f28e64041744d38352",
+      "sha256": "1d496f3a6d58602fcb953f694ce84ad0051080d628014bd8a0fa5cc74e235a16",
       "needle": "pub fn build("
     },
     {
@@ -86,7 +86,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "pub(crate) fn lock_company("
     },
     {
@@ -176,7 +176,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
-      "sha256": "1b449994b0bafd27ddd0c6b45510a30c33428cdb806e53a299044c50c19f42aa",
+      "sha256": "7c5752a06a60681d8e61923bbc9ee4b1d226303f6a43147e0d3fa7d1e4573f84",
       "needle": "pub(super) fn drive("
     }
   ],
@@ -192,7 +192,7 @@
   "r59_source_correction": {
     "source": {
       "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
-      "sha256": "1b449994b0bafd27ddd0c6b45510a30c33428cdb806e53a299044c50c19f42aa",
+      "sha256": "7c5752a06a60681d8e61923bbc9ee4b1d226303f6a43147e0d3fa7d1e4573f84",
       "needle": "pub(super) async fn handle("
     },
     "behavior": "Early public HEAD405AllowGET before credentials/body/Owner/provider; GET/POST unchanged. Delivery partition source SHA refresh only; no delivery behavior changed.",

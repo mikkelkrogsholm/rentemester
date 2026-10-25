@@ -11793,6 +11793,1858 @@
           "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/OriginalDiagnostics118_system_healthcheck_InputValidationFailure"
         }
       ]
+    },
+    "Source717_meta_about_Data": {
+      "type": "object",
+      "properties": {
+        "serverName": {
+          "const": "rentemester-mcp"
+        },
+        "serverVersion": {
+          "const": "0.2.0"
+        },
+        "toolCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "ruleBundleVersion": {
+          "type": "null"
+        },
+        "ruleBundleVersionReason": {
+          "type": "string"
+        },
+        "build": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/build"
+        },
+        "provenance": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/provenance"
+        },
+        "contractDocs": {
+          "const": [
+            "docs/mcp-agent-contract.md",
+            "docs/mcp-tool-surface.md",
+            "docs/confirm-contract.md",
+            "docs/cli-contract.md"
+          ]
+        },
+        "catalogue": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "rentemester-agent-discovery-v1"
+            },
+            "hash": {
+              "type": "string"
+            },
+            "entryPoint": {
+              "type": "string"
+            },
+            "capabilityCount": {
+              "const": 26
+            },
+            "workflowCount": {
+              "const": 31
+            },
+            "fullCoverage": {
+              "const": false
+            },
+            "coverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                },
+                "fullCoverage": {
+                  "type": "boolean"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines",
+                "fullCoverage",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "build": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/build"
+            },
+            "provenance": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/provenance"
+            },
+            "ruleBundleVersion": {
+              "type": "null"
+            },
+            "ruleBundleVersionReason": {
+              "type": "string"
+            },
+            "sourceCoverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "hash",
+            "entryPoint",
+            "capabilityCount",
+            "workflowCount",
+            "fullCoverage",
+            "coverage",
+            "build",
+            "provenance",
+            "ruleBundleVersion",
+            "ruleBundleVersionReason",
+            "sourceCoverage"
+          ],
+          "additionalProperties": false
+        },
+        "fullCoverage": {
+          "const": false
+        },
+        "workspaceConnected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "serverName",
+        "serverVersion",
+        "toolCount",
+        "ruleBundleVersion",
+        "ruleBundleVersionReason",
+        "build",
+        "provenance",
+        "contractDocs",
+        "catalogue",
+        "fullCoverage",
+        "workspaceConnected"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_meta_about_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "Source717_meta_about_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Source717_meta_about_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_meta_about_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_capability_search_Data": {
+      "type": "object",
+      "properties": {
+        "catalogue": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "rentemester-agent-discovery-v1"
+            },
+            "hash": {
+              "type": "string"
+            },
+            "entryPoint": {
+              "type": "string"
+            },
+            "capabilityCount": {
+              "const": 26
+            },
+            "workflowCount": {
+              "const": 31
+            },
+            "fullCoverage": {
+              "const": false
+            },
+            "coverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                },
+                "fullCoverage": {
+                  "type": "boolean"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines",
+                "fullCoverage",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "build": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/build"
+            },
+            "provenance": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/provenance"
+            },
+            "ruleBundleVersion": {
+              "type": "null"
+            },
+            "ruleBundleVersionReason": {
+              "type": "string"
+            },
+            "sourceCoverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "hash",
+            "entryPoint",
+            "capabilityCount",
+            "workflowCount",
+            "fullCoverage",
+            "coverage",
+            "build",
+            "provenance",
+            "ruleBundleVersion",
+            "ruleBundleVersionReason",
+            "sourceCoverage"
+          ],
+          "additionalProperties": false
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "maturity": {
+                "type": "string"
+              },
+              "outcomes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "scope": {
+                "type": "string"
+              },
+              "supportStatus": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "unsupportedBoundaries": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "const": []
+                  }
+                ]
+              },
+              "workflowIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "capabilityIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "safety": {
+                      "enum": [
+                        "read",
+                        "write",
+                        "destructive"
+                      ]
+                    },
+                    "idempotent": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "requiresActor": {
+                      "type": "boolean"
+                    },
+                    "requiresConfirmation": {
+                      "type": "boolean"
+                    },
+                    "retryClass": {
+                      "enum": [
+                        "safe-read",
+                        "key-idempotent",
+                        "natural-idempotent",
+                        "external-provider-reconciled",
+                        "unsafe-read-back"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "capabilityIds",
+                    "safety",
+                    "idempotent",
+                    "requiresActor",
+                    "requiresConfirmation",
+                    "retryClass"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "domain",
+              "id",
+              "maturity",
+              "outcomes",
+              "purpose",
+              "scope",
+              "supportStatus",
+              "title",
+              "unsupportedBoundaries",
+              "workflowIds",
+              "operations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "workspaceConnected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "catalogue",
+        "total",
+        "count",
+        "cursor",
+        "limit",
+        "hasMore",
+        "nextCursor",
+        "items",
+        "workspaceConnected"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_capability_search_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "limit": {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Source717_agent_capability_search_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Source717_agent_capability_search_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_capability_search_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_workflow_describe_Data": {
+      "type": "object",
+      "properties": {
+        "catalogue": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "rentemester-agent-discovery-v1"
+            },
+            "hash": {
+              "type": "string"
+            },
+            "entryPoint": {
+              "type": "string"
+            },
+            "capabilityCount": {
+              "const": 26
+            },
+            "workflowCount": {
+              "const": 31
+            },
+            "fullCoverage": {
+              "const": false
+            },
+            "coverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                },
+                "fullCoverage": {
+                  "type": "boolean"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines",
+                "fullCoverage",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "build": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/build"
+            },
+            "provenance": {
+              "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/provenance"
+            },
+            "ruleBundleVersion": {
+              "type": "null"
+            },
+            "ruleBundleVersionReason": {
+              "type": "string"
+            },
+            "sourceCoverage": {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string"
+                },
+                "rulesHash": {
+                  "type": "string"
+                },
+                "surfaceBaselines": {
+                  "type": "object",
+                  "properties": {
+                    "mcp": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "cli": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "hash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "count",
+                        "hash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "mcp",
+                    "cli",
+                    "http"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "rulesHash",
+                "surfaceBaselines"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "hash",
+            "entryPoint",
+            "capabilityCount",
+            "workflowCount",
+            "fullCoverage",
+            "coverage",
+            "build",
+            "provenance",
+            "ruleBundleVersion",
+            "ruleBundleVersionReason",
+            "sourceCoverage"
+          ],
+          "additionalProperties": false
+        },
+        "capability": {
+          "type": "object",
+          "properties": {
+            "canonicalState": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "domain": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "maturity": {
+              "type": "string"
+            },
+            "outcomes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "purpose": {
+              "type": "string"
+            },
+            "scope": {
+              "type": "string"
+            },
+            "supportStatus": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "unsupportedBoundaries": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "const": []
+                }
+              ]
+            },
+            "workflowIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "canonicalState",
+            "domain",
+            "id",
+            "keywords",
+            "maturity",
+            "outcomes",
+            "purpose",
+            "scope",
+            "supportStatus",
+            "title",
+            "unsupportedBoundaries",
+            "workflowIds"
+          ],
+          "additionalProperties": false
+        },
+        "workflow": {
+          "type": "object",
+          "properties": {
+            "alternatives": {
+              "anyOf": [
+                {
+                  "const": []
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "meaning": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "meaning"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "capabilityId": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "intendedOutcome": {
+              "type": "string"
+            },
+            "nonGoals": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "prerequisites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recovery": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "relatedWorkflowIds": {
+              "anyOf": [
+                {
+                  "const": []
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "boundary": {
+                    "type": "string"
+                  },
+                  "canonicalRecords": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "const": []
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "const": []
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "condition": {
+                    "type": "string"
+                  },
+                  "dependsOn": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "const": []
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "const": []
+                      }
+                    ]
+                  },
+                  "expectedIdempotent": {
+                    "type": "boolean"
+                  },
+                  "expectedSafety": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "inputIdentities": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "const": []
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "const": []
+                          }
+                        ]
+                      },
+                      {
+                        "const": []
+                      }
+                    ]
+                  },
+                  "operation": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "pattern": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "resolved": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "reason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "annotations": {
+                        "type": "object",
+                        "properties": {
+                          "readOnlyHint": {
+                            "type": "boolean"
+                          },
+                          "destructiveHint": {
+                            "type": "boolean"
+                          },
+                          "idempotentHint": {
+                            "type": "boolean"
+                          },
+                          "openWorldHint": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "readOnlyHint",
+                          "destructiveHint",
+                          "idempotentHint",
+                          "openWorldHint"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "registrationFacts": {
+                        "type": "object",
+                        "properties": {
+                          "allowedFlags": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              {
+                                "const": []
+                              }
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "mutating": {
+                            "type": "boolean"
+                          },
+                          "sideEffecting": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "allowedFlags",
+                          "key",
+                          "mutating",
+                          "sideEffecting"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "safety": {
+                        "enum": [
+                          "read",
+                          "write",
+                          "destructive"
+                        ]
+                      },
+                      "idempotent": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "requiresActor": {
+                        "type": "boolean"
+                      },
+                      "requiresConfirmation": {
+                        "type": "boolean"
+                      },
+                      "retryClass": {
+                        "enum": [
+                          "safe-read",
+                          "key-idempotent",
+                          "natural-idempotent",
+                          "external-provider-reconciled",
+                          "unsafe-read-back"
+                        ]
+                      },
+                      "resolutionScope": {
+                        "type": "string"
+                      },
+                      "retryEvidenceMismatch": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "surface",
+                      "resolved",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "outputIdentities": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "const": []
+                          }
+                        ]
+                      },
+                      {
+                        "const": []
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "const": []
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "prerequisites": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "const": []
+                          }
+                        ]
+                      },
+                      {
+                        "const": []
+                      }
+                    ]
+                  },
+                  "purpose": {
+                    "type": "string"
+                  },
+                  "requiredArguments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "requiresActor": {
+                    "type": "boolean"
+                  },
+                  "requiresConfirmation": {
+                    "type": "boolean"
+                  },
+                  "retryClass": {
+                    "type": "string"
+                  },
+                  "uncertainOutcomeReadBack": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "pattern": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "resolved": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "reason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "annotations": {
+                        "type": "object",
+                        "properties": {
+                          "readOnlyHint": {
+                            "type": "boolean"
+                          },
+                          "destructiveHint": {
+                            "type": "boolean"
+                          },
+                          "idempotentHint": {
+                            "type": "boolean"
+                          },
+                          "openWorldHint": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "readOnlyHint",
+                          "destructiveHint",
+                          "idempotentHint",
+                          "openWorldHint"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "registrationFacts": {
+                        "type": "object",
+                        "properties": {
+                          "allowedFlags": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              {
+                                "const": []
+                              }
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "mutating": {
+                            "type": "boolean"
+                          },
+                          "sideEffecting": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "allowedFlags",
+                          "key",
+                          "mutating",
+                          "sideEffecting"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "safety": {
+                        "enum": [
+                          "read",
+                          "write",
+                          "destructive"
+                        ]
+                      },
+                      "idempotent": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "requiresActor": {
+                        "type": "boolean"
+                      },
+                      "requiresConfirmation": {
+                        "type": "boolean"
+                      },
+                      "retryClass": {
+                        "enum": [
+                          "safe-read",
+                          "key-idempotent",
+                          "natural-idempotent",
+                          "external-provider-reconciled",
+                          "unsafe-read-back"
+                        ]
+                      },
+                      "resolutionScope": {
+                        "type": "string"
+                      },
+                      "retryEvidenceMismatch": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "surface",
+                      "resolved",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "runtimeExpectationMismatches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string"
+                        },
+                        "expected": {
+                          "type": [
+                            "string",
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "actual": {
+                          "type": [
+                            "string",
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "expected",
+                        "actual"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "boundary",
+                  "canonicalRecords",
+                  "dependsOn",
+                  "expectedIdempotent",
+                  "expectedSafety",
+                  "id",
+                  "inputIdentities",
+                  "operation",
+                  "outputIdentities",
+                  "prerequisites",
+                  "purpose",
+                  "requiresActor",
+                  "requiresConfirmation",
+                  "retryClass",
+                  "runtimeExpectationMismatches"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "stopConditions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "type": "string"
+            },
+            "unsupportedBoundaries": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "const": []
+                }
+              ]
+            },
+            "live": {
+              "type": "boolean"
+            },
+            "unresolvedOperations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "runtimeResolutionProblems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "step": {
+                    "type": "string"
+                  },
+                  "field": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "mismatches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string"
+                        },
+                        "expected": {
+                          "type": [
+                            "string",
+                            "boolean",
+                            "null"
+                          ]
+                        },
+                        "actual": {
+                          "type": [
+                            "string",
+                            "boolean",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "field",
+                        "expected",
+                        "actual"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "step",
+                  "id",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "resolutionReason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "alternatives",
+            "blockers",
+            "capabilityId",
+            "id",
+            "intendedOutcome",
+            "nonGoals",
+            "prerequisites",
+            "recovery",
+            "relatedWorkflowIds",
+            "steps",
+            "stopConditions",
+            "title",
+            "unsupportedBoundaries",
+            "live",
+            "unresolvedOperations",
+            "runtimeResolutionProblems",
+            "resolutionReason"
+          ],
+          "additionalProperties": false
+        },
+        "workspaceConnected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "catalogue",
+        "capability",
+        "workflow",
+        "workspaceConnected"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_workflow_describe_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "Source717_agent_workflow_describe_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/Source717_agent_workflow_describe_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_agent_workflow_describe_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

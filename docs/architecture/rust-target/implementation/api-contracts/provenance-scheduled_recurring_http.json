@@ -5,7 +5,7 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "611961e905b87ed6a8ee9cbdde0bf9a15c7a45b11f1fdca420053367da5b06a0",
+      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
       "needle": "/api/companies/{slug}/scheduled-recurring"
     },
     {
@@ -15,12 +15,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": ".route(\"/api/companies/{slug}/scheduled-recurring\", get(scheduled_recurring::handle))"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "fn proof("
     },
     {
@@ -40,7 +40,7 @@
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn admitted("
     },
     {
@@ -60,7 +60,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn document_action<T>"
     },
     {
@@ -135,7 +135,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "scheduled_executor: None"
     },
     {

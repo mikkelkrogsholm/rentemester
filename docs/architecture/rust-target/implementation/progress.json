@@ -16703,6 +16703,27 @@
         "All original remaining14 issues and full55 scope retained, installed desktop last",
         "Real-data cutover remains gated; no actual fresh browser/restore/remote compliance claim for this component"
       ]
+    },
+    "issue717_whole_accepted": {
+      "issue": 717,
+      "status": "whole_issue_accepted",
+      "source_revision": "7e01053ac60bb21753d334ea50376a4ded9148d7",
+      "run_id": "issue717-source-contracts-20261025T145708.141808000",
+      "report": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/docs/architecture/rust-target/implementation/issue717-evidence.json",
+      "sha256": "3642cfeeb297da063bf61b07c9b223751a9f134ce90b615ae8336c88617b1054",
+      "whole_issue_accepted": true,
+      "remaining": [],
+      "github_delivery_status": "GitHub is authoritative; close only after this accepted source is published.",
+      "mcp_tools": 448,
+      "original_mcp_names": 214,
+      "original_workflows": 31,
+      "tests": 290,
+      "contracts": {
+        "operations": 1670,
+        "http": 689,
+        "cli": 533,
+        "mcp": 448
+      }
     }
   },
   "verified_history": [

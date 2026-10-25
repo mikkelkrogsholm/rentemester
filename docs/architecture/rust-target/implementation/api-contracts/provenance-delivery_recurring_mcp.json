@@ -33,62 +33,62 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "pub fn list()"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "pub async fn call("
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "if !args.is_object()"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "let value = match outcome"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "\"structuredContent\":value"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "for field in [\"year\", \"account\"]"
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "async fn handle("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "fn serve("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "fn failure("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "async fn request("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "async fn send("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "fn company_path("
     },
     {
@@ -98,17 +98,17 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "fn proof("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "fn response("
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn incompatible("
     },
     {
@@ -123,7 +123,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn document_action"
     },
     {
@@ -148,12 +148,12 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/invoice_email.rs",
-      "sha256": "fbfc6603f9063d5b3a2e2173652a6996c78571657b318cdd107afb1f335fd7bd",
+      "sha256": "54cf35a7f20cf4368d3c0ea8eaa8579a188836b9040af22210ca2a084cd0df04",
       "needle": "pub(super) async fn handle("
     },
     {
       "path": "crates/rentemester-application/src/invoice_email.rs",
-      "sha256": "b68f8d5b08be276526a30a398b445be4c35a08b4cb142de0b0bc75c336689677",
+      "sha256": "fa9eafa6c8920321817f2f7a6df6d03907e61ab7355acf4b1567a8705705ae31",
       "needle": "pub fn status("
     },
     {
@@ -163,7 +163,7 @@
     },
     {
       "path": "crates/rentemester-host/src/invoice_email.rs",
-      "sha256": "db25aa1b526fac97f17f8f6ded7057ad05799b469b17821e9a22553ba3c6052a",
+      "sha256": "5cc365af8a84eb06a11cf1de1852c00dfe0a067b57717be9f94a27121c4598e7",
       "needle": "pub fn invoice_email_status("
     },
     {
@@ -188,7 +188,7 @@
     },
     {
       "path": "crates/rentemester-runtime/src/invoice_mail.rs",
-      "sha256": "6839953998892259472b9a22d332c03e5155e1d62c2d18f28e64041744d38352",
+      "sha256": "1d496f3a6d58602fcb953f694ce84ad0051080d628014bd8a0fa5cc74e235a16",
       "needle": "Handoff::Unknown"
     },
     {
@@ -248,7 +248,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "pub fn recurring_invoices("
     },
     {

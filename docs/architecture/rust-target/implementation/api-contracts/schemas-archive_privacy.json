@@ -8756,6 +8756,540 @@
           "$ref": "schemas-archive_privacy.json#/$defs/OriginalDiagnostics118_retention_status_InputValidationFailure"
         }
       ]
+    },
+    "Source717_gdpr_discover_Data": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Subject"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "enum": [
+                  "customers",
+                  "vendors",
+                  "documents",
+                  "bank_transactions",
+                  "journal_entries",
+                  "journal_lines",
+                  "audit_log"
+                ]
+              },
+              "sourceRowId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "personalData": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "address": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "email": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "vatOrCvr": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "address",
+                  "email",
+                  "vatOrCvr"
+                ],
+                "additionalProperties": false
+              },
+              "retainUntil": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "erased": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "source",
+              "sourceRowId",
+              "label",
+              "personalData",
+              "retainUntil",
+              "erased"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "byTable": {
+          "type": "object",
+          "properties": {
+            "customers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "vendors": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documents": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bank_transactions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "journal_entries": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "journal_lines": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "audit_log": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "customers",
+            "vendors",
+            "documents",
+            "bank_transactions",
+            "journal_entries",
+            "journal_lines",
+            "audit_log"
+          ],
+          "additionalProperties": false
+        },
+        "coverage": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "subject",
+        "rows",
+        "byTable",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_discover_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "cvr": {
+          "description": "CVR / VAT-nummer for den registrerede",
+          "type": "string"
+        },
+        "name": {
+          "description": "Navn på den registrerede (bruges hvis CVR ikke er kendt)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_gdpr_discover_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Source717_gdpr_discover_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_discover_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_export_Data": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Subject"
+        },
+        "legalHolds": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Holds"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/Record"
+          },
+          "minItems": 0
+        },
+        "coverage": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "asOf",
+        "subject",
+        "legalHolds",
+        "records",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_export_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "description": "Evalueringsdato (ISO). Default: dags dato",
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "cvr": {
+          "description": "CVR / VAT-nummer for den registrerede",
+          "type": "string"
+        },
+        "name": {
+          "description": "Navn på den registrerede",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_gdpr_export_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Source717_gdpr_export_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_export_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_audit_log_Data": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "since": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "occurredAt": {
+                "type": "string"
+              },
+              "eventType": {
+                "type": "string"
+              },
+              "subjectKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "actor": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "occurredAt",
+              "eventType",
+              "subjectKey",
+              "actor",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "format": {
+          "const": "rentemester.gdpr-audit.v1"
+        },
+        "ruleId": {
+          "const": "GDPR-AUDIT-LOG"
+        },
+        "canonicalPayload": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "const": "ed25519"
+            },
+            "encoding": {
+              "const": "utf8"
+            },
+            "signedField": {
+              "const": "canonicalPayload"
+            },
+            "publicKeyHint": {
+              "type": "string"
+            },
+            "base64": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "algorithm",
+            "encoding",
+            "signedField",
+            "publicKeyHint",
+            "base64"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "asOf",
+        "since",
+        "until",
+        "events",
+        "format",
+        "ruleId",
+        "canonicalPayload",
+        "fingerprint"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_audit_log_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "description": "Evalueringsdato (ISO). Default: dags dato",
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "signWithEd25519": {
+          "description": "Signér eksporten med virksomhedens eksisterende backup-Ed25519-nøgle.",
+          "type": "boolean"
+        },
+        "since": {
+          "description": "Fra-dato (ISO) — kun hændelser efter denne dato",
+          "type": "string"
+        },
+        "until": {
+          "description": "Til-dato (ISO) — kun hændelser før denne dato",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_gdpr_audit_log_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Source717_gdpr_audit_log_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_gdpr_audit_log_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

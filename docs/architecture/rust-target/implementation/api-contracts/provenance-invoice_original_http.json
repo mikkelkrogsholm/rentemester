@@ -6,12 +6,12 @@
   "sourceRefs": [
     {
       "path": "protocol/http-v1.json",
-      "sha256": "611961e905b87ed6a8ee9cbdde0bf9a15c7a45b11f1fdca420053367da5b06a0",
+      "sha256": "32a1c530bb96e6b41b09a649859b8a33b89a94c6cfcd341b897d48efac74d731",
       "needle": "/api/companies/{slug}/invoices/original/issue"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "get(invoice_original::handle)"
     },
     {
@@ -136,7 +136,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "fn origin_proof("
     },
     {
@@ -151,7 +151,7 @@
     },
     {
       "path": "crates/rentemester-application/src/service_company.rs",
-      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "sha256": "1cc9d7fc77a6bab427107b687d4a2725d1d6c44f6f60b56866cac21a6b336ee8",
       "needle": "pub enum UsageStage"
     },
     {
@@ -166,7 +166,7 @@
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn incompatible()"
     },
     {
@@ -181,7 +181,7 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "const MAX_RESPONSE:"
     }
   ],

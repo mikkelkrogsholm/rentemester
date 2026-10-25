@@ -15,52 +15,52 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "pub fn list()"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "pub async fn call("
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "let value = match outcome"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "\"structuredContent\":value"
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "async fn handle("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "fn serve("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "fn config("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "async fn request("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "async fn send("
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "impl fmt::Display for Error"
     },
     {
@@ -70,17 +70,17 @@
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "\"me\" | \"companies\" =>"
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "pub async fn me("
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn admitted("
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn control_auth<T>("
     },
     {
@@ -115,7 +115,7 @@
     },
     {
       "path": "crates/rentemester-runtime/src/local/layout/companies.rs",
-      "sha256": "ef7b949547d8fd0a87c879ac467148022568c392aa89ce40dc2c5ab54ddc13ee",
+      "sha256": "ac542bf9db8a62839fba05b7b24ebc77f11e413359fc52e558c2c2d1dbfc10d5",
       "needle": "pub fn catalog("
     },
     {
@@ -130,7 +130,7 @@
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "fn admission_for("
     },
     {
@@ -140,7 +140,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "workspace_context: Some(Box::new(move |proof|"
     },
     {
@@ -155,17 +155,17 @@
     },
     {
       "path": "crates/rentemester-client/src/lib.rs",
-      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "sha256": "c1180ae7e373a40264cffa2ea02fdd5b989838366bf2a0ead522ffe2630e2cb7",
       "needle": "pub async fn companies("
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": ".route(\"/api/workspace/invitations\",get(workspace_access::handle).post(workspace_access::handle))"
     },
     {
       "path": "crates/rentemester-server/src/product_http.rs",
-      "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+      "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839",
       "needle": "async fn companies("
     },
     {
@@ -235,17 +235,17 @@
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "fn allow_peer_route_at"
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "async fn body_bytes"
     },
     {
       "path": "crates/rentemester-server/src/lib.rs",
-      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "sha256": "0847179871d26c37e5469510a250e5f5e50a6e91190d00fed49984e9894ce228",
       "needle": "fn response("
     },
     {
@@ -310,12 +310,12 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "service_lifecycle: Some(Box::new"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+      "sha256": "0852ccf0f797c89537cea221d6539c14fefd005ceb735120e2a24456934d2b69",
       "needle": "fn unwrap<T>"
     },
     {
@@ -325,12 +325,12 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
+      "sha256": "a7c904493240daa34ef5346c314106135daff075fec3e78bd642a9e571d29c55",
       "needle": "fn control_auth<T>"
     },
     {
       "path": "crates/rentemester-server/src/protocol.rs",
-      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "sha256": "d86364569cbd9dc8b568ed13240b764da4ee66d3d05afc111a753a7649eadd50",
       "needle": "fn incompatible("
     },
     {
@@ -351,7 +351,7 @@
     "diagnosis": "LeafSerdearraybehavior incorrectly treated as publicargumentcontract; actualglobalobjectguard precedes all dispatch. Retracted that acceptance claim and restored object-onlypublicschemas, explicitguard sourcepin andexactoutererrormessage. Otheracceptedidentityscope retained; no runtimeproductbehaviorchanged.",
     "sourceRef": {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "if !args.is_object()"
     }
   }

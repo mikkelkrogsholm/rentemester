@@ -9813,6 +9813,2213 @@
           "additionalProperties": false
         }
       ]
+    },
+    "Source717_mail_intake_ingest_Data": {
+      "type": "object",
+      "properties": {
+        "messagesProcessed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string"
+              },
+              "documentNo": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "messageId",
+              "documentNo",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "messagesProcessed",
+        "attachmentsIngested",
+        "attachmentsSkipped",
+        "exceptionsCreated",
+        "documents"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_mail_intake_ingest_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+          "properties": {
+            "accountingRationale": {
+              "description": "Required for internal_voucher: the accounting reason for the posting.",
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "amountIncVat": {
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            },
+            "currency": {
+              "description": "3-letter ISO currency code (default 'DKK').",
+              "type": "string"
+            },
+            "danishSimplifiedPurchaseInvoice": {
+              "description": "Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields.",
+              "type": "boolean"
+            },
+            "deliveryDescription": {
+              "description": "Free-text description of the goods or services.",
+              "type": "string"
+            },
+            "documentType": {
+              "description": "Document type (default 'purchase_sale').",
+              "enum": [
+                "purchase_sale",
+                "cash_register_receipt",
+                "internal_voucher"
+              ],
+              "type": "string"
+            },
+            "exemptionCode": {
+              "anyOf": [
+                {
+                  "const": "FOREIGN_PHYSICAL_ONLY",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Set to 'FOREIGN_PHYSICAL_ONLY' for a foreign physical-only receipt; otherwise omit."
+            },
+            "invoiceNo": {
+              "description": "Invoice or receipt number printed on the document.",
+              "type": "string"
+            },
+            "issueDate": {
+              "description": "Document/invoice date in YYYY-MM-DD format.",
+              "type": "string"
+            },
+            "paymentDetails": {
+              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "type": "string"
+            },
+            "purchaseVatLines": {
+              "description": "Optional durable purchase VAT split. Its net and VAT totals must reconcile exactly with the document totals.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "classification": {
+                    "enum": [
+                      "dk_purchase_25",
+                      "exempt"
+                    ],
+                    "type": "string"
+                  },
+                  "netAmount": {
+                    "description": "Tax base in kroner.",
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "vatAmount": {
+                    "description": "VAT amount in kroner; 25% for dk_purchase_25, otherwise zero.",
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "classification",
+                  "netAmount"
+                ],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "recipient": {
+              "additionalProperties": false,
+              "description": "Recipient/buyer details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "reverseChargeWordingConfirmed": {
+              "description": "True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction.",
+              "type": "boolean"
+            },
+            "sender": {
+              "additionalProperties": false,
+              "description": "Sender/supplier details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "sourceBankTransactionId": {
+              "description": "Required for internal_voucher: the imported bank transaction that is its primary evidence.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "vatAmount": {
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            }
+          },
+          "type": "object",
+          "x-arbitrary-json": {
+            "scope": "mail_intake_ingest caller metadata",
+            "rationale": "Original tool explicitly accepts passthrough metadata or record fields; no authority is derived from these values.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-mcp/src/tools.rs",
+                "needle": "pub async fn call",
+                "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http.rs",
+                "needle": "pub fn router",
+                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+              },
+              {
+                "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+                "needle": "mail_intake_ingest",
+                "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+              },
+              {
+                "path": "crates/rentemester-mcp/src/original717.rs",
+                "needle": "fn wrap",
+                "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+              },
+              {
+                "path": "crates/rentemester-client/src/original717.rs",
+                "needle": "mail_intake_ingest",
+                "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+              }
+            ]
+          }
+        },
+        "metadataPerMessage": {
+          "additionalProperties": {
+            "additionalProperties": true,
+            "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+            "properties": {
+              "accountingRationale": {
+                "description": "Required for internal_voucher: the accounting reason for the posting.",
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "amountIncVat": {
+                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "type": "number"
+              },
+              "currency": {
+                "description": "3-letter ISO currency code (default 'DKK').",
+                "type": "string"
+              },
+              "danishSimplifiedPurchaseInvoice": {
+                "description": "Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields.",
+                "type": "boolean"
+              },
+              "deliveryDescription": {
+                "description": "Free-text description of the goods or services.",
+                "type": "string"
+              },
+              "documentType": {
+                "description": "Document type (default 'purchase_sale').",
+                "enum": [
+                  "purchase_sale",
+                  "cash_register_receipt",
+                  "internal_voucher"
+                ],
+                "type": "string"
+              },
+              "exemptionCode": {
+                "anyOf": [
+                  {
+                    "const": "FOREIGN_PHYSICAL_ONLY",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Set to 'FOREIGN_PHYSICAL_ONLY' for a foreign physical-only receipt; otherwise omit."
+              },
+              "invoiceNo": {
+                "description": "Invoice or receipt number printed on the document.",
+                "type": "string"
+              },
+              "issueDate": {
+                "description": "Document/invoice date in YYYY-MM-DD format.",
+                "type": "string"
+              },
+              "paymentDetails": {
+                "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+                "type": "string"
+              },
+              "purchaseVatLines": {
+                "description": "Optional durable purchase VAT split. Its net and VAT totals must reconcile exactly with the document totals.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "dk_purchase_25",
+                        "exempt"
+                      ],
+                      "type": "string"
+                    },
+                    "netAmount": {
+                      "description": "Tax base in kroner.",
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "vatAmount": {
+                      "description": "VAT amount in kroner; 25% for dk_purchase_25, otherwise zero.",
+                      "minimum": 0,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "classification",
+                    "netAmount"
+                  ],
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "recipient": {
+                "additionalProperties": false,
+                "description": "Recipient/buyer details.",
+                "properties": {
+                  "address": {
+                    "description": "Party postal address.",
+                    "type": "string"
+                  },
+                  "countryCode": {
+                    "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "identifierKind": {
+                    "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                    "enum": [
+                      "dk_cvr",
+                      "eu_vat",
+                      "non_eu"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Party name.",
+                    "type": "string"
+                  },
+                  "vatOrCvr": {
+                    "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "reverseChargeWordingConfirmed": {
+                "description": "True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction.",
+                "type": "boolean"
+              },
+              "sender": {
+                "additionalProperties": false,
+                "description": "Sender/supplier details.",
+                "properties": {
+                  "address": {
+                    "description": "Party postal address.",
+                    "type": "string"
+                  },
+                  "countryCode": {
+                    "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "identifierKind": {
+                    "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                    "enum": [
+                      "dk_cvr",
+                      "eu_vat",
+                      "non_eu"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Party name.",
+                    "type": "string"
+                  },
+                  "vatOrCvr": {
+                    "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "sourceBankTransactionId": {
+                "description": "Required for internal_voucher: the imported bank transaction that is its primary evidence.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "vatAmount": {
+                "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "type": "number"
+              }
+            },
+            "type": "object",
+            "x-arbitrary-json": {
+              "scope": "mail_intake_ingest caller metadata",
+              "rationale": "Original tool explicitly accepts passthrough metadata or record fields; no authority is derived from these values.",
+              "sourceRefs": [
+                {
+                  "path": "crates/rentemester-mcp/src/tools.rs",
+                  "needle": "pub async fn call",
+                  "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+                },
+                {
+                  "path": "crates/rentemester-server/src/product_http.rs",
+                  "needle": "pub fn router",
+                  "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                },
+                {
+                  "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+                  "needle": "mail_intake_ingest",
+                  "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+                },
+                {
+                  "path": "crates/rentemester-mcp/src/original717.rs",
+                  "needle": "fn wrap",
+                  "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+                },
+                {
+                  "path": "crates/rentemester-client/src/original717.rs",
+                  "needle": "mail_intake_ingest",
+                  "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                }
+              ]
+            }
+          },
+          "description": "Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked",
+          "propertyNames": {
+            "type": "string"
+          },
+          "type": "object",
+          "properties": {}
+        },
+        "source": {
+          "description": "Sti til en .eml-fil eller en maildrop-mappe",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "source"
+      ],
+      "type": "object"
+    },
+    "Source717_mail_intake_ingest_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_mail_intake_ingest_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_mail_intake_ingest_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_imap_intake_poll_Data": {
+      "type": "object",
+      "properties": {
+        "messagesProcessed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attachmentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "messageId": {
+                "type": "string"
+              },
+              "documentNo": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "messageId",
+              "documentNo",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "messagesFetched": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "messagesProcessed",
+        "attachmentsIngested",
+        "attachmentsSkipped",
+        "exceptionsCreated",
+        "documents",
+        "messagesFetched"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_imap_intake_poll_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "imapHost": {
+          "description": "IMAP-host; standard RENTEMESTER_IMAP_HOST",
+          "minLength": 1,
+          "type": "string"
+        },
+        "imapMailbox": {
+          "description": "Mailbox; standard INBOX",
+          "minLength": 1,
+          "type": "string"
+        },
+        "imapPort": {
+          "description": "IMAP-port; standard 993 (TLS)",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "imapUsername": {
+          "description": "IMAP-brugernavn; standard RENTEMESTER_IMAP_USERNAME",
+          "minLength": 1,
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+          "properties": {
+            "accountingRationale": {
+              "description": "Required for internal_voucher: the accounting reason for the posting.",
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "amountIncVat": {
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            },
+            "currency": {
+              "description": "3-letter ISO currency code (default 'DKK').",
+              "type": "string"
+            },
+            "danishSimplifiedPurchaseInvoice": {
+              "description": "Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields.",
+              "type": "boolean"
+            },
+            "deliveryDescription": {
+              "description": "Free-text description of the goods or services.",
+              "type": "string"
+            },
+            "documentType": {
+              "description": "Document type (default 'purchase_sale').",
+              "enum": [
+                "purchase_sale",
+                "cash_register_receipt",
+                "internal_voucher"
+              ],
+              "type": "string"
+            },
+            "exemptionCode": {
+              "anyOf": [
+                {
+                  "const": "FOREIGN_PHYSICAL_ONLY",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Set to 'FOREIGN_PHYSICAL_ONLY' for a foreign physical-only receipt; otherwise omit."
+            },
+            "invoiceNo": {
+              "description": "Invoice or receipt number printed on the document.",
+              "type": "string"
+            },
+            "issueDate": {
+              "description": "Document/invoice date in YYYY-MM-DD format.",
+              "type": "string"
+            },
+            "paymentDetails": {
+              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "type": "string"
+            },
+            "purchaseVatLines": {
+              "description": "Optional durable purchase VAT split. Its net and VAT totals must reconcile exactly with the document totals.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "classification": {
+                    "enum": [
+                      "dk_purchase_25",
+                      "exempt"
+                    ],
+                    "type": "string"
+                  },
+                  "netAmount": {
+                    "description": "Tax base in kroner.",
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "vatAmount": {
+                    "description": "VAT amount in kroner; 25% for dk_purchase_25, otherwise zero.",
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "classification",
+                  "netAmount"
+                ],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "recipient": {
+              "additionalProperties": false,
+              "description": "Recipient/buyer details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "reverseChargeWordingConfirmed": {
+              "description": "True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction.",
+              "type": "boolean"
+            },
+            "sender": {
+              "additionalProperties": false,
+              "description": "Sender/supplier details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "sourceBankTransactionId": {
+              "description": "Required for internal_voucher: the imported bank transaction that is its primary evidence.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "vatAmount": {
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            }
+          },
+          "type": "object",
+          "x-arbitrary-json": {
+            "scope": "imap_intake_poll caller metadata",
+            "rationale": "Original tool explicitly accepts passthrough metadata or record fields; no authority is derived from these values.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-mcp/src/tools.rs",
+                "needle": "pub async fn call",
+                "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http.rs",
+                "needle": "pub fn router",
+                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+              },
+              {
+                "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+                "needle": "imap_intake_poll",
+                "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+              },
+              {
+                "path": "crates/rentemester-mcp/src/original717.rs",
+                "needle": "fn wrap",
+                "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+              },
+              {
+                "path": "crates/rentemester-client/src/original717.rs",
+                "needle": "imap_intake_poll",
+                "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+              }
+            ]
+          }
+        },
+        "metadataPerMessage": {
+          "additionalProperties": {
+            "additionalProperties": true,
+            "description": "DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json",
+            "properties": {
+              "accountingRationale": {
+                "description": "Required for internal_voucher: the accounting reason for the posting.",
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "amountIncVat": {
+                "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "type": "number"
+              },
+              "currency": {
+                "description": "3-letter ISO currency code (default 'DKK').",
+                "type": "string"
+              },
+              "danishSimplifiedPurchaseInvoice": {
+                "description": "Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields.",
+                "type": "boolean"
+              },
+              "deliveryDescription": {
+                "description": "Free-text description of the goods or services.",
+                "type": "string"
+              },
+              "documentType": {
+                "description": "Document type (default 'purchase_sale').",
+                "enum": [
+                  "purchase_sale",
+                  "cash_register_receipt",
+                  "internal_voucher"
+                ],
+                "type": "string"
+              },
+              "exemptionCode": {
+                "anyOf": [
+                  {
+                    "const": "FOREIGN_PHYSICAL_ONLY",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Set to 'FOREIGN_PHYSICAL_ONLY' for a foreign physical-only receipt; otherwise omit."
+              },
+              "invoiceNo": {
+                "description": "Invoice or receipt number printed on the document.",
+                "type": "string"
+              },
+              "issueDate": {
+                "description": "Document/invoice date in YYYY-MM-DD format.",
+                "type": "string"
+              },
+              "paymentDetails": {
+                "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+                "type": "string"
+              },
+              "purchaseVatLines": {
+                "description": "Optional durable purchase VAT split. Its net and VAT totals must reconcile exactly with the document totals.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "dk_purchase_25",
+                        "exempt"
+                      ],
+                      "type": "string"
+                    },
+                    "netAmount": {
+                      "description": "Tax base in kroner.",
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "vatAmount": {
+                      "description": "VAT amount in kroner; 25% for dk_purchase_25, otherwise zero.",
+                      "minimum": 0,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "classification",
+                    "netAmount"
+                  ],
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "recipient": {
+                "additionalProperties": false,
+                "description": "Recipient/buyer details.",
+                "properties": {
+                  "address": {
+                    "description": "Party postal address.",
+                    "type": "string"
+                  },
+                  "countryCode": {
+                    "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "identifierKind": {
+                    "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                    "enum": [
+                      "dk_cvr",
+                      "eu_vat",
+                      "non_eu"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Party name.",
+                    "type": "string"
+                  },
+                  "vatOrCvr": {
+                    "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "reverseChargeWordingConfirmed": {
+                "description": "True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction.",
+                "type": "boolean"
+              },
+              "sender": {
+                "additionalProperties": false,
+                "description": "Sender/supplier details.",
+                "properties": {
+                  "address": {
+                    "description": "Party postal address.",
+                    "type": "string"
+                  },
+                  "countryCode": {
+                    "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "identifierKind": {
+                    "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                    "enum": [
+                      "dk_cvr",
+                      "eu_vat",
+                      "non_eu"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Party name.",
+                    "type": "string"
+                  },
+                  "vatOrCvr": {
+                    "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "sourceBankTransactionId": {
+                "description": "Required for internal_voucher: the imported bank transaction that is its primary evidence.",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "vatAmount": {
+                "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+                "type": "number"
+              }
+            },
+            "type": "object",
+            "x-arbitrary-json": {
+              "scope": "imap_intake_poll caller metadata",
+              "rationale": "Original tool explicitly accepts passthrough metadata or record fields; no authority is derived from these values.",
+              "sourceRefs": [
+                {
+                  "path": "crates/rentemester-mcp/src/tools.rs",
+                  "needle": "pub async fn call",
+                  "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+                },
+                {
+                  "path": "crates/rentemester-server/src/product_http.rs",
+                  "needle": "pub fn router",
+                  "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+                },
+                {
+                  "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+                  "needle": "imap_intake_poll",
+                  "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+                },
+                {
+                  "path": "crates/rentemester-mcp/src/original717.rs",
+                  "needle": "fn wrap",
+                  "sha256": "769644903f2268c35d042099112992cece10226f2a7f979bc6cd4a937462284c"
+                },
+                {
+                  "path": "crates/rentemester-client/src/original717.rs",
+                  "needle": "imap_intake_poll",
+                  "sha256": "a82576549e1b76f885e40a7cf2a1c9d1e095311d50347945e97b2a7598115d7d"
+                }
+              ]
+            }
+          },
+          "description": "Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked",
+          "propertyNames": {
+            "type": "string"
+          },
+          "type": "object",
+          "properties": {}
+        },
+        "sinceUid": {
+          "description": "Valgfri UID-nedre grænse",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_imap_intake_poll_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_imap_intake_poll_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_imap_intake_poll_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_konfigurer_Data": {
+      "type": "object",
+      "properties": {
+        "configPath": {
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "test",
+            "production"
+          ]
+        }
+      },
+      "required": [
+        "configPath",
+        "environment"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_konfigurer_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "apiLicenseKey": {
+          "description": "Digisense API license-key (én nøgle for hele licensen). Gemmes kun i config/digisense.json, aldrig i ledger'en.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "environment": {
+          "description": "prod/test base-URL switch; standard 'test'.",
+          "enum": [
+            "production",
+            "test"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "apiLicenseKey"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_konfigurer_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_konfigurer_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_konfigurer_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboarding_status_Data": {
+      "type": "object",
+      "properties": {
+        "configured": {
+          "type": "boolean"
+        },
+        "environment": {
+          "enum": [
+            "test",
+            "production",
+            null
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "cvr": {
+                  "type": "string"
+                },
+                "companyName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cvr",
+                "companyName"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companyKeyConfigured": {
+          "type": "boolean"
+        },
+        "inboundReady": {
+          "type": "boolean"
+        },
+        "outboundReady": {
+          "type": "boolean"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "configured",
+        "environment",
+        "identity",
+        "companyKeyConfigured",
+        "inboundReady",
+        "outboundReady",
+        "ready",
+        "blockers"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboarding_status_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_onboarding_status_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_onboarding_status_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboarding_status_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboard_Data": {
+      "type": "object",
+      "properties": {
+        "companyKey": {
+          "type": "string"
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "configured": {
+              "type": "boolean"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production",
+                null
+              ]
+            },
+            "identity": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "cvr": {
+                      "type": "string"
+                    },
+                    "companyName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "cvr",
+                    "companyName"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "companyKeyConfigured": {
+              "type": "boolean"
+            },
+            "inboundReady": {
+              "type": "boolean"
+            },
+            "outboundReady": {
+              "type": "boolean"
+            },
+            "ready": {
+              "type": "boolean"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "configured",
+            "environment",
+            "identity",
+            "companyKeyConfigured",
+            "inboundReady",
+            "outboundReady",
+            "ready",
+            "blockers"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "companyKey",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboard_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_onboard_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_onboard_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_onboard_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_registrer_Data": {
+      "type": "object",
+      "properties": {
+        "companyKey": {
+          "type": "string"
+        },
+        "directionsRegistered": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "outbound",
+              "inbound"
+            ]
+          }
+        },
+        "network": {
+          "enum": [
+            "nemhandel",
+            "peppol"
+          ]
+        },
+        "participantType": {
+          "const": "DK:CVR"
+        },
+        "participantId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "companyKey",
+        "directionsRegistered",
+        "network",
+        "participantType",
+        "participantId"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_registrer_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "companyName": {
+          "description": "Virksomhedsnavnet der sendes med register-company.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "cvr": {
+          "description": "CVR-identifikatoren der registreres (fx 'DK12345678').",
+          "minLength": 1,
+          "type": "string"
+        },
+        "network": {
+          "description": "Netværket participant-registreringen sker på; standard 'nemhandel'.",
+          "enum": [
+            "nemhandel",
+            "peppol"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "cvr",
+        "companyName"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_registrer_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_registrer_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_registrer_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_Data": {
+      "type": "object",
+      "properties": {
+        "pagesFetched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsListed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsIngested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsSkipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documentsQuarantined": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/ReceivedDocument"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "pagesFetched",
+        "documentsListed",
+        "documentsIngested",
+        "documentsSkipped",
+        "documentsQuarantined",
+        "documents",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "digisenseCompanyKey": {
+          "description": "Digisense companyKey at polle fra; standard den ENE registrerede virksomhed",
+          "minLength": 1,
+          "type": "string"
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "limit": {
+          "description": "Side-størrelse (<=100); standard 100",
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "integer"
+        },
+        "maxTimestamp": {
+          "description": "Valgfrit øvre tidsstempel som ISO 8601 (fx '2026-06-01T00:00:00Z'); videresendt urørt til Digisense' list-received-documents for at begrænse pollen tidsmæssigt.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "Valgfri DocumentMetadata-payload (uden 'source') der OVERSTYRER de UBL-/listning-afledte felter på hvert modtaget bilag.",
+          "properties": {
+            "accountingRationale": {
+              "description": "Required for internal_voucher: the accounting reason for the posting.",
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "amountIncVat": {
+              "description": "Total amount including VAT, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            },
+            "currency": {
+              "description": "3-letter ISO currency code (default 'DKK').",
+              "type": "string"
+            },
+            "danishSimplifiedPurchaseInvoice": {
+              "description": "Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields.",
+              "type": "boolean"
+            },
+            "deliveryDescription": {
+              "description": "Free-text description of the goods or services.",
+              "type": "string"
+            },
+            "documentType": {
+              "description": "Document type (default 'purchase_sale').",
+              "enum": [
+                "purchase_sale",
+                "cash_register_receipt",
+                "internal_voucher"
+              ],
+              "type": "string"
+            },
+            "exemptionCode": {
+              "anyOf": [
+                {
+                  "const": "FOREIGN_PHYSICAL_ONLY",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Set to 'FOREIGN_PHYSICAL_ONLY' for a foreign physical-only receipt; otherwise omit."
+            },
+            "invoiceNo": {
+              "description": "Invoice or receipt number printed on the document.",
+              "type": "string"
+            },
+            "issueDate": {
+              "description": "Document/invoice date in YYYY-MM-DD format.",
+              "type": "string"
+            },
+            "paymentDetails": {
+              "description": "Free-text payment details, e.g. 'Bankoverførsel 2026-05-17'.",
+              "type": "string"
+            },
+            "purchaseVatLines": {
+              "description": "Optional durable purchase VAT split. Its net and VAT totals must reconcile exactly with the document totals.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "classification": {
+                    "enum": [
+                      "dk_purchase_25",
+                      "exempt"
+                    ],
+                    "type": "string"
+                  },
+                  "netAmount": {
+                    "description": "Tax base in kroner.",
+                    "minimum": 0,
+                    "type": "number"
+                  },
+                  "vatAmount": {
+                    "description": "VAT amount in kroner; 25% for dk_purchase_25, otherwise zero.",
+                    "minimum": 0,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "classification",
+                  "netAmount"
+                ],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "recipient": {
+              "additionalProperties": false,
+              "description": "Recipient/buyer details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "reverseChargeWordingConfirmed": {
+              "description": "True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction.",
+              "type": "boolean"
+            },
+            "sender": {
+              "additionalProperties": false,
+              "description": "Sender/supplier details.",
+              "properties": {
+                "address": {
+                  "description": "Party postal address.",
+                  "type": "string"
+                },
+                "countryCode": {
+                  "description": "Supplier ISO 3166-1 alpha-2 country evidence, e.g. 'US'. Required with identifierKind.",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "identifierKind": {
+                  "description": "Typed supplier identifier. non_eu permits no identifier when country evidence is non-EU.",
+                  "enum": [
+                    "dk_cvr",
+                    "eu_vat",
+                    "non_eu"
+                  ],
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Party name.",
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "description": "Party VAT or CVR number, e.g. 'DK12345678'.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "sourceBankTransactionId": {
+              "description": "Required for internal_voucher: the imported bank transaction that is its primary evidence.",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "vatAmount": {
+              "description": "VAT amount, in kroner (decimal DKK, 2 decimals — NOT øre).",
+              "type": "number"
+            }
+          },
+          "type": "object",
+          "x-arbitrary-json": {
+            "scope": "efaktura_modtag caller metadata",
+            "rationale": "Original tool explicitly accepts passthrough metadata or record fields; no authority is derived from these values.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-mcp/src/tools.rs",
+                "needle": "pub async fn call",
+                "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45"
+              },
+              {
+                "path": "crates/rentemester-server/src/product_http.rs",
+                "needle": "pub fn router",
+                "sha256": "663e3338ce980e3c691b696e9f527931512f675ba051e9865bd19f28b544f839"
+              },
+              {
+                "path": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+                "needle": "efaktura_modtag",
+                "sha256": "5526cebd45726ed1964e11ecdf6cbc060a51551fa15cc11b33dab70378e0cf07"
+              },
+              {
+                "path": "crates/rentemester-mcp/src/public_einvoice/original717.rs",
+                "needle": "pub async fn tool_result",
+                "sha256": "6236b2e8cc7f92adc2498a913c9a13fc10df7c9089777ddd47e6abb99f9f29c8"
+              },
+              {
+                "path": "crates/rentemester-application/src/public_einvoice/original717.rs",
+                "needle": "pub",
+                "sha256": "24a20d7b9182cb0ac82db5835a3264808a2847902f73bc3d8cfa392f5a3b4325"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_modtag_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_modtag_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "pagesFetched": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsListed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsIngested": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsSkipped": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documentsQuarantined": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/ReceivedDocument"
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "documents",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_workspace_Data": {
+      "type": "object",
+      "properties": {
+        "companies": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "skipped"
+                  },
+                  "reason": {
+                    "enum": [
+                      "archived",
+                      "not initialized",
+                      "not configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "polled"
+                  },
+                  "documentsIngested": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "documentsIngested"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "failed"
+                  },
+                  "reason": {
+                    "const": "receive failed; inspect authoritative documents and dedup before any further action"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "companies"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_workspace_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "workspace": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace"
+      ],
+      "type": "object"
+    },
+    "Source717_efaktura_modtag_workspace_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-public_invoice_inbound_bilagsmail.json#/$defs/Source717_efaktura_modtag_workspace_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_efaktura_modtag_workspace_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

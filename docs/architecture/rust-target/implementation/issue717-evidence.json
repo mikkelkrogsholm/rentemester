@@ -1,0 +1,317 @@
+{
+  "format": "rentemester-whole-issue-acceptance/1",
+  "issue": 717,
+  "whole_issue_accepted": true,
+  "source_revision": "7e01053ac60bb21753d334ea50376a4ded9148d7",
+  "run_id": "issue717-source-contracts-20261025T145708.141808000",
+  "accepted_at": "2026-10-25T16:44:35.688179+00:00",
+  "remaining": [],
+  "lead_review": "Reviewed actual bounded worker diffs and scoped repairs, source214 tool contracts and31 workflow definitions, common Owner/current authority/namespace boundaries, exact source outputs and malformed/uncertain outcomes. Registration counts alone were not accepted. First9 candidate was preserved after a diagnosed stale-fixture acceptance failure; current combined code passed all agreed checks. No original issue scope or necessary controls were removed.",
+  "combined": {
+    "passed": true,
+    "revision": "7e01053ac60bb21753d334ea50376a4ded9148d7",
+    "results": [
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/protocol-manifest.py",
+          "--check"
+        ],
+        "exit": 0,
+        "passedTests": 0,
+        "minimum": 0,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-0.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-engine",
+          "-p",
+          "rentemester-runtime",
+          "-p",
+          "rentemester-storage",
+          "-p",
+          "rentemester-application",
+          "-p",
+          "rentemester-host",
+          "-p",
+          "rentemester-client",
+          "--lib",
+          "original717",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit": 0,
+        "passedTests": 37,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-1.log",
+        "sha256": "4e97555e93bdc819a14d96c08e0fa511e759984861ebda8e138ecad6bff6f91b"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-server",
+          "--bin",
+          "rentemester-server",
+          "original717"
+        ],
+        "exit": 0,
+        "passedTests": 4,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-2.log",
+        "sha256": "644318e74db3c35ba377ca590c1e5ae0165acae2941a92e689c10ed0a7fa5563"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-client",
+          "--test",
+          "original717"
+        ],
+        "exit": 0,
+        "passedTests": 10,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-3.log",
+        "sha256": "deb199d9013d6956f7cb482d5d3997636fdaf2f1799b9ce357d4be97e2d39415"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-mcp",
+          "--bin",
+          "rentemester-mcp",
+          "original717"
+        ],
+        "exit": 0,
+        "passedTests": 16,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-4.log",
+        "sha256": "9bf96b1bb13e5759e4fae35f2b9993d6bd432eed258148502e901c303b994c1b"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-mcp",
+          "--bin",
+          "rentemester-mcp",
+          "original_discovery123"
+        ],
+        "exit": 0,
+        "passedTests": 5,
+        "minimum": 5,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-5.log",
+        "sha256": "87832c94f035c9386c856054bbe338688934b3c3beacba0bd8d13f95560dc418"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-mcp",
+          "--test",
+          "original717"
+        ],
+        "exit": 0,
+        "passedTests": 10,
+        "minimum": 9,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-6.log",
+        "sha256": "bff0d941a0e7628b0fdf196a7b6f7e4227e2533c4f3a975f1d1c850e13185ac4"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-client",
+          "--test",
+          "original717_contracts"
+        ],
+        "exit": 0,
+        "passedTests": 2,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-7.log",
+        "sha256": "fc5b18ca1c28d7de23945c53d345881bede9201065c4db145442a6322d7addcc"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-mcp",
+          "--test",
+          "original717_contracts"
+        ],
+        "exit": 0,
+        "passedTests": 4,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-8.log",
+        "sha256": "ad557d68ff7d1e4fbdd2073fed5518a2051d0ce55926d083f33651bda5e8d962"
+      },
+      {
+        "argv": [
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-mcp",
+          "--test",
+          "stdio"
+        ],
+        "exit": 0,
+        "passedTests": 202,
+        "minimum": 1,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-acceptance/7e01053ac60b-9.log",
+        "sha256": "8a70056009ec8c7aabb548a4edd45743d965d080f001b95bede8ba32d438f593"
+      }
+    ],
+    "all214OriginalNamesRegistered": true,
+    "actualTools": 448,
+    "all31SourceWorkflowsRetained": true,
+    "requiresLeadReviewOfWholeOriginalIssue": true,
+    "liveEffects": false
+  },
+  "contracts": {
+    "passed": true,
+    "source_revision": "7e01053ac60bb21753d334ea50376a4ded9148d7",
+    "operations": 1670,
+    "partitions": 38,
+    "counts": {
+      "http": 689,
+      "cli": 533,
+      "mcp": 448
+    },
+    "new_operations": [
+      "http:POST /api/companies/{slug}/original-gdpr-discover",
+      "http:POST /api/companies/{slug}/original-gdpr-export",
+      "http:POST /api/companies/{slug}/original-gdpr-audit-log",
+      "mcp:native_gdpr_audit_log",
+      "mcp:system_backup",
+      "http:POST /api/companies/{slug}/original-system-backup",
+      "mcp:system_backup_archive",
+      "http:POST /api/companies/{slug}/original-system-backup-archive",
+      "mcp:system_backup_place",
+      "http:POST /api/companies/{slug}/original-system-backup-place",
+      "mcp:system_backup_verify_remote_placement",
+      "http:POST /api/companies/{slug}/original-system-backup-verify-remote-placement",
+      "mcp:system_restore_backup",
+      "http:POST /api/original-system-restore-backup",
+      "http:GET /api/companies/{slug}/original-system-backup-governance",
+      "http:HEAD /api/companies/{slug}/original-system-backup-governance",
+      "http:GET /api/companies/{slug}/original-system-backup-destination-list",
+      "http:HEAD /api/companies/{slug}/original-system-backup-destination-list",
+      "http:POST /api/companies/{slug}/original-system-backup-destination-add",
+      "http:POST /api/companies/{slug}/original-system-backup-destination-remove",
+      "http:POST /api/companies/{slug}/original-system-backup-confirm-placement",
+      "http:POST /api/companies/{slug}/original-invoice-send-email",
+      "mcp:invoice_send_email",
+      "http:GET /api/original/agent-about",
+      "http:HEAD /api/original/agent-about",
+      "http:GET /api/original/agent-capabilities",
+      "http:HEAD /api/original/agent-capabilities",
+      "http:GET /api/original/agent-workflows/{id}",
+      "http:HEAD /api/original/agent-workflows/{id}",
+      "mcp:mail_intake_ingest",
+      "http:POST /api/companies/{slug}/original-mail-intake",
+      "mcp:imap_intake_poll",
+      "http:POST /api/companies/{slug}/original-imap-intake",
+      "mcp:efaktura_konfigurer",
+      "http:POST /api/companies/{slug}/original-efaktura-konfigurer",
+      "http:GET /api/companies/{slug}/original-efaktura-onboarding-status",
+      "http:HEAD /api/companies/{slug}/original-efaktura-onboarding-status",
+      "http:POST /api/companies/{slug}/original-efaktura-onboard",
+      "http:POST /api/companies/{slug}/original-efaktura-registrer",
+      "http:POST /api/companies/{slug}/original-efaktura-modtag",
+      "http:POST /api/workspace/original-efaktura-modtag"
+    ],
+    "revised_source_or_effect_contracts": [
+      "mcp:gdpr_audit_log",
+      "mcp:gdpr_discover",
+      "mcp:gdpr_export",
+      "mcp:system_backup_confirm_placement",
+      "mcp:system_backup_destination_add",
+      "mcp:system_backup_destination_list",
+      "mcp:system_backup_destination_remove",
+      "mcp:system_backup_governance",
+      "mcp:system_backup_status",
+      "mcp:budget_vs_actual",
+      "mcp:agent_capability_search",
+      "mcp:agent_workflow_describe",
+      "mcp:meta_about",
+      "mcp:invoice_claim_compensation",
+      "mcp:invoice_claim_interest",
+      "mcp:invoice_post_compensation",
+      "mcp:invoice_post_interest",
+      "mcp:invoice_post_interest_correction",
+      "mcp:invoice_write_off_bad_debt",
+      "mcp:efaktura_modtag",
+      "mcp:efaktura_modtag_workspace",
+      "mcp:efaktura_onboard",
+      "mcp:efaktura_onboarding_status",
+      "mcp:efaktura_registrer",
+      "mcp:invoice_imported_receivables",
+      "mcp:bookkeeping_batch_apply",
+      "mcp:bookkeeping_batch_approve",
+      "mcp:bookkeeping_batch_dry_run",
+      "mcp:bookkeeping_batch_persist",
+      "mcp:bookkeeping_batch_plan",
+      "mcp:bookkeeping_batch_status"
+    ],
+    "all_prior1629_identities_retained": true,
+    "unrelated_prior_contracts_and_all_prior_definitions_preserved_except_source_pins": true,
+    "exact_actual_manifest_and_catalogue": true,
+    "scope": "Existing strict source/schema oracle and lead-reviewed actual constructors; runtime and recovery evidence is the separate SGD combined acceptance."
+  },
+  "qualified_additional_evidence": {
+    "privacy": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-privacy-review",
+    "provider": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-provider-review",
+    "backup": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-backupviews-review",
+    "annotation_review": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue717-annotations-review.json"
+  },
+  "preserved_failures": [
+    "cancelled first9 run and accepted source commits;49 old registry counter fixtures and13 old business-first listeners diagnosed before repair",
+    "missing provider test json macro; physical fixture requires umask077 and serial qualification, no production guard weakened",
+    "backup readback SQLITE_NOFOLLOW rejected macOS /var temporary path alias; canonical owned file fixed and create/status/lock/tamper plus placements passed"
+  ],
+  "effects": {
+    "live_company_data": false,
+    "live_financial_or_provider_effects": false,
+    "replayed_accepted_effects": false,
+    "installed_desktop_acceptance": false
+  },
+  "boundaries": [
+    "Source stdio transport and no resources retained; no new MCP transport invented.",
+    "42 source CLI keys and mismatched source HTTP references remain explicitly unavailable in original conceptual workflows; discovery never promotes missing/unmatched operations to supported.",
+    "Built-in original SMTP is dry-run only, matching original src/core/email.ts; injected live transport is an explicit existing seam, not a fabricated accepted delivery.",
+    "Fresh local restore requires verified same-user operator/current permission/exact target, HMAC/full inventory; no arbitrary hosted paths.",
+    "No live financial use before separate cutover gate; remaining epic issues and final installed desktop acceptance unchanged."
+  ],
+  "round_evaluation": "Closure-first worked when the unit was the complete original issue. Three independent families ran in parallel; small diagnosed repairs stayed with the lead. Test-fixture and source-pin repairs reused existing mechanisms. No optional polish/new infrastructure was added. This was a broad agent interface issue; next trial should pick a smaller whole existing issue, with original acceptance unchanged. Stop before selecting another issue."
+}

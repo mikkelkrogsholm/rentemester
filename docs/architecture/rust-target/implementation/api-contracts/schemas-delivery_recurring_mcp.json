@@ -3562,7 +3562,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -3587,7 +3587,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -3732,7 +3732,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -3757,7 +3757,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -3902,7 +3902,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -3927,7 +3927,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -4079,7 +4079,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -4104,7 +4104,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -4226,7 +4226,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -4251,7 +4251,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -4409,7 +4409,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -4434,7 +4434,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -4604,7 +4604,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -4629,7 +4629,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -4799,7 +4799,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -4824,7 +4824,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -5074,7 +5074,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -5099,7 +5099,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -5299,7 +5299,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -5324,7 +5324,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -5578,7 +5578,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -5603,7 +5603,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -5810,7 +5810,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -5835,7 +5835,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -5977,7 +5977,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6002,7 +6002,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -6160,7 +6160,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6185,7 +6185,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -6343,7 +6343,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6368,7 +6368,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -6503,7 +6503,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6528,7 +6528,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -6675,7 +6675,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6700,7 +6700,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -6858,7 +6858,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -6883,7 +6883,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7041,7 +7041,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7066,7 +7066,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7224,7 +7224,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7249,7 +7249,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7407,7 +7407,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7432,7 +7432,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7590,7 +7590,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7615,7 +7615,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7773,7 +7773,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7798,7 +7798,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -7956,7 +7956,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -7981,7 +7981,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -8193,7 +8193,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-mcp/src/main.rs",
-                "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+                "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
                 "needle": "if params.get(\"task\").is_some()"
               }
             ]
@@ -8218,7 +8218,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/main.rs",
-            "sha256": "b5ccf05b9076240be93e6bc653a6c939308b9baf506d1bbfa570d1b0cb805c78",
+            "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
             "needle": "async fn handle("
           }
         ]
@@ -8870,6 +8870,133 @@
       "required": [
         "ok",
         "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_invoice_send_email_Data": {
+      "type": "object",
+      "properties": {
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_invoice_send_email_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "description": "Absolute path to the company directory, or a workspace slug.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "documentId": {
+          "description": "Document ID of the issued invoice to send. Provide this OR invoiceNumber.",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "description": "Invoice number of the issued invoice to send. Provide this OR documentId.",
+          "type": "string"
+        },
+        "kind": {
+          "description": "What to send (default 'invoice'): 'invoice' = the invoice itself; 'reminder' = a payment reminder.",
+          "enum": [
+            "invoice",
+            "reminder"
+          ],
+          "type": "string"
+        },
+        "to": {
+          "description": "Optional recipient email address. When omitted, the customer's stored email is used.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Source717_invoice_send_email_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "schemas-delivery_recurring_mcp.json#/$defs/Source717_invoice_send_email_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Source717_invoice_send_email_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
       ],
       "additionalProperties": false
     }

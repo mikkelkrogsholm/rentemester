@@ -10,12 +10,12 @@
     },
     {
       "path": "crates/rentemester-application/src/dinero_import.rs",
-      "sha256": "9b291743dd8221e10d25a96e0fc546c12a57a7c139889ce7c6d6f9ae3d93b9b7",
+      "sha256": "7ec26486f33865ac138d6c1999c39684224d53150fd6a16df378456710d46948",
       "needle": "pub enum Action"
     },
     {
       "path": "crates/rentemester-storage/src/dinero_import.rs",
-      "sha256": "a0ee3fa1ac0f236e5d7cfcce646c90d294c31a92335148fb90056381903dc878",
+      "sha256": "3e3131d3b247a60dc399d04db56be0d35ad9c2131da57a03caf393712af150df",
       "needle": "pub fn "
     },
     {
@@ -30,12 +30,12 @@
     },
     {
       "path": "crates/rentemester-application/src/opening_balance.rs",
-      "sha256": "4926154f8ec36084be75e8e05fa4ac022b4e7c57c38ae64a3d794bd329268c6f",
+      "sha256": "c52fb85ac6de8c57c253de57b018212ef37e8fc39205f035ddd004ea1a23820f",
       "needle": "pub enum Action"
     },
     {
       "path": "crates/rentemester-storage/src/opening_balance.rs",
-      "sha256": "2aa9f356500b6828a128a7fd73d13f66d25a93accd982d200d10c243330f692e",
+      "sha256": "1f5fe0af329ec9a355d23f0748c3a1a5457ad42d44f35c0089e51a52bd99caf9",
       "needle": "pub fn "
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "5302ca3300e5a14111457a1af56bf4d14e7bb90d7ed9a63acca0feee81c7672a",
+      "sha256": "e81c91e5cb6546a05c7e889bd3adee19ed095d9d3cb01ca827c14b5cd5986f7e",
       "needle": "fn main"
     },
     {
@@ -120,12 +120,12 @@
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
+      "sha256": "9b247ade89b65a16a44e88c41da0ba0f966cc1a8b1046238db385a3db1891c45",
       "needle": "if !args.is_object()"
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
+      "sha256": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
       "needle": "impl Session"
     },
     {
