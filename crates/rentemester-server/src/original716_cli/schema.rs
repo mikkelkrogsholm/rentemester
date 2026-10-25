@@ -14,7 +14,7 @@ pub fn execute(
     apply: bool,
     reason: Option<&str>,
 ) -> Result<Value, Box<dyn std::error::Error>> {
-    let text = Zeroizing::new(std::fs::read_to_string(config_path)?);
+    let text = private_config(config_path)?;
     let config: Config = serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
     if company != config.company_slug
         && Path::new(company) != config.root.join(&config.company_slug)
@@ -39,4 +39,41 @@ pub fn execute(
         result["ownerRetired"] = json!(true);
     }
     Ok(result)
+}
+
+// The operator allowlist is authority: admit its file before reading any secrets.
+fn private_config(path: &Path) -> Result<Zeroizing<String>, Box<dyn std::error::Error>> {
+    use std::io::Read;
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    if !path.is_absolute() {
+        return Err("schema config must be an absolute private file".into());
+    }
+    #[cfg(target_os = "macos")]
+    let flags = 0x100 | 4; // O_NOFOLLOW | O_NONBLOCK
+    #[cfg(not(target_os = "macos"))]
+    let flags = 0x20000 | 0x800;
+    let file = std::fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(flags)
+        .open(path)?;
+    let meta = file.metadata()?;
+    let uid = rentemester_runtime::original716::bootstrap::private_process();
+    const MAX: u64 = 1024 * 1024;
+    if !meta.is_file()
+        || meta.uid() != uid
+        || meta.nlink() != 1
+        || meta.mode() & 0o7777 != 0o600
+        || meta.len() > MAX
+    {
+        return Err(
+            "schema config requires a current-user, single-link, regular 0600 file within 1 MiB"
+                .into(),
+        );
+    }
+    let mut text = Zeroizing::new(String::new());
+    file.take(MAX + 1).read_to_string(&mut text)?;
+    if text.len() as u64 > MAX {
+        return Err("schema config exceeds 1 MiB".into());
+    }
+    Ok(text)
 }
