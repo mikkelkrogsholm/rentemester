@@ -484,7 +484,7 @@ pub fn finish(
                         // Source sender receipt only: do not manufacture native onboarding
                         // attestations or persist provider response/GLN/license metadata.
                         tx.execute("INSERT INTO digisense_participants(company_key,network,direction,participant_type,participant_id,webhook_url,registered_on_network,webhook_registered,registered_at) VALUES(?,'peppol','outbound','DK:CVR',?,NULL,1,?,?) ON CONFLICT(company_key,network,direction) DO UPDATE SET participant_type=excluded.participant_type,participant_id=excluded.participant_id,webhook_url=NULL,registered_on_network=1,webhook_registered=excluded.webhook_registered,registered_at=excluded.registered_at",
-                            rusqlite::params![c.key,c.participant.strip_prefix("DK").unwrap_or(&c.participant),*webhook == Some(true),now]).map_err(|_| refused())?;
+                            rusqlite::params![c.key,c.participant.strip_prefix("DK").unwrap_or(&c.participant),webhook == Some(true),now]).map_err(|_| refused())?;
                     }
                     test_audit(tx, *sender, "succeeded", "completed", actor, &now)?;
                     Ok(Next::Complete(json!({"ok":true,"registered":true})))

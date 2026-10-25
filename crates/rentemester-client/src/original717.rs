@@ -353,26 +353,11 @@ mod boundary_tests {
 }
 
 impl ApiClient {
-    /// CLI boundary reuses source schemas, file admission and result verification;
-    /// the immutable MCP catalogue and its validator remain unchanged.
+    /// Source CLI intake shares the existing schema, file admission and one-shot transport.
     pub async fn original716_intake(&self, name: &str, args: &Value) -> Result<Value, Error> {
         if !matches!(name, "mail_intake_ingest" | "imap_intake_poll") {
             return Err(Error::InvalidInput("unknown original716 intake"));
         }
-        validate_original717(name, args)?;
-        // Runtime connection decoder uses bounded u16 ports and u32 UIDs.
-        if name == "imap_intake_poll"
-            && (args
-                .get("imapPort")
-                .is_some_and(|v| v.as_u64().is_none_or(|n| n == 0 || n > 65535))
-                || args
-                    .get("sinceUid")
-                    .is_some_and(|v| v.as_u64().is_none_or(|n| n > u32::MAX as u64)))
-        {
-            return Err(Error::InvalidInput("invalid IMAP port or UID"));
-        }
-        // original717 already implements private messages/core, transport bounds,
-        // metadataPerMessage and ephemeral IMAP fields for these source schemas.
         self.original717(name, args).await
     }
 }
