@@ -1,0 +1,15 @@
+    Blocking waiting for file lock on build directory
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.95s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_runtime-a3079918e8fc9752)
+
+running 5 tests
+test original716::transfer::tests::original716_source_transfer_recovery_plan_is_not_an_authentication_database ... ok
+test original716::transfer::tests::original716_source_transfer_two_company_integrity_readback_not_restore_authority ... ok
+test original716::transfer::tests::original716_independent_company_trust_never_comes_from_embedded_key ... ok
+test original716::transfer::tests::original716_source_transfer_tamper_unlisted_traversal_and_credential_refusals ... ok
+test original716::transfer::tests::v2_purpose_transfer_retains_exact_inner_bytes_without_bumping_outer_format ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.02s
+

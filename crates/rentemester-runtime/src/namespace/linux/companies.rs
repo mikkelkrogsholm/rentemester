@@ -1,7 +1,7 @@
 //! Narrow workspace-owner transitions, retaining the existing root lease.
 use super::*;
 impl NamespaceGuard {
-    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, Error> {
+    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool, rentemester_engine::workspace_manifest::Purpose)>, Error> {
         self.ensure_current()?;
         self.layout.catalog().map_err(|_| Error::Changed)
     }

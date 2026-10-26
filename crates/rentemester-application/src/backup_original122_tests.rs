@@ -44,7 +44,7 @@ fn fixture() -> (
             .map(|slug| RegisteredCompany {
                 slug: slug.into(),
                 name: format!("Synthetic {slug}"),
-                archived: false,
+                purpose: Default::default(), archived: false,
             })
             .collect(),
     };

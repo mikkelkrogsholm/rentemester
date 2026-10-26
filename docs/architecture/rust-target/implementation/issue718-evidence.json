@@ -163,7 +163,7 @@
     {
       "criterion": 4,
       "browserDisposition": "accepted",
-      "basis": "Retained full #689/J04 actual calculated\u2192reviewed/locked\u2192externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
+      "basis": "Retained full #689/J04 actual calculated→reviewed/locked→externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
     }
   ],
   "browser_portion_accepted": true,
@@ -813,5 +813,11 @@
       "remainingNativeMainPort": true,
       "wholeIssueAccepted": false
     }
+  },
+  "currentMainNativeWorkspacePurpose": {
+    "status": "scoped native prerequisite accepted; whole718 OPEN",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/workspace-v2-qualification.json",
+    "baseRevision": "a4d02e7072c8bfacd1fe81a2270fec854f124d21",
+    "remaining": "Native company56/control-main34/tasks and other current-main operations, original platform/manual/release/cutover gates"
   }
 }

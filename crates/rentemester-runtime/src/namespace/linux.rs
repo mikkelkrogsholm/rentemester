@@ -289,8 +289,8 @@ impl NamespaceGuard {
         profile: NamespaceProfile,
     ) -> Result<Self, Error> {
         process_profile(uid, profile)?;
-        let manifest = serde_json::to_vec(&serde_json::json!({"version":1,"companies":[
-            {"slug":slug,"name":name,"createdAt":created_at,"archived":false}
+        let manifest = serde_json::to_vec(&serde_json::json!({"version":2,"companies":[
+            {"slug":slug,"name":name,"createdAt":created_at,"archived":false,"purpose":"live"}
         ]}))
         .map_err(|_| Error::Invalid)?;
         WorkspaceLayout::validate_new_manifest(workspace, slug, &manifest)

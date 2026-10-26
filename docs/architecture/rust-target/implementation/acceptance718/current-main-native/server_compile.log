@@ -1,0 +1,216 @@
+    Checking cfg-if v1.0.5
+    Checking stable_deref_trait v1.2.1
+    Checking typenum v1.20.1
+    Checking smallvec v1.16.3
+    Checking pin-project-lite v0.2.17
+    Checking zeroize v1.9.1
+    Checking subtle v2.6.1
+    Checking bytes v1.12.1
+    Checking critical-section v1.2.0
+    Checking futures-core v0.3.34
+    Checking libc v0.2.191
+    Checking portable-atomic v1.15.0
+    Checking memchr v2.8.3
+   Compiling serde_core v1.0.229
+    Checking zerofrom v0.1.8
+    Checking bitflags v2.13.2
+    Checking litemap v0.8.3
+    Checking itoa v1.0.18
+    Checking writeable v0.6.4
+    Checking rand_core v0.10.1
+    Checking futures-sink v0.3.34
+    Checking utf8_iter v1.0.4
+    Checking yoke v0.8.3
+    Checking num-traits v0.2.19
+    Checking percent-encoding v2.3.2
+    Checking icu_normalizer_data v2.3.0
+    Checking icu_properties_data v2.3.0
+    Checking futures-task v0.3.34
+    Checking futures-io v0.3.34
+    Checking slab v0.4.12
+    Checking scopeguard v1.2.0
+    Checking rustls-pki-types v1.15.1
+    Checking core-foundation-sys v0.8.7
+    Checking zerovec v0.11.8
+    Checking zerotrie v0.2.5
+    Checking aws-lc-sys v0.46.0
+    Checking once_cell v1.21.4
+    Checking untrusted v0.9.0
+    Checking form_urlencoded v1.2.2
+    Checking foldhash v0.2.0
+    Checking tower-service v0.3.3
+    Checking equivalent v1.0.3
+    Checking futures-util v0.3.34
+    Checking tracing-core v0.1.36
+    Checking tinyvec v1.13.3
+    Checking log v0.4.34
+    Checking futures-channel v0.3.34
+    Checking hashbrown v0.17.1
+    Checking httpdate v1.0.3
+    Checking try-lock v0.2.5
+   Compiling libloading v0.8.9
+    Checking httparse v1.10.1
+    Checking crossbeam-utils v0.8.23
+    Checking http v1.5.0
+    Checking chacha20 v0.10.2
+    Checking want v0.3.2
+    Checking generic-array v0.14.7
+    Checking sync_wrapper v1.0.2
+    Checking tracing v0.1.44
+   Compiling unicase v2.10.0
+    Checking tower-layer v0.3.3
+    Checking atomic-waker v1.1.2
+    Checking either v1.19.0
+    Checking mime v0.3.17
+    Checking base64 v0.23.1
+   Compiling mime_guess v2.0.5
+    Checking tinystr v0.8.4
+    Checking potential_utf v0.1.6
+    Checking aws-lc-rs v1.18.2
+   Compiling indexmap v2.14.2
+    Checking thiserror v2.0.21
+   Compiling clang-sys v1.9.1
+    Checking lock_api v0.4.14
+    Checking icu_collections v2.3.0
+    Checking icu_locale_core v2.3.0
+    Checking data-encoding v2.11.1
+    Checking simdutf8 v0.1.5
+    Checking zlib-rs v0.6.8
+    Checking encoding_rs v0.8.42
+    Checking num-integer v0.1.47
+    Checking crossbeam-epoch v0.9.21
+    Checking crossbeam-channel v0.5.17
+    Checking zmij v1.0.23
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking http-body v1.1.0
+    Checking inout v0.1.4
+    Checking crc32fast v1.5.2
+    Checking errno v0.3.14
+    Checking mio v1.2.4
+    Checking socket2 v0.6.5
+    Checking getrandom v0.4.3
+    Checking signal-hook-registry v1.4.8
+    Checking getrandom v0.2.17
+    Checking digest v0.10.7
+    Checking cpufeatures v0.2.17
+    Checking ring v0.17.14
+    Checking rand v0.10.3
+    Checking uuid v1.28.0
+    Checking cipher v0.4.4
+    Checking http-body-util v0.1.5
+    Checking parking_lot_core v0.9.12
+    Checking sha2 v0.10.9
+    Checking tokio v1.53.3
+    Checking parking_lot v0.12.5
+   Compiling hashify v0.2.9
+    Checking system-configuration-sys v0.6.0
+    Checking core-foundation v0.9.4
+    Checking security-framework-sys v2.17.0
+    Checking icu_provider v2.3.1
+    Checking nix v0.31.3
+    Checking core-foundation v0.10.1
+    Checking time-core v0.1.9
+    Checking tagptr v0.2.0
+    Checking icu_properties v2.3.0
+    Checking icu_normalizer v2.3.0
+    Checking powerfmt v0.2.1
+    Checking siphasher v1.0.4
+    Checking typed-path v0.12.4
+    Checking num-conv v0.2.2
+    Checking deranged v0.5.9
+    Checking phf_shared v0.12.1
+    Checking security-framework v3.7.0
+    Checking moka v0.12.16
+    Checking system-configuration v0.7.0
+    Checking libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/vendor/libsqlite3-sys-0.38.2)
+    Checking hmac v0.12.1
+    Checking rustix v1.1.5
+    Checking flate2 v1.1.10
+    Checking universal-hash v0.5.1
+    Checking mail-parser v0.11.9
+    Checking num-bigint v0.5.1
+    Checking hashlink v0.12.2
+    Checking unicode-normalization v0.1.25
+    Checking unicode-properties v0.1.4
+    Checking base64 v0.22.1
+    Checking serde v1.0.229
+    Checking serde_json v1.0.154
+    Checking rustls-webpki v0.103.15
+    Checking opaque-debug v0.3.1
+    Checking zip v9.0.5
+    Checking fallible-streaming-iterator v0.1.9
+    Checking ryu-js v1.0.3
+    Checking resolv-conf v0.7.6
+    Checking http-range-header v0.4.2
+    Checking fallible-iterator v0.3.0
+    Checking time v0.3.55
+    Checking roxmltree v0.20.0
+    Checking idna_adapter v1.2.2
+    Checking poly1305 v0.8.0
+    Checking pbkdf2 v0.12.2
+    Checking idna v1.1.0
+    Checking phf v0.12.1
+    Checking salsa20 v0.10.2
+    Checking ipnet v2.12.2
+    Checking rustls v0.23.46
+    Checking rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/vendor/rusqlite-0.40.2)
+    Checking chacha20 v0.9.1
+    Checking aead v0.5.2
+    Checking chrono v0.4.45
+    Checking url v2.5.8
+    Checking webpki-roots v1.0.9
+    Checking nom v8.0.0
+   Compiling bindgen v0.72.1
+    Checking email_address v0.2.9
+    Checking prefix-trie v0.8.4
+    Checking fastrand v2.5.0
+    Checking chacha20poly1305 v0.10.1
+    Checking scrypt v0.11.0
+    Checking exacl v0.13.0
+    Checking sha1 v0.10.7
+    Checking webpki-root-certs v1.0.9
+    Checking tempfile v3.27.0
+    Checking axum-core v0.5.6
+    Checking matchit v0.8.4
+    Checking hickory-proto v0.26.3
+    Checking chrono-tz v0.10.4
+    Checking rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+    Checking hyper v1.12.0
+    Checking tower v0.5.3
+    Checking hickory-net v0.26.3
+    Checking tokio-util v0.7.20
+    Checking tower-http v0.6.11
+    Checking hickory-resolver v0.26.3
+    Checking tokio-rustls v0.26.6
+    Checking rustls-platform-verifier v0.7.1
+    Checking hyper-util v0.1.21
+    Checking lettre v0.11.23
+    Checking hyper-rustls v0.27.10
+    Checking axum v0.8.9
+   Compiling libproc v0.14.11
+    Checking reqwest v0.13.5
+    Checking rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Checking rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+    Checking rentemester-application v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+    Checking rentemester-host v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::Value`
+  --> crates/rentemester-host/src/portable_backup.rs:10:5
+   |
+10 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib) generated 1 warning (run `cargo fix --lib -p rentemester-host` to apply 1 suggestion)
+    Checking rentemester-server v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.69s

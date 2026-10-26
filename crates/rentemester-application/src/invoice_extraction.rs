@@ -474,7 +474,7 @@ pub fn prepare_service(
                     vec![rentemester_storage::workspace_context::RegisteredCompany {
                         slug: slug.clone(),
                         name: slug.clone(),
-                        archived: context.selection.archived,
+                        purpose: Default::default(), archived: context.selection.archived,
                     }]
                 } else {
                     vec![]

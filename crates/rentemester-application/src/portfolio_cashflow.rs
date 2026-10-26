@@ -87,12 +87,12 @@ mod tests {
                 RegisteredCompany {
                     slug: "visible".into(),
                     name: "Synthetic visible".into(),
-                    archived: false,
+                    purpose: Default::default(), archived: false,
                 },
                 RegisteredCompany {
                     slug: "hidden".into(),
                     name: "Synthetic hidden".into(),
-                    archived: false,
+                    purpose: Default::default(), archived: false,
                 },
             ],
         };

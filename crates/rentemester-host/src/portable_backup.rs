@@ -108,11 +108,12 @@ impl Owner {
             workspace: self.workspace.clone(),
             companies: catalog
                 .into_iter()
-                .map(|(slug, name, archived)| {
+                .map(|(slug, name, archived, purpose)| {
                     rentemester_application::workspace_context::RegisteredCompany {
                         slug,
                         name,
                         archived,
+                        purpose,
                     }
                 })
                 .collect(),
@@ -765,32 +766,10 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         .iter()
         .find(|e| matches!(e.kind(), artifact::EntryKind::WorkspaceManifest))
         .ok_or_else(|| error("manifest"))?;
-    let value: Value = serde_json::from_slice(manifest.bytes()).map_err(error)?;
-    let registered = value["companies"]
-        .as_array()
-        .ok_or_else(|| error("companies"))?;
+    let registered = rentemester_engine::workspace_manifest::parse(manifest.bytes()).map_err(error)?;
     let expected: BTreeSet<_> = ctx.companies.iter().map(|c| c.slug.as_str()).collect();
-    let actual: BTreeSet<_> = registered
-        .iter()
-        .filter_map(|c| c["slug"].as_str())
-        .collect();
-    if value.as_object().is_none_or(|v| v.len() != 2)
-        || value["version"] != 1
-        || actual != expected
-        || registered.len() != actual.len()
-        || registered.iter().any(|c| {
-            c.as_object().is_none_or(|v| v.len() != 4)
-                || c["archived"].as_bool().is_none()
-                || c["name"].as_str().is_none_or(|s| {
-                    s.trim().is_empty() || s.len() > 1024 || s.chars().any(char::is_control)
-                })
-                || c["createdAt"].as_str().is_none_or(|s| {
-                    s.trim().is_empty() || s.len() > 128 || s.chars().any(char::is_control)
-                })
-        })
-    {
-        return Err(error("manifest context differs"));
-    }
+    let actual: BTreeSet<_> = registered.companies.iter().map(|c| c.slug.as_str()).collect();
+    if actual != expected { return Err(error("manifest context differs")); }
     let mut control = Connection::open_in_memory().map_err(error)?;
     restore_business(
         &mut control,
@@ -1409,10 +1388,7 @@ mod tests {
         };
         verified(context, entries)
     }
-    pub(super) fn verified(
-        context: artifact::Context,
-        entries: Vec<artifact::Snapshot>,
-    ) -> artifact::VerifiedArtifact {
+    fn signing_key() -> artifact::SigningKey {
         // Public RFC8032 test-vector material, never an operator default/file.
         let der = concat!(
             "3051020101300506032b657004220420",
@@ -1424,7 +1400,13 @@ mod tests {
             .step_by(2)
             .map(|i| u8::from_str_radix(&der[i..i + 2], 16).unwrap())
             .collect::<Vec<_>>();
-        let key = artifact::SigningKey::from_pkcs8(&der).unwrap();
+        artifact::SigningKey::from_pkcs8(&der).unwrap()
+    }
+    pub(super) fn verified(
+        context: artifact::Context,
+        entries: Vec<artifact::Snapshot>,
+    ) -> artifact::VerifiedArtifact {
+        let key = signing_key();
         let trust = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
         artifact::verify(&artifact::create(context, entries, &key).unwrap(), &trust).unwrap()
     }
@@ -1594,6 +1576,69 @@ mod tests {
         assert!(validate(&mixed_company_archive(Some(json!(false)), false)).is_ok());
         // The newly accepted flag does not relax per-company domain identity.
         assert!(validate(&mixed_company_archive(Some(json!(true)), true)).is_err());
+    }
+    #[test]
+    fn signed_v2_nonlive_restore_preserves_exact_inventory_and_refuses_missing_ledger() {
+        for purpose in ["test", "dry-run", "restore", "backup", "retest", "baseline"] {
+            let base = mixed_company_archive(Some(json!(false)), false);
+            let context = base.manifest().context.clone();
+            let mut entries = base
+                .entries()
+                .iter()
+                .map(|e| artifact::Snapshot {
+                    kind: e.kind().clone(),
+                    path: e.path().into(),
+                    bytes: e.bytes().to_vec(),
+                })
+                .collect::<Vec<_>>();
+            let entry = entries
+                .iter_mut()
+                .find(|e| matches!(e.kind, artifact::EntryKind::WorkspaceManifest))
+                .unwrap();
+            let mut manifest: Value = serde_json::from_slice(&entry.bytes).unwrap();
+            manifest["version"] = json!(2);
+            manifest["companies"][1]["purpose"] = json!(purpose);
+            entry.bytes = serde_json::to_vec(&manifest).unwrap();
+            let expected = entry.bytes.clone();
+            let a = verified(context.clone(), entries.iter().map(|e| artifact::Snapshot { kind:e.kind.clone(),path:e.path.clone(),bytes:e.bytes.clone() }).collect());
+            validate(&a).unwrap();
+            #[cfg(target_os = "macos")]
+            {
+                let parent = tempfile::tempdir().unwrap();
+                let root = parent.path().canonicalize().unwrap().join("purpose-stage");
+                let uid = String::from_utf8(
+                    std::process::Command::new("id")
+                        .arg("-u")
+                        .output()
+                        .unwrap()
+                        .stdout,
+                )
+                .unwrap()
+                .trim()
+                .parse()
+                .unwrap();
+                let mut guard = NamespaceGuard::create_verified_restore_stage(
+                    &root,
+                    uid,
+                    "w",
+                    "synthetic",
+                    NamespaceProfile::LocalUserMacos,
+                    &a,
+                )
+                .unwrap();
+                assert_eq!(
+                    std::fs::read(root.join("workspace.json")).unwrap(),
+                    expected
+                );
+                assert!(root.join("archived/data/ledger.sqlite").is_file());
+                assert!(guard.select_company("archived").is_err());
+                guard.ensure_current().unwrap();
+            }
+            // A signed complete context cannot omit a non-live company's ledger.
+            entries.retain(|e| e.path != "archived/data/ledger.sqlite");
+            let key = signing_key();
+            assert!(artifact::create(context, entries, &key).is_err());
+        }
     }
     #[test]
     fn signed_archived_flag_requires_explicit_boolean_without_defaulting_or_coercion() {

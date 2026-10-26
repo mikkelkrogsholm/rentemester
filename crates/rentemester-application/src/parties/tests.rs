@@ -36,7 +36,7 @@ fn fixture() -> (
             .map(|s| RegisteredCompany {
                 slug: s.into(),
                 name: format!("Synthetic {s}"),
-                archived: false,
+                purpose: Default::default(), archived: false,
             })
             .collect(),
     };
@@ -1004,7 +1004,7 @@ fn party_merge_backup_union_includes_anchor_for_both_operations() {
     cat.companies.push(RegisteredCompany {
         slug: "anchor".into(),
         name: "Synthetic anchor".into(),
-        archived: false,
+        purpose: Default::default(), archived: false,
     });
     c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','anchor','grant','bookkeeper','user:u')",[]).unwrap();
     let mut guard = Guard { seen: vec![] };
@@ -1106,4 +1106,30 @@ fn party_merge_transfer_fence_blocks_both_operations() {
         assert_eq!(e.error.code, "workspace_transfer_fenced");
     }
     assert_eq!(merge_event_count(&c), 1);
+}
+
+#[test]
+fn nonlive_purpose_is_not_company_context_party_scope_or_explicit_cfo_authority() {
+    use rentemester_engine::{workspace_manifest::Purpose, cfo_analytics::Query};
+    let (_dir, mut db, cookies, proof, mut catalog) = fixture();
+    for purpose in [Purpose::Test, Purpose::DryRun, Purpose::Restore, Purpose::Backup, Purpose::Retest, Purpose::Baseline] {
+        catalog.companies[1].purpose = purpose;
+        let context = crate::workspace_context::execute(&mut db,&cookies,&Fixed,&proof,&catalog).unwrap();
+        let context:Value=serde_json::from_str(context.as_json()).unwrap();
+        assert_eq!(context["companies"].as_array().unwrap().len(),1);
+        assert_eq!(context["companies"][0]["slug"],"a");
+        assert_eq!(catalog.companies.len(),2,"retained inventory must not be filtered in place");
+        let tx=db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+        let (read,write)=company_sets(&tx,"u",&catalog).unwrap();
+        assert!(!read.contains("b") && !write.contains("b"));
+        let mut query=Query { scope:"company".into(),from:"2026-01-01".into(),to:"2026-01-31".into(),company_slugs:vec!["b".into()],group_profile_id:None,account:None,party:None,dimension:None,currency:None,cursor:None,aggregate:"none".into(),limit:50 };
+        assert!(crate::cfo_analytics::authorize(&tx,&cookies,&Fixed,&proof,&catalog,&query).is_err());
+        query.scope="portfolio".into(); query.company_slugs=vec!["a".into(),"b".into()];
+        let explicit=crate::cfo_analytics::authorize(&tx,&cookies,&Fixed,&proof,&catalog,&query).unwrap();
+        assert_eq!(explicit.companies,vec!["a"]); assert!(explicit.partial);
+        query.company_slugs.clear();
+        let implicit=crate::cfo_analytics::authorize(&tx,&cookies,&Fixed,&proof,&catalog,&query).unwrap();
+        assert_eq!(implicit.companies,vec!["a"]); assert!(!implicit.partial);
+        tx.rollback().unwrap();
+    }
 }

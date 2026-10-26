@@ -271,7 +271,7 @@ pub fn execute_service(
         companies: vec![rentemester_storage::workspace_context::RegisteredCompany {
             slug: selection.slug.into(),
             name: selection.slug.into(),
-            archived: selection.archived,
+            purpose: Default::default(), archived: selection.archived,
         }],
     };
     let snapshot = RefCell::new(None);

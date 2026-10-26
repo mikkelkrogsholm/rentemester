@@ -265,3 +265,31 @@ fn private_partial_company_is_never_adopted_or_registered_after_restart() {
             .is_err()
     );
 }
+
+#[test]
+fn native_v2_catalog_and_runner_do_not_probe_nonlive_company_files() {
+    let (dir, mut owner, cookies, proof, _reader, uid) = setup();
+    owner.create_company(&cookies,&Fixed,&proof,&input("b")).unwrap().outcome.unwrap();
+    owner.try_close().unwrap();
+    let root=dir.path().canonicalize().unwrap().join("workspace");
+    let path=root.join("workspace.json");
+    let mut manifest:Value=serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    assert_eq!(manifest["version"],2);
+    manifest["companies"][1]["purpose"]=json!("test");
+    let bytes=serde_json::to_vec(&manifest).unwrap();
+    std::fs::write(&path,&bytes).unwrap();
+    std::fs::rename(root.join("b"),root.join("parked-synthetic-b")).unwrap();
+    let mut owner=Owner::open_with_profile(&root,uid,"w","a",NamespaceProfile::LocalUserMacos).unwrap();
+    let catalog=owner.catalog().unwrap();
+    assert_eq!(catalog.companies.len(),2);
+    assert_eq!(catalog.companies[1].purpose,rentemester_engine::workspace_manifest::Purpose::Test);
+    assert!(owner.select_company("b").is_err());
+    let context=owner.workspace_context(&cookies,&Fixed,&proof,&catalog).unwrap().outcome.unwrap();
+    let context:Value=serde_json::from_str(context.as_json()).unwrap();
+    assert_eq!(context["companies"].as_array().unwrap().len(),1);
+    let runner=owner.recurring_workspace_catalog(&cookies,&proof,&Fixed,"w").unwrap().outcome.unwrap();
+    assert_eq!(runner["companies"].as_array().unwrap().len(),1);
+    assert_eq!(runner["companies"][0]["slug"],"a");
+    assert_eq!(std::fs::read(path).unwrap(),bytes);
+    owner.try_close().unwrap();
+}

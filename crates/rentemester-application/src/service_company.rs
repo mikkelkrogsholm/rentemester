@@ -278,7 +278,7 @@ fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,con
             vec![RegisteredCompany {
                 slug: selection.slug.to_owned(),
                 name: selection.slug.to_owned(),
-                archived: selection.archived,
+                purpose: Default::default(), archived: selection.archived,
             }]
         } else {
             vec![]

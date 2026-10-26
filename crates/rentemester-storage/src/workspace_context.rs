@@ -9,6 +9,10 @@ pub struct RegisteredCompany {
     pub slug: String,
     pub name: String,
     pub archived: bool,
+    pub purpose: rentemester_engine::workspace_manifest::Purpose,
+}
+impl RegisteredCompany {
+    pub fn active(&self) -> bool { !self.archived && self.purpose == rentemester_engine::workspace_manifest::Purpose::Live }
 }
 /// Trusted runtime observation only, not physical manifest/lifetime admission.
 pub struct Catalog {
@@ -146,6 +150,7 @@ pub(crate) fn project(
     let companies = catalog
         .companies
         .iter()
+        .filter(|c| c.purpose == rentemester_engine::workspace_manifest::Purpose::Live)
         .filter_map(|c| {
             roles
                 .get(&c.slug)

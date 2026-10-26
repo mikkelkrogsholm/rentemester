@@ -303,20 +303,10 @@ pub fn check_archive(bytes: &[u8]) -> Result<CheckedArchive, Error> {
     if files.len() != seen.len() || files.keys().any(|k| !seen.contains(k)) {
         return Err(Error::Inventory);
     }
-    let workspace: Value = json(&files["workspace.json"])?;
-    let rows = workspace["companies"].as_array().ok_or(Error::Identity)?;
-    let mut registered = BTreeSet::new();
-    if workspace["version"] != 1 || rows.len() != slugs.len() {
-        return Err(Error::Identity);
-    }
-    for row in rows {
-        let slug = row["slug"].as_str().ok_or(Error::Identity)?;
-        if !registered.insert(slug)
-            || !manifest
-                .companies
-                .iter()
-                .any(|c| c.slug == slug && row["name"] == c.name && row["archived"] == c.archived)
-        {
+    let workspace = rentemester_engine::workspace_manifest::parse(&files["workspace.json"]).map_err(|_| Error::Identity)?;
+    if workspace.companies.len() != slugs.len() { return Err(Error::Identity); }
+    for row in workspace.companies {
+        if !manifest.companies.iter().any(|c| c.slug == row.slug && c.name == row.name && c.archived == row.archived) {
             return Err(Error::Identity);
         }
     }
@@ -384,6 +374,26 @@ mod tests {
             ("companies/synthetic-a.tar".into(), a),
             ("companies/synthetic-b.tar".into(), b),
         ])
+    }
+    #[test]
+    fn v2_purpose_transfer_retains_exact_inner_bytes_without_bumping_outer_format() {
+        for purpose in ["test", "restore", "baseline"] {
+            let mut files=fixture(false);
+            let mut workspace: Value=serde_json::from_slice(&files["workspace.json"]).unwrap();
+            workspace["version"]=json!(2);workspace["companies"][1]["purpose"]=json!(purpose);
+            let bytes=serde_json::to_vec(&workspace).unwrap();
+            let mut manifest:Value=serde_json::from_slice(&files["manifest.json"]).unwrap();
+            manifest["workspaceManifest"]=serde_json::to_value(evidence_fixture("workspace.json",&bytes)).unwrap();
+            files.insert("workspace.json".into(),bytes.clone());
+            files.insert("manifest.json".into(),serde_json::to_vec(&manifest).unwrap());
+            let archive=company::archive(&files).unwrap();
+            let checked=check_archive(&archive).unwrap();
+            assert_eq!(checked.manifest().version,1);
+            assert_eq!(checked.files()["workspace.json"],bytes);
+            assert_eq!(checked.manifest().companies.len(),2);
+            files.get_mut("workspace.json").unwrap().push(b' ');
+            assert!(check_archive(&company::archive(&files).unwrap()).is_err());
+        }
     }
     #[test]
     fn original716_source_transfer_two_company_integrity_readback_not_restore_authority() {

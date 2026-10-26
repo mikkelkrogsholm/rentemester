@@ -63,7 +63,7 @@ impl Owner {
         self.admit()?;
         let result = (|| {
             let mut companies = Vec::new();
-            for company in catalog.companies {
+            for company in catalog.companies.into_iter().filter(|c| c.purpose == rentemester_engine::workspace_manifest::Purpose::Live) {
                 let initialized = if company.archived {
                     false
                 } else {

@@ -217,7 +217,7 @@ fn probe() {
                     |e| rentemester_application::workspace_context::RegisteredCompany {
                         slug: e["slug"].as_str().unwrap().to_owned(),
                         name: e["name"].as_str().unwrap().to_owned(),
-                        archived: e["archived"].as_bool().unwrap(),
+                        purpose: Default::default(), archived: e["archived"].as_bool().unwrap(),
                     },
                 )
                 .collect(),
@@ -249,7 +249,7 @@ fn probe() {
                     |e| rentemester_application::workspace_context::RegisteredCompany {
                         slug: e["slug"].as_str().unwrap().to_owned(),
                         name: e["name"].as_str().unwrap().to_owned(),
-                        archived: e["archived"].as_bool().unwrap(),
+                        purpose: Default::default(), archived: e["archived"].as_bool().unwrap(),
                     },
                 )
                 .collect(),

@@ -306,7 +306,7 @@ mod tests {
                 .map(|s| RegisteredCompany {
                     slug: s.into(),
                     name: format!("Synthetic {s}"),
-                    archived: false,
+                    purpose: Default::default(), archived: false,
                 })
                 .collect(),
         };

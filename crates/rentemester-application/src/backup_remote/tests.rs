@@ -80,7 +80,7 @@ fn fixture() -> Fixture {
         companies: vec![rentemester_storage::workspace_context::RegisteredCompany {
             slug: "a".into(),
             name: "Synthetic".into(),
-            archived: false,
+            purpose: Default::default(), archived: false,
         }],
     };
     // Deliberately synthetic deterministic signing material; never a production credential.
@@ -413,9 +413,9 @@ fn every_registered_company_admin_is_checked_before_initial_local_read() {
     f.catalog
         .companies
         .push(rentemester_storage::workspace_context::RegisteredCompany {
-            slug: "archived-b".into(),
+            slug: "purpose: Default::default(), archived-b".into(),
             name: "Synthetic archived company".into(),
-            archived: true,
+            purpose: Default::default(), archived: true,
         });
     std::fs::remove_file(
         f.configs[0]

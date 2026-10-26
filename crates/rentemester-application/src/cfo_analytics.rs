@@ -74,7 +74,7 @@ pub fn authorize(
         catalog
             .companies
             .iter()
-            .filter(|c| !c.archived)
+            .filter(|c| c.active())
             .map(|c| c.slug.clone())
             .collect::<Vec<_>>()
     } else {
@@ -86,7 +86,7 @@ pub fn authorize(
     // Portfolio never discloses their identities or their count.
     let companies = requested
         .iter()
-        .filter(|s| visible.contains(*s) && catalog.companies.iter().any(|c| c.slug == **s))
+        .filter(|s| visible.contains(*s) && catalog.companies.iter().any(|c| c.slug == **s && c.active()))
         .cloned()
         .collect::<Vec<_>>();
     let partial = companies.len() != requested.len();

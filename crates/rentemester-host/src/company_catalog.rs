@@ -43,10 +43,11 @@ impl Owner {
             workspace: self.workspace.clone(),
             companies: items
                 .into_iter()
-                .map(|(slug, name, archived)| RegisteredCompany {
+                .map(|(slug, name, archived, purpose)| RegisteredCompany {
                     slug,
                     name,
                     archived,
+                    purpose,
                 })
                 .collect(),
         })
@@ -57,7 +58,7 @@ impl Owner {
         if !catalog
             .companies
             .iter()
-            .any(|c| c.slug == slug && !c.archived)
+            .any(|c| c.slug == slug && c.active())
         {
             return Err(OwnerError::Context);
         }

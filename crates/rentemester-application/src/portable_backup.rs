@@ -86,7 +86,7 @@ mod tests {
                     |s| rentemester_storage::workspace_context::RegisteredCompany {
                         slug: s.into(),
                         name: format!("Synthetic {s}"),
-                        archived: s == "b",
+                        purpose: Default::default(), archived: s == "b",
                     },
                 )
                 .collect(),

@@ -1,6 +1,5 @@
 //! Bounded bytes for a legacy adoption stage. This is neither a signed native
 //! backup nor proof of domain validity, source fencing, or writer authority.
-use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
 
@@ -44,21 +43,6 @@ impl std::fmt::Display for Error {
     }
 }
 impl std::error::Error for Error {}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Manifest {
-    version: u32,
-    companies: Vec<Company>,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Company {
-    slug: String,
-    name: String,
-    #[serde(rename = "createdAt")]
-    created_at: String,
-    archived: bool,
-}
 fn text(s: &str, max: usize) -> bool {
     !s.trim().is_empty() && s.len() <= max && !s.chars().any(char::is_control)
 }
@@ -107,8 +91,8 @@ impl AdoptionImage {
         if hash(&receipt) != receipt_sha256 {
             return Err(Error::Digest);
         }
-        let parsed: Manifest = serde_json::from_slice(&manifest).map_err(|_| Error::Manifest)?;
-        if parsed.version != 1 || parsed.companies.is_empty() || parsed.companies.len() > 64 {
+        let parsed = rentemester_engine::workspace_manifest::parse(&manifest).map_err(|_| Error::Manifest)?;
+        if parsed.companies.is_empty() || parsed.companies.len() > 64 {
             return Err(Error::Manifest);
         }
         let mut companies = BTreeSet::new();
@@ -122,7 +106,7 @@ impl AdoptionImage {
                 return Err(Error::Manifest);
             }
             if c.slug == selected_slug {
-                selected = !c.archived;
+                selected = c.active();
             }
         }
         if !selected {

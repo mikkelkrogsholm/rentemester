@@ -154,7 +154,7 @@ impl NamespaceGuard {
         Err(NamespaceError::Unsupported)
     }
 
-    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, NamespaceError> {
+    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool, rentemester_engine::workspace_manifest::Purpose)>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
     pub fn select_company(&mut self, _: &str) -> Result<(), NamespaceError> {

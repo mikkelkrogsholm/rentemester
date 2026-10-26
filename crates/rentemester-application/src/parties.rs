@@ -33,7 +33,7 @@ pub fn company_sets(
 ) -> Result<(BTreeSet<String>, BTreeSet<String>), rentemester_engine::Error> {
     let mut read = BTreeSet::new();
     let mut write = BTreeSet::new();
-    for c in &catalog.companies {
+    for c in catalog.companies.iter().filter(|c| c.purpose == rentemester_engine::workspace_manifest::Purpose::Live) {
         let role = rentemester_storage::control_access::observe_company_role(tx, subject, &c.slug)?;
         if let Some(role) = role {
             let role: CompanyRole =

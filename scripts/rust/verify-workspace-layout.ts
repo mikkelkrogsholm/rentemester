@@ -49,12 +49,12 @@ const entry = {
 	archived: false,
 };
 // Frozen historical native-v1 fixture, NOT the current main writer contract.
-// Native admission intentionally remains v1-only until the explicit v2 port.
+// Current native admission also accepts strict v2/live; v1 still forbids purpose fields.
 const canonical = { version: 1 as const, companies: [entry] };
 const historicalNativeV1Json = `${JSON.stringify(canonical, null, 2)}\n`;
 const cases = [
 	{ id: "historical-native-v1-canonical", allowed: true },
-	{ id: "main-v2-writer", mainWriter: true },
+	{ id: "main-v2-writer", mainWriter: true, allowed: true },
 	{
 		id: "alternate-json-format",
 		manifest: JSON.stringify(canonical),
@@ -124,7 +124,7 @@ const cases = [
 	},
 	{
 		id: "unknown-version",
-		manifest: JSON.stringify({ ...canonical, version: 2 }),
+		manifest: JSON.stringify({ ...canonical, version: 3 }),
 	},
 	{
 		id: "duplicate-json-key",

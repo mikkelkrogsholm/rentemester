@@ -200,7 +200,7 @@ mod tests {
             companies: vec![rentemester_storage::workspace_context::RegisteredCompany {
                 slug: "a".into(),
                 name: "Synthetic".into(),
-                archived: false,
+                purpose: Default::default(), archived: false,
             }],
         };
         let trusted = TrustedPublicKey::from_bytes(&[1u8; 32]).unwrap();

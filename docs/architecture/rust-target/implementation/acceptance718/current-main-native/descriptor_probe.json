@@ -1,0 +1,146 @@
+{
+  "ok": true,
+  "checks": 23,
+  "scope": "historical native-v1 canonical fixture and actual main-v2 writer/loader vs native descriptor layout; exact source inventory preserved; no SQLite admission",
+  "observations": [
+    {
+      "id": "historical-native-v1-canonical",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "main-v2-writer",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "alternate-json-format",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "reordered-keys",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "missing-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-created",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-companies",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "wrong-companies-shape",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "other-archived",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "archived",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    },
+    {
+      "id": "duplicate-slug",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "coerced-boolean",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "omitted-archived",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unknown-field",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unknown-version",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "duplicate-json-key",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "coerced-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "blank-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unsafe-other-slug",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-manifest",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "layout_unavailable"
+    },
+    {
+      "id": "malformed-json",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unregistered",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    },
+    {
+      "id": "unsafe-selection",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    }
+  ],
+  "limits": [
+    "Main-v2 native port remains required; current main writer output is intentionally refused by native v1 admission",
+    "Loader acceptance is not legacy authorization; typed native profile intentionally stricter",
+    "Physical-layout observation only; arbitrary SQLite handle identity and writer authority remain unproven",
+    "No cross-device mount or hardware/platform qualification"
+  ]
+}

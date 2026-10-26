@@ -327,7 +327,7 @@ impl Backend {
         };
         // Schema admission is a startup phase, never a disposal preview/apply side effect.
         let startup_companies = owner.catalog()?.companies;
-        for company in startup_companies.into_iter().filter(|c| !c.archived) {
+        for company in startup_companies.into_iter().filter(|c| c.active()) {
             if owner.recurring_company_initialized_for_schema(&company.slug)? {
                 owner.select_company(&company.slug)?;
                 owner.upgrade_asset_disposal_schema()?;

@@ -114,7 +114,7 @@ fn catalog(s: &CompanySelection<'_>) -> Catalog {
             vec![RegisteredCompany {
                 slug: s.slug.into(),
                 name: s.slug.into(),
-                archived: s.archived,
+                purpose: Default::default(), archived: s.archived,
             }]
         } else {
             vec![]

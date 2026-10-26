@@ -16,18 +16,17 @@ impl WorkspaceLayout {
         self.ensure_current()
     }
 
-    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, LayoutError> {
+    pub fn catalog(&mut self) -> Result<Vec<(String, String, bool, Purpose)>, LayoutError> {
         self.ensure_current()?;
         let bytes = retained_bytes(&self.bindings[0].file)?;
         parse_selection(&bytes, &self.slug, self.snapshot_selection)?;
-        let m: Manifest =
-            serde_json::from_slice(&bytes).map_err(|_| LayoutError::InvalidManifest)?;
+        let m = workspace_manifest::parse(&bytes).map_err(|_| LayoutError::InvalidManifest)?;
         if m.companies.len() > 1000 {
             return Err(LayoutError::InvalidManifest);
         }
         Ok(m.companies
             .into_iter()
-            .map(|c| (c.slug, c.name, c.archived))
+            .map(|c| { let purpose=c.purpose(); (c.slug, c.name, c.archived, purpose) })
             .collect())
     }
     pub(crate) fn select_company(&mut self, slug: &str) -> Result<(), LayoutError> {
@@ -231,16 +230,18 @@ impl WorkspaceLayout {
         {
             return Err(LayoutError::InvalidSelection);
         }
-        let mut m: Manifest = serde_json::from_slice(&retained_bytes(&self.bindings[0].file)?)
+        let mut m = workspace_manifest::parse(&retained_bytes(&self.bindings[0].file)?)
             .map_err(|_| LayoutError::InvalidManifest)?;
         if m.companies.len() >= 1000 || m.companies.iter().any(|c| c.slug == slug) {
             return Err(LayoutError::InvalidManifest);
         }
+        m.version = 2;
         m.companies.push(Entry {
             slug: slug.into(),
             name: name.into(),
             created_at: created_at.into(),
             archived: false,
+            purpose: Some(Purpose::Live),
         });
         let content = serde_json::to_vec(&m).map_err(|_| LayoutError::InvalidManifest)?;
         if content.len() as u64 > LIMIT {
@@ -354,6 +355,77 @@ mod tests {
             assert!(layout.catalog().is_err());
             drop(control);
         }
+    }
+    #[test]
+    fn v2_nonlive_inventory_is_retained_but_never_ordinary_selection_or_promotion() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
+        for purpose in ["test", "dry-run", "restore", "backup", "retest", "baseline"] {
+            let (root, layout, control, old) = archived_fixture();
+            drop(layout);
+            let path = root.path().join("workspace.json");
+            let mut manifest: serde_json::Value =
+                serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+            manifest["version"] = serde_json::json!(2);
+            manifest["companies"][1]["archived"] = serde_json::json!(false);
+            manifest["companies"][1]["purpose"] = serde_json::json!(purpose);
+            let bytes = serde_json::to_vec(&manifest).unwrap();
+            std::fs::write(&path, &bytes).unwrap();
+            let lease = WorkspaceLease::acquire(root.path()).unwrap();
+            let mut layout = WorkspaceLayout::bind(lease, "w", "a").unwrap();
+            assert_eq!(
+                serde_json::to_value(layout.catalog().unwrap()[1].3).unwrap(),
+                purpose
+            );
+            assert!(layout.select_company("b").is_err());
+            assert_eq!(
+                std::fs::read(&path).unwrap(),
+                bytes,
+                "reads never normalize metadata"
+            );
+            drop(old);
+            layout.select_company_for_snapshot("b").unwrap();
+            let db = Connection::open(root.path().join("b/data/ledger.sqlite")).unwrap();
+            layout.ensure_connections(&control, &db).unwrap();
+            drop(db);
+            layout.select_company("a").unwrap();
+            layout.create_company_files("c").unwrap();
+            layout
+                .publish_company("c", "Synthetic new", "2026-01-01")
+                .unwrap();
+            let retained = workspace_manifest::parse(&std::fs::read(&path).unwrap()).unwrap();
+            assert_eq!(retained.version, 2);
+            assert_eq!(
+                serde_json::to_value(retained.companies[1].purpose()).unwrap(),
+                purpose
+            );
+            assert!(retained.companies[2].active());
+            assert!(layout.select_company("b").is_err());
+        }
+    }
+    #[test]
+    fn held_purpose_change_remains_sticky_refusal() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
+        let (root, layout, _control, _old) = archived_fixture();
+        drop(layout);
+        let path = root.path().join("workspace.json");
+        let mut manifest: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+        manifest["version"] = serde_json::json!(2);
+        std::fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+        let mut layout =
+            WorkspaceLayout::bind(WorkspaceLease::acquire(root.path()).unwrap(), "w", "a").unwrap();
+        manifest["companies"][0]["purpose"] = serde_json::json!("test");
+        std::fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+        assert!(layout.ensure_current().is_err());
+        manifest["companies"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("purpose");
+        std::fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+        assert!(
+            layout.ensure_current().is_err(),
+            "restoring old bytes cannot revive a retired holder"
+        );
     }
     #[test]
     fn new_company_publication_and_switch_keep_same_control_and_root_lease() {

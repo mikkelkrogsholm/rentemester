@@ -2,7 +2,6 @@
 use super::WorkspaceLease;
 use crate::{LayoutError, RootIdentity};
 use rustix::fs::{AtFlags, FileType, Mode, OFlags, openat, statat};
-use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::os::fd::AsFd;
 use std::{
@@ -11,27 +10,7 @@ use std::{
     os::unix::fs::{FileExt, MetadataExt},
 };
 const LIMIT: u64 = 1_048_576;
-#[derive(Deserialize, serde::Serialize)]
-#[serde(deny_unknown_fields)]
-struct Manifest {
-    version: u32,
-    companies: Vec<Entry>,
-}
-#[derive(Deserialize, serde::Serialize)]
-#[serde(deny_unknown_fields)]
-struct Entry {
-    slug: String,
-    name: String,
-    #[serde(rename = "createdAt")]
-    created_at: String,
-    archived: bool,
-}
-fn valid_slug(s: &str) -> bool {
-    !s.is_empty()
-        && (s.as_bytes()[0].is_ascii_lowercase() || s.as_bytes()[0].is_ascii_digit())
-        && s.bytes()
-            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
-}
+use rentemester_engine::workspace_manifest::{self, Company as Entry, Purpose, valid_slug};
 // Keep slug syntax aligned with existing product/access rules, without a new normalization.
 fn metadata_text(s: &str, max: usize) -> bool {
     !s.trim().is_empty() && s.len() <= max && !s.chars().any(char::is_control)
@@ -40,34 +19,12 @@ fn parse(bytes: &[u8], slug: &str) -> Result<(), LayoutError> {
     parse_selection(bytes, slug, false)
 }
 fn parse_selection(bytes: &[u8], slug: &str, allow_archived: bool) -> Result<(), LayoutError> {
-    let manifest: Manifest =
-        serde_json::from_slice(bytes).map_err(|_| LayoutError::InvalidManifest)?;
-    if manifest.version != 1 {
-        return Err(LayoutError::InvalidManifest);
-    }
-    let mut seen = std::collections::HashSet::new();
-    let mut selected = false;
-    for entry in manifest.companies {
-        if !valid_slug(&entry.slug)
-            || !metadata_text(&entry.name, 1024)
-            || !metadata_text(&entry.created_at, 128)
-            || !seen.insert(entry.slug.clone())
-        {
-            return Err(LayoutError::InvalidManifest);
-        }
-        if entry.slug == slug {
-            if entry.archived && !allow_archived {
-                return Err(LayoutError::InvalidSelection);
-            }
-            selected = true;
-        }
-    }
-    if selected {
-        Ok(())
-    } else {
-        Err(LayoutError::InvalidSelection)
-    }
+    let manifest = workspace_manifest::parse(bytes).map_err(|_| LayoutError::InvalidManifest)?;
+    let entry = manifest.companies.iter().find(|c| c.slug == slug).ok_or(LayoutError::InvalidSelection)?;
+    if !allow_archived && !entry.active() { return Err(LayoutError::InvalidSelection); }
+    Ok(())
 }
+
 fn open_relative(
     lease: &WorkspaceLease,
     parts: &[String],
@@ -352,7 +309,7 @@ mod tests {
         let bad = [
             "{}".to_owned(),
             "null".to_owned(),
-            good.replace("\"version\":1", "\"version\":2"),
+            good.replace("\"version\":1", "\"version\":3"),
             good.replace("\"version\":1", "\"version\":1,\"version\":1"),
             good.replace(
                 "\"archived\":false",

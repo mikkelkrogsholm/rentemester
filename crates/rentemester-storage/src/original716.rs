@@ -50,7 +50,7 @@ mod tests {
     use super::*;
     #[test]
     fn positive_and_missing_ledger_are_distinct_and_date_is_half_open() {
-        let catalog = Catalog { workspace:"synthetic".into(), companies:vec![crate::workspace_context::RegisteredCompany { slug:"synthetic-a".into(), name:"Synthetic A".into(), archived:false }] };
+        let catalog = Catalog { workspace:"synthetic".into(), companies:vec![crate::workspace_context::RegisteredCompany { slug:"synthetic-a".into(), name:"Synthetic A".into(), purpose: Default::default(), archived:false }] };
         let manifest: Manifest = serde_json::from_value(json!({"version":1,"groups":[{"id":"synthetic","name":"Synthetic","memberships":[{"id":"member","companySlug":"synthetic-a","validFrom":"2026-01-01","validToExclusive":"2027-01-01"}],"ownership":[]}]})).unwrap();
         let visible = BTreeSet::from(["synthetic-a".into()]);
         let ready = group_overview(Some(&manifest), &catalog, &visible, "2026-06-01", |_| true);

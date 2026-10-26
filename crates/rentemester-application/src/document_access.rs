@@ -96,7 +96,7 @@ pub(crate) fn service<T>(
             vec![RegisteredCompany {
                 slug: slug.into(),
                 name: slug.into(),
-                archived,
+                purpose: Default::default(), archived,
             }]
         } else {
             vec![]

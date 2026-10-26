@@ -86,7 +86,7 @@ fn continue_mode<T>(control:&mut Connection,company:&mut Connection,context:Cont
             vec![RegisteredCompany {
                 slug: s.slug.into(),
                 name: s.slug.into(),
-                archived: s.archived,
+                purpose: Default::default(), archived: s.archived,
             }]
         } else {
             vec![]

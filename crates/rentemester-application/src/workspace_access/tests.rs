@@ -44,7 +44,7 @@ fn fixture() -> (tempfile::TempDir, Connection, Catalog) {
             companies: vec![rentemester_storage::workspace_context::RegisteredCompany {
                 slug: "a".into(),
                 name: "Synthetic".into(),
-                archived: false,
+                purpose: Default::default(), archived: false,
             }],
         },
     )

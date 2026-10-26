@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_runtime-a3079918e8fc9752)
+
+running 8 tests
+test namespace::linux::legacy_adoption::tests::qualified_child ... ignored, qualified local-account subprocess selected by parent
+test legacy_adoption::tests::exact_inventory_is_bytes_only_and_preserves_receipt ... ok
+test legacy_adoption::tests::manifest_company_scope_is_complete_and_selected_company_must_be_active ... ok
+test legacy_adoption::tests::original_names_are_content_bound_and_no_control_or_source_paths_are_allowed ... ok
+test legacy_adoption::tests::refuses_duplicates_digest_changes_paths_and_missing_company_ledgers ... ok
+test legacy_adoption::source_tests::source_reads_are_bounded_and_reject_links_and_traversal ... ok
+test legacy_adoption::source_tests::source_sqlite_operation_pins_inode_and_refuses_path_replacement ... ok
+test namespace::linux::legacy_adoption::tests::private_stage_keeps_lease_and_never_overwrites_public_destination ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 171 filtered out; finished in 0.12s
+

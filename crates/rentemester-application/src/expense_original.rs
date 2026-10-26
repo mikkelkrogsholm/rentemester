@@ -305,7 +305,7 @@ fn check_service_actor(
                 vec![rentemester_storage::workspace_context::RegisteredCompany {
                     slug: context.selection.slug.into(),
                     name: context.selection.slug.into(),
-                    archived: context.selection.archived,
+                    purpose: Default::default(), archived: context.selection.archived,
                 }]
             } else {
                 vec![]

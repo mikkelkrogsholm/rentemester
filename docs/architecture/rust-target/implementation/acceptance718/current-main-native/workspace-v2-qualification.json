@@ -1,0 +1,118 @@
+{
+  "format": "rentemester-native-purpose-qualification/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "baseRevision": "a4d02e7072c8bfacd1fe81a2270fec854f124d21",
+  "sourceFiles": {
+    "crates/rentemester-application/src/backup_destination.rs": "3cc7e64a118f1d6231e4116aef01bf632ef0fa2a40ab07cc7026a33cafdca585",
+    "crates/rentemester-application/src/backup_original122_tests.rs": "0256255070c4d6c43283d405360f16cc2af9cf3837e51c0b3024fd1e1769ef2e",
+    "crates/rentemester-application/src/backup_remote/tests.rs": "10481764722d9b55169443b2c6915e25be8db8f1d2c14b5b749050603bdffe2a",
+    "crates/rentemester-application/src/cfo_analytics.rs": "64b1b15097752d65aaac94c0a1acfbfcf3d0505f72f3801b8c3efd0e424a346c",
+    "crates/rentemester-application/src/company_knowledge/tests.rs": "baf1fa019b6fa0b7ba1cf5643e311b830d42fdf1525f8e225dfcb469934a9583",
+    "crates/rentemester-application/src/corporate_records/tests.rs": "8cd8417719a0b5fdae4e170e8a8a47844ae4f4e801bed047dd5795b0defe9fbe",
+    "crates/rentemester-application/src/diagnostics_original118_tests.rs": "f39933582ca0f1cce8d8db4928b25ac05a5c9f7dc7ce1b778ef2ee59d51eb56c",
+    "crates/rentemester-application/src/document_access.rs": "602f646905388a0b53839b954c6b91588914e9f71cf4328a9c0bb1c5aaae6ba9",
+    "crates/rentemester-application/src/document_party_links.rs": "56d3c58f47a5554a284700834ea8eda2f92e4f4882e86c3034904513093105d6",
+    "crates/rentemester-application/src/expense_original.rs": "a17ecbd6c3d6c3aa415482450e6007966a88cef0048e65e584b052374bc0b4f5",
+    "crates/rentemester-application/src/hosted_recurring.rs": "1209f828e58d08565f90e7da3e68b49ddfc36cea6fd945e2e97670b5be30b926",
+    "crates/rentemester-application/src/intercompany.rs": "0177a27d6ff246b103dd1c3250e5ebb259f121ffcada301a73eb4b1a245e7916",
+    "crates/rentemester-application/src/invoice_extraction.rs": "575afd20799345501e5e61a8bd0885a56acaf092f1b581c56c4c9670eb5a4f03",
+    "crates/rentemester-application/src/mail_intake.rs": "8fe883ca947bc72bef4fe1b6cda23a13ac814f6c731ee5bc28a6f0f47ddef433",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "2689cd8ffd12c0ccf7d730a3ba1fa327d80c2835b32348dc61410f0b6369abf1",
+    "crates/rentemester-application/src/ownership/tests.rs": "a12202c28dc108dbed4dd41863f580f91ff6098872f9408ba2b9b31d031b4f2e",
+    "crates/rentemester-application/src/parties.rs": "d36aaf988d012fd4d8a82172843012af17d23c8f795f15c9a5a7b9aca259f425",
+    "crates/rentemester-application/src/parties/tests.rs": "a809d0281a15889bcae5012066a9b020ada3b948ac33f7a551caf15e4f8899bc",
+    "crates/rentemester-application/src/portable_backup.rs": "e01fd76b256d8478dad9e84b8e2fc5a65dc255f5a14c995186693a1f0e3c3828",
+    "crates/rentemester-application/src/portfolio_cashflow.rs": "a6e3d29d41ae0f69ab952e28a552b709f4953ef7c77cbe63480aef9bfc947b59",
+    "crates/rentemester-application/src/service_company.rs": "b5c6c8fe09fb4658089cd16185d3d678d53b135729ce1fae1c34649fe23bf523",
+    "crates/rentemester-application/src/service_company/precharged.rs": "f13adbb643d3e5ed6284ece60e0a521046b95d78525d1805f51b351f728a6a36",
+    "crates/rentemester-application/src/workspace_access/tests.rs": "8d590d638fafa1be4bd67c3633a02da4376639c96872e997f066319c3bd46d28",
+    "crates/rentemester-engine/src/lib.rs": "1bc1433d69d2f202d40552e844361a8edb09867cd6e39f1fd1909a75cbce3c8a",
+    "crates/rentemester-engine/src/workspace_manifest.rs": "0c94c622e59d9f6ad222fec8adef51ede78b3d1b4c2fbbd806b3e6f69a56af80",
+    "crates/rentemester-host/src/company_catalog.rs": "fab803afdcfc6b7ce49b97b077467e7b723a1d4883d46083deb80596010a445b",
+    "crates/rentemester-host/src/company_catalog/tests.rs": "cd50e3bf523cf5f376b1b1dca7900e1fa051b9ff9aeb2088c128b5626a804344",
+    "crates/rentemester-host/src/portable_backup.rs": "25af3ebacb3a5a9022be91b50c9e016dc42894596ea9ba96b892318d88b50cef",
+    "crates/rentemester-host/src/recurring_workspace.rs": "df1c6a9d4e106ae9fcc00d1279ab2204a057d26f2d44b233d8b0056a0672ae8f",
+    "crates/rentemester-runtime/src/legacy_adoption.rs": "a55c73003b86d8bb83c4773b8c6456e40e6314b4b7f45c469fc3c3a41046f629",
+    "crates/rentemester-runtime/src/local/layout.rs": "0d188f55c99c723a3cfb2c943587583c4adb6c4d3a130035de5683cd44a3055d",
+    "crates/rentemester-runtime/src/local/layout/companies.rs": "9ea12d3db09ac60c94d045a330a5e394cc09e4cb9634f1f549e45ecc3e4454df",
+    "crates/rentemester-runtime/src/namespace.rs": "b8ba542d98862328f4e5eae6f3b3d076213b35f6b5c6f3e34efe4cfdf438bd0f",
+    "crates/rentemester-runtime/src/namespace/linux.rs": "0b9bf0c593f4d229e49ac87095d50b080e03ac73af26b8579477ded10c8bf858",
+    "crates/rentemester-runtime/src/namespace/linux/companies.rs": "44c33dbaafa9a0d2770984bbae7cc44201ab78e968bc170aa87b24196bd9a2dc",
+    "crates/rentemester-runtime/src/original716/transfer.rs": "d807701d1ae91e840467e2efb7659d1c8ad6b17f3e7ecdf8e5a61b4162adf22e",
+    "crates/rentemester-server/src/auth_http/tests.rs": "f624f3866e92e5efe484bc55528831f7336eb1543df202ae86e7dc640bd66887",
+    "crates/rentemester-server/src/backend.rs": "41fa36ae9c22754f26904ac951fd7b268d84c1c151ee2fab0df187bb176c2fb5",
+    "crates/rentemester-storage/src/original716.rs": "61e0a553625e009666ccff77160aab54c2401192f1a81ed6d9761b84eeeed2d4",
+    "crates/rentemester-storage/src/workspace_context.rs": "7049423c3b42223a98eee2f9092d02e42ff8a8ee0ca97fcd925b7c04578a1e36",
+    "scripts/rust/verify-workspace-layout.ts": "5f7edf8d5151e410985951b95a27308292390bafd3faf978188b316b1eeed9c1"
+  },
+  "checks": {
+    "parser": {
+      "result": "PASS",
+      "passed": 2,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/parser.log",
+      "sha256": "d7a96952db4e0bed5157d16aaff9dae129fabf66003bf41e2f8090e0f1204ea3"
+    },
+    "layout": {
+      "result": "PASS",
+      "passed": 19,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/layout.log",
+      "sha256": "c30cce843aaec68f70f6bb97420d454555c47f6ae553a922f70387e529683532"
+    },
+    "signed_backup_restore": {
+      "result": "PASS",
+      "passed": 11,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/signed_backup_restore.log",
+      "sha256": "e5cfef3b15808d48977386650ec30afbd00b15d2641695b5c3c016c00bb724c7"
+    },
+    "scope": {
+      "result": "PASS",
+      "passed": 1,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/scope.log",
+      "sha256": "960d997e4c549f87806b50147c7ee7b82bbceb5ae35d575a3d2637baeaa67c07"
+    },
+    "owner_runner": {
+      "result": "PASS",
+      "passed": 1,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/owner_runner.log",
+      "sha256": "a047307540989d39d17487bb499b0e66ffb0dd506ddaf9147fbca806f1d67cd5"
+    },
+    "transfer": {
+      "result": "PASS",
+      "passed": 5,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/transfer.log",
+      "sha256": "4a0af255a02d9d69cb0dce49e36440bef729365512b7f440cb7056894ce56144"
+    },
+    "adoption": {
+      "result": "PASS",
+      "passed": 7,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/adoption.log",
+      "sha256": "9c5005c05b7b4415287cb732437686cd31c51b1c2f20b8a38fedc7e22e18cb29"
+    },
+    "server_compile": {
+      "result": "PASS",
+      "passed": null,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/server_compile.log",
+      "sha256": "b0441639b036eaa69b622a28a9283adbcbc34225e9deaeef993bdb178823244c"
+    },
+    "descriptor_probe": {
+      "result": "PASS",
+      "passed": 23,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/descriptor_probe.json",
+      "sha256": "3d7194c02df4879130cb405a566bffb337c8a1877cc74c2459b19fcb2a1b4d46"
+    }
+  },
+  "review": {
+    "decision": "accept scoped component",
+    "findings": "Strict parser and every ordinary/retained caller inspected. No nonlive promotion, authority bypass, skipped retained ledger, descriptor or namespace weakening found. Independent read-only diff review agrees."
+  },
+  "limitations": [
+    "Native tasks/routines/calendar/kanban/protected knowledge port and company56/main-control34 adoption pending",
+    "No production financial/provider replay, new native release image or installed desktop/platform acceptance claimed",
+    "Existing ignored helper tests remain ignored; actual descriptor helper explicitly invoked by 23-case probe"
+  ],
+  "diagnosedFailuresRetained": [
+    ".sgd/observations/main-integration/workspace-v2/initial-backup-compile.log",
+    ".sgd/observations/main-integration/workspace-v2/initial-scope-test.log"
+  ]
+}
