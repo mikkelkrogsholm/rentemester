@@ -1,4 +1,5 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
+mod namespace_custody_cli;
 mod original716_cli;
 mod agent_discovery;
 mod auth_delivery;
@@ -104,6 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut mail_worker = false;
     let mut mail_stdin = false;
     let mut upgrade_mail_schema = false;
+    let mut enroll_namespace_custody = false;
     let mut adopt_legacy = None;
     let mut legacy_source_stopped = false;
     while let Some(arg) = args.next() {
@@ -120,6 +122,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "--managed-parent-stdin" => managed_parent_stdin = true,
             "--adopt-legacy" => adopt_legacy = Some(PathBuf::from(args.next().ok_or("--adopt-legacy requires source workspace")?)),
             "--legacy-source-stopped" => legacy_source_stopped = true,
+            "--enroll-namespace-custody" => enroll_namespace_custody = true,
             "--upgrade-mail-schema" => upgrade_mail_schema = true,
             "--mail-worker" => mail_worker = true,
             "--mail-service-key-stdin" => mail_stdin = true,
@@ -156,6 +159,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
                 println!("Build identity: --build-info (alone; no workspace, credentials or network)");
                 println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
+                println!("Custody enrollment: --enroll-namespace-custody --config PRIVATE.json --confirm-target EXACTROOT (exclusive stopped operator v31 to v32; retire old binaries and copies under sole-source cutover)");
                 println!("Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)");
                 println!("Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.");
                 println!("--local-runtime-dir PRIVATE_PROFILE enables a same-user private UNIX socket beside the admitted local-user-macos config; normal authentication remains required.");
@@ -183,6 +187,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             _ => return Err(format!("unknown option: {arg}").into()),
         }
+    }
+    if enroll_namespace_custody {
+        namespace_custody_cli::validate(create || upgrade_mail_schema || adopt_legacy.is_some() || legacy_source_stopped || restore_archive.is_some() || verify_archive.is_some() || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer || trusted_backup_key.is_some() || source_unavailable || local_runtime_dir.is_some() || managed_parent_stdin, config.is_some(), confirmed_target.is_some())?;
+        backend::Backend::enroll_namespace_custody(config.as_deref().unwrap(),confirmed_target.as_deref().unwrap())?;
+        println!("Namespace custody enrolled; server remains stopped. Retire old software and copies under the existing sole-source cutover procedure.");
+        return Ok(());
     }
     managed_parent::validate_flags(managed_parent_stdin, local_runtime_dir.is_some(), scheduled_stdin || mail_stdin)?;
     if let Some(profile) = &local_runtime_dir {

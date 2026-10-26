@@ -21,6 +21,8 @@ impl Owner {
             .map_err(|_| OwnerError::StorageUnusable(Readiness::new(Code::StorageUnavailable)))?);
         slots.guard.ensure_connections(slots.control.as_ref().unwrap(), slots.company.as_ref().unwrap())
             .map_err(OwnerError::Namespace)?;
+        let identity = slots.guard.held_root_identity().map_err(OwnerError::Namespace)?;
+        rentemester_storage::namespace_custody::verify(slots.control.as_ref().unwrap(), rentemester_storage::namespace_custody::Identity {device: identity.device, inode: identity.inode}).map_err(|_| OwnerError::Database)?;
         let readiness = rentemester_storage::readiness::probe(slots.control.as_ref().unwrap(), slots.company.as_ref().unwrap());
         slots.guard.ensure_connections(slots.control.as_ref().unwrap(), slots.company.as_ref().unwrap())
             .map_err(OwnerError::Namespace)?;

@@ -220,7 +220,7 @@ impl Owner {
         let hash = codec::sha256(
             &serde_json::to_vec(source.archive().manifest()).map_err(|_| OwnerError::Context)?,
         );
-        let mut owner = Self::open_guarded(&stage, workspace, primary, guard)?;
+        let mut owner = Self::open_private_guarded(&stage, workspace, primary, guard)?;
         owner.reusable = false;
         let slots = owner.held.0.as_mut().unwrap();
         rentemester_storage::original716::transfer::initialize_source_control(
@@ -282,6 +282,8 @@ impl Owner {
             false,
         )
         .map_err(|_| OwnerError::Database)?;
+    let identity = slots.guard.held_root_identity().map_err(OwnerError::Namespace)?;
+    rentemester_storage::namespace_custody::initialize_private(slots.control.as_mut().unwrap(), rentemester_storage::namespace_custody::Identity { device: identity.device, inode: identity.inode }).map_err(|_| OwnerError::Database)?;
         if !slots.close() {
             return Err(OwnerError::Database);
         }

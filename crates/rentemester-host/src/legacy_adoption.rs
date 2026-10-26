@@ -586,7 +586,7 @@ pub fn adopt(
         &image,
     )
     .map_err(OwnerError::Namespace)?;
-    let mut owner = Owner::open_guarded(&stage, &p.workspace, &p.selected, guard)?;
+    let mut owner = Owner::open_private_guarded(&stage, &p.workspace, &p.selected, guard)?;
     owner.reusable = false;
     let slots = owner.held.0.as_mut().unwrap();
     p.control
@@ -606,6 +606,8 @@ pub fn adopt(
     let receipt_text = std::str::from_utf8(&receipt).map_err(|_| OwnerError::Database)?;
     tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('legacy_adoption_receipt','legacy_adoption',?1,?2)",rusqlite::params![receipt_text,operator.actor()]).map_err(|_|OwnerError::Database)?;
     tx.commit().map_err(|_| OwnerError::Database)?;
+    let identity = slots.guard.held_root_identity().map_err(OwnerError::Namespace)?;
+    rentemester_storage::namespace_custody::initialize_private(slots.control.as_mut().unwrap(), rentemester_storage::namespace_custody::Identity { device: identity.device, inode: identity.inode }).map_err(|_| OwnerError::Database)?;
     if !slots.close() {
         return Err(OwnerError::Database);
     }

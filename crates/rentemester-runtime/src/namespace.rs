@@ -81,6 +81,10 @@ pub struct NamespaceGuard {
 }
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn held_root_identity(&mut self) -> Result<crate::RootIdentity, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+
     pub fn publish_document_tracked(
         &mut self,
         _: &crate::document::Prepared,

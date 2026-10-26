@@ -6,7 +6,7 @@ fn policy() -> Policy {
     Policy {
         platform: "macos-aarch64".into(),
         api_epoch: 1,
-        control_schema: 31,
+        control_schema: 32,
         company_schema: 36,
     }
 }
@@ -50,7 +50,7 @@ impl Fixture {
             sequence: 2,
             platform: "macos-aarch64".into(),
             api_epoch: 1,
-            control_schema: 31,
+            control_schema: 32,
             company_schema: 36,
             source_revision: "a".repeat(40),
             toolchains: BTreeMap::from([("server".into(), "1.94.1".into())]),

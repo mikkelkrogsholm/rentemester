@@ -1152,7 +1152,6 @@ fn activation_process_death_reopens_known_authority_without_old_source_writer() 
 }
 
 #[test]
-#[ignore = "explicit original726 raw pre-freeze copy qualification; never infer from staged nonce tests"]
 fn pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved() {
     fn copy_tree(from: &std::path::Path, to: &std::path::Path) {
         std::fs::create_dir(to).unwrap();

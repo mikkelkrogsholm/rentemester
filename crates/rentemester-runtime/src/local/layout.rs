@@ -174,6 +174,9 @@ impl WorkspaceLayout {
         parse(bytes, slug)
     }
 
+    pub(crate) fn held_root_identity(&mut self) -> Result<RootIdentity, LayoutError> {
+        self.lease.ensure_current_root().map_err(LayoutError::Lease)
+    }
     pub fn bind(
         mut lease: WorkspaceLease,
         workspace: &str,

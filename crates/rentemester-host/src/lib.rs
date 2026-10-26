@@ -2,6 +2,7 @@
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 mod readiness;
+mod namespace_custody;
 mod budget_original;
 mod journal_original;
 mod invoice_compensation;
@@ -213,7 +214,7 @@ impl Owner {
             root, broker_uid, workspace, slug, name, created_at, profile,
         )
         .map_err(OwnerError::Namespace)?;
-        let mut owner = Self::open_guarded(root, workspace, slug, guard)?;
+        let mut owner = Self::open_private_guarded(root, workspace, slug, guard)?;
         owner.reusable = false;
         #[cfg(test)]
         tests::fresh_fault(&mut owner)?;
@@ -224,6 +225,7 @@ impl Owner {
             name,
         )
         .map_err(|_| OwnerError::Database)?;
+        owner.initialize_namespace_custody()?;
         owner.observe()?;
         owner.reusable = true;
         Ok((owner, initialized))
@@ -273,7 +275,24 @@ impl Owner {
         owner.reusable = true;
         Ok(owner)
     }
-    fn open_guarded(
+    fn open_guarded(root: &Path, workspace: &str, slug: &str, guard: NamespaceGuard) -> Result<Self, OwnerError> {
+        // Refuse copied/unbound roots before opening any writable connection or
+        // configuring SQLite. Retain the lifetime lease across read-only probe.
+        let mut held = Held(Some(Slots { control: None, company: None, pending: None, guard }));
+        let slots=held.0.as_mut().unwrap();
+        let flags=OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NOFOLLOW;
+        slots.control=Some(Connection::open_with_flags(root.join(".rentemester/workspace-control.sqlite"),flags).map_err(|_|OwnerError::Database)?);
+        slots.company=Some(Connection::open_with_flags(root.join(slug).join("data/ledger.sqlite"),flags).map_err(|_|OwnerError::Database)?);
+        slots.guard.ensure_connections(slots.control.as_ref().unwrap(),slots.company.as_ref().unwrap()).map_err(OwnerError::Namespace)?;
+        let id=slots.guard.held_root_identity().map_err(OwnerError::Namespace)?;
+        rentemester_storage::namespace_custody::verify(slots.control.as_ref().unwrap(),rentemester_storage::namespace_custody::Identity{device:id.device,inode:id.inode}).map_err(|_|OwnerError::Database)?;
+        if !slots.close() {return Err(OwnerError::Database);}
+        let mut owner = Self::open_private_guarded(root, workspace, slug, held.0.take().unwrap().guard)?;
+        owner.verify_namespace_custody()?;
+        owner.reusable = true;
+        Ok(owner)
+    }
+    fn open_private_guarded(
         root: &Path,
         workspace: &str,
         slug: &str,
@@ -312,7 +331,6 @@ impl Owner {
                 .map_err(|_| OwnerError::Database)?;
         }
         owner.observe()?;
-        owner.reusable = true;
         Ok(owner)
     }
     /// Explicit schema-only operator action. Normal opening remains read/admission only.
@@ -356,7 +374,8 @@ impl Owner {
         }
         // Remain retired on an error or panic anywhere in application dispatch.
         self.reusable = false;
-        self.observe()
+        self.observe()?;
+        self.verify_namespace_custody()
     }
     fn finish(&mut self, reusable: bool) -> bool {
         self.reusable = reusable && self.observe().is_ok();
