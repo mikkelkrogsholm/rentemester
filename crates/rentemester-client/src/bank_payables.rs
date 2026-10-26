@@ -25,7 +25,7 @@ pub fn bank_body_schema(operation: BankMutation) -> Value {
         ),
         BankMutation::ImportStatement => {
             let mut schema = object(
-                json!({"confirm":{"const":true},"csvContent":{"type":"string","minLength":1,"maxLength":26214400,"description":"UTF-8 CSV text; use csvBase64 instead to retain original raw bytes/BOM/legacy encoding. Generic comma/semicolon/tab CSV requires date,text,amount and unambiguous ISO dates. Optional currency,reference,booking_date,balance_after,amount_dkk,fx_rate_to_dkk. Server validates and archives exact supplied source."},"csvBase64":{"type":"string","minLength":4,"maxLength":34952536,"description":"Canonical standard base64 of original CSV bytes, at most25MiB decoded. Exactly one of csvBase64 or csvContent. Generic profile accepts UTF-8/BOM; named danske-bank also supports declared Windows1252 fallback. No client decoding or encoding inference."},"account":{"type":["string","null"],"maxLength":128,"description":"Existing active bank account id or slug from bank_accounts; ledger mapping constrains later payment account"},"profile":{"type":["string","null"],"enum":[null,"","danske-bank"],"description":"Omit, null or empty for generic UTF-8/BOM CSV; danske-bank selects declared semicolon/day-month-year CSV with UTF-8 or Windows1252 fallback"}}),
+                json!({"confirm":{"const":true},"csvContent":{"type":"string","minLength":1,"maxLength":26214400,"description":"UTF-8 CSV text; use csvBase64 instead to retain original raw bytes/BOM/legacy encoding. Generic comma/semicolon/tab CSV requires date,text,amount and unambiguous ISO dates. Optional currency,reference,booking_date,balance_after,amount_dkk,fx_rate_to_dkk. Server validates and archives exact supplied source."},"csvBase64":{"type":"string","minLength":4,"maxLength":34952536,"description":"Canonical standard base64 of original CSV bytes, at most25MiB decoded. Exactly one of csvBase64 or csvContent. Generic profile accepts UTF-8/BOM; named danske-bank also supports declared Windows1252 fallback. No client decoding or encoding inference."},"account":{"type":["string","null"],"maxLength":128,"description":"Existing active bank account id or slug from bank_accounts; ledger mapping constrains later payment account"},"statementOrder":{"type":"string","enum":["ascending","descending"],"description":"Explicit generic source chronology; named danske-bank pins descending. Omitting order leaves same-date rows unproven."},"profile":{"type":["string","null"],"enum":[null,"","danske-bank"],"description":"Omit, null or empty for generic UTF-8/BOM CSV; danske-bank selects declared semicolon/day-month-year CSV with UTF-8 or Windows1252 fallback"}}),
                 &["confirm"],
             );
             schema["oneOf"] = json!([
@@ -107,11 +107,12 @@ pub(crate) fn import_body(bytes: &[u8]) -> Result<(), Error> {
         .map_err(|_| Error::InvalidInput("expected native bank import JSON object"))?;
     // domain::body has a256KiB cap and does not implement oneOf/not. Enforce the
     // discoverable import union directly; do not weaken other domain mutations.
-    let allowed = ["confirm", "csvContent", "csvBase64", "account", "profile"];
+    let allowed = ["confirm", "csvContent", "csvBase64", "account", "profile", "statementOrder"];
     if value
         .as_object()
         .is_none_or(|fields| fields.keys().any(|key| !allowed.contains(&key.as_str())))
         || value["confirm"] != true
+        || value.get("statementOrder").is_some_and(|v| ![json!("ascending"),json!("descending")].contains(v))
         || value
             .get("account")
             .is_some_and(|v| !v.is_null() && v.as_str().is_none_or(|s| s.len() > 128))

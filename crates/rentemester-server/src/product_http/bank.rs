@@ -11,16 +11,20 @@ struct Import {
     csv_base64: Option<String>,
     account: Option<String>,
     profile: Option<String>,
+    #[serde(default, deserialize_with = "non_null_text")]
+    statement_order: Option<String>,
 }
 struct OriginalImport {
     bytes: Vec<u8>,
     account: Option<String>,
     profile: Option<String>,
+    statement_order: Option<String>,
 }
 fn non_null_text<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
     String::deserialize(d).map(Some)
 }
 fn original(input: Import) -> Result<OriginalImport, ()> {
+    if input.statement_order.as_deref().is_some_and(|s|!matches!(s,"ascending"|"descending")) {return Err(());}
     const MAX: usize = 25 * 1024 * 1024;
     let bytes = match (input.csv_content, input.csv_base64) {
         (Some(text), None) => text.into_bytes(),
@@ -40,6 +44,7 @@ fn original(input: Import) -> Result<OriginalImport, ()> {
         bytes,
         account: input.account,
         profile: input.profile,
+        statement_order: input.statement_order,
     })
 }
 enum Credential {
@@ -162,13 +167,17 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 year: year.as_deref(),
             },
             Command::Create(input) => Action::Create(input),
-            Command::ImportLegacy(input) => Action::ImportOriginal {
+            Command::ImportLegacy(input) => Action::ImportOrdered {
+                original:true,
+                statement_order:input.statement_order.as_deref(),
                 content: &input.bytes,
                 account: input.account.as_deref(),
                 profile: input.profile.as_deref(),
                 now: &timestamp,
             },
-            Command::Import(input) => Action::ImportBytes {
+            Command::Import(input) => Action::ImportOrdered {
+                original:false,
+                statement_order:input.statement_order.as_deref(),
                 content: &input.bytes,
                 account: input.account.as_deref(),
                 profile: input.profile.as_deref(),
@@ -606,6 +615,12 @@ mod tests {
         ] {
             assert!(parse_query("/bank/accounts", raw).is_err());
         }
+    }
+    #[test]
+    fn source_order_is_exact_optional_and_never_authority() {
+        for order in ["ascending","descending"] {let x:Import=serde_json::from_value(json!({"confirm":true,"csvContent":"source","statementOrder":order})).unwrap();assert_eq!(original(x).unwrap().statement_order.as_deref(),Some(order));}
+        for order in [json!(null),json!(true),json!("newest"),json!("")] {let parsed=serde_json::from_value::<Import>(json!({"confirm":true,"csvContent":"source","statementOrder":order}));assert!(parsed.is_err() || original(parsed.unwrap()).is_err());}
+        assert!(serde_json::from_str::<Import>(r#"{"confirm":true,"csvContent":"source","statementOrder":"ascending","statementOrder":"descending"}"#).is_err());
     }
     #[test]
     fn raw_envelope_preserves_bytes_and_refuses_conflicting_or_noncanonical_sources() {

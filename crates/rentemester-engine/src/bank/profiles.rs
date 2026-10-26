@@ -21,7 +21,7 @@ pub fn profiles() -> Value {
         .into_iter()
         .map(|(k, v)| (k.to_owned(), Value::String(v.into())))
         .collect::<serde_json::Map<_, _>>();
-    json!([{"name":"danske-bank","label":"Danske Bank account export","delimiter":";","encoding":"utf8","dateOrder":"dmy","columns":columns}])
+    json!([{"name":"danske-bank","label":"Danske Bank account export","delimiter":";","encoding":"utf8","dateOrder":"dmy","statementOrder":"descending","columns":columns}])
 }
 pub(super) fn field(header: &str) -> Option<&'static str> {
     let normalized = header

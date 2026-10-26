@@ -4207,3 +4207,21 @@ den målte søgning tog37,5ms og første visning411,6ms på den dokumenterede v�
 Det er målinger af denne browserkomponent, ingen garanti for andre platforme
 eller ubegrænset ledgerstørrelse. Installeret WebKit/VoiceOver kvalificeres sidst.
 Se `architecture/rust-target/implementation/issue720-evidence.json`.
+
+
+### Bankkontoudtogets rækkefølge
+
+Den eksisterende bankimport accepterer `statementOrder: "ascending" | "descending"`.
+Danske Bank-profilen fastlægger `descending`; for generisk CSV kan brugeren vælge
+rækkefølgen i den eksisterende dialog. Retningen, filens SHA-256 og kilderækken gemmes
+uforanderligt i native company-extension `native_bank_statement_order_v1`, uden at
+ændre migrationshistorikken1–36. Genimport ændrer ikke tidligere kildeevidens.
+Flere bevægelser samme dato kræver én fælles dokumenteret rækkefølge; manglende eller
+modstridende kilder/saldoforløb vises som ukendt saldo, aldrig som en gættet slutsaldo.
+Den komplette signerede SQLite-backup bevarer extensionen og dens historik.
+
+Nye native regnskaber indeholder extensionen. Et ældre regnskab migreres ikke ved
+almindelig læsning/import: eksplicit stoppet operatøradmission via storage-funktionen
+`bank_statement_order::upgrade` kræves før nye importer med deklareret rækkefølge.
+Funktionen giver ingen selvstændig adgang og er ikke en ny offentlig HTTP-rute.
+Gamle rækker får ingen efterkonstrueret rækkefølge ved opgradering eller genimport.

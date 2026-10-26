@@ -27,7 +27,9 @@ fn context(cookie: &VerifiedCookie) -> Context<'_> {
     }
 }
 fn action(bytes: &[u8]) -> Action<'_> {
-    Action::ImportOriginal {
+    Action::ImportOrdered {
+        statement_order:Some("ascending"),
+        original:true,
         content: bytes,
         account: None,
         profile: None,

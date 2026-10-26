@@ -1,3 +1,18 @@
+## Current user priority — bookkeeping first, 2026-10-26
+
+The user stopped the previous sequence and explicitly prioritised usable bookkeeping:
+receipt → posting → journal → bank reconciliation → reports → signed recovery/reopen.
+Reuse accepted financial evidence and repair concrete gaps in that path before any
+further task/calendar/knowledge feature work. All55 original scopes and final gates
+remain; the historical sequence below is context, not the current execution queue.
+
+Current concrete gap: the shared bank import UI declares statementOrder but native
+import discarded it. Preserve immutable source row/direction/provenance and use that
+evidence for closing balances; unknown, colliding or inconsistent statements remain
+unavailable. Keep current authority, exact originals, deduplication and uncertain-write
+controls. The already accepted knowledge increment is preserved at79364791; no further
+knowledge or workflow feature work is needed for the current bookkeeping boundary.
+
 ## Approved main-source checkpoint — 2026-10-26
 
 The user approved integrating current main72d80e17 and porting its missing functionality. Reviewed source9f4a3f0e passes frozen install, source checks, sharedUI build,94actual app-workspace tests, StyleX, runtime typing and61release/workspace tests. See acceptance718/current-main-source/qualification.json. Actual main merge retains both histories and reviewed combined resolutions. Prior failed/cancelled receipts remain; no financial/provider effects were replayed.

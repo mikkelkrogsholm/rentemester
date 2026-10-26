@@ -729,3 +729,5 @@ pub mod original716;
 pub mod namespace_custody;
 
 pub mod knowledge_pages;
+
+pub mod bank_statement_order;

@@ -169,6 +169,7 @@ pub(super) fn initialize_empty(db: &mut Connection, company_name: &str) -> Resul
         return Err(unsupported("fresh company schema or history differs"));
     }
     crate::asset_disposal_schema::install(&tx)?;
+    crate::bank_statement_order::install(&tx)?;
     tx.commit().map_err(failed)
 }
 fn reference(images: &Images, steps: &[Step], version: usize) -> Result<Vec<SchemaObject>, Error> {

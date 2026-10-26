@@ -378,7 +378,7 @@ pub fn import_bytes_with_principal(
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
     import_bytes_with_receipt(
-        tx, content, rows, account, actor, now, archive, principal, false,
+        tx, content, rows, account, actor, now, archive, principal, false, None,
     )
 }
 /// Original receipt uses the same importer and transaction-local unmatched sync count.
@@ -396,8 +396,14 @@ pub fn import_original_bytes_with_principal(
     let account = account.map(str::trim).filter(|s| !s.is_empty());
     validate_original_import_account(tx, account)?;
     import_bytes_with_receipt(
-        tx, content, rows, account, actor, now, archive, principal, true,
+        tx, content, rows, account, actor, now, archive, principal, true, None,
     )
+}
+/// Same native importer, with an explicitly declared generic chronology.
+#[allow(clippy::too_many_arguments)]
+pub fn import_ordered_bytes_with_principal(tx: &Transaction<'_>, content: &[u8], rows: &[Row], account: Option<&str>, actor: &str, now: &str, archive: &str, principal: crate::idempotency::PrincipalKind, original: bool, statement_order: Option<&str>) -> Result<Value, Error> {
+    if original { validate_original_import_account(tx, account)?; }
+    import_bytes_with_receipt(tx,content,rows,account.map(str::trim).filter(|s|!s.is_empty()),actor,now,archive,principal,original,statement_order)
 }
 #[allow(clippy::too_many_arguments)]
 fn import_bytes_with_receipt(
@@ -410,8 +416,12 @@ fn import_bytes_with_receipt(
     archive: &str,
     principal: crate::idempotency::PrincipalKind,
     original_receipt: bool,
+    statement_order: Option<&str>,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
+    let profile = rows.first().and_then(|row| row.profile.as_deref());
+    let direction = crate::bank_statement_order::direction(profile, statement_order)?;
+    if direction.is_some() && !crate::bank_statement_order::installed(tx)? { return Err(fail("explicit bank statement order schema upgrade required")); }
     let resolved = resolve_import_account(tx, account)?;
     let account_id = resolved.as_ref().map(|r| r.0);
     let source_hash = format!("{:x}", Sha256::digest(content));
@@ -434,7 +444,7 @@ fn import_bytes_with_receipt(
     let mut imported = 0;
     let mut fresh = Vec::new();
     let mut skipped = Vec::new();
-    for row in rows {
+    for (source_index,row) in rows.iter().enumerate() {
         let content_hash = fingerprint(row, account_id, 0)?;
         let count = occurrence.entry(content_hash).or_insert(0);
         let hash = fingerprint(row, account_id, *count)?;
@@ -480,6 +490,7 @@ fn import_bytes_with_receipt(
             month as u32,
         )?;
         tx.execute("INSERT INTO bank_transactions(transaction_date,booking_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk,source_file_hash,import_batch_id,transaction_hash,status,retain_until,bank_account_id,balance_after,counterparty_name,counterparty_account,message,archive_reference,customer_reference,raw_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,'imported',?12,?13,?14,?15,?16,?17,?18,?19,?20)",params![row.date,row.booking_date,row.text,crate::journal_post::money(&row.amount)?,row.currency,row.reference,row.amount_dkk.as_ref().map(crate::journal_post::money).transpose()?,row.rate.as_ref().map(crate::journal_post::rate).transpose()?,source_hash,batch,hash,retain,account_id,row.balance_after.as_ref().map(crate::journal_post::money).transpose()?,row.counterparty_name,row.counterparty_account,row.message,row.archive_reference,row.customer_reference,row.raw.as_ref().map(serde_json::to_string).transpose().map_err(|_|fail("bank raw source cannot be represented"))?]).map_err(sql)?;
+        if let Some(direction)=direction {crate::bank_statement_order::record(tx,tx.last_insert_rowid(),source_index,&source_hash,profile,direction)?;}
         fresh.push(BalanceRow {
             id: tx.last_insert_rowid(),
             row,
@@ -689,9 +700,12 @@ pub fn read(
     let all_accounts = accounts(tx, slug)?;
     let mut q=tx.prepare("SELECT bt.id,bt.transaction_date,bt.text,COALESCE(bt.amount_dkk,bt.amount),br.journal_entry_no,bt.balance_after,bt.currency,ba.currency,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=br.journal_entry_id),br.reconciliation_id,COALESCE(c.reason,link.note),COALESCE(c.actor,link.created_by),COALESCE(c.plan_hash,link.source_reference),bt.booking_date,bt.reference,bt.counterparty_name,bt.counterparty_account,bt.message,bt.archive_reference,bt.customer_reference,bt.balance_after,bt.raw_json,bt.source_file_hash,bt.import_batch_id FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id LEFT JOIN bank_journal_reconciliation_links link ON link.bank_transaction_id=bt.id AND br.link_kind='append-only' LEFT JOIN bank_reconciliation_correction_events c ON br.reconciliation_id='correction:'||c.id WHERE bt.transaction_date BETWEEN ?1 AND ?2 ORDER BY bt.transaction_date,bt.id").map_err(sql)?;
     let mut transactions=q.query_map(params![start,end],|r|{let journal:Option<String>=r.get(4)?;let reversed:bool=r.get(8)?;Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"runningBalance":if r.get::<_,Option<String>>(7)?.as_deref().unwrap_or(&r.get::<_,String>(6)?)=="DKK" {r.get::<_,Option<f64>>(5)?}else{None},"reconciliationStatus":if journal.is_some() && !reversed{"matched"}else{"unmatched"},"reconciliationProblem":if reversed{Some("Tilknyttet postering er tilbageført; særskilt linkkorrektion kræves.")}else{None},"journalEntryNo":journal,"reconciliationId":r.get::<_,Option<String>>(9)?,"reconciliationNote":r.get::<_,Option<String>>(10)?,"reconciliationActor":r.get::<_,Option<String>>(11)?,"reconciliationProof":r.get::<_,Option<String>>(12)?,"bookingDate":r.get::<_,Option<String>>(13)?,"reference":r.get::<_,Option<String>>(14)?,"counterpartyName":r.get::<_,Option<String>>(15)?,"counterpartyAccount":r.get::<_,Option<String>>(16)?,"message":r.get::<_,Option<String>>(17)?,"archiveReference":r.get::<_,Option<String>>(18)?,"customerReference":r.get::<_,Option<String>>(19)?,"balanceAfter":r.get::<_,Option<f64>>(20)?,"raw":r.get::<_,Option<String>>(21)?.map(|raw|serde_json::from_str::<Value>(&raw).map_err(|_|rusqlite::Error::InvalidQuery)).transpose()?,"sourceFileHash":r.get::<_,Option<String>>(22)?,"importBatchId":r.get::<_,Option<String>>(23)?}))}).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
+    let source_order_installed=crate::bank_statement_order::installed(tx)?;
     for row in &mut transactions {
         row["reconciliationHistory"] =
             crate::bank_reconciliation::correction::history(tx, row["id"].as_i64().unwrap())?;
+        let order=if source_order_installed {tx.query_row("SELECT source_row_index,direction,provenance FROM native_bank_statement_order_v1 WHERE transaction_id=?1",[row["id"].as_i64().unwrap()],|r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?))).optional().map_err(sql)?} else {None};
+        row["statementRowIndex"]=json!(order.as_ref().map(|v|v.0));row["statementOrder"]=json!(order.as_ref().map(|v|&v.1));row["statementOrderProvenance"]=json!(order.as_ref().map(|v|&v.2));
     }
     let matched = transactions
         .iter()
@@ -785,78 +799,38 @@ pub(crate) fn statement_balance(
             )));
         }
         let latest:Option<String>=tx.query_row("SELECT MAX(transaction_date) FROM bank_transactions WHERE bank_account_id IS ?1 AND transaction_date<=?2",params![account,cutoff],|r|r.get(0)).map_err(sql)?;
-        let Some(latest) = latest else {
+        let Some(_latest) = latest else {
             return Ok(missing(format!("Der mangler et kontoudtog for {name}.")));
         };
-        let mut q=tx.prepare("SELECT COALESCE(amount_dkk,amount),balance_after,currency FROM bank_transactions WHERE bank_account_id IS ?1 AND transaction_date=?2 ORDER BY id").map_err(sql)?;
-        let mut rows = q.query(params![account, latest]).map_err(sql)?;
-        let mut candidates = vec![];
-        while let Some(row) = rows.next().map_err(sql)? {
-            if account.is_none() && row.get::<_, String>(2).map_err(sql)? != "DKK" {
-                return Ok(missing(
-                    "Bankkontoens saldovaluta skal afklares før en DKK-sammenligning.".into(),
-                ));
+        // Native source chronology is optional on historical rows; a same-day
+        // cluster without one exact declaration is unavailable, never inferred.
+        let order_join = if crate::bank_statement_order::installed(tx)? {
+            "LEFT JOIN native_bank_statement_order_v1 o ON o.transaction_id=b.id"
+        } else { "LEFT JOIN (SELECT NULL AS transaction_id,NULL AS source_row_index,NULL AS direction,NULL AS provenance) o ON o.transaction_id=b.id" };
+        let mut q=tx.prepare(&format!("SELECT b.id,b.transaction_date,b.amount,b.balance_after,b.currency,o.source_row_index,o.direction,o.provenance FROM bank_transactions b {order_join} WHERE b.bank_account_id IS ?1 AND b.transaction_date<=?2 ORDER BY b.transaction_date,b.id")).map_err(sql)?;
+        let mut rs=q.query(params![account,cutoff]).map_err(sql)?;
+        let mut dates=std::collections::BTreeMap::<String,Vec<(Money,Money,Option<i64>,Option<String>,Option<String>)>>::new();
+        while let Some(r)=rs.next().map_err(sql)? {
+            if r.get::<_,String>(4).map_err(sql)?!="DKK" { return Ok(missing(format!("Bankkontoens saldovaluta for {name} skal afklares før en DKK-sammenligning."))); }
+            if r.get_ref(3).map_err(sql)?==rusqlite::types::ValueRef::Null {return Ok(missing(format!("Der mangler saldi på bankposter for {name}.")));}
+            dates.entry(r.get(1).map_err(sql)?).or_default().push((signed_money(r.get_ref(2).map_err(sql)?)?,signed_money(r.get_ref(3).map_err(sql)?)?,r.get(5).map_err(sql)?,r.get(6).map_err(sql)?,r.get(7).map_err(sql)?));
+        }
+        let mut previous: Option<Money>=None;
+        for (date,mut cluster) in dates {
+            if cluster.len()>1 {
+                let direction=cluster[0].3.clone();let provenance=cluster[0].4.clone();
+                let indices:std::collections::BTreeSet<_>=cluster.iter().map(|r|r.2).collect();
+                if direction.is_none() || provenance.is_none() || indices.contains(&None) || indices.len()!=cluster.len() || cluster.iter().any(|r|r.3!=direction || r.4!=provenance) {
+                    return Ok(missing(format!("Rækkefølgen i kontoudtoget for {name} den {date} er ikke dokumenteret entydigt.")));
+                }
+                cluster.sort_by_key(|r|r.2);if direction.as_deref()==Some("descending") {cluster.reverse();}
             }
-            let amount = signed_money(row.get_ref(0).map_err(sql)?)?;
-            if row.get_ref(1).map_err(sql)? == rusqlite::types::ValueRef::Null {
-                return Ok(missing(format!(
-                    "Der mangler saldi på bankposter for {name} den {latest}."
-                )));
-            }
-            let balance = signed_money(row.get_ref(1).map_err(sql)?)?;
-            candidates.push((amount, balance));
-        }
-        let before: std::collections::HashSet<_> = candidates
-            .iter()
-            .map(|(amount, balance)| balance.subtract(amount).decimal())
-            .collect();
-        let endpoints: Vec<_> = candidates
-            .iter()
-            .filter(|(_, balance)| !before.contains(&balance.decimal()))
-            .collect();
-        if endpoints.len() != 1 {
-            return Ok(missing(format!(
-                "Rækkefølgen i kontoudtoget for {name} den {latest} giver ikke en entydig slutsaldo."
-            )));
-        }
-        // A terminal balance alone is insufficient if unrelated or branching
-        // row fragments were mixed into the same account/day.
-        let mut degree: HashMap<String, i64> = HashMap::new();
-        let mut adjacent: HashMap<String, Vec<String>> = HashMap::new();
-        for (amount, balance) in &candidates {
-            let from = balance.subtract(amount).decimal();
-            let to = balance.decimal();
-            *degree.entry(from.clone()).or_default() += 1;
-            *degree.entry(to.clone()).or_default() -= 1;
-            adjacent.entry(from.clone()).or_default().push(to.clone());
-            adjacent.entry(to).or_default().push(from);
-        }
-        let end = endpoints[0].1.decimal();
-        let mut seen = std::collections::HashSet::new();
-        let mut pending = vec![end.clone()];
-        while let Some(node) = pending.pop() {
-            if seen.insert(node.clone()) {
-                pending.extend(
-                    adjacent
-                        .get(&node)
-                        .into_iter()
-                        .flatten()
-                        .filter(|n| !seen.contains(*n))
-                        .cloned(),
-                );
+            for (amount,balance,_,_,_) in cluster {
+                if let Some(ref prior)=previous {let mut expected=prior.clone();expected.add(&amount);if expected!=balance {return Ok(missing(format!("Saldoerne i kontoudtoget for {name} den {date} hænger ikke sammen i ét forløb.")));}}
+                previous=Some(balance);
             }
         }
-        if seen.len() != degree.len()
-            || degree.values().filter(|v| **v == 1).count() != 1
-            || degree.get(&end) != Some(&-1)
-            || degree.values().any(|v| !(-1..=1).contains(v))
-            || degree.values().filter(|v| **v == -1).count() != 1
-        {
-            return Ok(missing(format!(
-                "Saldoerne i kontoudtoget for {name} den {latest} hænger ikke sammen i ét forløb."
-            )));
-        }
-        total.add(&endpoints[0].1);
+        total.add(&previous.ok_or_else(||fail("statement closing balance unavailable"))?);
     }
     Ok(StatementBalance {
         balance: Some(total),
@@ -886,15 +860,7 @@ mod tests {
         // The ending row comes first: insertion order cannot pick the balance.
         let csv = "date;text;amount;saldo\n2026-10-18;Synthetic outgoing;-250;750\n2026-10-18;Synthetic incoming;1000;1000\n";
         let rows = rentemester_engine::bank::parse(csv).unwrap();
-        import(
-            &tx,
-            csv,
-            &rows,
-            Some("first"),
-            "synthetic",
-            "2026-10-18T12:00:00Z",
-            "synthetic-original",
-        )
+        import_ordered_bytes_with_principal(&tx,csv.as_bytes(),&rows,Some("first"),"synthetic","2026-10-18T12:00:00Z","synthetic-original",crate::idempotency::PrincipalKind::User,false,Some("descending"))
         .unwrap();
         let value = read(&tx, "synthetic", "2026-10-18", None).unwrap();
         assert_eq!(value["actualBalance"].as_f64(), Some(750.0));
@@ -988,7 +954,7 @@ mod tests {
             value["bankStatementProblem"]
                 .as_str()
                 .unwrap()
-                .contains("hænger ikke sammen")
+                .contains("entydig")
         );
     }
     #[test]

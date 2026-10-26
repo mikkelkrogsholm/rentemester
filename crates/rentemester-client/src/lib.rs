@@ -516,7 +516,7 @@ mod bank_queries;
 pub use bank_queries::BankQuery;
 
 mod bank_import;
-pub use bank_import::bank_import_file_body;
+pub use bank_import::{bank_import_file_body,bank_import_ordered_file_body};
 
 mod bank_accounts_original;
 pub use bank_accounts_original::{BankAccountOriginalMutation,bank_account_original_schema};

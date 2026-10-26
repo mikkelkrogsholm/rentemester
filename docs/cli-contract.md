@@ -718,3 +718,10 @@ committes atomisk i workspacebasen, uden bogføring, betaling eller indberetning
 `tasks run` kører ét deterministisk tick og afslutter; det starter ikke en
 baggrundsproces. Påmindelser er kun interne og brugerens aktivering er
 udtrykkelig. `tasks runtime` viser den observerede runnerstatus.
+
+
+Native bankimport bevarer kontoudtogets deklarerede rækkefølge gennem samme server:
+`bank import --statement-order ascending|descending` og MCP `bank_import` med
+`statementOrder`. Det er valgfrie felter til den eksisterende import; Danske
+Bank-profilen fastlægger descending. Originalfil, bekræftelse, aktuelle rettigheder,
+dubletkontrol og forbud mod automatisk retry ved ukendt udfald er uændrede.

@@ -6,7 +6,7 @@ pub fn tools() -> Vec<Value> {
     let mut tool = crate::tools::tool(
         "bank_import",
         "Import caller-local CSV bytes or inline CSV with explicit confirmation. Nonempty csvPath wins even if unreadable; never inline fallback.25MiB original/35MiB body. Existing server owns parsing/profile/source/audit/deduplication; no temporary files, accounting, automatic retry or default account selection.",
-        json!({"type":"object","required":["company"],"properties":{"company":{"type":"string","minLength":1},"csvPath":{"type":"string"},"csvContent":{"type":"string"},"account":{"type":"string"},"profile":{"type":"string","enum":["danske-bank"]},"confirm":{"type":"boolean"}},"additionalProperties":false}),
+        json!({"type":"object","required":["company"],"properties":{"company":{"type":"string","minLength":1},"csvPath":{"type":"string"},"csvContent":{"type":"string"},"account":{"type":"string"},"profile":{"type":"string","enum":["danske-bank"]},"statementOrder":{"type":"string","enum":["ascending","descending"]},"confirm":{"type":"boolean"}},"additionalProperties":false}),
         false,
     );
     tool["annotations"] = json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false});
@@ -35,6 +35,7 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
             "csvContent",
             "account",
             "profile",
+            "statementOrder",
             "confirm",
         ]
         .contains(&k.as_str())
@@ -46,7 +47,7 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
         .and_then(Value::as_str)
         .filter(|s| !s.is_empty())
         .ok_or("nonempty company required")?;
-    for key in ["csvPath", "csvContent", "account", "profile"] {
+    for key in ["csvPath", "csvContent", "account", "profile", "statementOrder"] {
         if object.get(key).is_some_and(|v| !v.is_string()) {
             return Err("optional import arguments must be strings, never null");
         }
@@ -57,6 +58,7 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
     if object.get("profile").is_some_and(|v| v != "danske-bank") {
         return Err("profile must be danske-bank");
     }
+    if object.get("statementOrder").is_some_and(|v|v!="ascending" && v!="descending") {return Err("statementOrder must be ascending or descending");}
     if object.get("confirm") != Some(&json!(true)) {
         return Ok(result(
             json!({"ok":false,"code":"CONFIRM_REQUIRED","errors":["confirm: true required for write tool bank_import"]}),
@@ -72,7 +74,7 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
         .and_then(Value::as_str)
         .filter(|s| !s.is_empty())
     {
-        match rentemester_client::bank_import_file_body(Path::new(path), account, profile) {
+        match rentemester_client::bank_import_ordered_file_body(Path::new(path), account, profile, object.get("statementOrder").and_then(Value::as_str)) {
             Ok(body) => body,
             Err(e) => return Ok(failure(e)),
         }
@@ -95,6 +97,8 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
         }
         serde_json::to_vec(&body).map_err(|_| "import body unavailable")?
     };
+    let mut body:Value=serde_json::from_slice(&body).map_err(|_|"import body unavailable")?;if let Some(order)=object.get("statementOrder") {body["statementOrder"]=order.clone();}
+    let body=serde_json::to_vec(&body).map_err(|_|"import body unavailable")?;
     Ok(match api.bank_import_original(company, body).await {
         Ok(value) => result(value),
         Err(e) => failure(e),

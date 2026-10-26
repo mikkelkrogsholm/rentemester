@@ -6,7 +6,7 @@ pub fn accepts(args: &[String]) -> bool {
     args.first().is_some_and(|s| s == "bank") && args.get(1).is_some_and(|s| s == "import")
 }
 pub fn help() -> Value {
-    json!({"usage":"bank import --file PATH --company SLUG --server ORIGIN (--cookie-file PATH | --service-key-file PATH) [--account ID_OR_SLUG] [--profile danske-bank] [--json] [--allow-loopback-http]", "contract":"Global --local-profile may replace server. This explicit import command confirms the write; no additional --confirm. Original file bytes are bounded25MiB and never decoded. One request, no automatic retry, account lookup or implicit default company/account."})
+    json!({"usage":"bank import --file PATH --company SLUG --server ORIGIN (--cookie-file PATH | --service-key-file PATH) [--account ID_OR_SLUG] [--profile danske-bank] [--statement-order ascending|descending] [--json] [--allow-loopback-http]", "contract":"Global --local-profile may replace server. This explicit import command confirms the write; no additional --confirm. Original file bytes are bounded25MiB and never decoded. One request, no automatic retry, account lookup or implicit default company/account."})
 }
 fn output(value: Value, json_mode: bool, exit: u8) -> Output {
     if json_mode && exit != 2 {
@@ -72,7 +72,7 @@ pub fn execute(args: &[String]) -> Output {
                 cursor += 1;
             }
             "--file" | "--company" | "--server" | "--cookie-file" | "--service-key-file"
-            | "--account" | "--profile" => {
+            | "--account" | "--profile" | "--statement-order" => {
                 let Some((value, next)) = crate::original_args::value(args, cursor) else {
                     return failure(&format!("Missing value for {key}"), false, 2);
                 };
@@ -102,6 +102,7 @@ pub fn execute(args: &[String]) -> Output {
             2,
         );
     }
+    if flags.get("--statement-order").is_some_and(|v|!matches!(*v,"ascending"|"descending")) {return failure("statement order must be ascending or descending",false,2);}
     let api = match crate::remote::credential_client(flags["--server"], http, &flags, false) {
         Ok(api) => api,
         Err((exit, e)) => {
@@ -112,10 +113,11 @@ pub fn execute(args: &[String]) -> Output {
             );
         }
     };
-    let body = match rentemester_client::bank_import_file_body(
+    let body = match rentemester_client::bank_import_ordered_file_body(
         Path::new(flags["--file"]),
         flags.get("--account").copied(),
         flags.get("--profile").copied(),
+        flags.get("--statement-order").copied(),
     ) {
         Ok(body) => body,
         Err(e) => return failure(&e.to_string(), json_mode, 1),

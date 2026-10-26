@@ -11,6 +11,11 @@ pub fn bank_import_file_body(
     account: Option<&str>,
     profile: Option<&str>,
 ) -> Result<Vec<u8>, Error> {
+    bank_import_ordered_file_body(path,account,profile,None)
+}
+/// Original bytes with optional explicitly declared source chronology.
+pub fn bank_import_ordered_file_body(path: &Path, account: Option<&str>, profile: Option<&str>, order: Option<&str>) -> Result<Vec<u8>, Error> {
+    if order.is_some_and(|s|!matches!(s,"ascending"|"descending")) {return Err(Error::InvalidInput("statement order must be ascending or descending"));}
     let mut bytes = Vec::new();
     File::open(path)
         .map_err(|_| Error::InvalidInput("bank CSV file could not be opened"))?
@@ -29,6 +34,7 @@ pub fn bank_import_file_body(
     if let Some(profile) = profile {
         body["profile"] = json!(profile);
     }
+    if let Some(order)=order {body["statementOrder"]=json!(order);}
     serde_json::to_vec(&body).map_err(|_| Error::InvalidInput("bank import body unavailable"))
 }
 impl ApiClient {

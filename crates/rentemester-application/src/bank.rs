@@ -12,6 +12,7 @@ pub use rentemester_storage::bank_queries::{AccountsQuery, ListQuery, ReportQuer
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    ImportOrdered { content: &'a [u8], account: Option<&'a str>, profile: Option<&'a str>, statement_order: Option<&'a str>, now: &'a str, original: bool },
     Original(rentemester_storage::bank_original::Action<'a>),
     Accounts,
     Transactions(&'a ListQuery),
@@ -66,7 +67,7 @@ pub fn execute(
         | Action::AccountList(_) => Permission::CompanyRead,
         Action::Create(_) | Action::UpdateBrowser { .. } => Permission::CompanyAdmin,
         Action::CreateOriginal(_) | Action::UpdateOriginal { .. } => Permission::CompanyMasterData,
-        Action::Import { .. } | Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
+        Action::ImportOrdered { .. } | Action::Import { .. } | Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
             Permission::CompanyLedgerPost
         }
     };
@@ -82,6 +83,7 @@ pub fn execute(
         context.selection,
         permission,
         |tx, subject| match action {
+            Action::ImportOrdered {content,account,profile,statement_order,now,original} => import_ordered(tx,guard,content,account,profile,statement_order,subject,now,rentemester_storage::idempotency::PrincipalKind::User,original),
             Action::Original(command) => crate::bank_original::read_authorized(
                 tx,
                 guard,
@@ -231,7 +233,7 @@ pub fn execute_service(
         Action::CreateOriginal(_) | Action::UpdateOriginal { .. } => {
             (Permission::CompanyMasterData, true)
         }
-        Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
+        Action::ImportOrdered { .. } | Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
             (Permission::CompanyLedgerPost, true)
         }
         _ => {
@@ -255,6 +257,7 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let result = match action {
+                Action::ImportOrdered {content,account,profile,statement_order,now,original} => import_ordered(tx,guard,content,account,profile,statement_order,subject,now,rentemester_storage::idempotency::PrincipalKind::ServiceAccount,original)?,
                 Action::Original(command) => crate::bank_original::read_authorized(
                     tx,
                     guard,
@@ -426,3 +429,14 @@ mod query_tests;
 #[cfg(test)]
 #[path = "bank/account_tests.rs"]
 mod account_tests;
+
+#[allow(clippy::too_many_arguments)]
+fn import_ordered(tx: &rusqlite::Transaction<'_>, guard: &mut NamespaceGuard, bytes: &[u8], account: Option<&str>, profile: Option<&str>, order: Option<&str>, actor: &str, now: &str, principal: rentemester_storage::idempotency::PrincipalKind, original: bool) -> Result<Value, Error> {
+    if original {rentemester_storage::bank::validate_original_import_account(tx,account)?;} else {rentemester_storage::bank::validate_import_account(tx,account)?;}
+    let parse=|| {let content=rentemester_engine::bank::decode_bytes(bytes,profile)?;let rows=rentemester_engine::bank::parse_with_profile(&content,profile)?;rentemester_storage::bank_statement_order::direction(profile,order)?;Ok::<_,Error>(rows)};
+    let rows=parse().map_err(|e| if original {original_parser_error(e)} else {e})?;
+    if rentemester_storage::bank_statement_order::direction(profile,order)?.is_some() && !rentemester_storage::bank_statement_order::installed(tx)? {return Err(Error::new("unsupported_schema","explicit bank statement order schema upgrade required"));}
+    let archive=guard.publish_bank_statement_bytes(bytes).map_err(|_|Error::new("bank_original_unavailable","bank statement original could not be preserved"))?;
+    let receipt=rentemester_storage::bank::import_ordered_bytes_with_principal(tx,bytes,&rows,account,actor,now,&archive,principal,original,order)?;
+    Ok(if original {serde_json::json!({"ok":true,"data":receipt,"errors":[]})} else {receipt})
+}
