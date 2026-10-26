@@ -90,6 +90,10 @@ export async function handleCompanyProfile(
       const address = optionalBodyString(body, "address");
       const postalCode = optionalBodyString(body, "postalCode");
       const city = optionalBodyString(body, "city");
+      const invoiceNumberFormat = optionalBodyString(body, "invoiceNumberFormat");
+      if (invoiceNumberFormat !== undefined && invoiceNumberFormat !== "fiscal-year" && invoiceNumberFormat !== "daily") {
+        throw ApiError.badRequest("'invoiceNumberFormat' must be 'fiscal-year' or 'daily'");
+      }
       const payment = parsePaymentInput(body.payment);
 
       let paymentTermsDays: number | undefined;
@@ -139,6 +143,7 @@ export async function handleCompanyProfile(
         postalCode === undefined &&
         city === undefined &&
         paymentTermsDays === undefined &&
+        invoiceNumberFormat === undefined &&
         vatPeriodType === undefined &&
         !hasPayment
       ) {
@@ -173,6 +178,7 @@ export async function handleCompanyProfile(
         postalCode !== undefined ||
         city !== undefined ||
         paymentTermsDays !== undefined ||
+        invoiceNumberFormat !== undefined ||
         hasPayment;
       const updated = hasProfileField
         ? setCompanyProfile(ctx.db, {
@@ -182,6 +188,7 @@ export async function handleCompanyProfile(
             ...(postalCode !== undefined ? { postalCode } : {}),
             ...(city !== undefined ? { city } : {}),
             ...(paymentTermsDays !== undefined ? { paymentTermsDays } : {}),
+            ...(invoiceNumberFormat !== undefined ? { invoiceNumberFormat } : {}),
             ...(hasPayment ? { payment } : {}),
           })
         : // Only the VAT cadence changed — re-read the settings so the response

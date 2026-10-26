@@ -245,6 +245,23 @@ describe("ManageCompanyView", () => {
   });
 
   // #300 — the VAT settlement cadence is editable from the cockpit profile.
+  test("saves the daily invoice series on the company profile", async () => {
+    mockFetch({
+      ...companiesRoute(),
+      "PATCH /api/companies/acme-aps/company": {
+        company: companySettings({ invoiceNumberFormat: "daily" }),
+      },
+    });
+    renderAt(<ManageCompanyView />, {
+      route: "/companies/acme-aps/manage",
+      path: "/companies/:slug/manage",
+    });
+    await userEvent.selectOptions(await screen.findByLabelText(/Fakturanummerserie/i), "daily");
+    await userEvent.click(screen.getByRole("button", { name: /Gem stamdata/i }));
+    expect(await screen.findByText(/Stamdata opdateret/i)).toBeInTheDocument();
+    expect((screen.getByLabelText(/Fakturanummerserie/i) as HTMLSelectElement).value).toBe("daily");
+  });
+
   test("the profile form shows the company's VAT cadence", async () => {
     mockFetch({
       ...companiesRoute(),

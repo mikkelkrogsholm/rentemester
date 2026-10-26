@@ -591,6 +591,7 @@ function ProfileCard({
 	const [address, setAddress] = useState(initial.address ?? "");
 	const [postalCode, setPostalCode] = useState(initial.postalCode ?? "");
 	const [city, setCity] = useState(initial.city ?? "");
+	const [invoiceNumberFormat, setInvoiceNumberFormat] = useState<"fiscal-year" | "daily">(initial.invoiceNumberFormat ?? "fiscal-year");
 	// #300: the VAT settlement cadence is editable from the cockpit, including
 	// turning registration OFF (`"none"` → submitted as `null`). Initialise the
 	// form state from `initial.vatPeriodType` so a not-VAT-registered company
@@ -627,6 +628,7 @@ function ProfileCard({
 		address.trim() !== (settings.address ?? "") ||
 			postalCode.trim() !== (settings.postalCode ?? "") ||
 			city.trim() !== (settings.city ?? "") ||
+			invoiceNumberFormat !== (settings.invoiceNumberFormat ?? "fiscal-year") ||
 			vatPeriodType !== (settings.vatPeriodType ?? "none") ||
 			bankName.trim() !== (settings.payment?.bankName ?? "") ||
 			registrationNo.trim() !== (settings.payment?.registrationNo ?? "") ||
@@ -646,6 +648,7 @@ function ProfileCard({
 					address: address.trim(),
 					postalCode: postalCode.trim(),
 					city: city.trim(),
+					invoiceNumberFormat,
 					// `"none"` → null so the server deregisters the company; a real
 					// cadence is sent verbatim.
 					vatPeriodType: vatPeriodType === "none" ? null : vatPeriodType,
@@ -658,6 +661,7 @@ function ProfileCard({
 				}),
 			);
 			setSettings(updated);
+			setInvoiceNumberFormat(updated.invoiceNumberFormat ?? "fiscal-year");
 			setVatPeriodType(updated.vatPeriodType ?? "none");
 			setNotice("Stamdata opdateret.");
 		} catch (err) {
@@ -776,6 +780,14 @@ function ProfileCard({
 						cockpitStyles.formLabel,
 					)}
 				>
+					Fakturanummerserie
+					<Select disabled={outcome.blocked} name="invoiceNumberFormat" value={invoiceNumberFormat} onChange={(e) => setInvoiceNumberFormat(e.target.value as "fiscal-year" | "daily")} xstyle={[cockpitStyles.formSelectFocusComposition]}>
+						<option value="fiscal-year">Årlig: 2026-0001</option>
+						<option value="daily">Daglig: RM-26-10-26-01</option>
+					</Select>
+					<span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.fieldHint)}>Gælder nye fakturaer. Tidligere fakturanumre ændres ikke.</span>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.formLabel)}>
 					Momsperiode
 					<Select
 						disabled={outcome.blocked}

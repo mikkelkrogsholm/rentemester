@@ -6,6 +6,20 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-26
+
+### Added
+
+- Selskaber kan vælge daglige fakturanummerserier med formatet
+  `RM-ÅÅ-MM-DD-NN`. Serien tildeles ved udstedelse, fortsætter fortløbende
+  pr. selskab og dato og omfatter også tilbagevendende fakturaer.
+- Den eksisterende årsserie er fortsat standard. Tidligere udstedte og
+  importerede fakturaer beholder deres numre og dokumenter.
+
+### Security
+
+- Opdaterede afhængigheder afhjælper nyligt offentliggjorte sårbarheder.
+
 ## [0.3.1] - 2026-10-08
 
 ### Changed

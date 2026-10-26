@@ -26,6 +26,7 @@ import {
 } from "./periods";
 
 export type FiscalYearLabelStrategy = "end-year" | "start-year" | "span";
+export type InvoiceNumberFormat = "fiscal-year" | "daily";
 
 /** True when the `companies` table carries the `vat_period_type` column. */
 function hasVatPeriodColumn(db: Database): boolean {
@@ -57,6 +58,7 @@ export type CompanySettings = {
    * date to its due date. Captured once so every issued invoice inherits it.
    */
   paymentTermsDays: number;
+  invoiceNumberFormat: InvoiceNumberFormat;
   /**
    * #289: the VAT settlement cadence the company is registered for with SKAT
    * (`month` / `quarter` / `half-year`). Drives VAT period windows and their
@@ -87,6 +89,7 @@ const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   auditWaived: null,
   cvrSyncedAt: null,
   paymentTermsDays: DEFAULT_PAYMENT_TERMS_DAYS,
+  invoiceNumberFormat: "fiscal-year",
   // Keep the module's eager default independent of the close/VAT graph.
   // `periods.ts` imports the close-readiness graph, which eventually reads
   // company settings.  The value is the same canonical default exported from
@@ -555,10 +558,13 @@ export function getCompanySettings(db: Database): CompanySettings {
   // Read it only when present; absent → fall back to the quarterly default so
   // a pre-#289 company is unaffected.
   const vatColumn = hasVatPeriodColumn(db) ? "vat_period_type" : "NULL AS vat_period_type";
+  const columns = db.query("PRAGMA table_info(companies)").all() as Array<{ name: string }>;
+  const invoiceFormatColumn = columns.some((column) => column.name === "invoice_number_format")
+    ? "invoice_number_format" : "'fiscal-year' AS invoice_number_format";
   const row = db.query(
     `SELECT id, name, country, currency, cvr, fiscal_year_start_month, fiscal_year_label_strategy,
             address, postal_code, city, company_form, industry_code, industry_text,
-            cvr_status, audit_waived, cvr_synced_at, payment_terms_days, ${vatColumn}
+            cvr_status, audit_waived, cvr_synced_at, payment_terms_days, ${vatColumn}, ${invoiceFormatColumn}
        FROM companies
       ORDER BY id ASC
       LIMIT 1`
@@ -581,6 +587,7 @@ export function getCompanySettings(db: Database): CompanySettings {
     cvr_synced_at: string | null;
     payment_terms_days: number | null;
     vat_period_type: string | null;
+    invoice_number_format: InvoiceNumberFormat;
   } | null;
 
   if (!row) return DEFAULT_COMPANY_SETTINGS;
@@ -603,6 +610,7 @@ export function getCompanySettings(db: Database): CompanySettings {
     cvrSyncedAt: row.cvr_synced_at,
     paymentTermsDays:
       normalizePaymentTermsDays(row.payment_terms_days) ?? DEFAULT_PAYMENT_TERMS_DAYS,
+    invoiceNumberFormat: row.invoice_number_format,
     // `null` in the column = "not VAT-registered" — preserved verbatim. A
     // stored value that fails normalisation (corrupt cell) falls back to the
     // historical default so legacy ledgers stay readable.
@@ -629,6 +637,7 @@ export type SetCompanyProfileOptions = {
   postalCode?: string | null;
   city?: string | null;
   paymentTermsDays?: number | string | null;
+  invoiceNumberFormat?: InvoiceNumberFormat;
   payment?: CompanyPaymentInput;
 };
 
@@ -646,6 +655,9 @@ export function setCompanyProfile(
   options: SetCompanyProfileOptions,
 ): SetCompanyProfileResult {
   const errors: string[] = [];
+  if (options.invoiceNumberFormat !== undefined && options.invoiceNumberFormat !== "fiscal-year" && options.invoiceNumberFormat !== "daily") {
+    errors.push("invoiceNumberFormat must be fiscal-year or daily");
+  }
   let cvr: string | null | undefined;
   if (options.cvr !== undefined) {
     try {
@@ -693,6 +705,10 @@ export function setCompanyProfile(
        WHERE id = 1`,
     ).run(name, nextCvr, address, postalCode, city, terms);
 
+    if (options.invoiceNumberFormat !== undefined) {
+      db.query("UPDATE companies SET invoice_number_format = ? WHERE id = 1").run(options.invoiceNumberFormat);
+    }
+
     if (hasPaymentInfo(options.payment)) {
       upsertPrimaryBankAccount(db, before.currency, options.payment);
     }
@@ -714,6 +730,7 @@ export function setCompanyProfile(
     ["postalCode", before.postalCode, result.postalCode],
     ["city", before.city, result.city],
     ["paymentTermsDays", before.paymentTermsDays, result.paymentTermsDays],
+    ["invoiceNumberFormat", before.invoiceNumberFormat, result.invoiceNumberFormat],
   ];
   for (const [field, prev, next] of compare) {
     if (prev !== next) updatedFields.push(field);

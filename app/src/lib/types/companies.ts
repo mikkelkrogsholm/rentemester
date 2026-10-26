@@ -132,6 +132,7 @@ export type CompanyProfileInput = {
   postalCode?: string;
   city?: string;
   paymentTermsDays?: number;
+  invoiceNumberFormat?: "fiscal-year" | "daily";
   /**
    * The VAT settlement cadence (#300) — month / quarter / half-year, or
    * `null` to mark the company as NOT VAT-registered.
@@ -156,6 +157,7 @@ export type CompanyPaymentDetails = {
 
 /** The full companies row, including CVR-register stamdata + bank details. */
 export type CompanySettings = {
+  invoiceNumberFormat?: "fiscal-year" | "daily";
   id: number;
   name: string;
   country: string;

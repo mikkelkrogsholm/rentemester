@@ -199,6 +199,7 @@ export function register(dispatch: CommandDispatch): void {
       postalCode: hasFlag("--postal-code") ? ctx.arg("--postal-code") : undefined,
       city: hasFlag("--city") ? ctx.arg("--city") : undefined,
       paymentTermsDays: hasFlag("--payment-terms") ? ctx.arg("--payment-terms") : undefined,
+      invoiceNumberFormat: hasFlag("--invoice-number-format") ? ctx.arg("--invoice-number-format") as "fiscal-year" | "daily" : undefined,
       payment,
     });
     // Reflect the cadence on the result so the JSON output and human summary
@@ -231,6 +232,7 @@ export function register(dispatch: CommandDispatch): void {
         postalCode: settings.postalCode,
         city: settings.city,
         paymentTermsDays: settings.paymentTermsDays,
+        invoiceNumberFormat: settings.invoiceNumberFormat,
         // #300: the VAT settlement cadence — the canonical value plus its
         // Danish label, so the owner sees which momsperiode the company
         // files. `null` here means the company is not VAT-registered;

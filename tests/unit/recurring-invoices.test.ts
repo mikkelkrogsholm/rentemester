@@ -13,6 +13,7 @@ import {
   retireRecurringInvoiceTemplate,
 } from "../../src/core/recurring-invoices";
 import { storeViesValidation } from "../../src/core/vies";
+import { initialiseCompanyVolume, setCompanyProfile } from "../../src/core/company";
 
 function baseTemplateInput(overrides: Record<string, unknown> = {}) {
   return {
@@ -101,6 +102,20 @@ describe("recurring invoice templates", () => {
 });
 
 describe("recurring invoice generation", () => {
+  test("uses the company's daily invoice series", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recurring-daily-"));
+    try {
+      initialiseCompanyVolume(root, { name: "Synthetic ApS", cvr: "DK12345678", address: "Testvej 1" });
+      const db = openDb(ensureCompanyDirs(root).db);
+      expect(setCompanyProfile(db, { invoiceNumberFormat: "daily" }).ok).toBe(true);
+      const template = createRecurringInvoiceTemplate(db, baseTemplateInput());
+      const generated = generateRecurringInvoice(db, root, { templateId: template.templateId!, asOfDate: "2026-01-20" });
+      expect(generated.invoiceNumber).toBe("RM-26-01-15-01");
+      db.close();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
   test("removes promoted invoice artifacts when the outer generation link rolls back", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-recurring-artifact-rollback-"));
     const paths = ensureCompanyDirs(root);
