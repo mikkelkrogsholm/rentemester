@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: read
+  issues: read
   packages: write
   id-token: write
   attestations: write
@@ -98,11 +99,14 @@ jobs:
       - name: Verify agent discovery coverage
         run: bun run agent-discovery:coverage
 
+      - name: Verify StyleX ownership and generated document styles
+        run: bun run stylex:check
+
       - name: Lint TypeScript and React sources
         run: bun run lint
 
       - name: Refuse vulnerable dependencies
-        run: bun run supply-chain:audit
+        run: bun audit --audit-level=low --json > supply-chain-audit.json
 
       - name: Verify production dependency licenses
         run: bun run supply-chain:licenses
@@ -113,6 +117,8 @@ jobs:
       - name: Create lockfile-bound supply-chain evidence
         if: inputs.runtime == 'bun'
         id: supply_chain
+        env:
+          SUPPLY_CHAIN_AUDIT_REPORT_PATH: supply-chain-audit.json
         run: |
           bun run supply-chain:evidence > supply-chain-evidence.json
           sha256sum supply-chain-evidence.json > supply-chain-evidence.json.sha256
@@ -279,45 +285,21 @@ jobs:
                 trap "kill $server_pid 2>/dev/null || true" EXIT
                 bun -e '\''const base="http://127.0.0.1:4319/"; let health; for(let i=0;i<100;i++){try{const response=await fetch(new URL("api/health",base)); if(response.ok){health=await response.json(); break}}catch{} await Bun.sleep(100)} if(!health) throw new Error("server did not become healthy"); if(health.build.version!==process.env.EXPECTED_VERSION||health.build.gitCommit!==process.env.EXPECTED_COMMIT||health.build.bunVersion!==process.env.EXPECTED_BUN_VERSION||health.build.baseImageDigest!==process.env.EXPECTED_BASE_IMAGE_DIGEST) throw new Error("wrong build identity"); const html=await fetch(base).then(r=>{if(!r.ok) throw new Error(`cockpit index ${r.status}`); return r.text()}); const asset=/src="([^"]+\.js)"/.exec(html)?.[1]; if(!asset) throw new Error("cockpit asset missing"); const js=await fetch(new URL(asset,base)).then(r=>{if(!r.ok) throw new Error(`cockpit asset ${r.status}`); return r.text()}); if(!js.includes(process.env.EXPECTED_VERSION)) throw new Error("cockpit version missing")'\'''
 
-      - name: Render the published local-container cockpit
+      - name: Generate digest-bound Cockpit acceptance evidence
         if: inputs.runtime == 'bun'
         env:
-          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}
+          COCKPIT_EVIDENCE_COMMIT: ${{ steps.identity.outputs.commit }}
+          COCKPIT_EVIDENCE_OUT: cockpit-evidence
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          image="$REGISTRY_IMAGE@$IMAGE_DIGEST"
-          container="rentemester-candidate-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          cleanup() { docker rm --force "$container" >/dev/null 2>&1 || true; }
-          trap cleanup EXIT
-          docker run --detach --name "$container" --read-only \
-            --publish 127.0.0.1::4319 \
-            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
-            --tmpfs /workspace:rw,nosuid,size=64m,uid=1000,gid=1000 \
-            --tmpfs /import:rw,nosuid,size=64m,uid=1000,gid=1000 \
-            --env RENTEMESTER_DEPLOYMENT_PROFILE=local-container \
-            --env RENTEMESTER_APP_AUTH=off \
-            "$image"
-          address="$(docker port "$container" 4319/tcp)"
-          [[ "$address" =~ ^127\.0\.0\.1:[0-9]+$ ]]
-          base_url="http://$address"
-          BASE_URL="$base_url" bun -e 'for(let i=0;i<100;i++){try{const r=await fetch(`${process.env.BASE_URL}/api/ready`); if(r.ok) process.exit(0)}catch{} await Bun.sleep(100)} process.exit(1)'
-          docker exec "$container" bun run src/cli.ts company add \
-            --workspace /workspace --name "Release Check" --slug release-check \
-            --bank-name Testbank --bank-reg 1234 --bank-account 5678901234
-          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
-          test -n "$chrome"
-          for route in \
-            "/companies/release-check?year=2026" \
-            "/companies/release-check/manage?source=release-candidate"; do
-            rendered="cockpit-rendered-$(echo "$route" | tr '/?=&' '-')".html
-            "$chrome" --headless --no-sandbox --disable-gpu --virtual-time-budget=5000 --dump-dom "$base_url$route" > "$rendered"
-            grep -F '<div id="root"><div class="app-shell"' "$rendered"
-            grep -F 'Release Check' "$rendered"
-            if grep -Fq 'Kunne ikke bekræfte Rentemesters sikkerhedsprofil' "$rendered"; then
-              echo "local-container cockpit was rejected by the UI security-profile gate" >&2
-              exit 1
-            fi
-          done
+          gh auth status
+          # --limit 1000 makes gh paginate all open issues; label relation is explicit.
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label epic:648 --limit 1000 --json number,title,labels > cockpit-epic-648-open-issues.json
+          export COCKPIT_EVIDENCE_REGRESSION_QUERY="$PWD/cockpit-epic-648-open-issues.json"
+          bun run scripts/release/run-cockpit-evidence.ts
+          sha256sum "cockpit-evidence/cockpit-epic-648-open-issues.json" > "cockpit-evidence/cockpit-epic-648-open-issues.json.sha256"
 
       - name: Extract digest-bound SPDX SBOM evidence
         if: inputs.runtime == 'bun'
@@ -376,6 +358,11 @@ jobs:
           RELEASE_SUPPLY_CHAIN_SHA256: ${{ steps.supply_chain.outputs.sha256 }}
           RELEASE_AGENT_DISCOVERY_SHA256: ${{ steps.agent_discovery.outputs.sha256 }}
         run: |
+          set -euo pipefail
+          test -f "cockpit-evidence/cockpit-evidence.json"
+          test -f "cockpit-evidence/cockpit-epic-648-open-issues.json"
+          export RELEASE_COCKPIT_EVIDENCE_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-evidence.json" | cut -d " " -f 1)"
+          export RELEASE_COCKPIT_REGRESSION_QUERY_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-epic-648-open-issues.json" | cut -d " " -f 1)"
           bun run scripts/release/create-manifest.ts > release-manifest.json
           sha256sum release-manifest.json > release-manifest.json.sha256
 
@@ -427,6 +414,10 @@ jobs:
             supply-chain-evidence.json.sha256
             agent-discovery-coverage-report.json
             agent-discovery-coverage-report.json.sha256
+            cockpit-evidence/cockpit-evidence.json
+            cockpit-evidence/*.png
+            cockpit-evidence/cockpit-epic-648-open-issues.json
+            cockpit-evidence/cockpit-epic-648-open-issues.json.sha256
             docs/release/digisense-approval.schema.json
           if-no-files-found: error
           retention-days: 90

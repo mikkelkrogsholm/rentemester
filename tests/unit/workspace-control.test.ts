@@ -4,82 +4,27 @@ import { createHash } from "node:crypto";
 import { lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  insertWorkspaceAudit,
-  openWorkspaceControlDb,
-  readWorkspaceControlMigrations,
-  validateWorkspaceControlMigrationHistory,
-  WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME,
-  WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_ACCESS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_NAME,
-  WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_NAME,
-  WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_NAME,
-  WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_NAME,
-  WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_NAME,
-  WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_NAME,
-  WORKSPACE_CONTROL_INVITATIONS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_INVITATIONS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_NAME,
-  WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_NAME,
-  WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_NAME,
-  WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_NAME,
-  WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_NAME,
-  WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_NAME,
-  WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_NAME,
-  WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_NAME,
-  WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_CHECKSUM,
-  WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_NAME,
-  CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION,
-  insertWorkspaceAuthorizationAudit,
-  insertWorkspaceDocumentAccessAudit,
-  workspaceControlPaths,
-} from "../../src/core/workspace-control";
+import { insertWorkspaceAudit, openWorkspaceControlDb, readWorkspaceControlMigrations, validateWorkspaceControlMigrationHistory, WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM, WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME, CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION, insertWorkspaceAuthorizationAudit, insertWorkspaceDocumentAccessAudit, workspaceControlPaths, supportedWorkspaceControlMigrations } from "../../src/core/workspace-control";
 
 function tempWorkspace() {
   return mkdtempSync(join(tmpdir(), "rentemester-workspace-control-"));
 }
 
 describe("workspace control database", () => {
+  test("MAIN task lineage is distinct from native mail and custody versions", () => {
+    const catalog = supportedWorkspaceControlMigrations();
+    expect(catalog).toHaveLength(34);
+    expect(catalog[30]!.name).toContain("knowledge");
+    expect(catalog[31]!.name).toContain("approval");
+    expect(catalog[33]!.name).toContain("tasks");
+    const db = new Database(":memory:");
+    try {
+      db.exec("CREATE TABLE workspace_control_migrations (id INTEGER PRIMARY KEY, name TEXT, checksum TEXT, applied_at TEXT)");
+      for (const row of catalog.slice(0, 30)) db.run("INSERT INTO workspace_control_migrations VALUES (?, ?, ?, ?)", [row.id, row.name, row.checksum, "2026-10-26"]);
+      db.run("INSERT INTO workspace_control_migrations VALUES (31, ?, ?, ?)", ["rentemester-workspace-mail-intake-v31", "native-checksum", "2026-10-26"]);
+      expect(() => validateWorkspaceControlMigrationHistory(db)).toThrow();
+    } finally { db.close(); }
+  });
   test("creates a private, checksummed control database without touching a company ledger", () => {
     const workspace = tempWorkspace();
     const companyLedger = join(workspace, "synthetic-company", "data", "ledger.sqlite");
@@ -93,58 +38,7 @@ describe("workspace control database", () => {
       const before = createHash("sha256").update(readFileSync(companyLedger)).digest("hex");
 
       const db = openWorkspaceControlDb(workspace);
-      expect(readWorkspaceControlMigrations(db)).toEqual([
-        {
-          id: 1,
-          name: WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME,
-          checksum: WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM,
-        },
-        {
-          id: 2,
-          name: WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME,
-          checksum: WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM,
-        },
-        {
-          id: 3,
-          name: WORKSPACE_CONTROL_ACCESS_MIGRATION_NAME,
-          checksum: WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM,
-        },
-        {
-          id: 4,
-          name: WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_NAME,
-          checksum: WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM,
-        },
-        {
-          id: 5,
-          name: WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_NAME,
-          checksum: WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_CHECKSUM,
-        },
-        { id: 6, name: WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_CHECKSUM },
-        { id: 7, name: WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_CHECKSUM },
-        { id: 8, name: WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_CHECKSUM },
-        { id: 9, name: WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_CHECKSUM },
-        { id: 10, name: WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_CHECKSUM },
-        { id: 11, name: WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_CHECKSUM },
-        { id: 12, name: WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_CHECKSUM },
-        { id: 13, name: WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_CHECKSUM },
-        { id: 14, name: WORKSPACE_CONTROL_INVITATIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INVITATIONS_MIGRATION_CHECKSUM },
-        { id: 15, name: WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_CHECKSUM },
-        { id: 16, name: WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_CHECKSUM },
-        { id: 17, name: WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_CHECKSUM },
-        { id: 18, name: WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_CHECKSUM },
-        { id: 19, name: WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_CHECKSUM },
-        { id: 20, name: WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_CHECKSUM },
-        { id: 21, name: WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_CHECKSUM },
-        { id: 22, name: WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_CHECKSUM },
-        { id: 23, name: WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_CHECKSUM },
-        { id: 24, name: WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_CHECKSUM },
-        { id: 25, name: WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_CHECKSUM },
-        { id: 26, name: WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_CHECKSUM },
-        { id: 27, name: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_CHECKSUM },
-        { id: 28, name: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_CHECKSUM },
-        { id: 29, name: WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_CHECKSUM },
-        { id: 30, name: WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_CHECKSUM },
-      ]);
+      expect(readWorkspaceControlMigrations(db).map(({ id, name, checksum }) => ({ id, name, checksum }))).toEqual(supportedWorkspaceControlMigrations());;
       expect(
         db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'workspace_audit'").get(),
       ).not.toBeNull();
@@ -377,7 +271,7 @@ describe("workspace control database", () => {
       "workspace-migrations",
       "0002-better-auth-foundation.json",
     );
-    expect(WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[1]!.checksum).toBe(
       createHash("sha256").update(readFileSync(betterAuthArtifact)).digest("hex"),
     );
     const accessArtifact = join(
@@ -389,35 +283,35 @@ describe("workspace control database", () => {
       "workspace-migrations",
       "0003-workspace-access-events.json",
     );
-    expect(WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[2]!.checksum).toBe(
       createHash("sha256").update(readFileSync(accessArtifact)).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[3]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0004-workspace-bootstrap-saga-v4.json",
       ))).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[4]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0005-session-assurance-v5.json",
       ))).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[5]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0006-auth-audit-v6.json",
       ))).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[7]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0008-document-access-audit-v8.json",
       ))).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[11]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0012-auth-recovery-telemetry-v12.json",
       ))).digest("hex"),
     );
-    expect(WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_CHECKSUM).toBe(
+    expect(supportedWorkspaceControlMigrations()[12]!.checksum).toBe(
       createHash("sha256").update(readFileSync(join(
         import.meta.dir, "..", "..", "src", "core", "workspace-migrations", "0013-authorization-denial-audit-v13.json",
       ))).digest("hex"),
@@ -609,7 +503,7 @@ describe("workspace control database", () => {
       ).run(WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME, WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM);
       v2.query(
         "INSERT INTO workspace_schema_migrations (id, name, checksum, applied_by_version) VALUES (2, ?, ?, 'test')",
-      ).run(WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME, WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM);
+      ).run(supportedWorkspaceControlMigrations()[1]!.name, supportedWorkspaceControlMigrations()[1]!.checksum);
       v2.close();
 
       const upgraded = openWorkspaceControlDb(workspace);
@@ -646,9 +540,9 @@ describe("workspace control database", () => {
       }
       const migrationRows = [
         [1, WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME, WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM],
-        [2, WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME, WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM],
-        [3, WORKSPACE_CONTROL_ACCESS_MIGRATION_NAME, WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM],
-        [4, WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_NAME, WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM],
+        [2, supportedWorkspaceControlMigrations()[1]!.name, supportedWorkspaceControlMigrations()[1]!.checksum],
+        [3, supportedWorkspaceControlMigrations()[2]!.name, supportedWorkspaceControlMigrations()[2]!.checksum],
+        [4, supportedWorkspaceControlMigrations()[3]!.name, supportedWorkspaceControlMigrations()[3]!.checksum],
       ] as const;
       for (const [id, name, checksum] of migrationRows) {
         v4.query(
@@ -678,4 +572,5 @@ describe("workspace control database", () => {
       rmSync(workspace, { recursive: true, force: true });
     }
   });
+
 });

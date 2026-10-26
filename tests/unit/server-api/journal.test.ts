@@ -103,4 +103,19 @@ describe("cockpit API — journal (GET .../journal)", () => {
       rmSync(ws, { recursive: true, force: true });
     }
   });
+
+  test("#652 explains only explicit journal source links and leaves absent legal assessment explicit", async () => {
+    const ws = makeWorkspace("jrn-explain", ["Acme ApS"]);
+    try {
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 400);
+      const journal = await get(config({ workspaceRoot: ws }), "/api/companies/acme-aps/journal?year=2026");
+      const entryId = journal.body.journal.entries[0].id;
+      const res = await get(config({ workspaceRoot: ws }), `/api/companies/acme-aps/journal/${entryId}/explanation`);
+      expect(res.status).toBe(200);
+      expect(res.body.explanation.entry.id).toBe(entryId);
+      expect(res.body.explanation.sourceFacts.document.id).toBeGreaterThan(0);
+      expect(res.body.explanation.legalSource.text).toContain("Ingen lov");
+      expect(res.body.explanation.professionalAssessment.text).toBe("ingen registreret vurdering");
+    } finally { rmSync(ws, { recursive: true, force: true }); }
+  });
 });

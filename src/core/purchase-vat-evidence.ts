@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { validSimplifiedPurchaseCompanyContext } from "./document-company-context";
+import { validIncompleteStandardPurchaseVatEvidenceReview } from "./document-purchase-vat-evidence-review";
 import { absDkk, compareDkk, percentOfDkk, subtractDkk } from "./money";
 import { deductibleDanishPurchaseSupplierErrors } from "./supplier-identity";
 
@@ -17,17 +18,24 @@ export function deductiblePurchaseSupplierErrors(document: {
   });
 }
 
-/** Simplified invoices require separately hash-bound context; supplier checks still apply. */
+/** Preserve each workflow's incomplete-invoice gate alongside hash-bound company context. */
 export function standardPurchaseCompanyContextErrors(db: Database, documentId: number, document: {
   document_type: string;
   recipient_vat_cvr: string | null;
   payload_json: string | null;
-}): string[] {
+}, options: { requireIncompleteReview: boolean }): string[] {
   try {
     const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
+    // Direct-bank expenses require this review even with a printed recipient.
+    // Payable registration accepts it as an alternative to recipient/context.
+    if (options.requireIncompleteReview && payload.incompleteStandardPurchaseInvoice === true &&
+        !validIncompleteStandardPurchaseVatEvidenceReview(db, documentId)) {
+      return ["incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction"];
+    }
     const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
     const contextIsValid = payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, documentId);
-    if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid) {
+    const reviewedIncomplete = payload.incompleteStandardPurchaseInvoice === true && validIncompleteStandardPurchaseVatEvidenceReview(db, documentId);
+    if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid && !reviewedIncomplete) {
       return ["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"];
     }
     return [];

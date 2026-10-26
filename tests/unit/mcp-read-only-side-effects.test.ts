@@ -155,7 +155,7 @@ describe("MCP company read-only opening contract (#586)", () => {
   test("portfolio overview is a snapshot-only fan-out", async () => {
     const workspace = mkdtempSync(join(tmpdir(), "rentemester-portfolio-readonly-"));
     try {
-      const created=createCompany(workspace, { name: "Portfolio ApS", slug: "portfolio" });
+      const created=createCompany(workspace, { name: "Portfolio ApS", slug: "portfolio", cvr: "DK90000103" });
       checkpointFixture(companyPaths(created.companyRoot).db);
       const portfolio = new McpServer({ name: "portfolio-readonly", version: "0" });
       registerPortfolioTools(portfolio);

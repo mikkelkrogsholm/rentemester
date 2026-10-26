@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Reviewed supplier commitments are planning evidence, never invoices,
  * payables, payments or ledger postings. */
 import { createHash } from "node:crypto";
@@ -9,7 +10,7 @@ type Status = "active"|"paused"|"ended"|"unresolved";
 type Frequency = "weekly"|"monthly"|"quarterly"|"yearly";
 export type CommitmentInput = { commitmentId:string; vendorPartyId:string; vendorSnapshot?:string; type:string; description:string; businessPurpose:string; amount:number; currency:string; frequency:Frequency; nextDate:string; startDate?:string; renewalDate?:string; noticeDate?:string; endDate?:string; evidenceRefs:string[]; vatProposal?:string; status?:Status };
 export type CommitmentProposal = Omit<CommitmentInput,"vendorSnapshot"|"status"|"startDate"|"renewalDate"|"noticeDate"|"endDate"|"vatProposal"> & { status:Status; vendorSnapshot:string|null; startDate:string|null; renewalDate:string|null; noticeDate:string|null; endDate:string|null; vatProposal:string|null; payloadHash:string; schedule:Array<{date:string; amount:number; currency:string}>; warnings:string[] };
-const canonical=(v:unknown):string=>v===null||typeof v!=="object"?JSON.stringify(v):Array.isArray(v)?`[${v.map(canonical).join(",")}]`:`{${Object.keys(v as object).sort().map(k=>`${JSON.stringify(k)}:${canonical((v as any)[k])}`).join(",")}}`;
+const canonical = canonicalJson;
 const digest=(v:unknown)=>createHash("sha256").update(canonical(v)).digest("hex");
 const validText=(v:unknown,max=500)=>typeof v==="string"&&v.trim().length>0&&v.trim().length<=max;
 const validFrequency=(v:unknown):v is Frequency=>v==="weekly"||v==="monthly"||v==="quarterly"||v==="yearly";

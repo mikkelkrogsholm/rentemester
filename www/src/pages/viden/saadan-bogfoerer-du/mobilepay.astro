@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -34,8 +35,8 @@ const jsonLd = {
     lead="MobilePay er betalingskanalen, ikke selve salgsdokumentationen. Start med faktura, bon eller ordregrundlag, og brug bankafstemningen til at matche betaling og gebyr."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den typiske fejl er at bogføre MobilePay-indbetalingen som salget i sig selv. Betalingen skal matche et dokumenteret salg, og eventuelle gebyrer skal behandles separat, så omsætning, moms og bank stemmer.
     </p>
 
@@ -51,19 +52,19 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Praktisk bogføring</h2>
-    <ul>
-      <li>Brug faktura, bon eller ordre som dokumentation for salget.</li>
-      <li>Match indbetalingen mod kunden eller salgsdokumentet.</li>
-      <li>Del gebyr ud som omkostning, hvis afregningen viser gebyr.</li>
-      <li>Afstem nettobeløbet mod bankkontoen.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Praktisk bogføring</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Brug faktura, bon eller ordre som dokumentation for salget.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Match indbetalingen mod kunden eller salgsdokumentet.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Del gebyr ud som omkostning, hvis afregningen viser gebyr.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Afstem nettobeløbet mod bankkontoen.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester understøtter bank-CSV import, fakturaer, bilag, betalinger og afstemning. En direkte MobilePay-integration er ikke live på siden; den korrekte claim er, at betalinger kan håndteres via dokumentation og bank-/CSV-flow.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis MobilePay udbetaler et nettobeløb efter gebyr, bør omsætning og gebyr ikke blandes sammen. Salget skal stadig stå som omsætning, mens gebyret bør fremgå som en separat omkostning eller afregningspost, så momsrapport og bankafstemning kan kontrolleres.
     </p>
   </article>

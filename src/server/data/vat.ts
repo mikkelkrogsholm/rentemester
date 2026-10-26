@@ -10,6 +10,7 @@ import type { Database } from "bun:sqlite";
 import { buildVatReport } from "../../core/vat";
 import { percentOfDkk } from "../../core/money";
 import { emptyVatRubric, type VatRubric } from "../../core/vat-rubric";
+import { vatFilingFormForPeriod } from "../../core/vat-filing-evidence";
 import {
   vatPeriodWindowFor,
   vatPeriodsForYear,
@@ -241,7 +242,7 @@ export function vatRubrikkerForPeriod(
   periodStart: string,
   periodEnd: string,
 ): VatRubrikker {
-  return buildVatReport(db, periodStart, periodEnd).rubrikker;
+  return vatFilingFormForPeriod(db, buildVatReport(db, periodStart, periodEnd));
 }
 
 /** A VatRubrikker with every rubric zeroed — used for an archived year. */

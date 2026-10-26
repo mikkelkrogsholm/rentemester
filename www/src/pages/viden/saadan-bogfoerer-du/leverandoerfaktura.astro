@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sådan bogfører du" title="Leverandørfakturaen skal kobles til både bilag og betaling" lead="En leverandørfaktura er ikke færdigbehandlet, før den er gemt som dokumentation, bogført på de rigtige konti og afstemt mod betalingen." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når du bogfører en leverandørfaktura, skal du kunne forklare hvad virksomheden har købt, hvem leverandøren er, hvilken periode udgiften hører til, og hvordan moms og betaling behandles. En faktura uden kontrolleret bilag eller bankmatch bør ikke blive en automatisk postering.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Det bør du kontrollere</h2>
-    <ul>
-      <li>leverandørnavn, fakturanummer og fakturadato</li>
-      <li>beløb, valuta og momsgrundlag</li>
-      <li>hvilken konto udgiften skal på</li>
-      <li>om fakturaen er betalt eller står som åben post</li>
-      <li>om der er reverse charge, udenlandsk valuta eller særlige fradragsregler</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Det bør du kontrollere</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandørnavn, fakturanummer og fakturadato</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beløb, valuta og momsgrundlag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilken konto udgiften skal på</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om fakturaen er betalt eller står som åben post</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om der er reverse charge, udenlandsk valuta eller særlige fradragsregler</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan ingest'e dokumenter med metadata, bevare hash af originalfilen og bogføre udgiften mod en banktransaktion, når grundlaget er komplet. Der er også testede flows for udenlandsk valuta og reverse charge, men usikre fakturaer skal stadig stoppe som exceptions.
     </p>
 
-    <h2>Typisk fejl</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typisk fejl</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den klassiske fejl er at bogføre bankbetalingen som udgift uden at knytte den til fakturaen. Det kan se rigtigt ud på bankkontoen, men det efterlader svagt regnskabsmateriale. Gem fakturaen, hash dokumentet, bogfør udgiften og match bankbetalingen bagefter.
     </p>
   </article>

@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 import type { Database } from "bun:sqlite";
 import { insertAuditLog, resolveActor, type ResolveActorInput } from "./actor";
 import { resolveOpenExceptionsForBankTransaction } from "./exceptions";

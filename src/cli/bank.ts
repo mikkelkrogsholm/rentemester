@@ -17,6 +17,7 @@ import { linkBankTransactionToJournal, planBankReconciliationCorrection, applyBa
 import { executeLocalIdempotentMutation, IdempotencyError, validateIdempotencyKey, type StablePrincipal } from "../core/idempotency";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
 import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../core/direct-bank-purchase-payable-correction";
+import { applyLegacyBankBinding, applyLegacyPayablePaymentBackfill, planLegacyBankBinding, planLegacyPayablePaymentBackfill } from "../core/legacy-bank-payable-backfill";
 
 function correctionPrincipal(ctx: CommandContext): StablePrincipal | undefined {
   const raw = ctx.trimToNull(ctx.arg("--principal"));
@@ -100,11 +101,17 @@ export function register(dispatch: CommandDispatch): void {
       process.exit(2);
     }
     const root = ctx.companyRoot();
+    const statementOrder = ctx.trimToNull(ctx.arg("--statement-order"));
+    if (statementOrder && statementOrder !== "ascending" && statementOrder !== "descending") {
+      console.error("--statement-order must be 'ascending' or 'descending'");
+      process.exit(2);
+    }
     const db = openDb(companyPaths(root).db);
     migrate(db);
     const result = importBankCsv(db, root, file, {
       account: ctx.trimToNull(ctx.arg("--account")) ?? undefined,
       profile: ctx.trimToNull(ctx.arg("--profile")) ?? undefined,
+      statementOrder: statementOrder as "ascending" | "descending" | undefined,
     });
     const sync = result.ok
       ? syncUnmatchedBankTransactionExceptions(db)
@@ -232,6 +239,20 @@ export function register(dispatch: CommandDispatch): void {
     try { const run=executeLocalIdempotentMutation(db,{key:validateIdempotencyKey(key),operation:"direct_bank_purchase_payable_correction_apply",principal,payload,actor:{createdBy:ctx.cliActor??ctx.inferredMutationActor()??"",createdByProgram:"rentemester-cli"},execute:()=>applyDirectBankPurchasePayableCorrection(db,{...payload,actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal,confirm:true})}); result=run.receipt?{...run.result,idempotency:run.receipt}:run.result; }
     catch(error){result={ok:false,errors:[error instanceof IdempotencyError?error.code:String(error)]};}
     ctx.emitResult(result); db.close();
+  });
+
+  dispatch.on("bank", "legacy-binding-plan", (ctx) => {
+    const db=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db); if(inspectOpenLedger(db).status!=="current"){db.close();ctx.fatal("bank legacy-binding-plan requires a current ledger schema; run a write migration first");}
+    const result=planLegacyBankBinding(db,{bankAccountId:requiredNumberOrFatal(ctx,"--bank-account-id"),ledgerAccountNo:ctx.trimToNull(ctx.arg("--ledger-account"))??"",cutoff:ctx.trimToNull(ctx.arg("--cutoff"))??""});ctx.emitResult(result as Record<string,unknown>);db.close();
+  });
+  dispatch.on("bank", "legacy-binding-apply", (ctx) => {
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("bank legacy-binding-apply requires the exact confirmation --confirm yes");const principal=correctionPrincipal(ctx),key=ctx.trimToNull(ctx.arg("--idempotency-key"));if(!principal||!key)ctx.fatal("bank legacy-binding-apply requires --principal user:<id>|service-account:<id> and --idempotency-key <key>");const payload={bankAccountId:requiredNumberOrFatal(ctx,"--bank-account-id"),ledgerAccountNo:ctx.trimToNull(ctx.arg("--ledger-account"))??"",cutoff:ctx.trimToNull(ctx.arg("--cutoff"))??"",planHash:ctx.trimToNull(ctx.arg("--plan-hash"))??""};const db=openCommandDb(ctx);migrate(db);const result=applyLegacyBankBinding(db,{...payload,idempotencyKey:key!,actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:principal!,confirm:true});ctx.emitResult(result);db.close();
+  });
+  dispatch.on("bank", "legacy-payable-backfill-plan", (ctx) => {
+    const db=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db);if(inspectOpenLedger(db).status!=="current"){db.close();ctx.fatal("bank legacy-payable-backfill-plan requires a current ledger schema; run a write migration first");}const result=planLegacyPayablePaymentBackfill(db,{purchaseJournalEntryId:requiredNumberOrFatal(ctx,"--purchase-journal-entry-id"),paymentJournalEntryId:requiredNumberOrFatal(ctx,"--payment-journal-entry-id"),documentId:requiredNumberOrFatal(ctx,"--document-id"),bankTransactionId:requiredNumberOrFatal(ctx,"--bank-transaction-id")});ctx.emitResult(result);db.close();
+  });
+  dispatch.on("bank", "legacy-payable-backfill-apply", (ctx) => {
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("bank legacy-payable-backfill-apply requires the exact confirmation --confirm yes");const principal=correctionPrincipal(ctx),key=ctx.trimToNull(ctx.arg("--idempotency-key"));if(!principal||!key)ctx.fatal("bank legacy-payable-backfill-apply requires --principal user:<id>|service-account:<id> and --idempotency-key <key>");const payload={purchaseJournalEntryId:requiredNumberOrFatal(ctx,"--purchase-journal-entry-id"),paymentJournalEntryId:requiredNumberOrFatal(ctx,"--payment-journal-entry-id"),documentId:requiredNumberOrFatal(ctx,"--document-id"),bankTransactionId:requiredNumberOrFatal(ctx,"--bank-transaction-id"),planHash:ctx.trimToNull(ctx.arg("--plan-hash"))??""};const db=openCommandDb(ctx);migrate(db);const result=applyLegacyPayablePaymentBackfill(db,{...payload,idempotencyKey:key!,actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:principal!,confirm:true});ctx.emitResult(result);db.close();
   });
 
   dispatch.on("reconcile", "bank", (ctx) => {

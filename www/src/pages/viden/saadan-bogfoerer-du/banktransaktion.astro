@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sådan bogfører du" title="Banktransaktionen viser betalingen, ikke forklaringen" lead="En banklinje fortæller hvad der er gået ind eller ud. Bogføringen skal forklare hvorfor beløbet findes, og hvilket bilag eller hvilken faktura der ligger bag." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det er fristende at bogføre direkte fra bankteksten. Det er også risikabelt. Bankteksten kan være kort, misvisende eller mangle momsgrundlag. En stærk arbejdsgang importerer banklinjen, men kræver dokumentation før den bliver en endelig postering.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Banklinjer skal matches</h2>
-    <ul>
-      <li>kundeindbetaling mod faktura</li>
-      <li>leverandørbetaling mod bilag eller faktura</li>
-      <li>gebyr mod afregning</li>
-      <li>refundering mod kreditbalance</li>
-      <li>valutabetaling mod DKK-grundlag</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Banklinjer skal matches</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kundeindbetaling mod faktura</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandørbetaling mod bilag eller faktura</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>gebyr mod afregning</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>refundering mod kreditbalance</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>valutabetaling mod DKK-grundlag</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan importere bank-CSV, håndtere DKK og udenlandsk valuta med DKK-basis, foreslå matches og markere umatchede linjer. Målet er ikke blind bankbogføring, men en kø af forklarlige bevægelser.
     </p>
 
-    <h2>God praksis</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>God praksis</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Brug banktransaktionen som kontrolpunkt, ikke som eneste kilde. Når en banklinje ikke kan matches til bilag, faktura eller aftale, bør den stå som uafklaret, indtil der er dokumentation nok til at bogføre den korrekt.
     </p>
   </article>

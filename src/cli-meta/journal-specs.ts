@@ -43,4 +43,5 @@ export const journalSpecs: CommandSpec[] = [
     allowedFlags: ["--company", "--entry-id", "--entry-no", "--match-text", "--match-date", "--match-document-id", "--date", "--reason"],
   },
   { key: "journal list", usage: "journal list --company <path>", description: "Lister finansposteringer.", allowedFlags: ["--company"] },
+  { key: "journal explain", usage: "journal explain --company <path> --entry-id <n>", description: "Forklarer en postering ud fra eksplicitte bilags-, bank-, part-, konto- og regelrelationer. Read-only.", allowedFlags: ["--company", "--entry-id"] },
 ];

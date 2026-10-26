@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /**
  * Workspace document inbox (#577).
  *

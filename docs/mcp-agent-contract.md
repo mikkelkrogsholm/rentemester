@@ -41,8 +41,10 @@ credential-derived authority or the running native schemas. Retain the reference
 for compatibility evidence; use the current native contract above for operation.
 
 This is the operating contract for an **external agent** (Claude Desktop,
-Cursor, Claude Code, Codex, …) that drives Rentemester through the **MCP
-server's 214 loose tools**.
+Cursor, Claude Code, Codex, …) that drives Rentemester through the MCP
+server's compact gateway surface or its explicit backward-compatible full
+profile. The default `compact` profile lists exactly eight tools; the internal
+registry still contains every precise operation.
 
 It is the sibling of [`docs/runtime-agent-contract.md`](runtime-agent-contract.md),
 which covers the *packaged* `agent run` loop — a deterministic, replayable
@@ -58,19 +60,49 @@ form. The authoritative tool catalogue is
 
 ## Runtime outcome discovery (#584)
 
-Start every new integration with `meta_about`. Its `data.catalogue` carries a
-schema version, deterministic SHA-256 hash, and the entry point
-`meta_about -> agent_capability_search -> agent_workflow_describe`. Call
+Start every new integration with `system_server_about`. Its `data.catalogue`
+and registry digest carry schema/version identity; the entry point is
+`system_server_about -> agent_capability_search -> agent_workflow_describe ->
+agent_operation_search -> agent_operation_describe`. Call
 `agent_capability_search` with a narrow outcome query (and follow its cursor)
 before calling `agent_workflow_describe` for the selected `id`. The description
-resolves its MCP operation references against this running server's `tools/list`
-registrations and returns annotation-derived safety plus the ordered
-read/dry-run/review/approval/apply boundaries. It does not mutate a company.
+resolves its MCP operation references against the internal registry and
+distinguishes `directlyListed` from operations available through
+`agent_operation_read`, `agent_operation_write` or
+`agent_operation_destroy`. It does not mutate a company. `tools/list` is fixed
+at startup and never changes after search, describe or execution.
 Each search result also includes the live CLI, MCP and HTTP operation bindings
-for that capability, including safety, actor/confirmation and retry metadata.
+for that capability, including canonical identity, schema hash, direct-vs-
+gateway availability, safety, actor/confirmation and retry metadata.
 
-Example: to reconcile bank activity, call `meta_about`, search `reconcile bank`,
-describe `bank-reconciliation-batch`, then follow its read and dry-run steps,
+### Profiles and canonical operation gateways
+
+The stdio server selects `compact` by default. Set
+`RENTEMESTER_MCP_PROFILE=full` before startup to expose all 269 legacy names
+directly with their existing schemas and behavior. An unknown profile fails
+startup. Full-profile names remain compatibility aliases; persisted keys,
+permission names and audit identities are not renamed.
+
+Every captured operation has one immutable lowercase-snake canonical identity
+with explicit domain/resource/action metadata, an operation identity hash and
+an exact input/output schema identity hash. Use `agent_operation_search` and
+`agent_operation_describe` rather than deriving names from underscores.
+The reviewed naming source is `src/mcp/operation-naming.ts`; legacy original
+names stay unchanged for permissions, idempotency receipts and audit records.
+`agent_operation_read`, `agent_operation_write` and
+`agent_operation_destroy` invoke exactly one selected operation. They perform
+the original schema validation, then re-run the selected original
+authorization, membership, company-isolation, confirmation, backup/period,
+retry/idempotency and audit gates. A gateway never plans, infers arguments or
+batches calls.
+
+`bookkeeping_batch_plan` remains read-only. The mutating canonical operation is
+`bookkeeping_batch_persist`; `bookkeeping_batch_dry_run` is only a deprecated
+compatibility alias/response adapter and is never described as read-only.
+
+Example: to reconcile bank activity, call `system_server_about`, search
+`reconcile bank`, describe `bank-reconciliation-batch`, then follow its read
+and operation-gateway steps,
 review the proposed batch, and only enter the apply boundary with the stated
 actor and confirmation. Read back the canonical reconciliation and journal
 records after an acknowledged write; do not retry an uncertain write blindly.
@@ -80,7 +112,7 @@ The equivalent read-only HTTP representation is `GET /api/agent-capabilities`
 its canonical HTTP and CLI references; use MCP `tools/list`/describe when the
 live MCP registration and annotations are required.
 
-`meta_about.data.catalogue.coverage` identifies the reviewed coverage rules and
+`system_server_about.data.catalogue.coverage` identifies the reviewed coverage rules and
 the three public surface baselines. CI runs the same deterministic gate against
 the live registries. A release candidate then runs that gate again inside the
 published digest-pinned image and binds the resulting report checksum to the
@@ -89,10 +121,11 @@ fails before release instead of silently disappearing from agent discovery.
 
 ## What the surface is
 
-Rentemester exposes its bookkeeping core as **214 MCP tools** over stdio
-(`src/mcp/server.ts`, registered by `src/mcp/registry.ts`). Each tool maps
-to a single core operation — issue an invoice, post a journal entry, list
-bank transactions, take a backup, and so on.
+Rentemester exposes its bookkeeping core as 269 precise internal operations
+over stdio (`src/mcp/server.ts`, registered by `src/mcp/registry.ts`). Compact
+mode lists eight gateway tools; full mode lists all precise legacy names. Each
+operation maps to a single core operation — issue an invoice, post a journal
+entry, list bank transactions, take a backup, and so on.
 
 There is **no conversation state on the server.** Every call is
 self-contained: it carries its own `company` path and its own arguments.
@@ -405,3 +438,25 @@ append-only posting. See "Actor-attribution" in `docs/mcp-tool-surface.md`.
 Both rest on the same core, the same rules, the same append-only ledger and
 the same exception queue. The guardrails are identical; only the driver
 differs.
+
+## Workspace task operations
+
+The `workspace_task_*`, `workspace_task_routine_*` and `workspace_task_board_*`
+canonical operations are a separate workspace domain. Their full-profile aliases
+start with `tasks_`, `task_series_` and `task_boards_`. They take an explicit
+`workspace` and task scope, rather than the accounting tools' `company` path.
+Use discovery for the strict schema; see [task surface](mcp-tool-surface.md#workspace-tasks-annual-wheel-and-boards)
+and [operations](tasks-operations.md).
+
+Every task write requires confirm:true and idempotencyKey. Edits also require
+expectedVersion; a new series/board uses 0. An exact retry returns the original
+effect only while the caller still has access to its recorded and current scope.
+Reads return access-filtered counts/history and do not create tasks or deliver
+notifications. Errors retain stable domain codes. The successful MCP envelope
+is `{ok:true,data:{...serviceFields}}`; CLI/HTTP flatten those fields.
+
+Task work never books, pays, files, approves a ledger plan, or changes accounting
+period status. External evidence remains user_reported unless a fresh source
+check verifies it. Assignment gives no access; a linked workspace task requires
+all company memberships. These operations have persistent workspace events and
+receipts, unlike the runtime agent loop's per-run state.

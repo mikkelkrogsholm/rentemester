@@ -25,7 +25,7 @@ import type { ServerConfig } from "./config";
 
 export type { RoutePermission } from "../core/access-permissions";
 
-import { isValidSlug } from "../core/workspace";
+import { findRoutableWorkspaceCompany, isValidSlug } from "../core/workspace";
 import { authorizeWorkspaceRoute } from "../core/workspace-access";
 import { insertWorkspaceAuthorizationAudit, openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../core/workspace-control";
 import { authMiddleware, type Principal } from "./auth";
@@ -33,6 +33,11 @@ import { recordHostedDocumentAccess } from "./document-access-audit";
 import { ApiError, toErrorResponse } from "./errors";
 import { assertHostedMutationOriginAllowed } from "./mutations";
 import { jsonResponse } from "./router/_shared";
+import { dispatchAgentDiscoveryRoute } from "./router/agent-discovery-dispatch";
+import { dispatchGroupWorkspaceRoute } from "./router/group-workspace-dispatch";
+import { dispatchSystemRoute } from "./router/system-dispatch";
+import { dispatchTaskRoute } from "./router/tasks";
+import { readTaskKnowledgePage } from "./router/task-knowledge";
 import { handleCompanyAccountingDraft, handleCompanyAccountingDrafts } from "./router/accounting-drafts";
 import {
   handleAssetNextDepreciation,
@@ -41,15 +46,18 @@ import {
 import {
   handleCompanyBank,
   handleCompanyBankAccounts,
-  handleBankReconciliationCorrectionPlan,
+  handleBankReconciliationCorrectionPlan, handleLegacyBankBindingApply, handleLegacyBankBindingPlan,
 } from "./router/bank";
 import { handleBookkeepingBatchApply, handleBookkeepingBatchApprove, handleBookkeepingBatchDryRun, handleBookkeepingBatchPersistDryRun, handleBookkeepingBatchStatus } from "./router/bookkeeping-batch";
+import { handleAccountingApprovalPolicyGet, handleAccountingApprovalPolicySet } from "./router/accounting-approval-policy";
 import { handleBookkeepingWorkbench } from "./router/bookkeeping-workbench";
+import { handlePurchaseCaseCreate, handlePurchaseCaseGet, handlePurchaseCaseGroupReview, handlePurchaseCaseList, handlePurchaseCaseReassess, handlePurchaseCaseReview, handlePurchaseOverview } from "./router/purchase-cases";
 import { handleDimensionAction, handleDimensionAssignments, handleDimensionBudgets, handleDimensionBudgetPlan, handleDimensionDefinitions, handleDimensionMembers, handleDimensionPlan } from "./router/dimensions";
 import {
   handleCompanyAccounts,
   handleCompanyAccruals,
   handleCompanyAgentSuggestions,
+  handleCompanyAttention,
   handleCompanyAnnualReport,
   handleCompanyArchiveYear,
   handleCompanyBilagsmail,
@@ -73,6 +81,7 @@ import {
   handleCompanyFiscalYears,
   handleCompanyMultiYear,
   handleCompanyOverview,
+  handleCompanyChangesSince,
 } from "./router/dashboard";
 import {
   handleCompanyDocumentBookingOptions,
@@ -86,10 +95,19 @@ import {
   handleDocumentPartyLinkInspect,
   handleDocumentPartyLinkPlan,
   handleDocumentPartyLinkAction,
+  handleDocumentCompanyContext,
+  handleDocumentPurchaseVatEvidenceReview,
   handleInternalNoExternalParty,
+  handlePartyCoverage, handlePartyCoveragePlan, handlePartyCoverageApply,
 } from "./router/documents";
 import { handleGroupConsolidatedReport, handleGroupDispositionAction, handleGroupDispositionStatus, handleGroupEliminations, handleGroupOverview, handleGroupReconciliation, handleGroupReportProfiles } from "./router/group";
 import {
+  handleCompanyImportedReceivables,
+  handleCompanyImportedReceivablesBackfillApply,
+  handleCompanyImportedReceivablesBackfillPlan,
+  handleCompanyImportedReceivableSettlementApply,
+  handleCompanyImportedReceivableSettlementPlan,
+  handleCompanyImportedReceivableSettlementStatus,
   handleCompanyInvoicePdf,
   handleCompanyInvoices,
   handleCompanyRecurringInvoices,
@@ -102,12 +120,13 @@ import {
 import { handleCfoAnalytics } from "./router/cfo-analytics";
 import { handleCompanyPostingRuleExplain, handleCompanyPostingRules } from "./router/posting-rules";
 import { handleServicePrincipalCreate, handleServicePrincipalList, handleServicePrincipalRecover, handleServicePrincipalRevoke, handleServicePrincipalRotate } from "./router/service-principals";
-import { handleCompanyKnowledge, handleCompanyKnowledgeAction, handleOwnershipAction, handleOwnershipHistory, handleOwnershipQuery, handleRegistryParties, handleRegistryParty, handleRegistryPartyCreate, handleRegistryPartyMerge, handleRegistryPartyRole, handleRegistryRecord, handleRegistryRecordAction, handleRegistryRecordDownload, handleRegistryRecordIngest, handleRegistryRecords } from "./router/workspace-registry";
+import { handleCompanyKnowledge, handleCompanyKnowledgeAction, handleLegacyPartyMappingApply, handleLegacyPartyMappingPlan, handleLegacyPartyMappings, handleLegacyPartyMappingSupersede, handleVendorIdentityEnrichmentApply, handleVendorIdentityEnrichmentPlan, handleVendorIdentityEnrichments, handleOwnershipAction, handleOwnershipHistory, handleOwnershipQuery, handlePartyHub, handlePartyProfile, handleRegistryParties, handleRegistryParty, handleRegistryPartyCreate, handleRegistryPartyMerge, handleRegistryPartyRole, handleRegistryRecord, handleRegistryRecordAction, handleRegistryRecordDownload, handleRegistryRecordIngest, handleRegistryRecords } from "./router/workspace-registry";
 import { handleWorkspaceInboxApprove, handleWorkspaceInboxComplete, handleWorkspaceInboxIngest, handleWorkspaceInboxInspect, handleWorkspaceInboxList } from "./router/workspace-document-inbox";
 import {
   handleCompanyBalance,
   handleCompanyIncomeStatement,
   handleCompanyJournal,
+  handleCompanyJournalExplanation,
   handleCompanyJournalExport,
   handleCompanyStatementExport,
   handleCompanyTrialBalance,
@@ -181,6 +200,8 @@ import {
   handlePayableRegister,
   handleDirectBankPurchasePayablePlan,
   handleDirectBankPurchasePayableApply,
+  handleLegacyPayableBackfillPlan,
+  handleLegacyPayableBackfillApply,
   handlePeriodCloseReadiness,
   handlePeriodCloseReview,
   handlePeriodCloseStatus,
@@ -267,6 +288,29 @@ export function validateRouteCatalog(entries: readonly RouteCatalogEntry[]): voi
 
 const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/protocol", summary: "Passive protocol-major-1 route support; never authorization." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks", summary: "Filtrerede opgaver, boards, rutiner, projektioner og aktiv påmindelsesstatus." },
+  { scope: "company", effect: "read", permission: "company.knowledge.read", method: "GET", pattern: "/api/companies/:slug/knowledge-pages/:pageId", summary: "Beskyttet selskabsviden og playbooks fra en sikker produktreference." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/knowledge-pages/:pageId", summary: "Workspaceejerens beskyttede fælles vidensside; handleren kræver ejerskab." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks", summary: "Opretter opgave med eksplicit scope, actor og idempotens; ressourcer autoriseres i opgavedomænet." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/sync", summary: "Synkroniserer tilladte autoritative opgavekilder uden ledgerændringer." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/run", summary: "Kører deterministisk opgavevedligeholdelse; kræver workspaceejer." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/runtime", summary: "Viser aktuel påmindelsesruntime uden at starte den." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/notifications", summary: "Modtagerens adgangsfiltrerede påmindelser." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/operations/:idempotencyKey", summary: "Bekræfter egen opgaveoperation gennem adgangsbeskyttet kvitteringsmetadata." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/:taskId", summary: "Opgave og bevaret ændringshistorik." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/:taskId/history", summary: "Opgavens bevarede ændringshistorik." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/update", summary: "Opdaterer almindelige opgavefelter med forventet version." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/move", summary: "Flytter opgaven i lokale eller samlede boards; udfører ingen regnskabshandling." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/complete", summary: "Registrerer dokumenteret afslutning efter aktuel kildekontrol." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/reopen", summary: "Genåbner opgave med begrundelse og bevaret afslutningshistorik." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/reminder", summary: "Aktiverer eller ændrer en påmindelse for en tilladt modtager." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-series", summary: "Tilgængelige opgaverutiner." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-series", summary: "Gemmer versioneret rutine uden at omskrive gamle forekomster." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-series/project", summary: "Read-only forventninger til årshjulet." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-series/materialize", summary: "Opretter konkrete forekomster idempotent." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-boards", summary: "Tilgængelige lokale og samlede boards med fælles statusbetydninger." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-boards/preview", summary: "Read-only konsekvensvisning for ændrede kolonnebetydninger." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-boards", summary: "Gemmer board med eksplicit omplacering og godkendt konsekvensvisning." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/ready", summary: "Read-only readiness for workspace, control DB and registered ledgers." },
@@ -301,10 +345,19 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "write", permission: "company.admin", method: "PATCH", pattern: "/api/companies/:slug", summary: "Omdøber/arkiverer en virksomhed." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/workspace-parties", summary: "Synlige canonical workspace parties (#573)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/workspace-parties/:partyId", summary: "Synlig party-provenance (#573)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/party-hub", summary: "Søgbar, read-only canonical Party Hub (#653)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/party-hub/:partyId", summary: "Read-only Party Profile med beregnings- og kildegrænse (#653)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/workspace-parties", summary: "Opretter party + lokal rolle (#573)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/workspace-parties/:partyId/role", summary: "Knytter company-scoped party role (#573)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/workspace-parties/merge/propose", summary: "Foreslår party merge (#573)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/workspace-parties/merge/approve", summary: "Godkender party merge (#573)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/legacy-party-mappings/plan", summary: "Planlægger dokument-hashbundet legacy contact mapping (#638)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/legacy-party-mappings", summary: "Lister append-only legacy contact mapping history (#638)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/legacy-party-mappings/apply", summary: "Anvender eksakt reviewet legacy contact mapping (#638)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/legacy-party-mappings/supersede", summary: "Supersederer legacy contact mapping append-only (#638)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/vendor-identity-enrichments/plan", summary: "Planlægger byte-bundet leverandør-identitetsberigelse (#638)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/vendor-identity-enrichments", summary: "Lister append-only leverandør-identitetsberigelser (#638)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/vendor-identity-enrichments/apply", summary: "Anvender eksakt reviewet leverandør-identitetsberigelse (#638)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/corporate-records", summary: "Synlige immutable corporate records (#575)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/corporate-records/:recordId", summary: "Corporate record metadata (#575)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/corporate-records/:recordId/file", summary: "Verificerede corporate record bytes (#575)." },
@@ -329,6 +382,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/dashboard", summary: "Virksomhedens dashboard." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/fiscal-years", summary: "Kendte regnskabsår." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/overview", summary: "Nøgletalsoverblik." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/changes-since", summary: "Cockpit-lokal cursorprojektion af revisionssporet (#651); MCP audit_log_list er den offentlige audit-læsning." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/income-statement", summary: "Resultatopgørelse." },
   { scope: "company", effect: "read", permission: "company.export", method: "GET", pattern: "/api/companies/:slug/income-statement/export", summary: "Resultatopgørelse som CSV-download (#372)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/balance", summary: "Balance." },
@@ -336,7 +390,10 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/trial-balance", summary: "Saldobalance." },
   { scope: "company", effect: "read", permission: "company.export", method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/journal/:entryId/explanation", summary: "Kildebundet forklaring af en postering (#652)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-drafts", summary: "Bogføringskladder og deres seneste reviewtilstand." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Aktuel versioneret approval-policy; historisk elevated-status er eksplicit ikke-håndhævet." },
+  { scope: "company", effect: "write", permission: "company.admin", method: "POST", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Ændrer selskabets append-only normal approval-policy med confirm; elevated aktivering afvises." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/posting-rules", summary: "Selskabslokale posteringsregler." },
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/posting-rules/explain", summary: "Dry-run med præcise match- og afvigelsesårsager." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/posting-rules/propose", summary: "Opretter et regel-forslag med confirm." },
@@ -356,6 +413,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounts", summary: "Kontoplan — read-only liste (#344)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bank/reconciliation-correction-plan", summary: "Read-only plan for bankafstemningskorrektion." },
+  { scope:"company",effect:"read",permission:"company.read",method:"POST",pattern:"/api/companies/:slug/bank/legacy-binding/plan",summary:"Read-only NULL-only plan for legacy bank binding (#601)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents/:id/file", summary: "Henter et bilag." },
@@ -367,8 +425,17 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents/party-links", summary: "Kanoniske partskoblinger pr. bilag (#588)." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents/:id/party-links", summary: "Append-only partskoblingshistorik (#588)." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "POST", pattern: "/api/companies/:slug/documents/party-links/plan", summary: "Read-only partskoblingsplan (#588)." },
+  { scope:"company",effect:"read",permission:"company.documents.read",method:"GET",pattern:"/api/companies/:slug/documents/party-coverage",summary:"Deterministisk bank-til-part coverage, hvor række-specifik evidens har præcis forrang over dokumentomfattende links (#644–#646)." },
+  { scope:"company",effect:"read",permission:"company.documents.read",method:"POST",pattern:"/api/companies/:slug/documents/party-coverage/plan",summary:"Hash-bundet plan for dokumentlinks, præcise bankrække-beslutninger og append-only korrektion (#644–#646)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-batch", summary: "Read-only batchplan med plan-hash og partitioner." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-workbench", summary: "Kanonisk, read-only bankarbejdskø med batch- og periodeluk-drilldown." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases", summary: "Kildebundne foreløbige købscases uden ledger-mutation." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases/:caseId", summary: "Aktuel afledt købscase med kilde- og evidensstatus." },
+  { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/purchase-cases", summary: "Opretter append-only foreløbig købscase." },
+  { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/:caseId/review", summary: "Appender eksakt kildebundet købscase-review." },
+  { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/:caseId/reassess", summary: "Appender eksplicit genvurdering mod ændret kilde." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-overview", summary: "Read-only overblik over purchase cases og dokumenterede behov." },
+  { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/group-review", summary: "Atomisk review af en eksakt gruppe purchase cases." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/dimensions/:journalLineId", summary: "Append-only dimensionshistorik for en journal linje (#589)." },
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/dimensions/plan", summary: "Read-only hash-bundet dimensionsplan (#589)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/dimensions/define", summary: "Opretter dimensionsdefinition (#589)." },
@@ -396,6 +463,9 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/archive/:year", summary: "Arkiveret regnskabsår." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/multi-year", summary: "Flerårsoversigt." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/invoices", summary: "Udstedte fakturaer." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/imported-receivables", summary: "Kildebeviste importerede tilgodehavender; holdes adskilt fra udstedte fakturaer." },
+  { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/imported-receivables/backfill/plan", summary: "Read-only hash-bundet plan for legacy Dinero-debitorbackfill uden import-replay." },
+  { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/imported-receivables/backfill/apply", summary: "Appender eksakt reviewet legacy Dinero-debitorplan uden at ændre journaler eller arkiv." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/invoices/:id/pdf", summary: "Henter en faktura-PDF." },
   { scope: "company", effect: "read", permission: "company.master-data", method: "GET", pattern: "/api/companies/:slug/contacts", summary: "Kunder + leverandører." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/customers", summary: "Opretter kunde." },
@@ -430,15 +500,21 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/annual-report", summary: "Årsrapport-builder (regnskabsklasse-B) (#338)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/bank/reconciliation-correction", summary: "Anvender reviewet bankafstemningskorrektion." },
+  { scope:"company",effect:"write",permission:"company.ledger.post",method:"POST",pattern:"/api/companies/:slug/bank/legacy-binding/apply",summary:"Applies exact reviewed legacy bank binding (#601)." },
+  { scope:"company",effect:"read",permission:"company.read",method:"POST",pattern:"/api/companies/:slug/payables/legacy-backfill/plan",summary:"Read-only exact-ID payable/payment backfill plan (#601)." },
+  { scope:"company",effect:"write",permission:"company.ledger.post",method:"POST",pattern:"/api/companies/:slug/payables/legacy-backfill/apply",summary:"Applies exact-ID payable/payment backfill (#601)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { scope: "company", effect: "write", permission: "company.export", method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
   { scope: "company", effect: "write", permission: "company.documents.upload", method: "POST", pattern: "/api/companies/:slug/documents/ingest", summary: "Modtager et bilag." },
   { scope: "company", effect: "write", permission: "company.documents.upload", method: "POST", pattern: "/api/companies/:slug/documents/:id/parse", summary: "Parser et gemt PDF-bilag med confirm." },
   { scope: "company", effect: "write", permission: "company.documents.upload", method: "POST", pattern: "/api/companies/:slug/documents/parse-pending", summary: "Parser ventende PDF-bilag med confirm." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/party-links/apply", summary: "Anvender auditeret partskobling (#588)." },
+  { scope:"company",effect:"write",permission:"company.master-data",method:"POST",pattern:"/api/companies/:slug/documents/party-coverage/apply",summary:"Anvender eksakt party coverage-plan append-only, inklusive bankrække-supersession, uden bogførings- eller momseffekt (#644–#646)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/party-links/supersede", summary: "Supersederer auditeret partskobling (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party", summary: "Bekræfter hash-bundet intern bilagskontekst uden ekstern part (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party/supersede", summary: "Supersederer intern no-party-beslutning append-only (#588)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/company-context", summary: "Gemmer hash-bundet attribution for forenklet eller ufuldstændigt købsbilag (#618)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/purchase-vat-evidence-review", summary: "Gemmer hash-bundet vurdering af formel fakturamangel; ikke en moms-override (#622)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/documents/book-expense", summary: "Bogfører et bilag som udgift mod en banktransaktion." },
   { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/invoices/issue", summary: "Udsteder en faktura." },
   { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/invoices/preview", summary: "Forhåndsviser en faktura-PDF uden at udstede." },
@@ -473,6 +549,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/payables/direct-bank-correction/plan", summary: "Planlægger hash-bundet direct-bank→payable-korrektion (#594)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/payables/direct-bank-correction/apply", summary: "Anvender reviewet direct-bank→payable-korrektion append-only (#594)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/agent-suggestions", summary: "Agent-forslag i kø — afventer ejerens godkendelse (#346)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/attention", summary: "Samlet, read-only opmærksomhedsindbakke fra canonical exceptions og blokeringer (#649)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/approve", summary: "Ejer godkender agent-forslag — løser undtagelsen med 'Godkendt'-note (#346)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/reject", summary: "Ejer afviser agent-forslag — løser undtagelsen med 'Afvist'-note (#346)." },
 ];
@@ -706,6 +783,9 @@ export async function handleRequest(
     if (route) {
       authorizeCatalogRoute(config, principal, route);
       assertCatalogRouteSecurity(request, config, principal, route);
+      if (route.companySlug && !findRoutableWorkspaceCompany(config.workspaceRoot, route.companySlug)) {
+        throw ApiError.notFound("virksomhed findes ikke i det aktive workspace");
+      }
     } else if (path === "/api" || path.startsWith("/api/")) {
       // The catalog is an enforcement boundary, not documentation only. A
       // future imperative dispatch branch is unreachable until it declares
@@ -720,201 +800,49 @@ export async function handleRequest(
     // (2) Imperative route dispatch. `route` above ensures every handler
     // reached by a catalogued request was authorized first.
 
-    if (path === "/api" || path === "/api/health") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleHealth(config, ROUTE_CATALOG);
-    }
+    const systemResponse = dispatchSystemRoute(path, method, {
+      health: () => handleHealth(config, ROUTE_CATALOG),
+      readiness: () => handleReadiness(config),
+      cvrStatus: () => handleSystemCvrStatus(),
+    });
+    if (systemResponse) return systemResponse;
+    const companyPage = /^\/api\/companies\/([^/]+)\/knowledge-pages\/([^/]+)$/.exec(path);
+    if (companyPage) return readTaskKnowledgePage(config, { kind: "company", companySlug: decodeURIComponent(companyPage[1]!) }, decodeURIComponent(companyPage[2]!));
+    const workspacePage = /^\/api\/knowledge-pages\/([^/]+)$/.exec(path);
+    if (workspacePage) return readTaskKnowledgePage(config, { kind: "workspace" }, decodeURIComponent(workspacePage[1]!));
+    const taskResponse = await dispatchTaskRoute(request, config, path, method, url);
+    if (taskResponse) return taskResponse;
 
-    if (path === "/api/ready") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleReadiness(config);
-    }
+    const groupWorkspaceResponse = await dispatchGroupWorkspaceRoute(path, method, url, request, {
+      portfolio: () => handlePortfolio(config, url), cfoAnalytics: () => handleCfoAnalytics(config, url), me: () => handleMe(config),
+      invitationList: () => handleWorkspaceInvitationList(config), invitationCreate: () => handleWorkspaceInvitationCreate(config, request), invitationCancel: () => handleWorkspaceInvitationCancel(config, request),
+      servicePrincipalList: () => handleServicePrincipalList(config), servicePrincipalCreate: () => handleServicePrincipalCreate(config, request), servicePrincipalRotate: () => handleServicePrincipalRotate(config, request), servicePrincipalRevoke: () => handleServicePrincipalRevoke(config, request), servicePrincipalRecover: () => handleServicePrincipalRecover(config, request),
+      workspaceMemberList: () => handleWorkspaceMemberList(config), workspaceMemberAccessUpdate: () => handleWorkspaceMemberAccessUpdate(config, request), workspaceMemberCompanyUpdate: () => handleWorkspaceMemberCompanyUpdate(config, request), invitationClaim: () => handleWorkspaceInvitationClaim(config, request),
+      workspaceInboxComplete: (slug: string, documentId: string) => handleWorkspaceInboxComplete(config, request, slug, documentId), workspaceInboxApprove: (slug: string, documentId: string) => handleWorkspaceInboxApprove(config, request, slug, documentId), workspaceInboxInspect: (slug: string, documentId: string) => handleWorkspaceInboxInspect(config, slug, documentId), workspaceInboxList: (slug: string) => handleWorkspaceInboxList(config, slug, url), workspaceInboxIngest: (slug: string) => handleWorkspaceInboxIngest(config, request, slug),
+      registryParties: (slug: string) => handleRegistryParties(config, slug, request), registryPartyCreate: (slug: string) => handleRegistryPartyCreate(config, slug, request), registryPartyRole: (slug: string, partyId: string) => handleRegistryPartyRole(config, slug, partyId, request), registryPartyMerge: (slug: string, approve: boolean) => handleRegistryPartyMerge(config, slug, request, approve), registryParty: (slug: string, partyId: string) => handleRegistryParty(config, slug, partyId),
+      partyHub: (slug:string) => handlePartyHub(config,slug,request), partyProfile: (slug:string,partyId:string) => handlePartyProfile(config,slug,partyId,request),
+      legacyPartyMappingPlan: (slug:string) => handleLegacyPartyMappingPlan(config,slug,request), legacyPartyMappings: (slug:string) => handleLegacyPartyMappings(config,slug,request), legacyPartyMappingApply: (slug:string) => handleLegacyPartyMappingApply(config,slug,request), legacyPartyMappingSupersede: (slug:string) => handleLegacyPartyMappingSupersede(config,slug,request), vendorIdentityEnrichmentPlan:(slug:string)=>handleVendorIdentityEnrichmentPlan(config,slug,request),vendorIdentityEnrichments:(slug:string)=>handleVendorIdentityEnrichments(config,slug,request),vendorIdentityEnrichmentApply:(slug:string)=>handleVendorIdentityEnrichmentApply(config,slug,request),
+      registryRecords: (slug: string) => handleRegistryRecords(config, slug, request), registryRecordIngest: (slug: string) => handleRegistryRecordIngest(config, slug, request), registryRecordAction: (slug: string, recordId: string, action: "link" | "enrich" | "supersede") => handleRegistryRecordAction(config, slug, recordId, request, action), registryRecordDownload: (slug: string, recordId: string) => handleRegistryRecordDownload(config, slug, recordId), registryRecord: (slug: string, recordId: string) => handleRegistryRecord(config, slug, recordId),
+      companyKnowledge: (slug: string) => handleCompanyKnowledge(config, slug, request), companyKnowledgeAction: (slug: string, action: "propose" | "review" | "supersede") => handleCompanyKnowledgeAction(config, slug, request, action), ownershipHistory: (slug: string) => handleOwnershipHistory(config, slug, request), ownershipAction: (slug: string, action: "propose" | "review" | "apply") => handleOwnershipAction(config, slug, request, action), ownershipQuery: (slug: string) => handleOwnershipQuery(config, slug, request),
+      groupOverview: (asOf: string) => handleGroupOverview(config, asOf), groupReconciliation: (asOf: string) => handleGroupReconciliation(config, asOf), groupEliminations: (asOf: string) => handleGroupEliminations(config, asOf), groupConsolidatedReport: (profileId: string, from: string, asOf: string) => handleGroupConsolidatedReport(config, profileId, from, asOf), groupReportProfiles: (asOf: string) => handleGroupReportProfiles(config, asOf), groupDispositionStatus: (id: string, asOf?: string) => handleGroupDispositionStatus(config, id, asOf), groupDispositionAction: (slug: string, action: any) => handleGroupDispositionAction(config, slug, request, action),
+    });
+    if (groupWorkspaceResponse) return groupWorkspaceResponse;
 
-    // #402 — CVR-login status, so the cockpit can offer a friendly path
-    // through "Hent fra CVR" instead of letting the owner click a button
-    // that fails silently when the credentials are missing.
-    if (path === "/api/system/cvr-status") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleSystemCvrStatus();
-    }
-
-    if (path === "/api/portfolio") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handlePortfolio(config, url);
-    }
-
-    if (path === "/api/cfo-analytics") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleCfoAnalytics(config, url);
-    }
-
-    if (path === "/api/me") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleMe(config);
-    }
-
-    if (path === "/api/workspace/invitations") {
-      if (method === "GET") return handleWorkspaceInvitationList(config);
-      if (method === "POST") return await handleWorkspaceInvitationCreate(config, request);
-      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
-    }
-
-    if (path === "/api/workspace/invitations/cancel") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleWorkspaceInvitationCancel(config, request);
-    }
-    if (path === "/api/workspace/service-principals") {
-      if (method === "GET") return handleServicePrincipalList(config);
-      if (method === "POST") return await handleServicePrincipalCreate(config, request);
-      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
-    }
-    if (path === "/api/workspace/service-principals/rotate") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleServicePrincipalRotate(config, request);
-    }
-    if (path === "/api/workspace/service-principals/revoke") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleServicePrincipalRevoke(config, request);
-    }
-    if (path === "/api/workspace/service-principals/recover") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleServicePrincipalRecover(config, request);
-    }
-
-    if (path === "/api/workspace/members") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleWorkspaceMemberList(config);
-    }
-
-    if (path === "/api/workspace/members/access") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleWorkspaceMemberAccessUpdate(config, request);
-    }
-
-    if (path === "/api/workspace/members/company") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleWorkspaceMemberCompanyUpdate(config, request);
-    }
-
-    if (path === "/api/invitations/claim") {
-      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
-      return await handleWorkspaceInvitationClaim(config, request);
-    }
-
-    const workspaceInboxComplete = /^\/api\/companies\/([^/]+)\/workspace-inbox\/([^/]+)\/complete$/.exec(path);
-    if (workspaceInboxComplete) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleWorkspaceInboxComplete(config, request, decodeURIComponent(workspaceInboxComplete[1]!), decodeURIComponent(workspaceInboxComplete[2]!)); }
-    const workspaceInboxAssign = /^\/api\/companies\/([^/]+)\/workspace-inbox\/([^/]+)\/assign$/.exec(path);
-    if (workspaceInboxAssign) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleWorkspaceInboxApprove(config, request, decodeURIComponent(workspaceInboxAssign[1]!), decodeURIComponent(workspaceInboxAssign[2]!)); }
-    const workspaceInboxOne = /^\/api\/companies\/([^/]+)\/workspace-inbox\/([^/]+)$/.exec(path);
-    if (workspaceInboxOne) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleWorkspaceInboxInspect(config, decodeURIComponent(workspaceInboxOne[1]!), decodeURIComponent(workspaceInboxOne[2]!)); }
-    const workspaceInbox = /^\/api\/companies\/([^/]+)\/workspace-inbox$/.exec(path);
-    if (workspaceInbox) { const slug = decodeURIComponent(workspaceInbox[1]!); if (method === "GET") return handleWorkspaceInboxList(config, slug, url); if (method === "POST") return await handleWorkspaceInboxIngest(config, request, slug); throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute"); }
-
-    const partyCollection = /^\/api\/companies\/([^/]+)\/workspace-parties$/.exec(path);
-    if (partyCollection) {
-      const slug=decodeURIComponent(partyCollection[1]!);
-      if (method === "GET") return handleRegistryParties(config,slug,request);
-      if (method === "POST") return await handleRegistryPartyCreate(config,slug,request);
-      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
-    }
-    const partyRole = /^\/api\/companies\/([^/]+)\/workspace-parties\/([^/]+)\/role$/.exec(path);
-    if (partyRole) { if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleRegistryPartyRole(config,decodeURIComponent(partyRole[1]!),decodeURIComponent(partyRole[2]!),request); }
-    const partyMerge = /^\/api\/companies\/([^/]+)\/workspace-parties\/merge\/(propose|approve)$/.exec(path);
-    if (partyMerge) { if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleRegistryPartyMerge(config,decodeURIComponent(partyMerge[1]!),request,partyMerge[2]==="approve"); }
-    const partyOne = /^\/api\/companies\/([^/]+)\/workspace-parties\/([^/]+)$/.exec(path);
-    if (partyOne) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleRegistryParty(config,decodeURIComponent(partyOne[1]!),decodeURIComponent(partyOne[2]!)); }
-    const recordCollection = /^\/api\/companies\/([^/]+)\/corporate-records$/.exec(path);
-    if (recordCollection) { const slug=decodeURIComponent(recordCollection[1]!); if(method==="GET")return handleRegistryRecords(config,slug,request); if(method==="POST")return await handleRegistryRecordIngest(config,slug,request); throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute"); }
-    const recordAction = /^\/api\/companies\/([^/]+)\/corporate-records\/([^/]+)\/(link|enrich|supersede)$/.exec(path);
-    if (recordAction) { if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleRegistryRecordAction(config,decodeURIComponent(recordAction[1]!),decodeURIComponent(recordAction[2]!),request,recordAction[3]! as "link"|"enrich"|"supersede"); }
-    const recordFile = /^\/api\/companies\/([^/]+)\/corporate-records\/([^/]+)\/file$/.exec(path);
-    if (recordFile) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleRegistryRecordDownload(config,decodeURIComponent(recordFile[1]!),decodeURIComponent(recordFile[2]!)); }
-    const recordOne = /^\/api\/companies\/([^/]+)\/corporate-records\/([^/]+)$/.exec(path);
-    if (recordOne) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleRegistryRecord(config,decodeURIComponent(recordOne[1]!),decodeURIComponent(recordOne[2]!)); }
-    const knowledge = /^\/api\/companies\/([^/]+)\/knowledge$/.exec(path);
-    if (knowledge) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleCompanyKnowledge(config,decodeURIComponent(knowledge[1]!),request); }
-    const knowledgeAction = /^\/api\/companies\/([^/]+)\/knowledge\/(propose|review|supersede)$/.exec(path);
-    if (knowledgeAction) { if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleCompanyKnowledgeAction(config,decodeURIComponent(knowledgeAction[1]!),request,knowledgeAction[2]! as "propose"|"review"|"supersede"); }
-    const ownershipHistory = /^\/api\/companies\/([^/]+)\/ownership\/history$/.exec(path);
-    if (ownershipHistory) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleOwnershipHistory(config,decodeURIComponent(ownershipHistory[1]!),request); }
-    const ownershipAction = /^\/api\/companies\/([^/]+)\/ownership\/(propose|review|apply)$/.exec(path);
-    if (ownershipAction) { if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleOwnershipAction(config,decodeURIComponent(ownershipAction[1]!),request,ownershipAction[2]! as "propose"|"review"|"apply"); }
-    const ownership = /^\/api\/companies\/([^/]+)\/ownership$/.exec(path);
-    if (ownership) { if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleOwnershipQuery(config,decodeURIComponent(ownership[1]!),request); }
-
-    if (path === "/api/group-overview") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const asOfValues = url.searchParams.getAll("asOf");
-      if (asOfValues.length !== 1) throw ApiError.badRequest("exactly one asOf is required as YYYY-MM-DD");
-      return handleGroupOverview(config, asOfValues[0]!);
-    }
-
-    if (path === "/api/group-reconciliation") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const asOfValues = url.searchParams.getAll("asOf");
-      if (asOfValues.length !== 1) throw ApiError.badRequest("exactly one asOf is required as YYYY-MM-DD");
-      return handleGroupReconciliation(config, asOfValues[0]!);
-    }
-
-    if (path === "/api/group-eliminations") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const asOfValues = url.searchParams.getAll("asOf");
-      if (asOfValues.length !== 1) throw ApiError.badRequest("exactly one asOf is required as YYYY-MM-DD");
-      return handleGroupEliminations(config, asOfValues[0]!);
-    }
-
-    if (path === "/api/group-consolidated-report") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const profileIds = url.searchParams.getAll("profileId");
-      const fromValues = url.searchParams.getAll("from");
-      const asOfValues = url.searchParams.getAll("asOf");
-      if (profileIds.length !== 1 || fromValues.length !== 1 || asOfValues.length !== 1) throw ApiError.badRequest("exactly one profileId, from and asOf are required");
-      return handleGroupConsolidatedReport(config, profileIds[0]!, fromValues[0]!, asOfValues[0]!);
-    }
-
-    if (path === "/api/group-report-profiles") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const asOfValues = url.searchParams.getAll("asOf");
-      if (asOfValues.length !== 1) throw ApiError.badRequest("exactly one asOf is required as YYYY-MM-DD");
-      return handleGroupReportProfiles(config, asOfValues[0]!);
-    }
-
-    const dispositionStatus=/^\/api\/group-dispositions\/([^/]+)$/.exec(path);
-    if(dispositionStatus){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handleGroupDispositionStatus(config,decodeURIComponent(dispositionStatus[1]!),url.searchParams.get("asOf")??undefined);}
-    const dispositionAction=/^\/api\/companies\/([^/]+)\/group-dispositions\/(plan|propose|approve|link|settle|supersede|reopen)$/.exec(path);
-    if(dispositionAction){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handleGroupDispositionAction(config,decodeURIComponent(dispositionAction[1]!),request,dispositionAction[2]! as any);}
-
-    if (path === "/api/rules") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      return handleRules();
-    }
-
-    if (path === "/api/agent-capabilities") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const cursor = Number(url.searchParams.get("cursor") ?? "0");
-      const limit = Number(url.searchParams.get("limit") ?? "10");
-      if (!Number.isInteger(cursor) || cursor < 0 || !Number.isInteger(limit) || limit < 1 || limit > 50) {
-        throw ApiError.badRequest("cursor must be >= 0 and limit must be between 1 and 50");
-      }
-      return jsonResponse({ ok: true, ...searchCapabilities(url.searchParams.get("query") ?? undefined, cursor, limit, {
-        commands: COMMAND_SPECS.map((command) => ({
-          key: command.key,
-          allowedFlags: command.allowedFlags,
-          mutating: MUTATING_COMMANDS.has(command.key),
-          sideEffecting: SIDE_EFFECTING_COMMANDS.has(command.key),
-        })),
-        routes: ROUTE_CATALOG,
-        unavailableSurfaces: ["mcp"],
-      }) });
-    }
-
-    const agentWorkflowMatch = /^\/api\/agent-workflows\/([^/]+)$/.exec(path);
-    if (agentWorkflowMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
-      const description = describeWorkflow(decodeURIComponent(agentWorkflowMatch[1]!), { commands: COMMAND_SPECS, routes: ROUTE_CATALOG, unavailableSurfaces: ["mcp"] });
-      if (!description) throw ApiError.notFound("ukendt agent-workflow");
-      return jsonResponse({ ok: true, ...description });
-    }
+    const agentDiscoveryResponse = dispatchAgentDiscoveryRoute(path, method, {
+      rules: () => handleRules(),
+      capabilities: () => {
+        const cursor = Number(url.searchParams.get("cursor") ?? "0");
+        const limit = Number(url.searchParams.get("limit") ?? "10");
+        if (!Number.isInteger(cursor) || cursor < 0 || !Number.isInteger(limit) || limit < 1 || limit > 50) throw ApiError.badRequest("cursor must be >= 0 and limit must be between 1 and 50");
+        return jsonResponse({ ok: true, ...searchCapabilities(url.searchParams.get("query") ?? undefined, cursor, limit, { commands: COMMAND_SPECS.map((command) => ({ key: command.key, allowedFlags: command.allowedFlags, mutating: MUTATING_COMMANDS.has(command.key), sideEffecting: SIDE_EFFECTING_COMMANDS.has(command.key) })), routes: ROUTE_CATALOG, unavailableSurfaces: ["mcp"] }) });
+      },
+      workflow: (id) => {
+        const description = describeWorkflow(id, { commands: COMMAND_SPECS, routes: ROUTE_CATALOG, unavailableSurfaces: ["mcp"] });
+        if (!description) throw ApiError.notFound("ukendt agent-workflow");
+        return jsonResponse({ ok: true, ...description });
+      },
+    });
+    if (agentDiscoveryResponse) return agentDiscoveryResponse;
 
     if (path === "/api/companies") {
       if (method === "GET") return handleCompanyList(config);
@@ -940,6 +868,25 @@ export async function handleRequest(
     if (bookkeepingBatchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingBatchDryRun(config, decodeURIComponent(bookkeepingBatchMatch[1]!), url); }
     const bookkeepingWorkbenchMatch = /^\/api\/companies\/([^/]+)\/bookkeeping-workbench$/.exec(path);
     if (bookkeepingWorkbenchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingWorkbench(config, decodeURIComponent(bookkeepingWorkbenchMatch[1]!), url); }
+    const accountingApprovalPolicyMatch = /^\/api\/companies\/([^/]+)\/accounting-approval-policy$/.exec(path);
+    if (accountingApprovalPolicyMatch) {
+      const slug = decodeURIComponent(accountingApprovalPolicyMatch[1]!);
+      if (method === "GET") return handleAccountingApprovalPolicyGet(config, slug, request);
+      if (method === "POST") return await handleAccountingApprovalPolicySet(config, request, slug);
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
+    }
+    const purchaseCaseReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/review$/.exec(path);
+    if(purchaseCaseReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReview(config,request,decodeURIComponent(purchaseCaseReviewMatch[1]!),decodeURIComponent(purchaseCaseReviewMatch[2]!));}
+    const purchaseCaseReassessMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/reassess$/.exec(path);
+    if(purchaseCaseReassessMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReassess(config,request,decodeURIComponent(purchaseCaseReassessMatch[1]!),decodeURIComponent(purchaseCaseReassessMatch[2]!));}
+    const purchaseCaseGroupReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/group-review$/.exec(path);
+    if(purchaseCaseGroupReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseGroupReview(config,request,decodeURIComponent(purchaseCaseGroupReviewMatch[1]!));}
+    const purchaseOverviewMatch=/^\/api\/companies\/([^/]+)\/purchase-overview$/.exec(path);
+    if(purchaseOverviewMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handlePurchaseOverview(config,decodeURIComponent(purchaseOverviewMatch[1]!),url);}
+    const purchaseCaseDetailMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)$/.exec(path);
+    if(purchaseCaseDetailMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handlePurchaseCaseGet(config,decodeURIComponent(purchaseCaseDetailMatch[1]!),decodeURIComponent(purchaseCaseDetailMatch[2]!));}
+    const purchaseCasesMatch=/^\/api\/companies\/([^/]+)\/purchase-cases$/.exec(path);
+    if(purchaseCasesMatch){if(method==="GET")return handlePurchaseCaseList(config,decodeURIComponent(purchaseCasesMatch[1]!));if(method==="POST")return await handlePurchaseCaseCreate(config,request,decodeURIComponent(purchaseCasesMatch[1]!));throw ApiError.methodNotAllowed("kun GET og POST er understøttet på denne rute");}
     const dimensionPlanMatch=/^\/api\/companies\/([^/]+)\/dimensions\/plan$/.exec(path);
     if(dimensionPlanMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handleDimensionPlan(config,decodeURIComponent(dimensionPlanMatch[1]!),request);}
     const dimensionBudgetPlanMatch=/^\/api\/companies\/([^/]+)\/dimensions\/budget-plan$/.exec(path);
@@ -966,6 +913,12 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(overviewMatch[1]!);
       return handleCompanyOverview(config, slug, url);
+    }
+
+    const changesSinceMatch = /^\/api\/companies\/([^/]+)\/changes-since$/.exec(path);
+    if (changesSinceMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyChangesSince(config, decodeURIComponent(changesSinceMatch[1]!), url);
     }
 
     const retentionMatch = /^\/api\/companies\/([^/]+)\/retention$/.exec(path);
@@ -1035,6 +988,12 @@ export async function handleRequest(
       return handleCompanyTrialBalance(config, slug, url);
     }
 
+    const journalExplanationMatch = /^\/api\/companies\/([^/]+)\/journal\/(\d+)\/explanation$/.exec(path);
+    if (journalExplanationMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyJournalExplanation(config, decodeURIComponent(journalExplanationMatch[1]!), Number(journalExplanationMatch[2]));
+    }
+
     const journalExportMatch = /^\/api\/companies\/([^/]+)\/journal\/export$/.exec(path);
     if (journalExportMatch) {
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
@@ -1080,6 +1039,8 @@ export async function handleRequest(
     if (documentPartyLinksMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleDocumentPartyLinks(config,decodeURIComponent(documentPartyLinksMatch[1]!),request); }
     const documentPartyLinkInspectMatch = /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/party-links$/.exec(path);
     if (documentPartyLinkInspectMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleDocumentPartyLinkInspect(config,decodeURIComponent(documentPartyLinkInspectMatch[1]!),documentPartyLinkInspectMatch[2]!); }
+    const partyCoverageMatch=/^\/api\/companies\/([^/]+)\/documents\/party-coverage$/.exec(path);
+    if(partyCoverageMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handlePartyCoverage(config,decodeURIComponent(partyCoverageMatch[1]!),request);}
 
     const documentFileMatch =
       /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/file$/.exec(path);
@@ -1223,6 +1184,18 @@ export async function handleRequest(
       const slug = decodeURIComponent(multiYearMatch[1]!);
       return handleCompanyMultiYear(config, slug);
     }
+
+    const importedReceivablesMatch = /^\/api\/companies\/([^/]+)\/imported-receivables$/.exec(path);
+    if (importedReceivablesMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyImportedReceivables(config, decodeURIComponent(importedReceivablesMatch[1]!), url);
+    }
+
+    const importedBackfillMatch=/^\/api\/companies\/([^/]+)\/imported-receivables\/backfill\/(plan|apply)$/.exec(path);
+    if(importedBackfillMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(importedBackfillMatch[1]!);return importedBackfillMatch[2]==="plan"?handleCompanyImportedReceivablesBackfillPlan(config,slug,request):handleCompanyImportedReceivablesBackfillApply(config,slug,request);}
+
+    const importedSettlementMatch=/^\/api\/companies\/([^/]+)\/imported-receivables\/settlement\/(plan|apply|status)$/.exec(path);
+    if(importedSettlementMatch){const slug=decodeURIComponent(importedSettlementMatch[1]!);const action=importedSettlementMatch[2]!;if(action==="status"){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handleCompanyImportedReceivableSettlementStatus(config,slug,url);}if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return action==="plan"?handleCompanyImportedReceivableSettlementPlan(config,slug,request):handleCompanyImportedReceivableSettlementApply(config,slug,request);}
 
     const invoicesMatch = /^\/api\/companies\/([^/]+)\/invoices$/.exec(path);
     if (invoicesMatch) {
@@ -1509,6 +1482,8 @@ export async function handleRequest(
     if(bankCorrectionPlanMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handleBankReconciliationCorrectionPlan(config,decodeURIComponent(bankCorrectionPlanMatch[1]!),url);}
     const bankCorrectionMatch=/^\/api\/companies\/([^/]+)\/bank\/reconciliation-correction$/.exec(path);
     if(bankCorrectionMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handleBankReconciliationCorrectionApply(config,request,decodeURIComponent(bankCorrectionMatch[1]!));}
+    const legacyBindingMatch=/^\/api\/companies\/([^/]+)\/bank\/legacy-binding\/(plan|apply)$/.exec(path);
+    if(legacyBindingMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(legacyBindingMatch[1]!);return legacyBindingMatch[2]==="plan"?await handleLegacyBankBindingPlan(config,slug,request):await handleLegacyBankBindingApply(config,slug,request);}
 
     // Cockpit write route: the generic file-import. Recognises which system
     // an export file came from and routes it to the matching core importer.
@@ -1541,8 +1516,14 @@ export async function handleRequest(
     if (documentPartyPlanMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPartyLinkPlan(config,decodeURIComponent(documentPartyPlanMatch[1]!),request); }
     const documentPartyApplyMatch = /^\/api\/companies\/([^/]+)\/documents\/party-links\/(apply|supersede)$/.exec(path);
     if (documentPartyApplyMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPartyLinkAction(config,decodeURIComponent(documentPartyApplyMatch[1]!),request,documentPartyApplyMatch[2]! as "apply"|"supersede"); }
+    const partyCoverageActionMatch=/^\/api\/companies\/([^/]+)\/documents\/party-coverage\/(plan|apply)$/.exec(path);
+    if(partyCoverageActionMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(partyCoverageActionMatch[1]!);return partyCoverageActionMatch[2]==="plan"?await handlePartyCoveragePlan(config,slug,request):await handlePartyCoverageApply(config,slug,request);}
     const internalNoExternalMatch = path.match(/^\/api\/companies\/([^/]+)\/documents\/internal-no-external-party(\/supersede)?$/);
     if (internalNoExternalMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleInternalNoExternalParty(config,decodeURIComponent(internalNoExternalMatch[1]!),request,Boolean(internalNoExternalMatch[2])); }
+    const documentCompanyContextMatch = /^\/api\/companies\/([^/]+)\/documents\/company-context$/.exec(path);
+    if (documentCompanyContextMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentCompanyContext(config,decodeURIComponent(documentCompanyContextMatch[1]!),request); }
+    const purchaseVatEvidenceReviewMatch = /^\/api\/companies\/([^/]+)\/documents\/purchase-vat-evidence-review$/.exec(path);
+    if (purchaseVatEvidenceReviewMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPurchaseVatEvidenceReview(config,decodeURIComponent(purchaseVatEvidenceReviewMatch[1]!),request); }
     const documentParsePendingMatch = /^\/api\/companies\/([^/]+)\/documents\/parse-pending$/.exec(path);
     if (documentParsePendingMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPdfParsePending(config, request, decodeURIComponent(documentParsePendingMatch[1]!)); }
     const documentParseMatch = /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/parse$/.exec(path);
@@ -1687,6 +1668,8 @@ export async function handleRequest(
         ? await handleDirectBankPurchasePayablePlan(config, request, slug)
         : await handleDirectBankPurchasePayableApply(config, request, slug);
     }
+    const legacyPayableBackfillMatch=/^\/api\/companies\/([^/]+)\/payables\/legacy-backfill\/(plan|apply)$/.exec(path);
+    if(legacyPayableBackfillMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(legacyPayableBackfillMatch[1]!);return legacyPayableBackfillMatch[2]==="plan"?await handleLegacyPayableBackfillPlan(config,request,slug):await handleLegacyPayableBackfillApply(config,request,slug);}
     const payablePayMatch =
       /^\/api\/companies\/([^/]+)\/payables\/(\d+)\/pay$/.exec(path);
     if (payablePayMatch) {
@@ -1833,6 +1816,12 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(agentSuggestionsMatch[1]!);
       return handleCompanyAgentSuggestions(config, slug);
+    }
+
+    const attentionMatch = /^\/api\/companies\/([^/]+)\/attention$/.exec(path);
+    if (attentionMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyAttention(config, decodeURIComponent(attentionMatch[1]!));
     }
 
     const companyMatch = /^\/api\/companies\/([^/]+)$/.exec(path);

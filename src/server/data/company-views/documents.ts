@@ -1,7 +1,6 @@
-import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
 import { getCompanySettings } from "../../../core/company";
-import { migrate, openDb } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { purchaseVatLinesFromPayload } from "../../../core/documents";
 import { companyPaths } from "../../../core/paths";
 import {
@@ -30,15 +29,21 @@ export type DocumentRow = {
   source: string;
   filename: string | null;
   documentType: string;
+  internalVoucherKind: "bank_evidenced" | "non_cash_balance_correction" | "legacy_opening_creditor_reclassification" | null;
+  legacyOpeningJournalEntryId: number | null;
+  legacyOpeningJournalLineId: number | null;
   sourceBankTransactionId: number | null;
   accountingRationale: string | null;
   preparedBy: string | null;
   preparedByProgram: string | null;
+  preparedAt: string | null;
   supplierName: string | null;
   supplierVatOrCvr: string | null;
   supplierCountryCode: string | null;
   supplierIdentifierKind: string | null;
   supplierIdentityStatus: string | null;
+  /** Current explicit document-to-canonical-party relation, when present. */
+  partyId: string | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
   amountIncVat: number | null;
@@ -77,9 +82,8 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     // A bilag is "bogført" when either an import_document_links row binds it
     // to a journal entry (the legacy archive-import flow) OR a journal entry
@@ -100,15 +104,21 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
                 d.supplier_country_code AS supplierCountryCode,
                 d.supplier_identifier_kind AS supplierIdentifierKind,
                 d.supplier_identity_status AS supplierIdentityStatus,
+                (SELECT party_id FROM current_document_party_links party_link
+                  WHERE party_link.document_id=d.id
+                  ORDER BY CASE party_link.party_role WHEN 'supplier' THEN 0 WHEN 'vendor' THEN 1 WHEN 'issuer' THEN 2 WHEN 'customer' THEN 3 WHEN 'recipient' THEN 4 ELSE 99 END, party_link.id DESC LIMIT 1) AS partyId,
                 d.invoice_no      AS invoiceNo,
                 d.invoice_date    AS invoiceDate,
                 d.amount_inc_vat  AS amountIncVat,
                 d.currency        AS currency,
                 d.status          AS status,
                 ive.bank_transaction_id AS sourceBankTransactionId,
-                ive.accounting_rationale AS accountingRationale,
-                ive.prepared_by AS preparedBy,
-                ive.prepared_by_program AS preparedByProgram,
+                CASE WHEN legacy.document_id IS NOT NULL THEN 'legacy_opening_creditor_reclassification' WHEN ncc.document_id IS NOT NULL THEN 'non_cash_balance_correction' WHEN ive.document_id IS NOT NULL THEN 'bank_evidenced' ELSE NULL END AS internalVoucherKind,
+                legacy.opening_journal_entry_id AS legacyOpeningJournalEntryId, legacy.opening_journal_line_id AS legacyOpeningJournalLineId,
+                COALESCE(ive.accounting_rationale,ncc.accounting_rationale) AS accountingRationale,
+                COALESCE(ive.prepared_by,ncc.prepared_by) AS preparedBy,
+                COALESCE(ive.prepared_by_program,ncc.prepared_by_program) AS preparedByProgram,
+                COALESCE(ive.created_at,ncc.created_at) AS preparedAt,
                 d.payload_json    AS payloadJson,
                 d.stored_path     AS storedPath,
                 idl.voucher_ref   AS voucherRef,
@@ -128,6 +138,8 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
            LEFT JOIN journal_entries je_link   ON je_link.id = idl.journal_entry_id
            LEFT JOIN journal_entries je_direct ON je_direct.document_id = d.id
            LEFT JOIN internal_voucher_evidence ive ON ive.document_id = d.id
+           LEFT JOIN non_cash_balance_correction_evidence ncc ON ncc.document_id = d.id
+           LEFT JOIN legacy_opening_creditor_reclassification_evidence legacy ON legacy.document_id = d.id
           -- EJER-15: the 'issued_invoice_pdf' row is the invoice's OWN rendered
           -- PDF — an internal artifact Rentemester writes when it issues a sales
           -- invoice, NOT an inbound voucher the owner must process. Including it
@@ -145,15 +157,20 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
       source: string;
       filename: string | null;
       documentType: string;
+      internalVoucherKind: "bank_evidenced" | "non_cash_balance_correction" | "legacy_opening_creditor_reclassification" | null;
+      legacyOpeningJournalEntryId: number | null;
+      legacyOpeningJournalLineId: number | null;
       sourceBankTransactionId: number | null;
       accountingRationale: string | null;
       preparedBy: string | null;
       preparedByProgram: string | null;
+      preparedAt: string | null;
       supplierName: string | null;
       supplierVatOrCvr: string | null;
       supplierCountryCode: string | null;
       supplierIdentifierKind: string | null;
       supplierIdentityStatus: string | null;
+      partyId: string | null;
       invoiceNo: string | null;
       invoiceDate: string | null;
       amountIncVat: number | null;
@@ -174,15 +191,20 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
       source: r.source,
       filename: r.filename,
       documentType: r.documentType,
+      internalVoucherKind: r.internalVoucherKind,
+      legacyOpeningJournalEntryId: r.legacyOpeningJournalEntryId,
+      legacyOpeningJournalLineId: r.legacyOpeningJournalLineId,
       sourceBankTransactionId: r.sourceBankTransactionId,
       accountingRationale: r.accountingRationale,
       preparedBy: r.preparedBy,
       preparedByProgram: r.preparedByProgram,
+      preparedAt: r.preparedAt,
       supplierName: r.supplierName,
       supplierVatOrCvr: r.supplierVatOrCvr,
       supplierCountryCode: r.supplierCountryCode,
       supplierIdentifierKind: r.supplierIdentifierKind,
       supplierIdentityStatus: r.supplierIdentityStatus,
+      partyId: r.partyId,
       invoiceNo: r.invoiceNo,
       invoiceDate: r.invoiceDate,
       amountIncVat:
@@ -242,9 +264,8 @@ export function resolveCompanyDocumentFile(
   // A download is evidence retrieval, never a ledger maintenance path.  In
   // particular it must not call `migrate()` (which can repair/write state) or
   // even open the ledger read-write.
-  const db = new Database(dbPath, { readonly: true });
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    db.exec("PRAGMA query_only = ON");
     const row = db.query(
       `SELECT stored_path AS storedPath, mime_type AS mimeType,
               sha256_hash AS sha256Hash, document_type AS documentType
@@ -375,9 +396,8 @@ export function buildDocumentBookingOptions(
   if (!existsSync(dbPath)) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const doc = db
       .query(
         `SELECT d.id, d.document_no, d.document_type, d.invoice_no, d.invoice_date,

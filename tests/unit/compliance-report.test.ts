@@ -132,6 +132,10 @@ describe("renderComplianceReport", () => {
   test("contains all nine section headings + the business overview", () => {
     const html = renderComplianceReport(baseInput());
     expect(html).toContain("Forretningsmæssigt overblik");
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).not.toContain("fonts.gstatic.com");
+    expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/);
+    expect(html).toContain("new FontFace");
     expect(html).toContain("1. Integritet af bogføringen");
     expect(html).toContain("2. Opbevaring og backup");
     expect(html).toContain("3. Opbevaringsfrist (5 år)");

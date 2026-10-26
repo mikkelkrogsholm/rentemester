@@ -59,7 +59,7 @@ describe("local start CLI", () => {
   test("opens an existing one-company workspace on loopback without hosted auth", async () => {
     const workspace = tmpRoot("local-existing");
     initWorkspace(workspace);
-    createCompany(workspace, { name: "Existing Example ApS" });
+    createCompany(workspace, { name: "Existing Example ApS", cvr: "DK90000100" });
     const port = testPort();
     const proc = Bun.spawn(
       ["bun", "run", "src/cli.ts", "local", "start", "--workspace", workspace, "--port", String(port), "--no-open"],

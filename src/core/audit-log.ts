@@ -60,6 +60,26 @@ export type ListAuditLogResult = {
   errors: string[];
 };
 
+/** A compact, cursor-based read model for a person's "Siden sidst" view.
+ * It deliberately projects only recorded events: no advice or interpretation
+ * is stored or inferred here. The cursor is the append-only audit id. */
+export function listChangesSince(db: Database, afterId = 0, limit = 50) {
+  const cursor = Number.isSafeInteger(afterId) && afterId > 0 ? afterId : 0;
+  const cappedLimit = Math.min(Math.max(Math.floor(limit), 1), 100);
+  const rows = db.query(
+    `SELECT id, event_type, entity_type, entity_id, message, actor, created_at
+       FROM audit_log
+      WHERE id > ?
+        AND (event_type LIKE 'journal_%' OR event_type LIKE 'document_%'
+          OR event_type LIKE 'bank_%' OR event_type LIKE 'invoice_%'
+          OR event_type LIKE 'exception_%' OR event_type LIKE 'vat_%'
+          OR event_type LIKE 'period_%' OR event_type LIKE 'company_%')
+      ORDER BY id ASC LIMIT ?`,
+  ).all(cursor, cappedLimit) as Array<{ id:number; event_type:string; entity_type:string; entity_id:string|null; message:string; actor:string; created_at:string }>;
+  const events = rows.map(mapAuditRow);
+  return { events, cursor: events.at(-1)?.id ?? cursor };
+}
+
 /**
  * Filtered, paginated read of the audit_log table — the read side of the
  * append-only audit chain. Used by the cockpit's "Revisionsspor"-view and

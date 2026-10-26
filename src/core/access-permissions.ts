@@ -7,11 +7,16 @@ export const ROUTE_PERMISSIONS = [
   "public.read",
   "public.invitation.claim",
   "workspace.read",
+  "workspace.tasks.read",
+  "workspace.tasks.manage",
   "workspace.group.read",
   "workspace.manage",
   "workspace.members.read",
   "workspace.members.manage",
   "company.read",
+  "company.tasks.read",
+  "company.tasks.write",
+  "company.tasks.manage",
   "company.documents.read",
   "company.documents.upload",
   "company.master-data",
@@ -48,6 +53,9 @@ export const COMPANY_PERMISSIONS: Readonly<Record<CompanyRole, readonly RoutePer
   // A bookkeeper can operate locally, but cannot approve, administer, or send externally.
   bookkeeper: [
     "company.read",
+    "company.tasks.read",
+    "company.tasks.write",
+    "company.tasks.manage",
     "company.documents.read",
     "company.documents.upload",
     "company.master-data",
@@ -60,8 +68,8 @@ export const COMPANY_PERMISSIONS: Readonly<Record<CompanyRole, readonly RoutePer
     "company.ownership.read",
     "company.ownership.manage",
   ],
-  reviewer: ["company.read", "company.documents.read", "company.review", "company.export", "company.knowledge.read", "company.knowledge.manage", "company.ownership.read", "company.ownership.manage"],
-  reader: ["company.read", "company.documents.read", "company.export", "company.knowledge.read", "company.ownership.read"],
+  reviewer: ["company.read", "company.tasks.read", "company.tasks.write", "company.documents.read", "company.review", "company.export", "company.knowledge.read", "company.knowledge.manage", "company.ownership.read", "company.ownership.manage"],
+  reader: ["company.read", "company.tasks.read", "company.documents.read", "company.export", "company.knowledge.read", "company.ownership.read"],
 };
 
 export const ROUTE_PERMISSION_POLICY: Readonly<Record<CompanyRole | WorkspaceRole, readonly RoutePermission[]>> = {
@@ -69,9 +77,9 @@ export const ROUTE_PERMISSION_POLICY: Readonly<Record<CompanyRole | WorkspaceRol
   // authorization itself remains anonymous on the server.
   workspace_owner: [
     "public.read", "public.invitation.claim", "workspace.read", "workspace.group.read",
-    "workspace.manage", "workspace.members.read", "workspace.members.manage",
+    "workspace.manage", "workspace.tasks.read", "workspace.tasks.manage", "workspace.members.read", "workspace.members.manage",
   ],
-  member: ["workspace.read"],
+  member: ["workspace.read", "workspace.tasks.read"],
   ...COMPANY_PERMISSIONS,
 };
 

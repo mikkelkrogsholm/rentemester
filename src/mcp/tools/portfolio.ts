@@ -37,7 +37,8 @@ import { buildVatReport } from "../../core/vat";
 import { getBackupComplianceStatus } from "../../core/system-backups";
 import {
   companyRootForSlug,
-  listWorkspaceCompanies,
+  requireCanonicalLiveCompanies,
+  WorkspaceCanonicalityError,
   resolveConfiguredWorkspaceRoot,
   resolveWorkspaceRoot,
 } from "../../core/workspace";
@@ -134,7 +135,7 @@ function companyStatusRow(
     const overdue = buildInvoiceList(db, { status: "overdue", asOfDate });
     const exceptions = listExceptions(db, { status: "open" });
     const backup = getBackupComplianceStatus(db, companyRoot, asOfDate);
-    const audit = verifyAuditChain(db);
+    const audit = verifyAuditChain(db, { companyRoot });
     const openReceivables = open.rows.reduce((acc, r) => acc + r.openBalance, 0);
     return {
       ...base,
@@ -306,22 +307,24 @@ export function registerPortfolioTools(server: McpServer): void {
         return envelopeToCallResult(errorEnvelope(redactPaths(ws.error)));
       }
       const asOfDate = args.asOf ?? todayIsoDate();
-      let registered: ReturnType<typeof listWorkspaceCompanies>;
+      let canonical: ReturnType<typeof requireCanonicalLiveCompanies>;
       try {
-        registered = listWorkspaceCompanies(ws.root);
+        canonical = requireCanonicalLiveCompanies(ws.root);
       } catch (error) {
+        if (error instanceof WorkspaceCanonicalityError) {
+          return envelopeToCallResult(errorEnvelope(error.message, { code: "WORKSPACE_CANONICALITY_FAILED" }));
+        }
         const message = error instanceof Error ? error.message : String(error);
         return envelopeToCallResult(errorEnvelope(redactPaths(message)));
       }
-      const active = registered.filter((c) => !c.archived);
-      const companies = active
+      const companies = canonical
         .slice()
-        .sort((a, b) => a.slug.localeCompare(b.slug))
-        .map((entry) =>
+        .sort((a, b) => a.entry.slug.localeCompare(b.entry.slug))
+        .map((item) =>
           companyStatusRow(
-            entry.slug,
-            entry.name,
-            companyRootForSlug(ws.root, entry.slug),
+            item.entry.slug,
+            item.entry.name,
+            item.companyRoot,
             asOfDate,
           ),
         );

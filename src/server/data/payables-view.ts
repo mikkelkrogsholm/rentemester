@@ -13,7 +13,7 @@
 // All money fields are kroner (DKK with decimals).
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import {
   buildPayablesList,
   type PayableAgingBucket,
@@ -133,9 +133,8 @@ export function buildCompanyPayables(
   const asOfDate = typeof rawAsOf === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawAsOf)
     ? rawAsOf
     : undefined;
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const settings = getCompanySettings(db);
     const companyBlock = statementCompanyBlock(settings);
     const fiscalYears = buildCompanyFiscalYears(workspaceRoot, slug).years;

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sikkerhed" title="Signeret backup gør manipulation synlig" lead="En signeret backup kan verificeres efter den er flyttet. Det gør det sværere at skjule ændringer i filer, manifest eller databasekopi." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En almindelig backup kan stadig være beskadiget eller ændret. Signering og checksums giver en måde at kontrollere, om backupmaterialet matcher det, der blev skabt. Det er særligt relevant for regnskab, hvor dokumentation og ledger skal hænge sammen.
     </p>
 
@@ -33,16 +34,16 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad signeres?</h2>
-    <ul>
-      <li>manifestet over backupfiler</li>
-      <li>hashes for database og dokumenter</li>
-      <li>metadata om backup-id og tidspunkt</li>
-      <li>eventuelt med offentlig nøgle til tredjepartsverifikation</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad signeres?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>manifestet over backupfiler</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hashes for database og dokumenter</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>metadata om backup-id og tidspunkt</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>eventuelt med offentlig nøgle til tredjepartsverifikation</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har HMAC-signering og optional ed25519-signering af backupmanifestet, med tests for manipulation, restore og standalone public-key verifikation. Private nøgler må ikke ende i backup-pakken.
     </p>
   </article>

@@ -13,7 +13,7 @@ import {
 } from "../../core/bilagsmail";
 import { findWorkspaceCompany, companyRootForSlug } from "../../core/workspace";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 
 export type BilagsmailInboxRow = {
@@ -64,9 +64,8 @@ export function buildCompanyBilagsmail(
   if (!existsSync(dbPath)) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const imap = loadBilagsmailImapConfig(companyRoot);
     const mailAlias = getCompanyMailAlias(db);

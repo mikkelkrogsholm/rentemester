@@ -1,3 +1,4 @@
+import { taskSpecs } from "./cli-meta/task-specs";
 import { registerCommandSpecs } from "./cli-meta/helpers";
 import type { CommandSpec } from "./cli-meta/_shared";
 import { initSpec, localSpecs, serveSpec, systemSpecs } from "./cli-meta/system-specs";
@@ -33,6 +34,7 @@ import { postingRulesSpecs } from "./cli-meta/posting-rules-specs";
 import { bookkeepingBatchSpecs } from "./cli-meta/bookkeeping-batch-specs";
 import { workspaceRegistrySpecs } from "./cli-meta/workspace-registry-specs";
 import { dimensionsSpecs } from "./cli-meta/dimensions-specs";
+import { purchaseCaseSpecs } from "./cli-meta/purchase-case-specs";
 
 export type { CommandSpec } from "./cli-meta/_shared";
 export {
@@ -69,6 +71,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...invoiceSpecs,
   ...documentsSpecs,
   ...dimensionsSpecs,
+  ...purchaseCaseSpecs,
   ...bankSpecs,
   ...expenseSpecs,
   ...vatSpecs,
@@ -99,6 +102,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...postingRulesSpecs,
   ...bookkeepingBatchSpecs,
   ...workspaceRegistrySpecs,
+  ...taskSpecs,
 ];
 
 registerCommandSpecs(COMMAND_SPECS);

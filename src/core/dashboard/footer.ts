@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // Page footer — generation timestamp + tucked-away technical provenance.
 
 import { escapeHtml, formatTimestampShort, type DashboardInput } from "./_shared";
@@ -9,13 +10,13 @@ export function footer(input: DashboardInput): string {
   // traceability but tucked into a small <details>, never dumped on the calm
   // cockpit surface. The visible line is just "genereret <tid>". (#246)
   const provenance =
-    `<details class="provenance"><summary>Teknisk version</summary>` +
-    `<span class="mono">commit ${escapeHtml(input.commitSha)}</span> · ` +
-    `<span class="mono">regelsæt ${escapeHtml(input.ruleBundleVersion)}</span></details>`;
-  return `<footer class="footer">
-  <div class="row">
-    <div>Genereret <span class="mono">${escapeHtml(generated)}</span> · Rentemester</div>
-    <div class="mono">github.com/mikkelkrogsholm/rentemester</div>
+    `<details ${documentAttr("provenance")}><summary ${documentAttr("summary")}>Teknisk version</summary>` +
+    `<span ${documentAttr("mono")}>commit ${escapeHtml(input.commitSha)}</span> · ` +
+    `<span ${documentAttr("mono")}>regelsæt ${escapeHtml(input.ruleBundleVersion)}</span></details>`;
+  return `<footer ${documentAttr("footer")}>
+  <div ${documentAttr("row")}>
+    <div>Genereret <span ${documentAttr("mono")}>${escapeHtml(generated)}</span> · Rentemester</div>
+    <div ${documentAttr("mono")}>github.com/mikkelkrogsholm/rentemester</div>
   </div>
   ${provenance}
 </footer>`;

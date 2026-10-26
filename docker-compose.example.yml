@@ -9,6 +9,8 @@ services:
       - "127.0.0.1:4319:4319"
     environment:
       RENTEMESTER_WORKSPACE: /workspace
+      # workspace.json is authoritative; register only the canonical live
+      # company here. Restore/test copies may remain mounted but are excluded.
       # Explicit no-login container profile. It may bind the container's
       # internal interface only because the published host port is hard-bound
       # to loopback above. Never publish this profile on 0.0.0.0.

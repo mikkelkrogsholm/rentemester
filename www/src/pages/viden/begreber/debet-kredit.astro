@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Debet og kredit er bogføringens måde at sikre balance på. Hver postering har mindst to sider, og summen skal gå op."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       I dobbelt bogholderi registrerer du ikke bare at noget skete. Du registrerer både hvor værdien kommer fra, og hvor den går hen. Derfor skal debet og kredit altid balancere.
     </p>
 
@@ -37,19 +38,19 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Et simpelt eksempel</h2>
-    <pre><code>Debet: bank 1.250 kr.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Et simpelt eksempel</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>Debet: bank 1.250 kr.
 Kredit: salg 1.000 kr.
 Kredit: salgsmoms 250 kr.</code></pre>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kunden betaler 1.250 kr. Banken stiger, omsætningen registreres, og momsen skilles ud. Debet og kredit summerer til samme beløb.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester blokerer ubalancerede journalposter og bruger append-only bogføring. Hvis noget er forkert, skal det rettes med en modpostering, så historikken stadig kan læses.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det er også grunden til, at AI ikke bør have fri adgang til at opfinde posteringer. En agent kan foreslå en bogføring, men debet, kredit, dokumentation og regler skal stadig passere deterministisk validering, før posteringen bør accepteres.
     </p>
   </article>

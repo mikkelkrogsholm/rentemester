@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -33,8 +34,8 @@ const jsonLd = {
     lead="Rentemester bygger en AI-bogholder til danske små virksomheder, men ikke som en chatbot der frit finder på posteringer. Agenten arbejder gennem strukturerede tools, og ledgeren håndhæver bogføringsreglerne."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       AI kan læse bilag, foreslå kontering, matche banklinjer og forberede rapporter. Men bogføring kræver mere end sandsynlige svar. En AI-bogholder skal have faste grænser, dokumentation og et system der siger nej.
     </p>
 
@@ -51,35 +52,35 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Problemet med almindelig AI-bogføring</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Problemet med almindelig AI-bogføring</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En sprogmodel kan være overbevisende uden at have ret. Det er acceptabelt i en kladde, men ikke i et regnskab. Derfor må AI'en ikke have direkte adgang til at ændre historik, omgå dokumentkrav eller vælge momsbehandling uden validering.
     </p>
 
-    <h2>Rentemesters model</h2>
-    <ul>
-      <li><strong>Agenten handler:</strong> den kan foreslå match, vælge konto, forberede payloads og kalde tools.</li>
-      <li><strong>Reglerne afgør:</strong> TypeScript/YAML-regler validerer balance, moms, bilag, periode og dokumentation.</li>
-      <li><strong>Ledgeren håndhæver:</strong> posteringer er append-only, hash-kædet og verificerbare.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Rentemesters model</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Agenten handler:</strong> den kan foreslå match, vælge konto, forberede payloads og kalde tools.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Reglerne afgør:</strong> TypeScript/YAML-regler validerer balance, moms, bilag, periode og dokumentation.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Ledgeren håndhæver:</strong> posteringer er append-only, hash-kædet og verificerbare.</li>
     </ul>
 
-    <h2>Hvad agenten kan bruge i dag</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad agenten kan bruge i dag</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har en MCP-server, så MCP-kompatible AI-klienter kan kalde tools som `bank_import`, `documents_ingest`, `bank_suggest_matches`, `expense_book`, `vat_report` og `audit_verify`. Write-tools kræver eksplicit confirmation, og operationer tilskrives en aktør.
     </p>
 
-    <h2>Hvad AI ikke må</h2>
-    <ul>
-      <li>bogføre uden dokumentation hvor dokumentation kræves</li>
-      <li>rette gamle posteringer i stedet for at lave modposteringer</li>
-      <li>ignorere periodelås</li>
-      <li>opfinde danske momsregler</li>
-      <li>skjule usikkerhed i fritekst</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad AI ikke må</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bogføre uden dokumentation hvor dokumentation kræves</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>rette gamle posteringer i stedet for at lave modposteringer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>ignorere periodelås</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>opfinde danske momsregler</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>skjule usikkerhed i fritekst</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
-      Agent-demoen i repoet viser en måned med bilag og banklinjer over MCP. Testene dækker både bogførte flows og exceptions for cases der kræver manuel afklaring. Læs <a href="/saadan-virker-det">sådan virker det</a> og <a href="/docs/installation">installér projektet</a>, eller gå direkte til <a href={SITE.github} rel="noopener" target="_blank">GitHub</a>.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Agent-demoen i repoet viser en måned med bilag og banklinjer over MCP. Testene dækker både bogførte flows og exceptions for cases der kræver manuel afklaring. Læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/saadan-virker-det">sådan virker det</a> og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">installér projektet</a>, eller gå direkte til <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">GitHub</a>.
     </p>
   </article>
 </BaseLayout>

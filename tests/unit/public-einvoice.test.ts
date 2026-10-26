@@ -257,6 +257,38 @@ describe("public e-invoice preview export", () => {
 // configurable unit code, and the seller EndpointID under schemeID 0184 as a
 // bare 8-digit CVR.
 describe("public e-invoice OIOUBL 2.02 conformance", () => {
+  test("maps OIOUBL TaxExclusiveAmount to the document VAT total", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-oioubl-f-inv127-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    const payload = {
+      ...PUBLIC_INVOICE,
+      invoiceNumber: "2026-F-INV127",
+      lines: [{ description: "Syntetisk testlinje", quantity: 1, unitPriceExVat: 1, lineTotalExVat: 1 }],
+      totals: { netAmount: 1, vatRate: 0.25, vatAmount: 0.25, grossAmount: 1.25 },
+    };
+    db.run(
+      `INSERT INTO documents (source, sha256_hash, invoice_no, invoice_date, document_type, payload_json)
+       VALUES ('test', ?, ?, ?, 'issued_invoice', ?)`,
+      "oioubl-f-inv127-1-00",
+      payload.invoiceNumber,
+      payload.issueDate,
+      JSON.stringify(payload),
+    );
+    const documentId = Number((db.query("SELECT last_insert_rowid() AS id").get() as { id: number }).id);
+
+    const exported = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: documentId });
+    expect(exported.ok).toBe(true);
+    expect(exported.xml).toContain('<cbc:LineExtensionAmount currencyID="DKK">1.00</cbc:LineExtensionAmount>');
+    expect(exported.xml).toContain('<cac:TaxTotal>\n    <cbc:TaxAmount currencyID="DKK">0.25</cbc:TaxAmount>');
+    expect(exported.xml).toContain('<cbc:TaxExclusiveAmount currencyID="DKK">0.25</cbc:TaxExclusiveAmount>');
+    expect(exported.xml).toContain('<cbc:TaxInclusiveAmount currencyID="DKK">1.25</cbc:TaxInclusiveAmount>');
+    expect(exported.xml).toContain('<cbc:PayableAmount currencyID="DKK">1.25</cbc:PayableAmount>');
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("emits BuyerReference, OrderReference and a configurable unit code", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-jur9-ref-"));
     const db = openDb(ensureCompanyDirs(root).db);

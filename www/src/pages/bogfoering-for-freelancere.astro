@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -56,8 +57,8 @@ const jsonLd = [
 >
   <PageHero eyebrow={page.eyebrow} title={page.h1} lead={page.lead} />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Freelance-bogføring handler ofte om få, gentagne flows: send en faktura, gem bilaget, match bankbetalingen, bogfør moms korrekt og bevar dokumentation. Rentemester er bygget til netop den type rutinearbejde, men med en vigtig begrænsning: projektet er kildekode under udvikling, ikke en færdig cloud-service.
     </p>
 
@@ -77,43 +78,43 @@ const jsonLd = [
       ]}
     />
 
-    <h2>Det vigtigste for freelancere</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Det vigtigste for freelancere</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Som freelancer skal du kunne se forskel på omsætning, udlæg, egne omkostninger, moms og privatøkonomi. Det lyder enkelt, men fejl opstår ofte når bilag mangler, banklinjer ikke afstemmes, eller momsbehandling bliver gætværk.
     </p>
-    <ul>
-      <li>Udsted fakturaer med tydelige varer, ydelser, moms og betalingsstatus.</li>
-      <li>Gem bilag med dato, beløb, leverandør, formål og hash, så dokumentationen kan efterprøves.</li>
-      <li>Afstem banklinjer mod fakturaer og køb, så åbne poster ikke driver.</li>
-      <li>Brug modposteringer ved rettelser i stedet for at overskrive historik.</li>
-      <li>Hold styr på momsperioder, repræsentation, EU reverse charge og private andele.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Udsted fakturaer med tydelige varer, ydelser, moms og betalingsstatus.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Gem bilag med dato, beløb, leverandør, formål og hash, så dokumentationen kan efterprøves.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Afstem banklinjer mod fakturaer og køb, så åbne poster ikke driver.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Brug modposteringer ved rettelser i stedet for at overskrive historik.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Hold styr på momsperioder, repræsentation, EU reverse charge og private andele.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har lokal SQLite-ledger, append-only posteringer, bilagsmetadata, fakturaflow, bank-CSV import, momsrapport, audit-verifikation og eksport i den nuværende kodebase. AI-agenten kan hjælpe med rutinearbejde, men regler og strukturerede tools skal holde bogføringen deterministisk.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det betyder, at systemet passer bedst til tekniske freelancere, konsulenter og små virksomheder, der vil eje data lokalt og kunne inspicere hvad systemet gør. Det er ikke designet som lønmodul, POS-system, lagerstyring eller fuld enterprise accounting.
     </p>
 
-    <h2>Begrænsninger og ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsninger og ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er ikke et registreret digitalt standardbogføringssystem og markedsføres ikke som et færdigt SaaS-produkt. Hvis din virksomhed er omfattet af krav om digital bogføring, skal du kontrollere kravene hos Erhvervsstyrelsen og vælge en løsning, der passer til din situation.
     </p>
 
-    <h2>Næste skridt</h2>
-    <ul>
-      <li><a href="/docs/installation">Installer Rentemester lokalt</a></li>
-      <li><a href="/vaerktoej/momsberegner">Beregn moms på et beløb</a></li>
-      <li><a href="/viden/frister/moms">Se momsfrister</a></li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">Installer Rentemester lokalt</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/vaerktoej/momsberegner">Beregn moms på et beløb</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/frister/moms">Se momsfrister</a></li>
     </ul>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

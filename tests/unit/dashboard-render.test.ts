@@ -1,3 +1,4 @@
+import { documentAttr } from "../../src/design/document-html";
 // Tests: src/core/dashboard.ts (dashboard rendering)
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -231,10 +232,10 @@ describe("renderDashboard — structure", () => {
 
   test("emits a complete HTML5 document", () => {
     expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
-    expect(html).toContain("<html lang=\"da\">");
+    expect(html).toMatch(/<html lang="da" class="[^"]+">/);
     expect(html).toContain("<head>");
     expect(html).toContain("</head>");
-    expect(html).toContain("<body>");
+    expect(html).toMatch(/<body\b[^>]*>/);
     expect(html).toContain("</body>");
     expect(html.trimEnd().endsWith("</html>")).toBe(true);
   });
@@ -257,14 +258,14 @@ describe("renderDashboard — structure", () => {
 
   test("contains the 8 spec sections (header, metrics, deadline, invoices, activity, backup, audit, footer)", () => {
     // Section heading text from the dashboard render.
-    expect(html).toMatch(/<header class="header">/);
-    expect(html).toMatch(/<section class="metrics">/);
+    expect(html).toMatch(/<header\b[^>]*>/);
+    expect(html).toMatch(/<section\b[^>]*>/);
     expect(html).toContain("Næste deadline");
     expect(html).toContain("Åbne fakturaer");
     expect(html).toContain("Seneste aktivitet");
     expect(html).toContain("Backup-status");
     expect(html).toContain("Audit-chain");
-    expect(html).toMatch(/<footer class="footer">/);
+    expect(html).toMatch(/<footer\b[^>]*>/);
   });
 
   test("amounts are formatted with Danish locale (canonical kr. suffix)", () => {
@@ -275,23 +276,23 @@ describe("renderDashboard — structure", () => {
     expect(html).toContain("6.250,00 kr.");
   });
 
-  test("output is under 100 KB", () => {
+  test("offline output including embedded fonts is under 300 KB", () => {
     const bytes = Buffer.byteLength(html, "utf8");
-    expect(bytes).toBeLessThan(100 * 1024);
+    expect(bytes).toBeLessThan(300 * 1024);
   });
 
-  test("contains exactly one <style> block (no external stylesheets beyond fonts)", () => {
+  test("contains exactly one compiler stylesheet and no network font links", () => {
     const styles = (html.match(/<style>/g) ?? []).length;
     expect(styles).toBe(1);
-    // Only stylesheet link allowed is Google Fonts.
+    // Fonts are embedded FontFace bytes; no external stylesheet is required.
     const linkMatches = html.match(/<link[^>]+rel="stylesheet"[^>]*>/g) ?? [];
-    for (const link of linkMatches) {
-      expect(link).toContain("fonts.googleapis.com");
-    }
+    expect(linkMatches).toHaveLength(0);
   });
 
-  test("contains no JavaScript", () => {
-    expect(html).not.toMatch(/<script/i);
+  test("contains only the offline font loader and no event handlers", () => {
+    expect(html.match(/<script>/g)).toHaveLength(1);
+    expect(html).toContain("new FontFace");
+    expect(html).not.toContain("https://fonts.");
     expect(html).not.toMatch(/on(click|load|mouseover)=/i);
   });
 
@@ -381,12 +382,12 @@ describe("renderDashboard — structure", () => {
     expect(out).toContain("2026-06-01");
     expect(out).not.toContain("Q2 2026");
     // The deadline card carries the real 5.400 kr payable, never 0,00.
-    const cardMatch = /<div class="deadline-card">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/.exec(out);
+    const cardMatch = /<h2[^>]*>Næste deadline<\/h2>([\s\S]*?)<\/section>/.exec(out);
     expect(cardMatch).not.toBeNull();
     const card = cardMatch![0];
     // The payable amount is the real 5.400 kr, never 0.
     expect(card).toContain("5.400,00 kr.");
-    expect(card).toMatch(/amount-lg">5\.400,00 kr\.</);
+    expect(card).toContain(`${documentAttr("amountLg")}>5.400,00 kr.`);
   });
 
   // #263: the dashboard must not stop at a bare exception count — it lists
@@ -474,10 +475,10 @@ describe("renderDashboard — structure", () => {
   // #246: the footer must not dump a raw commit hash + rule-version on the
   // calm cockpit surface — they are tucked into a collapsed <details>.
   test("footer does not dump raw commit hash / rule-version in the visible row", () => {
-    const footerMatch = /<footer class="footer">[\s\S]*?<\/footer>/.exec(html);
+    const footerMatch = /<footer\b[^>]*>[\s\S]*?<\/footer>/.exec(html);
     expect(footerMatch).not.toBeNull();
     const footer = footerMatch![0];
-    const visibleRow = /<div class="row">[\s\S]*?<\/div>\s*<\/div>/.exec(footer)?.[0] ?? "";
+    const visibleRow = /<div\b[^>]*>[\s\S]*?<\/div>\s*<\/div>/.exec(footer)?.[0] ?? "";
     // The visible row is just "Genereret ..." — no commit/rules dump.
     expect(visibleRow).not.toContain("abc1234");
     expect(visibleRow).not.toContain("2026-05");
@@ -869,14 +870,14 @@ describe("components", () => {
 
   test("auditStatusPill — ok shows success", () => {
     const html = auditStatusPill(true, 142);
-    expect(html).toContain("pill success");
+    expect(html).toContain("✔ OK");
     expect(html).toContain("142");
   });
 
   test("auditStatusPill — failure shows danger and truncated error", () => {
     const longError = "x".repeat(200);
     const html = auditStatusPill(false, 0, longError);
-    expect(html).toContain("pill danger");
+    expect(html).toContain("✘ FEJL");
     expect(html).toContain("…"); // truncated marker
   });
 });

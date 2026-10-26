@@ -93,6 +93,16 @@ describe("liquidity forecast input validation", () => {
 });
 
 describe("liquidity forecast projection", () => {
+  test("does not present a missing cash account as a verified opening balance", () => {
+    const { db } = freshDb();
+    db.run("DELETE FROM bank_accounts");
+    db.run("UPDATE accounts SET name = 'Aktiv' WHERE type = 'asset'");
+    const result = buildLiquidityForecast(db, { startDate: "2026-06-01", months: 1 });
+    expect(result.openingBalanceVerified).toBe(false);
+    expect(result.exclusions).toContain("Ubudgetterede/ad hoc-udgifter");
+    db.close();
+  });
+
   test("projects the requested number of monthly periods", () => {
     const { db } = freshDb();
     const result = buildLiquidityForecast(db, { startDate: "2026-06-01", months: 3 });

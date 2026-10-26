@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 import { createHash } from "node:crypto";
 import type { Database } from "bun:sqlite";
 import { recordException } from "./exceptions";
@@ -51,11 +52,6 @@ export type CreatePostingRuleProposalInput = {
 const states = new Set<PostingRuleState>(["proposed", "approved", "rejected", "disabled", "superseded"]);
 const iso = (value: string) => /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)?$/.test(value);
 const text = (value: unknown, max: number) => typeof value === "string" && value.trim().length > 0 && value.trim().length <= max;
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  if (value && typeof value === "object") return `{${Object.keys(value as Record<string, unknown>).sort().map((key) => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(",")}}`;
-  return JSON.stringify(value);
-}
 export function postingRulePayloadHash(input: Pick<CreatePostingRuleProposalInput, "ruleId" | "companyId" | "effectiveFrom" | "effectiveTo" | "conditions" | "outcome" | "provenance" | "rationale">): string {
   return createHash("sha256").update(canonical(input)).digest("hex");
 }
@@ -171,3 +167,4 @@ export function linkDocumentVendorIdentityInCurrentTransaction(db: Database, inp
 export function linkDocumentVendorIdentity(db: Database, input: { companyId: number; documentId: number; vendorId?: number; supplierIdentity: string; provenance: string; rationale: string; creator: string; createdAt?: string }) {
   return db.transaction(() => linkDocumentVendorIdentityInCurrentTransaction(db, input)).immediate();
 }
+const canonical = canonicalJson;

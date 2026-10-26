@@ -36,6 +36,8 @@ export type JournalEntry = {
   documentId: number | null;
   /** The linked document's `document_no` for display. `null` when not linked. */
   documentNo: string | null;
+  /** Explicit party relation carried by the linked document, when present. */
+  partyId: string | null;
 };
 
 export type CompanyJournal = ReturnType<typeof buildCompanyJournal>;
@@ -155,6 +157,7 @@ export function buildCompanyJournal(
             // og kan ikke resolves til en åbnbar fil.
             documentId: null,
             documentNo: null,
+            partyId: null,
           };
         });
 
@@ -229,7 +232,10 @@ export function buildCompanyJournal(
                 je.transaction_date AS date,
                 je.text        AS text,
                 COALESCE(je.document_id, idl.document_id) AS documentId,
-                d.document_no  AS documentNo
+                d.document_no  AS documentNo,
+                (SELECT party_id FROM current_document_party_links party_link
+                  WHERE party_link.document_id=COALESCE(je.document_id, idl.document_id)
+                  ORDER BY CASE party_link.party_role WHEN 'supplier' THEN 0 WHEN 'vendor' THEN 1 WHEN 'issuer' THEN 2 WHEN 'customer' THEN 3 WHEN 'recipient' THEN 4 ELSE 99 END, party_link.id DESC LIMIT 1) AS partyId
            FROM journal_entries je
            LEFT JOIN import_document_links idl ON idl.journal_entry_id = je.id
            LEFT JOIN documents d
@@ -245,6 +251,7 @@ export function buildCompanyJournal(
       text: string;
       documentId: number | null;
       documentNo: string | null;
+      partyId: string | null;
     }>;
 
     const lineRows = ctx.db
@@ -306,6 +313,7 @@ export function buildCompanyJournal(
         lines,
         documentId: e.documentId ?? null,
         documentNo: e.documentNo ?? null,
+        partyId: e.partyId ?? null,
       };
     });
 

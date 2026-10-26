@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const skatEuKoebUrl = "https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet
     lead="Når en dansk virksomhed køber varer eller ydelser fra virksomheder i andre EU-lande, kan køberen selv skulle beregne dansk moms. Det kræver korrekt faktura, momsnummer og rapportering."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Reverse charge betyder, at sælgeren ikke nødvendigvis opkræver dansk moms. I stedet skal køberen selv beregne og indberette momsen efter de relevante regler. Hvis fakturaen er forkert, risikerer virksomheden både forkert moms og forkert dokumentation.
     </p>
 
@@ -40,17 +41,17 @@ const skatEuKoebUrl = "https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet
       ]}
     />
 
-    <h2>Hvad skal du kontrollere?</h2>
-    <ul>
-      <li>dit eget momsnummer</li>
-      <li>sælgerens momsnummer</li>
-      <li>om fakturaen viser reverse charge eller tilsvarende tekst</li>
-      <li>om beløbet er i fremmed valuta og skal have DKK-grundlag</li>
-      <li>om købet er vare eller ydelse</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad skal du kontrollere?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dit eget momsnummer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>sælgerens momsnummer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om fakturaen viser reverse charge eller tilsvarende tekst</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om beløbet er i fremmed valuta og skal have DKK-grundlag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om købet er vare eller ydelse</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har testede flows for EU service reverse charge, VIES-validering, udenlandsk bilag, DKK-basis og momsrapportering. Siden lover ikke automatisk vurdering af alle grænseoverskridende handler; den beskriver et konkret understøttet EU-service-flow.
     </p>
   </article>

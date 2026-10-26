@@ -5,6 +5,7 @@ import { Database } from "bun:sqlite";
 import { existsSync, lstatSync } from "node:fs";
 import { companyPaths } from "./paths";
 import { inspectOpenLedger, openLedgerReadOnly } from "./ledger-inspection";
+import { openSqliteReadOnlySnapshot } from "./sqlite-readonly-snapshot";
 import {
   CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION,
   assertWorkspaceControlCompatibility,
@@ -17,6 +18,8 @@ import {
   companyRootForSlug,
   isValidSlug,
   loadWorkspaceManifest,
+  resolveCanonicalLiveCompanies,
+  type CanonicalLiveCompanyDiagnostic,
   workspaceExists,
 } from "./workspace";
 import { verifyAuditChain } from "./ledger";
@@ -33,6 +36,7 @@ export type WorkspaceReadiness = {
     companyLedgers: ReadinessCheck;
   };
   companyCount: number;
+  diagnostics: CanonicalLiveCompanyDiagnostic[];
 };
 
 function isRegularFile(path: string): boolean {
@@ -48,7 +52,7 @@ function openReadonly(path: string): Database {
   if (!existsSync(path) || !isRegularFile(path)) {
     throw new Error("readiness database is unavailable");
   }
-  const db = new Database(path, { readonly: true });
+  const db = openSqliteReadOnlySnapshot(path);
   try {
     // The connection-level guard makes accidental write SQL fail even if a
     // future check is changed. Neither pragma persists into the database.
@@ -124,8 +128,10 @@ function checkLedger(workspaceRoot: string, slug: string): boolean {
  */
 export function assessWorkspaceReadiness(workspaceRoot: string): WorkspaceReadiness {
   let manifestOk = false;
+  let canonicalLiveOk = false;
   let companyCount = 0;
   let slugs: string[] = [];
+  let diagnostics: CanonicalLiveCompanyDiagnostic[] = [];
   try {
     const manifestPath = join(workspaceRoot, WORKSPACE_MANIFEST_FILE);
     if (!workspaceExists(workspaceRoot) || !isRegularFile(manifestPath)) {
@@ -139,7 +145,10 @@ export function assessWorkspaceReadiness(workspaceRoot: string): WorkspaceReadin
       }
       seen.add(company.slug);
     }
-    slugs = manifest.companies.map((company) => company.slug);
+    const canonical = resolveCanonicalLiveCompanies(workspaceRoot);
+    diagnostics = canonical.blockers;
+    canonicalLiveOk = diagnostics.length === 0;
+    slugs = canonical.companies.map((company) => company.entry.slug);
     companyCount = slugs.length;
     manifestOk = true;
   } catch {
@@ -147,7 +156,7 @@ export function assessWorkspaceReadiness(workspaceRoot: string): WorkspaceReadin
   }
 
   const workspaceControlOk = checkWorkspaceControl(workspaceRoot);
-  const companyLedgersOk = manifestOk && slugs.every((slug) => checkLedger(workspaceRoot, slug));
+  const companyLedgersOk = manifestOk && canonicalLiveOk && slugs.every((slug) => checkLedger(workspaceRoot, slug));
   const checks = {
     workspaceManifest: manifestOk ? "ok" : "failed",
     workspaceControl: workspaceControlOk ? "ok" : "failed",
@@ -159,5 +168,6 @@ export function assessWorkspaceReadiness(workspaceRoot: string): WorkspaceReadin
       checks.companyLedgers === "ok",
     checks,
     companyCount: manifestOk ? companyCount : 0,
+    diagnostics: manifestOk ? diagnostics : [],
   };
 }

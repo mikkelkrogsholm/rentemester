@@ -24,6 +24,7 @@ import { envelopeShape, errorEnvelope, successEnvelope, wrapCoreResult } from ".
 import { withCompanyDb, withCompanyDbConfirmed, resolveJournalEntryId, confirmField, idempotencyKeyField } from "../tool-runtime";
 import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
 import { isValidIsoDate } from "../../core/dates";
+import { explainJournalEntry } from "../../core/journal-explanation";
 
 const lineSchema = z.object({
   accountNo: z
@@ -109,6 +110,13 @@ const payloadSchema = z.object({
 });
 
 export function registerJournalTools(server: McpServer): void {
+  server.registerTool("journal_explain", {
+    title: "Explain journal entry",
+    description: "Read-only forklaring af én postering fra eksplicitte journal-, bilags-, bank-, part-, konto- og regelrelationer. Fraværende lovkilde eller faglig vurdering angives eksplicit; interne regler præsenteres ikke som lov.",
+    inputSchema: { company: z.string().min(1), entryId: z.number().int().positive() }, outputSchema: envelopeShape,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, withCompanyDb<{ company: string; entryId: number }>(server, ({ db, args }) => wrapCoreResult(explainJournalEntry(db, args.entryId))));
+
   server.registerTool(
     "journal_post",
     {

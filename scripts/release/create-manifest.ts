@@ -18,12 +18,18 @@ const workflowRunAttempt = Number(required("RELEASE_WORKFLOW_RUN_ATTEMPT"));
 const sbomSha256 = required("RELEASE_SBOM_SHA256");
 const supplyChainSha256 = required("RELEASE_SUPPLY_CHAIN_SHA256");
 const agentDiscoverySha256 = required("RELEASE_AGENT_DISCOVERY_SHA256");
+const cockpitEvidenceSha256 = required("RELEASE_COCKPIT_EVIDENCE_SHA256");
+const cockpitRegressionQuerySha256 = required(
+  "RELEASE_COCKPIT_REGRESSION_QUERY_SHA256",
+);
 
 if (!isValidSemVer(version)) {
   throw new Error(`invalid release SemVer: ${version}`);
 }
 if (version.includes("+")) {
-  throw new Error("release versions must not contain SemVer build metadata ('+')");
+  throw new Error(
+    "release versions must not contain SemVer build metadata ('+')",
+  );
 }
 if (!/^[0-9a-f]{40}$/i.test(gitCommit)) {
   throw new Error("RELEASE_GIT_COMMIT must be the full 40-character commit id");
@@ -37,7 +43,11 @@ if (!/^sha256:[0-9a-f]{64}$/i.test(sbomSha256)) {
 if (!/^sha256:[0-9a-f]{64}$/i.test(supplyChainSha256)) {
   throw new Error("RELEASE_SUPPLY_CHAIN_SHA256 must be a sha256 digest");
 }
-if (!/^sha256:[0-9a-f]{64}$/i.test(agentDiscoverySha256)) {
+if (
+  !/^sha256:[0-9a-f]{64}$/i.test(agentDiscoverySha256) ||
+  !/^sha256:[0-9a-f]{64}$/i.test(cockpitEvidenceSha256) ||
+  !/^sha256:[0-9a-f]{64}$/i.test(cockpitRegressionQuerySha256)
+) {
   throw new Error("RELEASE_AGENT_DISCOVERY_SHA256 must be a sha256 digest");
 }
 if (Number.isNaN(Date.parse(builtAt))) {
@@ -57,13 +67,19 @@ if (provenance.product.version !== version) {
   );
 }
 if (provenance.product.gitCommit !== gitCommit) {
-  throw new Error("runtime provenance commit does not match RELEASE_GIT_COMMIT");
+  throw new Error(
+    "runtime provenance commit does not match RELEASE_GIT_COMMIT",
+  );
 }
 if (provenance.product.builtAt !== builtAt) {
-  throw new Error("runtime provenance build timestamp does not match RELEASE_BUILT_AT");
+  throw new Error(
+    "runtime provenance build timestamp does not match RELEASE_BUILT_AT",
+  );
 }
 if (!provenance.product.bunVersion || !provenance.product.baseImageDigest) {
-  throw new Error("release runtime must declare Bun version and base image digest");
+  throw new Error(
+    "release runtime must declare Bun version and base image digest",
+  );
 }
 
 const manifest = {
@@ -94,6 +110,8 @@ const manifest = {
     sbomSha256,
     supplyChainSha256,
     agentDiscoverySha256,
+    cockpitEvidenceSha256,
+    cockpitRegressionQuerySha256,
   },
   provenance,
 };

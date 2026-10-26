@@ -117,6 +117,34 @@ at publicere netop dette image med attestering og evidens. Workflowet må derfor
 ikke få `bun test`, `cockpit:test` eller den fulde kilde-smoke tilbage som en
 skjult dobbeltkørsel.
 
+### Cockpit acceptance evidence
+
+Kandidatworkflowet starter også det publicerede image med en helt ny, syntetisk
+workspace og afvikler `scripts/release/cockpit-evidence-scenarios.json` i system-
+Chrome. Filen indeholder ni eksplicitte issue-profiler; runneren udvider dem
+deterministisk til 63 scenarier. Runneren accepterer kun `ghcr.io/...@sha256:...`,
+aldrig et tag, og containeren får en tom tmpfs-workspace på et kortlivet Docker
+`--internal`-netværk med kun loopback-publiceret adgang; den læser derfor ikke
+drifts- eller virksomhedsdata og har ingen ekstern egress. Scenarierne er den
+fælles evidenskontrakt for #649–#657 og dækker desktop, 390 px, 200 %-ækvivalent
+reflow (720×450 CSS px ved device scale 2 og 1440×900 PNG), loading, empty,
+warning/blokeret, fejl og tastatur. Request-interception er begrænset til den
+eksakte feature-endpoint, som den pågældende profil ejer.
+
+Artefaktet `release-candidate-evidence` indeholder PNG'erne og
+`cockpit-evidence.json`. Manifestet binder commit, immutable image-digest,
+route, viewport, zoom, tastaturresultater, interception og SHA-256 for hver
+screenshot sammen. Kontrollér det lokalt med:
+
+```sh
+bun run cockpit:evidence:verify cockpit-evidence/cockpit-evidence.json
+```
+
+Verifikationen fejler med en konkret fejl ved mutable image-reference, manglende
+screenshot, forkert hash eller et manglende obligatorisk scenario. Kandidaten
+stopper også, hvis et åbent `regression`-issue samtidig har label
+`severity:critical` eller `severity:high`.
+
 Manifestet binder version, commit, OCI-digest, schema-checksum og regelsæt-digest
 sammen med GitHub run-id og run-attempt. Digisense skal hente
 kandidat-artefaktet fra workflow-runnet og teste imaget ved
@@ -204,3 +232,15 @@ understøtter ledgerens schema-version. Ved schemaændringer skal operatøren f�
 følge migrations-/backupplanen i `docs/versioning.md`; start aldrig blot et
 ældre image mod nyere data. Tag en signeret, verificerbar backup før enhver
 fremtidig schema-opgradering.
+# Cockpit candidate evidence
+
+Candidate evidence is digest-bound and deliberately fail-closed. The release workflow authenticates `gh` with `GH_TOKEN`, queries every open `epic:648` issue (pagination limit 1000), and records the exact JSON plus SHA-256 inside the Cockpit manifest. Any related `severity:high` or `severity:critical` issue blocks the candidate.
+
+For every #649–#657 feature, the scenario contract requires normal desktop, 390px, and real 200% browser-zoom/reflow evidence plus loading, empty, blocked, and error states. Feature-owned selectors are intentionally not relaxed while the corresponding UI is unfinished. Each rendered scenario records exact route interception, page-local DOM/status/control/data assertions, natural keyboard task traces, console state and PNG dimensions. The verifier rejects fake, reused, swapped, unsafe, or unreferenced screenshots, and binds the Cockpit manifest/query checksums into `release-manifest.json`.
+
+The browser runner handles cancelled reads through Chrome's `Network.loadingFailed`
+event. An invalid paused Fetch id is accepted only when Chrome explicitly cancelled
+the same request's `Network.RequestId`; unrelated protocol failures still block the
+candidate. Interception errors are captured immediately and replacement requests
+are drained before accepting evidence. Loading screenshots are captured before
+delayed responses settle, with the visible loading state checked around capture.

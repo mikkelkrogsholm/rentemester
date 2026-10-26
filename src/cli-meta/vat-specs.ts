@@ -73,25 +73,25 @@ export const vatFilingSpecs: CommandSpec[] = [
   {
     key: "vat momsangivelse",
     usage: "vat momsangivelse --company <path> --from <YYYY-MM-DD> --to <YYYY-MM-DD>",
-    description: "Bygger en indberetningsklar momsangivelse (SKAT-rubrikker + momstilsvar) for en lukket momsperiode i virksomhedens registrerede kadence.",
+    description: "Bygger den nøjagtige TastSelv-momsangivelse med 16 hele-kroner-felter og Moms i alt for en lukket momsperiode.",
     allowedFlags: ["--company", "--from", "--to"],
     inputNotes: [
       "FORUDSÆTNING: --from..--to skal præcist matche virksomhedens registrerede måneds-, kvartals- eller halvårsrytme og en LUKKET (closed) eller INDBERETTET (reported) vat_period-periode.",
       "Hvis perioden ikke er lukket, returneres fejlen 'VAT period <from>..<to> is not closed'.",
       "RETTELSE: luk perioden først med 'rentemester period close --company <path> --from <YYYY-MM-DD> --to <YYYY-MM-DD> --kind vat_period' (kræver en actor), og kør derefter momsangivelsen igen med nøjagtigt samme datoer.",
-      "--json/--format json-outputtets felter (SKAT-rubrikker, momstilsvar m.m.) er en CLI-only rapport. Det fulde skema er dokumenteret i docs/cli-contract.md afsnit 3 og docs/mcp-tool-surface.md — slå formen op dér før maskinel parsing.",
+      "Alle TastSelv-felter er signed integer DKK, trunceret mod nul pr. felt; momsIAlt beregnes derefter. MCP-pendant: vat_filing.",
     ],
   },
   {
     key: "vat filing",
     usage: "vat filing --company <path> --from <YYYY-MM-DD> --to <YYYY-MM-DD>",
-    description: "Alias for 'vat momsangivelse': indberetningsklar momsangivelse for en lukket momsperiode.",
+    description: "Alias for 'vat momsangivelse': hele-kroner TastSelv-form for en lukket momsperiode.",
     allowedFlags: ["--company", "--from", "--to"],
     inputNotes: [
       "FORUDSÆTNING: --from..--to skal præcist matche virksomhedens registrerede måneds-, kvartals- eller halvårsrytme og en LUKKET (closed) eller INDBERETTET (reported) vat_period-periode.",
       "Hvis perioden ikke er lukket, returneres fejlen 'VAT period <from>..<to> is not closed'.",
       "RETTELSE: luk perioden først med 'rentemester period close --company <path> --from <YYYY-MM-DD> --to <YYYY-MM-DD> --kind vat_period' (kræver en actor), og kør derefter momsangivelsen igen med nøjagtigt samme datoer.",
-      "--json/--format json-outputtets felter (SKAT-rubrikker, momstilsvar m.m.) er en CLI-only rapport. Det fulde skema er dokumenteret i docs/cli-contract.md afsnit 3 og docs/mcp-tool-surface.md — slå formen op dér før maskinel parsing.",
+      "Alle TastSelv-felter er signed integer DKK, trunceret mod nul pr. felt; momsIAlt beregnes derefter. MCP-pendant: vat_filing.",
     ],
   },
   // ===== END VAT FILING (#178) =====

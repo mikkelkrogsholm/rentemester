@@ -1,5 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#05070A"/>
-  <text x="16" y="23" font-family="Georgia, 'EB Garamond', serif" font-size="22" font-weight="600" text-anchor="middle" fill="#e9c176">R</text>
-  <rect x="4" y="27" width="24" height="1" fill="#C5A059" opacity="0.6"/>
+<style data-stylex="compiled">.x1bnugb9{fill:#00D1FF}
+.xmkext3{fill:#05070A}
+.x1cbvg33{fill:#9a8f80}
+.x194404v{fill:#c5a059}
+.xkau8mi{fill:#d1c5b4}
+.xc9xck7{fill:#e1e2eb}
+.x7ot6ta{fill:#e9c176}
+.xbh8q5q{fill:none}
+.x1mn6ejr{fill:url(#cyber)}
+.x1jr8cq4{fill:url(#glow)}
+.x1dypbfe{font-family:Georgia,EB Garamond,serif}
+.xxwf5mu{font-family:Hanken Grotesk,sans-serif}
+.x1yf88jl{font-family:JetBrains Mono,monospace}
+.xyywni2{font-size:100px}
+.xwsyq91{font-size:20px}
+.x1i1m3gp{font-size:22px}
+.xneq65o{font-size:28px}
+.xqozcyj{font-size:36px}
+.x1s688f{font-weight:600}
+.x16gzlzp{letter-spacing:4px}
+.xti2d7y{opacity:.4}
+.x197sbye{opacity:.6}
+.x1wtiu6j{stop-color:#00D1FF}
+.x7r4ghp{stop-color:#05070A}
+.x1b96dxk{stop-color:#e9c176}
+.xnhoc4o{stop-opacity:.1}
+.xmx0y1z{stop-opacity:.14}
+.xkb0e9j{stop-opacity:0}
+.xh5gk07{stroke:#c5a059}
+.xnpr05h{stroke-width:1}
+.xw6cgo0{text-anchor:middle}</style>
+<rect width="32" height="32" class="xmkext3"/>
+<text x="16" y="23" class="x1dypbfe x1i1m3gp x1s688f xw6cgo0 x7ot6ta">R</text>
+<rect x="4" y="27" width="24" height="1" class="x194404v x197sbye"/>
 </svg>

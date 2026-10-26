@@ -266,7 +266,8 @@ class GitTests(unittest.TestCase):
         mapping = self.base / w.MAP
         mapping.parent.mkdir(parents=True)
         mapping.write_text(json.dumps({'RM-RUST': {'number': 1, 'url': 'https://github.com/owner/repo/issues/1'}}))
-        result = subprocess.run([str(hook)], cwd=self.base, capture_output=True, text=True)
+        result = subprocess.run([str(hook)], cwd=self.base, capture_output=True, text=True,
+                                env={k: v for k, v in os.environ.items() if not k.startswith("SGD_")})
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('rentemester-work.json', result.stderr)
 

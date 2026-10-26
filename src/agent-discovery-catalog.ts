@@ -5,7 +5,7 @@ import { getReleaseProvenance } from "./core/release-provenance";
 import { currentRuleBundleVersion } from "./core/rules-metadata";
 
 export const AGENT_CATALOGUE_SCHEMA_VERSION = "rentemester-agent-discovery-v1";
-export const AGENT_CATALOGUE_ENTRY_POINT = "meta_about -> agent_capability_search -> agent_workflow_describe -> tools/list";
+export const AGENT_CATALOGUE_ENTRY_POINT = "system_server_about -> agent_capability_search -> agent_workflow_describe -> agent_operation_search -> agent_operation_describe -> agent_operation_<class>";
 
 export type AgentScope = "company" | "workspace" | "legal-group" | "system";
 export type WorkflowBoundary = "read" | "dry-run" | "review" | "approval" | "apply" | "irreversible" | "destructive";
@@ -91,7 +91,7 @@ function write(id: string, operation: OperationReference, purpose: string, optio
 function workflow(input: Pick<AgentWorkflow, "id" | "capabilityId" | "title" | "intendedOutcome" | "steps"> & Partial<Omit<AgentWorkflow, "id" | "capabilityId" | "title" | "intendedOutcome" | "steps">>): AgentWorkflow {
   return {
     nonGoals: ["Discovery is not authorization and never executes the workflow."],
-    prerequisites: ["Call meta_about and verify build, rules and catalogue identity.", "Resolve every referenced operation in the live surface before mutation.", "Use an explicit company, workspace or legal-group identity where required."],
+    prerequisites: ["Call system_server_about and verify build, rules and catalogue identity.", "Resolve every referenced operation in the live surface before mutation.", "Use an explicit company, workspace or legal-group identity where required."],
     blockers: [
       { code: "INPUT_VALIDATION", meaning: "Correct the named schema field before retry." },
       { code: "CONFIRM_OR_ACTOR_REQUIRED", meaning: "The write lacks confirmation, actor attribution or permission." },
@@ -104,12 +104,33 @@ function workflow(input: Pick<AgentWorkflow, "id" | "capabilityId" | "title" | "
 }
 
 export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
+  workflow({ id: "task-lifecycle", capabilityId: "workspace-tasks", title: "Tasks, annual wheel and documented completion", intendedOutcome: "Manage explicitly scoped work across accessible companies through one durable task identity without changing accounting facts.", steps: [
+    read("list", mcp("tasks_list"), "Inspect only accessible companies, task scope, current versions, board mappings and reminder runtime.", { canonicalRecords: ["workspace tasks", "task board", "task series"] }),
+    write("create", mcp("tasks_create"), "Create a titled task with explicit company/workspace scope and a durable retry key.", { inputIdentities: ["scope", "idempotencyKey"], outputIdentities: ["taskId", "version"], retryClass: "key-idempotent", canonicalRecords: ["workspace task", "task history", "task mutation receipt"] }),
+    write("update", mcp("tasks_update"), "Update only at the read expectedVersion; retain input and re-read on conflict.", { dependsOn: ["list|create"], inputIdentities: ["taskId", "expectedVersion", "idempotencyKey"], retryClass: "key-idempotent", canonicalRecords: ["workspace task", "task history"] }),
+    read("board-preview", mcp("task_boards_preview"), "Preview the exact consequences before changing column meaning or relocating cards.", { inputIdentities: ["board"], outputIdentities: ["previewHash"] }),
+    write("board-save", mcp("task_boards_save"), "Save an explicitly mapped board with required relocation and the matching previewHash.", { dependsOn: ["board-preview"], retryClass: "key-idempotent", canonicalRecords: ["task board", "task history"] }),
+    write("series-save", mcp("task_series_save"), "Create or amend a calendar/fiscal routine while preserving outstanding and completed occurrences.", { retryClass: "key-idempotent", canonicalRecords: ["task series", "task mutation receipt"] }),
+    read("year-wheel", mcp("task_series_project"), "Inspect projected future periods and uncertain relevance without creating task cards."),
+    write("materialize", mcp("task_series_materialize"), "Create due occurrences once from stable series/period identity.", { retryClass: "key-idempotent", canonicalRecords: ["task occurrence", "task mutation receipt"] }),
+    write("source-sync", mcp("tasks_sync"), "Synchronize source problems using stable company/kind/subject identity, never a content hash alone.", { retryClass: "key-idempotent", canonicalRecords: ["source task", "task history"] }),
+    write("complete", mcp("tasks_complete"), "Complete with a note and required evidence; authoritative problems require actual resolution.", { inputIdentities: ["taskId", "expectedVersion", "idempotencyKey"], retryClass: "key-idempotent", canonicalRecords: ["task completion", "task history"] }),
+    write("reminder", mcp("tasks_reminder_set"), "Explicitly activate an in-product reminder for a permitted recipient; no external messages or agent scheduling.", { retryClass: "key-idempotent", canonicalRecords: ["task reminder"] }),
+    read("read-back", mcp("tasks_get"), "Verify the stable task/version after an uncertain write; retry only the identical request with the same key."),
+    read("history", mcp("tasks_history"), "Inspect scope, responsibility, deadlines, status changes and completion evidence."),
+  ], unsupportedBoundaries: ["Task status never pays, posts, files or grants approval.", "Assignment never grants access or sends an external message.", "Unknown external outcomes require verification, not a blind repeated action."] }),
+
   workflow({ id: "company-workspace-setup", capabilityId: "company-workspace", title: "Company and workspace setup", intendedOutcome: "Create or select a company and verify its canonical profile before accounting work.", steps: [
     write("initialize-company", cli("init"), "Create a local company root when no workspace company exists.", { requiresActor: false, requiresConfirmation: false, prerequisites: ["CLI-only: choose an explicit new company path."], outputIdentities: ["company root"], canonicalRecords: ["company database", "company profile"] }),
     write("add-workspace-company", mcp("company_add"), "Add a company to an existing workspace.", { condition: "Use instead of initialize-company for an existing workspace.", outputIdentities: ["company slug"], canonicalRecords: ["workspace manifest"] }),
-    read("list-companies", mcp("portfolio_overview"), "Discover companies available through the workspace without inferring hidden companies.", { dependsOn: ["initialize-company|add-workspace-company"], outputIdentities: ["visible company slugs"] }),
+    read("list-companies", mcp("portfolio_overview"), "List only canonical registered live companies; sibling copies are never inferred from directories.", { dependsOn: ["initialize-company|add-workspace-company"], outputIdentities: ["visible company slugs"] }),
     read("read-profile", mcp("company_profile_get"), "Verify the selected company's profile.", { dependsOn: ["list-companies"], inputIdentities: ["company slug/path"], canonicalRecords: ["company profile"] }),
   ], unsupportedBoundaries: ["MCP does not initialize an arbitrary host path; CLI init is explicitly CLI-only.", "Discovery never exposes companies outside the caller's workspace access."] }),
+  workflow({ id: "local-service-principal-lifecycle", capabilityId: "company-workspace", title: "Local service-principal lifecycle", intendedOutcome: "Bootstrap, rotate or revoke a local authenticated service credential without treating an audit actor as authorization.", steps: [
+    write("bootstrap", cli("workspace-access bootstrap-local-service"), "Create exactly one local Better Auth service credential with an explicit minimum role and show it once.", { requiredArguments: ["workspace", "company", "display-name", "company-role", "auth-secret-file", "confirm"], inputIdentities: ["company slug", "company role"], outputIdentities: ["serviceAccountId", "credentialId"], canonicalRecords: ["service principal", "workspace access event", "company membership event", "credential audit"] }),
+    write("rotate", cli("workspace-access local-service-rotate"), "Rotate the exact credential after recording its id; the replacement secret is shown once.", { condition: "Use only to replace an existing credential.", requiredArguments: ["workspace", "company", "service-account-id", "credential-id", "auth-secret-file", "confirm"], inputIdentities: ["serviceAccountId", "credentialId"], outputIdentities: ["replacement credentialId"], canonicalRecords: ["service credential rotation audit"] }),
+    write("revoke", cli("workspace-access local-service-revoke"), "Disable the exact credential append-only when access must end.", { condition: "Use instead of deletion.", requiredArguments: ["workspace", "company", "service-account-id", "credential-id", "auth-secret-file", "confirm"], inputIdentities: ["serviceAccountId", "credentialId"], canonicalRecords: ["service credential revocation audit"] }),
+  ], unsupportedBoundaries: ["An actor is audit attribution only and never a credential or permission grant.", "A service principal receives no access outside its active workspace and company memberships.", "Local bootstrap never creates a hosted browser user or an implicit owner token."] }),
   workflow({ id: "document-mail-intake", capabilityId: "document-intake", title: "Document and mail intake", intendedOutcome: "Store source evidence and review extraction without silently approving or posting it.", steps: [
     write("ingest-document", mcp("documents_ingest"), "Ingest supplied source evidence.", { outputIdentities: ["documentId", "documentNo", "sha256"], canonicalRecords: ["documents", "document originals"] }),
     write("ingest-mail", mcp("mail_intake_ingest"), "Ingest an explicitly selected mail attachment.", { condition: "Use for mail intake instead of ingest-document.", expectedIdempotent: true, retryClass: "external-provider-reconciled", outputIdentities: ["documentId"], canonicalRecords: ["documents", "mail intake audit"] }),
@@ -117,6 +138,39 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("list-documents", mcp("documents_list"), "Read back canonical document state.", { dependsOn: ["ingest-document|ingest-mail|poll-imap"], outputIdentities: ["documentId"] }),
     read("review-extraction", mcp("documents_invoice_extraction"), "Review cited invoice extraction where available.", { dependsOn: ["list-documents"], inputIdentities: ["documentId"] }),
   ], unsupportedBoundaries: ["Extraction is evidence for review, not approval or automatic posting.", "The catalogue contains no mailbox credentials or company routing."] }),
+  workflow({ id: "incomplete-purchase-evidence-review", capabilityId: "document-intake", title: "Incomplete standard purchase evidence review", intendedOutcome: "Preserve an incomplete standard purchase invoice truthfully and only use input VAT after a source-bound review establishes the material conditions.", steps: [
+    write("ingest-source", mcp("documents_ingest"), "Ingest the original invoice with incompleteStandardPurchaseInvoice:true only when the buyer fields are actually absent in the source.", { outputIdentities: ["documentId", "sha256"], canonicalRecords: ["documents", "immutable source bytes"] }),
+    write("record-context", mcp("documents_set_company_context"), "Record source reference and business-use evidence append-only. This binds the original and metadata hashes but never rewrites invoice recipient facts or approves VAT.", { dependsOn: ["ingest-source"], expectedIdempotent: true, retryClass: "natural-idempotent", inputIdentities: ["documentId"], canonicalRecords: ["document company contexts", "audit log"] }),
+    write("review-material-evidence", mcp("documents_review_purchase_vat_evidence"), "Bind an exact matching outgoing company payment and a SHA-256-identified business-use source. A reviewer must explicitly confirm this formal-deficiency-only decision.", { dependsOn: ["record-context"], expectedIdempotent: true, retryClass: "natural-idempotent", inputIdentities: ["documentId", "bankTransactionId", "businessEvidenceSha256"], canonicalRecords: ["purchase VAT evidence review", "audit log"] }),
+    read("vat-preflight", mcp("expense_vat_preflight"), "Read the actual booking/VAT gate after the evidence review.", { dependsOn: ["review-material-evidence"], boundary: "dry-run", inputIdentities: ["documentId"], canonicalRecords: ["purchase VAT preflight"] }),
+  ], unsupportedBoundaries: ["Company context is business-attribution evidence, not a correction to the issuer's invoice.", "This workflow never infers a buyer CVR, treats a missing address as a simplified invoice, or grants VAT deduction automatically.", "The review fails closed if supplier identity, invoice VAT, company payment, source hashes or business use are missing or change."] }),
+  workflow({ id: "non-eu-reverse-charge-evidence-review", capabilityId: "document-intake", title: "Non-EU reverse-charge material review", intendedOutcome: "Keep a formally deficient non-EU service invoice immutable and permit reverse charge only after a reviewer binds verifiable material evidence.", steps: [
+    write("ingest-source", mcp("documents_ingest"), "Ingest the source invoice with an explicit non-EU supplier country and typed non_eu identity; an observed OSS or IE VAT identifier is not EU establishment evidence.", { outputIdentities:["documentId","sha256"], canonicalRecords:["documents","immutable source bytes"] }),
+    write("review-material-evidence", mcp("documents_review_non_eu_reverse_charge_evidence"), "Record supplier establishment, actual Danish buyer, service/place/use, period, deduction percentage and hashes for every supporting source. confirm:true is required.", { dependsOn:["ingest-source"], expectedIdempotent:true, retryClass:"natural-idempotent", inputIdentities:["documentId","supplierEvidenceSha256","buyerEvidenceSha256","serviceEvidenceSha256"], canonicalRecords:["non-EU reverse-charge review","audit log"] }),
+    read("vat-preflight", mcp("expense_vat_preflight"), "Read the actual booking gate after review; it performs no mutation.", { dependsOn:["review-material-evidence"], boundary:"dry-run", inputIdentities:["documentId"], canonicalRecords:["purchase VAT preflight"] }),
+  ], unsupportedBoundaries:["No review rewrites invoice metadata or uses actor identity as evidence.", "Foreign/local VAT charged by the supplier is rejected, never relabelled as Danish reverse charge.", "The workflow does not infer EU establishment from OSS/IE VAT or a tax identifier alone."] }),
+  workflow({ id: "external-payroll-evidence-journal", capabilityId: "document-intake", title: "External payroll evidence and settlement", intendedOutcome: "Record an external payroll report as source-linked, no-VAT evidence, then separately post the reviewed accrual and the bank settlement.", steps: [
+    write("ingest-report", mcp("documents_ingest"), "Ingest external_accounting_evidence with payroll category, report period, external reference, balanced totals and vatAmount:0.", { outputIdentities: ["documentId", "sha256"], canonicalRecords: ["external payroll evidence", "immutable source bytes"] }),
+    read("review-report", mcp("documents_list"), "Read the source-linked report back; verify issuer, reported company, period, reference and totals before any journal.", { dependsOn: ["ingest-report"], inputIdentities: ["documentId"], canonicalRecords: ["documents"] }),
+    read("preview-accrual", mcp("journal_dry_run"), "Preview the balanced accrual lines against approved wage and statutory-liability accounts. It writes nothing and never derives payroll.", { dependsOn: ["review-report"], boundary: "dry-run", inputIdentities: ["documentId"], canonicalRecords: ["journal preview"] }),
+    write("post-accrual", mcp("journal_post"), "Post the explicitly reviewed accrual with the payroll document link and idempotency key.", { dependsOn: ["preview-accrual"], retryClass: "key-idempotent", inputIdentities: ["documentId", "idempotencyKey"], canonicalRecords: ["journal entries", "statutory payroll liabilities", "audit log"] }),
+    read("preview-settlement", mcp("journal_dry_run"), "Preview the later net-pay bank settlement against the imported bank evidence; it is a separate journal.", { dependsOn: ["post-accrual"], boundary: "dry-run", canonicalRecords: ["journal preview", "bank transaction"] }),
+    write("post-settlement", mcp("journal_post"), "Post the reviewed bank settlement with its own idempotency key and read back the resulting liability balance.", { dependsOn: ["preview-settlement"], retryClass: "key-idempotent", inputIdentities: ["idempotencyKey"], canonicalRecords: ["journal entries", "bank reconciliation", "audit log"] }),
+  ], unsupportedBoundaries: ["Rentemester does not calculate payroll, create salary payments, infer tax rates or transmit payroll filings.", "The report is external evidence; payroll-specific account selection and amounts require explicit human review.", "VAT remains zero for this evidence type."] }),
+  workflow({ id: "non-cash-balance-correction", capabilityId: "non-cash-balance-corrections", title: "Non-cash balance correction", intendedOutcome: "Record one documented DKK balance-only correction without inventing a bank movement or changing VAT.", steps: [
+    write("ingest-evidence", mcp("documents_ingest"), "Ingest a non_cash_balance_correction internal voucher with rationale, date, amount and DKK currency.", { outputIdentities: ["documentId", "sha256"], canonicalRecords: ["documents", "non-cash balance correction evidence"] }),
+    read("review-evidence", mcp("documents_list"), "Read back the voucher kind, rationale and actor provenance before journal planning.", { dependsOn: ["ingest-evidence"], inputIdentities: ["documentId"], canonicalRecords: ["documents", "non-cash balance correction evidence"] }),
+    read("dry-run", mcp("journal_dry_run"), "Preview the exact two-sided DKK balance-only journal; it writes nothing.", { dependsOn: ["review-evidence"], inputIdentities: ["documentId"], canonicalRecords: ["journal preview"] }),
+    write("post", mcp("journal_post"), "Post the reviewed journal with the same documentId and explicit confirmation.", { dependsOn: ["dry-run"], retryClass: "key-idempotent", inputIdentities: ["documentId", "idempotencyKey"], canonicalRecords: ["journal entries", "non-cash balance correction postings", "audit log"] }),
+    read("readback", mcp("journal_list"), "Read back the posted journal and use documents_list for the durable voucher link.", { dependsOn: ["post"], inputIdentities: ["documentId"] }),
+  ], unsupportedBoundaries: ["Only DKK balance corrections are supported; foreign-currency correction vouchers are rejected.", "Bank, VAT, income, expense, debtor and creditor accounts are rejected.", "This workflow never creates a bank transaction, VAT adjustment, payable or sales record."] }),
+  workflow({ id: "legacy-opening-creditor-reclassification", capabilityId: "non-cash-balance-corrections", title: "Legacy opening creditor reclassification", intendedOutcome: "Reclassify an unexplained DKK creditor primobalance without creating a payable or altering historical journals.", steps: [
+    read("inspect-opening",mcp("journal_list"),"Identify the exact posted primobalance journal and creditor line.",{outputIdentities:["openingJournalEntryId","openingJournalLineId"],canonicalRecords:["opening balance","journal lines"]}),
+    write("ingest-evidence",mcp("documents_ingest"),"Ingest a legacy_opening_creditor_reclassification voucher with exact primobalance IDs.",{dependsOn:["inspect-opening"],outputIdentities:["documentId","sha256"],canonicalRecords:["documents","legacy opening creditor reclassification evidence"]}),
+    read("dry-run",mcp("journal_dry_run"),"Preview exactly two DKK balance-sheet lines; no write occurs.",{dependsOn:["ingest-evidence"],inputIdentities:["documentId"],canonicalRecords:["journal preview"]}),
+    write("post",mcp("journal_post"),"Post the reviewed journal; an exact retry is idempotent.",{dependsOn:["dry-run"],retryClass:"key-idempotent",inputIdentities:["documentId","idempotencyKey"],canonicalRecords:["journal entries","non-cash balance correction postings","audit log"]}),
+    read("readback",mcp("journal_list"),"Read back the correction and creditor balance effect.",{dependsOn:["post"],inputIdentities:["documentId"]}),
+  ], unsupportedBoundaries:["This never handles ordinary supplier invoices, active creditor balances, payable payments or bank settlements.","Only a documented still-unexplained posted primobalance creditor line is eligible.","Bank, VAT, income, expense and debtor accounts remain forbidden; historical journals are never changed."] }),
   workflow({ id: "workspace-document-inbox", capabilityId: "workspace-document-inbox", title: "Workspace document inbox routing", intendedOutcome: "Store one immutable source outside every ledger, resolve only authorized deterministic candidates, then hand it off once to the selected company pipeline.", steps: [
     read("list", http("GET", "/api/companies/:slug/workspace-inbox"), "List only sources visible through the chosen company access anchor."),
     write("ingest", http("POST", "/api/companies/:slug/workspace-inbox"), "Store immutable source bytes and filtered routing evidence without opening a company ledger; on a lost response, inspect before retrying.", { inputIdentities:["idempotencyKey"], canonicalRecords:["workspace inbox source", "workspace inbox routing events"] }),
@@ -125,7 +179,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("complete", http("POST", "/api/companies/:slug/workspace-inbox/:sourceId/complete"), "Hand off exactly once to canonical per-company document ingest and read back the durable assignment.", { dependsOn:["assign"], boundary:"irreversible", uncertainOutcomeReadBack:http("GET", "/api/companies/:slug/workspace-inbox/:sourceId"), canonicalRecords:["company document", "workspace inbox handoff event"] }),
   ], unsupportedBoundaries:["Workspace inbox never posts, calculates VAT or maintains a workspace ledger.", "Hidden candidate companies and their metadata are filtered before output, ordering and exception rendering.", "A linked or booked document is corrected through its company controls, never silently reassigned."] }),
   workflow({ id: "bank-reconciliation-batch", capabilityId: "bank-bookkeeping", title: "Bank import, matching and bookkeeping batch", intendedOutcome: "Import bank activity, inspect matches and apply only a hash-bound reviewed bookkeeping batch.", steps: [
-    write("import-bank", mcp("bank_import"), "Import bank rows with duplicate protection.", { expectedIdempotent: true, retryClass: "natural-idempotent", outputIdentities: ["importBatchId", "bankTransactionIds"], canonicalRecords: ["bank_transactions", "bank import evidence"] }),
+    write("import-bank", mcp("bank_import"), "Import bank rows with duplicate protection. For same-date running balances, use a profile or explicit statementOrder; an unprovable order stays ambiguous rather than selecting a row id.", { expectedIdempotent: true, retryClass: "natural-idempotent", outputIdentities: ["importBatchId", "bankTransactionIds"], canonicalRecords: ["bank_transactions", "bank statement source-order evidence"] }),
     read("suggest-matches", mcp("bank_suggest_matches"), "Generate read-only matching suggestions.", { dependsOn: ["import-bank"] }),
     read("reconciliation-report", mcp("reconcile_bank"), "Produce the read-only reconciliation report; this does not confirm matches.", { dependsOn: ["import-bank"] }),
     read("batch-plan", mcp("bookkeeping_batch_plan"), "Produce a deterministic plan and hash without changing durable state.", { dependsOn: ["suggest-matches"], boundary: "dry-run", expectedIdempotent: true, retryClass: "safe-read", outputIdentities: ["planHash"] }),
@@ -142,6 +196,12 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("plan",mcp("direct_bank_purchase_payable_correction_plan"),"Inspect the deterministic hash-bound conversion plan.",{boundary:"dry-run",outputIdentities:["planHash"]}),
     write("apply",mcp("direct_bank_purchase_payable_correction_apply"),"Atomically reverse the original posting, register the payable and settle it on the bank date.",{dependsOn:["plan"],boundary:"irreversible",retryClass:"key-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["journal entries","payables","payable payments","audit log"]}),
   ],relatedWorkflowIds:["supplier-payable-handling","bank-reconciliation-correction"],unsupportedBoundaries:["The workflow never changes a document hash or metadata.","Journal history is reversed and appended, never rewritten."]}),
+  workflow({id:"legacy-bank-payable-backfill",capabilityId:"supplier-purchases",title:"Adopt explicit legacy bank and payable evidence",intendedOutcome:"Bind only an unassigned legacy bank account and append a payable/payment only for exact reviewed source IDs.",steps:[
+    read("plan-bank-binding",mcp("bank_legacy_binding_plan"),"Verify the NULL-only bank binding, source endpoint, roles, cutoff balances and heads.",{boundary:"dry-run",outputIdentities:["planHash"]}),
+    write("apply-bank-binding",mcp("bank_legacy_binding_apply"),"Apply only the exact reviewed NULL-to-account binding.",{dependsOn:["plan-bank-binding"],boundary:"approval",expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy bank binding","audit log"]}),
+    read("plan-payable-payment",mcp("payable_legacy_backfill_plan"),"Verify exactly named purchase journal, payment journal, document and bank transaction; no amount matching is performed.",{boundary:"dry-run",outputIdentities:["planHash"]}),
+    write("apply-payable-payment",mcp("payable_legacy_backfill_apply"),"Append canonical payable/payment and immutable backfill evidence only.",{dependsOn:["plan-payable-payment"],boundary:"approval",expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["payables","payable payments","legacy backfill audit"]}),
+  ],unsupportedBoundaries:["No amount-only matching, journal posting, document rewrite, bank rewrite or remapping is supported.","Any pre-existing binding, payable, payment, reversal or conflicting reconciliation fails closed."]}),
   workflow({ id: "bookkeeping-workbench", capabilityId: "bank-bookkeeping", title: "Bookkeeping workbench", intendedOutcome: "Read one canonical queue of unresolved bank work, then use the existing reviewed batch workflow for every write.", steps: [
     read("read-workbench",mcp("bookkeeping_workbench"),"Read the deterministic unresolved bank population, canonical document-party resolution and account/VAT/dimension evidence. Use returned drilldowns to inspect source evidence before the separate batch plan.",{inputIdentities:["company","from","to","bankAccountId","partyId","documentQuality","account","vatTreatment","dimension"],outputIdentities:["bankTransactionId","sourceHash","planHash","population.blockers"],canonicalRecords:["bank transactions","bank journal reconciliations","current document party links","document party resolution events","bookkeeping batch runs","period-close readiness"]}),
     read("review-plan",mcp("bookkeeping_batch_plan"),"Revalidate the exact batch plan before any persist or approval.",{dependsOn:["read-workbench"],boundary:"dry-run",outputIdentities:["planHash"]}),
@@ -155,6 +215,18 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("book-expense", mcp("expense_book"), "Post the reviewed expense and bank reconciliation.", { dependsOn: ["vat-preflight"], boundary: "irreversible", retryClass: "key-idempotent", inputIdentities: ["documentId", "bankTransactionId"], uncertainOutcomeReadBack: mcp("journal_list"), canonicalRecords: ["journal entries", "bank reconciliations", "document posting link"] }),
     read("verify-posting", mcp("journal_list"), "Read back the posting.", { dependsOn: ["book-expense"] }),
   ], relatedWorkflowIds: ["supplier-payable-handling", "vat-preparation"] }),
+  workflow({ id:"purchase-case-lifecycle", capabilityId:"supplier-purchases", title:"Provisional purchase case lifecycle", intendedOutcome:"Record a source-bound provisional purchase case, review exact evidence, then continue only through an existing booking flow.", steps:[
+    write("create",mcp("purchase_case_create"),"Create one append-only case bound to an existing document, bank transaction or payable. This never posts or changes VAT.",{boundary:"review",retryClass:"key-idempotent",inputIdentities:["source.kind","source.id","idempotencyKey"],outputIdentities:["caseId","sourceFingerprint"],canonicalRecords:["purchase case events","audit log"]}),
+    read("inspect",mcp("purchase_case_get"),"Read the derived accounting and VAT evidence state without mutation.",{dependsOn:["create"],inputIdentities:["caseId"]}),
+    write("reassess-stale",mcp("purchase_case_reassess"),"When source evidence changed, append an explicit reassessment using both fingerprints and an explicit documentation outcome.",{dependsOn:["inspect"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["caseId","expectedVersion","expectedSourceFingerprint","currentSourceFingerprint","documentationOutcome","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_case_get"),canonicalRecords:["purchase case events","audit log"]}),
+    write("review",mcp("purchase_case_review"),"Append only a review of the exact case version and source fingerprint.",{dependsOn:["inspect"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["caseId","expectedVersion","expectedSourceFingerprint","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_case_get"),canonicalRecords:["purchase case events","audit log"]}),
+    read("readback",mcp("purchase_case_get"),"Read the current case after a retry or review.",{dependsOn:["review"],inputIdentities:["caseId"]}),
+  ],relatedWorkflowIds:["supplier-expense-booking","supplier-payable-handling"],unsupportedBoundaries:["A purchase case is not a ledger, journal, draft, VAT approval or payable.","Booking remains in the existing reviewed supplier expense or payable workflow.","Changing source evidence makes a previous review stale."]}),
+  workflow({ id:"purchase-case-group-review", capabilityId:"supplier-purchases", title:"Grouped purchase-evidence review", intendedOutcome:"Inspect grouped human needs and atomically review only exact, compatible unresolved purchase cases.", steps:[
+    read("overview",mcp("purchase_overview"),"Read the source-based overview and exact grouped case versions and fingerprints.",{inputIdentities:["from","to"],outputIdentities:["groups.members.caseId","groups.members.version","groups.members.sourceFingerprint"],canonicalRecords:["purchase case events","documents","bank transactions","payables"]}),
+    write("group-review",mcp("purchase_case_group_review"),"Preflight the complete exact selection, then append one shared group event and one review per case. A stale or incompatible member rejects the whole selection.",{dependsOn:["overview"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["members.caseId","members.expectedVersion","members.expectedSourceFingerprint","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_overview"),canonicalRecords:["purchase case group events","purchase case events","audit log"]}),
+    read("readback",mcp("purchase_overview"),"Read the current grouped needs after the exact review or a retry.",{dependsOn:["group-review"]}),
+  ],relatedWorkflowIds:["purchase-case-lifecycle","supplier-expense-booking"],unsupportedBoundaries:["The grouped review never posts, changes VAT state or partially applies a selection.","Unposted cases continue only through the existing booking workflows."]}),
   workflow({ id: "supplier-payable-handling", capabilityId: "supplier-purchases", title: "Supplier payable handling", intendedOutcome: "Register a supplier invoice as an open payable and record its later bank payment.", steps: [
     write("register-payable", mcp("payable_register"), "Register reviewed evidence as a payable.", { boundary: "irreversible", retryClass: "key-idempotent", outputIdentities: ["payableId", "journalEntryId"], canonicalRecords: ["payables", "journal entries"] }),
     read("list-payables", mcp("payable_list"), "Read due/open state.", { dependsOn: ["register-payable"] }),
@@ -184,6 +256,8 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("post-reverse-charge", mcp("vat_post_eu_service_purchase"), "Post a supported EU-service reverse charge.", { dependsOn: ["purchase-preflight"], condition: "Reverse-charge branch.", boundary: "irreversible", uncertainOutcomeReadBack: mcp("vat_report"), canonicalRecords: ["reverse-charge journal entries"] }),
     read("vat-report", mcp("vat_report"), "Prepare the VAT period report.", { dependsOn: ["post-domestic-purchase|post-reverse-charge"] }),
     read("eu-sales-list", mcp("vat_eu_sales_list"), "Prepare EU sales evidence.", { dependsOn: ["vat-report"] }),
+    write("record-filing-evidence", mcp("vat_filing_evidence_record"), "Record a reviewed B-field classification or statutory refund only when supported by evidence.", { dependsOn: ["vat-report|eu-sales-list"], condition: "Required only for non-zero B fields or refunds.", expectedIdempotent: true, retryClass: "natural-idempotent", canonicalRecords: ["VAT filing evidence events", "audit log"] }),
+    read("tastselv-form", mcp("vat_filing"), "Read the exact whole-kroner TastSelv form; it never submits to Skattestyrelsen.", { dependsOn: ["vat-report|eu-sales-list|record-filing-evidence"], canonicalRecords: ["VAT filing form", "VAT report"] }),
   ], unsupportedBoundaries: ["This workflow does not file with an authority.", "Only documented taxable lines create input VAT."] }),
   workflow({ id: "exceptions-corrections", capabilityId: "exceptions-corrections", title: "Exceptions, corrections and reversals", intendedOutcome: "Resolve review blockers and correct posted entries through append-only compensating records.", steps: [
     read("list-exceptions", mcp("exceptions_list"), "Read unresolved exceptions."),
@@ -193,7 +267,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   ], alternatives: ["Use invoice_credit_note for an issued sales invoice."], unsupportedBoundaries: ["Posted entries and original documents are never overwritten or deleted."] }),
   workflow({ id: "period-close-reopen", capabilityId: "period-management", title: "Period readiness, close and reopen", intendedOutcome: "Inspect period readiness, close deliberately and reopen only through the supported correction path.", steps: [
     read("list-periods", mcp("period_list"), "Inspect period state and blockers."),
-    read("close-readiness", mcp("period_close_readiness"), "Compute the exact read-only readiness packet and inspect every control.", { dependsOn: ["list-periods"], canonicalRecords: ["period close readiness packet"] }),
+    read("close-readiness", mcp("period_close_readiness"), "Compute the exact read-only readiness packet, inspect the human readiness projection and every control. The projection is not approval evidence.", { dependsOn: ["list-periods"], canonicalRecords: ["period close readiness packet"] }),
     write("review-readiness", mcp("period_close_review"), "Persist the reviewed packet before any close attempt.", { dependsOn: ["close-readiness"], boundary: "approval", canonicalRecords: ["period close review"] }),
     write("close-period", mcp("period_close"), "Close using the exact persisted review ID and packet hash; never retry after a stale packet.", { dependsOn: ["review-readiness"], boundary: "approval", canonicalRecords: ["period locks", "period close decision"] }),
     read("close-status", mcp("period_close_status"), "Poll the durable reviewed packet without recomputing readiness.", { dependsOn: ["review-readiness"] }),
@@ -241,10 +315,15 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("supported-systems", cli("import systems"), "Discover supported systems and required files."),
     read("dry-run", cli("import run"), "Validate/dry-run the selected source and fiscal scope.", { dependsOn: ["supported-systems"], boundary: "dry-run", requiresActor: true, requiredArguments: ["--dry-run"], outputIdentities: ["source hashes", "import plan"] }),
     write("apply-import", cli("import run"), "Apply the exact validated import.", { dependsOn: ["dry-run"], requiresConfirmation: false, requiredArguments: ["--apply"], outputIdentities: ["import run identity"], canonicalRecords: ["imported ledger records", "source-hash evidence", "import audit"] }),
+    read("plan-legacy-receivables", mcp("invoice_imported_receivables_backfill_plan"), "For an already accepted pre-v36 Dinero cut-over only: bind a separately hash-verified schedule to the immutable source, explicit control date, debtors balance, ledger head and audit head without replaying the import.", { dependsOn:["dry-run"], condition:"Legacy accepted import has no canonical imported-receivable schedule.", boundary:"dry-run", inputIdentities:["dineroImportAttemptId","sourceRawSha256","canonicalInventorySha256","artifactSha256","controlDate","controlAccountNo"], outputIdentities:["planHash","scheduleHash"], canonicalRecords:["legacy imported receivable backfill plan"] }),
+    write("apply-legacy-receivables", mcp("invoice_imported_receivables_backfill_apply"), "Append only the exact reviewed legacy schedule and audit evidence; never replay or rewrite import state.", { dependsOn:["plan-legacy-receivables"], condition:"Legacy branch only.", boundary:"approval", expectedIdempotent:true, retryClass:"natural-idempotent", inputIdentities:["planHash","idempotencyKey"], uncertainOutcomeReadBack:mcp("invoice_imported_receivables"), canonicalRecords:["imported receivable headers","imported receivable events","imported receivable boundary","legacy backfill audit"] }),
+    read("plan-imported-receivable-settlement", mcp("invoice_imported_receivable_settlement_plan"), "Bind one canonical imported DKK receivable identity and one immutable, unreconciled bank receipt. The plan makes no changes.", { dependsOn:["imported-receivables"], boundary:"dry-run", inputIdentities:["scheduleHash","externalInvoiceId","bankTransactionId"], outputIdentities:["planHash","bankTransactionHash"], canonicalRecords:["imported receivable header","bank transaction"] }),
+    write("apply-imported-receivable-settlement", mcp("invoice_imported_receivable_settlement_apply"), "Atomically post the bank/control journal, reconcile the selected receipt and append payment evidence for the exact reviewed plan.", { dependsOn:["plan-imported-receivable-settlement"], boundary:"approval", expectedIdempotent:true, retryClass:"natural-idempotent", inputIdentities:["planHash","idempotencyKey"], uncertainOutcomeReadBack:mcp("invoice_imported_receivable_settlement_status"), canonicalRecords:["journal entry","bank reconciliation","imported receivable event","settlement audit"] }),
+    read("imported-receivable-settlement-status", mcp("invoice_imported_receivable_settlement_status"), "Read back the immutable settlement by bank transaction after an uncertain outcome.", { dependsOn:["apply-imported-receivable-settlement"], inputIdentities:["bankTransactionId"], canonicalRecords:["imported receivable bank settlement"] }),
     write("import-contacts", cli("import contacts"), "Import Dinero contacts idempotently.", { dependsOn: ["supported-systems"], condition: "Optional contacts branch.", expectedIdempotent: true, requiresConfirmation: false, retryClass: "natural-idempotent", canonicalRecords: ["customers", "vendors", "contact import audit"] }),
     read("archive", mcp("import_archive_list"), "Read the retained source archive.", { dependsOn: ["apply-import"] }),
-    read("imported-receivables", mcp("invoice_imported_receivables"), "Read source-evidenced imported receivables and open balances as of an explicit date.", { dependsOn: ["apply-import"], condition: "Use when an imported receivable schedule was supplied.", inputIdentities: ["company slug/path", "asOf date (YYYY-MM-DD)"], canonicalRecords: ["imported receivable schedules", "source-hash evidence"] }),
-  ], alternatives: ["CLI: invoice imported-receivables --company <path> --as-of <YYYY-MM-DD> reads the same imported schedule."], unsupportedBoundaries: ["No company-specific mapping is inferred.", "Cut-over apply remains CLI-only.", "Imported receivables are source records, not native invoices; native invoice issue, reminder and settlement actions do not apply."] }),
+    read("imported-receivables", mcp("invoice_imported_receivables"), "Read source-evidenced opening debtors at an explicit cutoff. This is a separate archive schedule, never a native invoice list.", { dependsOn: ["apply-import"], inputIdentities: ["asOf"], canonicalRecords: ["imported receivable headers", "imported receivable events", "source hashes"] }),
+  ], unsupportedBoundaries: ["No company-specific mapping is inferred.", "The legacy backfill never replays journals, documents, archive years, paths, import attempts or bank reconciliations.", "A changed ledger/audit head, source hash, schedule or control balance invalidates the reviewed plan."] }),
   workflow({ id: "privacy-governance", capabilityId: "privacy", title: "GDPR discovery and export", intendedOutcome: "Discover and export data-subject records through audited, confirmed operations.", steps: [
     write("discover", mcp("gdpr_discover"), "Create audited discovery evidence.", { canonicalRecords: ["GDPR audit events"] }),
     write("export", mcp("gdpr_export"), "Create the confirmed subject export.", { dependsOn: ["discover"], canonicalRecords: ["GDPR export audit"] }),
@@ -286,19 +365,24 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   ] }),
   workflow({ id: "workspace-party-lifecycle", capabilityId: "workspace-parties", title: "Workspace party lifecycle", intendedOutcome: "Create a canonical party, attach only company-scoped roles, and review an explicit duplicate proposal without automatic identity merging.", steps: [
     read("search", mcp("workspace_party_search"), "Search only parties visible through the selected company."),
+    read("party-hub", mcp("party_hub"), "Search the owner-facing Party Hub; computed activity and spend use durable party links only.", { dependsOn:["search"] }),
     write("create", mcp("workspace_party_create"), "Create source-backed identity evidence without a ledger effect.", { dependsOn:["search"], canonicalRecords:["workspace party events", "party identifier assertions"] }),
     write("link-role", mcp("workspace_party_link_role"), "Attach a role and defaults only for the selected company.", { dependsOn:["create"], canonicalRecords:["company party role"] }),
     write("propose-merge", mcp("workspace_party_propose_merge"), "Record an explicit human-reviewed duplicate proposal.", { dependsOn:["link-role"], boundary:"review", canonicalRecords:["party merge proposal"] }),
     write("approve-merge", mcp("workspace_party_approve_merge"), "Approve the exact proposal and append a supersession event.", { dependsOn:["propose-merge"], boundary:"approval", canonicalRecords:["party merge approval", "party supersession"] }),
     read("inspect", mcp("workspace_party_inspect"), "Read the visible canonical history and local roles.", { dependsOn:["link-role|approve-merge"] }),
+    read("party-profile", mcp("party_profile"), "Read the selected Party Profile, keeping computed figures separate from source-backed research.", { dependsOn:["inspect"] }),
   ], unsupportedBoundaries:["Name, amount or alias similarity never auto-merges a legal identity.", "Company-local defaults never become workspace posting rules."] }),
   workflow({ id: "document-party-resolution", capabilityId: "document-party-resolution", title: "Document party resolution", intendedOutcome: "Make exactly one visible party-resolution state without changing document evidence, VAT, or journals.", steps: [
-    read("list", mcp("documents_party_link_list"), "List resolved, internal-no-external-party, and unresolved documents."),
-    read("plan", mcp("documents_party_link_plan"), "Plan an exact evidence-bound canonical party relation."),
-    write("apply", mcp("documents_party_link_apply"), "Append the confirmed canonical party relation.", { dependsOn:["plan"], expectedIdempotent:true, retryClass:"natural-idempotent", canonicalRecords:["document party link event"] }),
+    read("coverage",mcp("party_coverage"),"Project every selected bank row through current reconciliation, journal, source document/open item and canonical party state. Exact bank-row decisions take precedence only for their own transaction; document links remain document-wide."),
+    read("coverage-plan",mcp("party_coverage_plan"),"Deduplicate document candidates and hash-bind reviewed row-level decisions to the exact transaction, reconciliation, journal and optional document. Corrections target one current decision hash append-only.",{dependsOn:["coverage"],boundary:"dry-run",canonicalRecords:["party coverage plan"]}),
+    write("coverage-apply",mcp("party_coverage_apply"),"Atomically append only the exact reviewed document or bank-row operations, including row-specific parties and supersessions; never project row evidence onto sibling transactions.",{dependsOn:["coverage-plan"],expectedIdempotent:true,retryClass:"natural-idempotent",canonicalRecords:["document party link event","party coverage bank resolution event","party coverage batch event"]}),
+    read("list", mcp("documents_party_link_list"), "Distinguish legal resolution, source-observed merchant, explicit unresolved-external follow-up, internal/no-external, and unprocessed documents."),
+    read("plan", mcp("documents_party_link_plan"), "Plan an exact evidence-bound canonical party relation. sourceReview can bind an exact approved merchant/establishment/payment descriptor without asserting legal or tax identity; legal roles retain typed identity requirements."),
+    write("apply", mcp("documents_party_link_apply"), "Append the confirmed canonical party relation and only the reviewed missing contact fields from the exact plan.", { dependsOn:["plan"], expectedIdempotent:true, retryClass:"natural-idempotent", canonicalRecords:["document party link event"] }),
     write("no-external-party", mcp("documents_internal_no_external_party"), "Confirm an internal voucher intentionally has no external party.", { expectedIdempotent:true, retryClass:"natural-idempotent", canonicalRecords:["document party resolution event"] }),
     write("supersede", mcp("documents_internal_no_external_party_supersede"), "Append a correction to the exact no-party decision.", { boundary:"review", expectedIdempotent:true, retryClass:"natural-idempotent", canonicalRecords:["document party resolution supersession"] }),
-  ], unsupportedBoundaries:["Party resolution never changes linked/posted evidence bytes, VAT, or journals.", "Names alone never resolve a canonical party."] }),
+  ], unsupportedBoundaries:["Party resolution never changes linked/posted evidence bytes, bank facts, balances, VAT, or journals.", "A bank-row decision applies only to its exact transaction and is never projected onto sibling rows sharing a document.", "A merchant, establishment, location, or payment descriptor is not a legal supplier and never satisfies a VAT identity gate.", "Legal/tax roles retain typed identity requirements; ambiguous source names fail closed.", "Source review does not infer jurisdiction from OSS/MOSS, relabel a voucher as a supplier invoice, or grant VAT treatment."] }),
   workflow({ id: "corporate-record-lifecycle", capabilityId: "corporate-records", title: "Corporate record lifecycle", intendedOutcome: "Store immutable governance evidence, link it to permitted scope, enrich it append-only and supersede rather than overwrite it.", steps: [
     write("ingest", mcp("corporate_record_ingest"), "Ingest bytes and immutable SHA-256 evidence without ledger, group or filing side effects.", { canonicalRecords:["corporate record original bytes", "corporate record ingest event"] }),
     write("link", mcp("corporate_record_link"), "Attach a typed scope link without changing bytes.", { dependsOn:["ingest"], canonicalRecords:["corporate record scope assertion"] }),
@@ -307,6 +391,13 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("inspect", mcp("corporate_record_inspect"), "Read visible metadata/history."),
     read("download", mcp("corporate_record_download"), "Read verified original bytes only after scope authorization.", { dependsOn:["inspect"] }),
   ], unsupportedBoundaries:["Corporate records are governance evidence, never accounting vouchers or filing actions.", "Original bytes and hashes are never overwritten or deleted."] }),
+  workflow({ id:"legacy-party-mapping", capabilityId:"legacy-party-mapping", title:"Reviewed legacy contact mapping", intendedOutcome:"Map one current customer/vendor contact to its canonical party from an exact reviewed source document, without inventing an identifier or changing accounting facts.", steps:[
+    read("plan",mcp("legacy_party_mapping_plan"),"Produce a deterministic plan bound to the exact contact, canonical party, source-document bytes and review reference."),
+    write("apply",mcp("legacy_party_mapping_apply"),"Confirm and idempotently append only the exact plan.",{dependsOn:["plan"],expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy party mapping event"]}),
+    write("supersede",mcp("legacy_party_mapping_supersede"),"Append an explicit correction for the current mapping.",{boundary:"review",expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy party mapping supersession"]}),
+    read("inspect",mcp("legacy_party_mapping_list"),"Read company-scoped append-only mapping history."),
+  ],unsupportedBoundaries:["A reviewed legacy reference alone never creates a mapping.","Mappings never rewrite contacts, documents, journal entries or VAT."]}),
+  workflow({id:"vendor-identity-enrichment",capabilityId:"vendor-identity-enrichment",title:"Vendor identity enrichment",intendedOutcome:"Complete only missing typed supplier identity fields from a verified registered original document.",steps:[read("plan",mcp("vendor_identity_enrichment_plan"),"Produce a byte-bound plan without inventing identifiers."),write("apply",mcp("vendor_identity_enrichment_apply"),"Confirm and idempotently apply the exact plan.",{dependsOn:["plan"],expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["vendor identity enrichment event"]}),read("inspect",mcp("vendor_identity_enrichment_list"),"Read append-only enrichment history.")],unsupportedBoundaries:["Existing typed identity, vendor text, document bytes, journals and VAT are never overwritten."]}),
   workflow({ id:"company-knowledge-lifecycle", capabilityId:"company-knowledge", title:"Company operating knowledge", intendedOutcome:"Retrieve or maintain source-backed, effective-dated operating context without changing canonical accounting settings.", steps:[
     read("context",mcp("company_knowledge_context"),"Read compact machine-readable context as of a declared date."),
     write("propose",mcp("company_knowledge_propose"),"Propose one typed, sourced assertion without a ledger effect.",{canonicalRecords:["company knowledge assertion"]}),
@@ -324,12 +415,14 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
 
 type CapabilityTuple = [string, string, string, string, string[], string[], AgentScope, string[]];
 const capabilityTuples: CapabilityTuple[] = [
-  ["company-workspace", "Company and workspace setup", "Set up and discover companies without leaking inaccessible state.", "company", ["create company", "switch company", "discover workspace"], ["setup", "workspace", "company profile"], "workspace", ["company-workspace-setup"]],
+  ["workspace-tasks", "Tasks, annual wheel and kanban", "Coordinate documented work across accessible companies with one authoritative task history.", "tasks", ["create task", "annual wheel", "calendar task", "kanban board", "document completion", "task reminder"], ["opgaver", "årshjul", "kanban", "calendar", "rutine", "påmindelse"], "workspace", ["task-lifecycle"]],
+  ["company-workspace", "Company and workspace setup", "Set up and discover companies without leaking inaccessible state.", "company", ["create company", "switch company", "discover workspace", "bootstrap local service credential", "rotate service credential"], ["setup", "workspace", "company profile", "local service principal", "credential rotation"], "workspace", ["company-workspace-setup", "local-service-principal-lifecycle"]],
   ["company-knowledge", "Company operating knowledge", "Retrieve and review source-backed, dated company operating facts.", "company", ["company context", "operating profile", "company knowledge"], ["knowledge", "products", "revenue model", "market"], "company", ["company-knowledge-lifecycle"]],
-  ["document-intake", "Document and mail intake", "Store source documents and mail attachments for review.", "documents", ["ingest document", "mail intake", "review invoice extraction"], ["bilag", "imap", "attachment"], "company", ["document-mail-intake"]],
+  ["document-intake", "Document and mail intake", "Store source documents and mail attachments for review.", "documents", ["ingest document", "mail intake", "review invoice extraction", "review incomplete purchase evidence", "review non-EU reverse charge evidence", "record external payroll evidence"], ["bilag", "imap", "attachment", "incomplete invoice", "non-EU reverse charge", "payroll evidence"], "company", ["document-mail-intake", "incomplete-purchase-evidence-review", "non-eu-reverse-charge-evidence-review", "external-payroll-evidence-journal"]],
+  ["non-cash-balance-corrections", "Non-cash balance corrections", "Record one hash-bound DKK correction between eligible balance accounts, including documented legacy opening creditor reclassification.", "ledger", ["correct balance without bank movement", "non-cash balance correction", "legacy opening creditor", "internal balance voucher"], ["balance correction", "internal voucher", "no bank movement", "DKK", "primobalance", "creditor"], "company", ["non-cash-balance-correction","legacy-opening-creditor-reclassification"]],
   ["workspace-document-inbox", "Workspace document inbox", "Route immutable incoming evidence to one authorized legal entity without a workspace ledger.", "documents", ["route incoming document", "assign workspace inbox", "review ambiguous company"], ["workspace inbox", "routing", "recipient alias", "buyer VAT"], "workspace", ["workspace-document-inbox"]],
   ["bank-bookkeeping", "Bank reconciliation and bookkeeping batch", "Import activity, review one canonical bank work queue and apply a hash-bound batch.", "bank", ["reconcile bank", "match bank transactions", "bookkeeping workbench", "bookkeeping batch", "correct bank reconciliation"], ["bank import", "workbench", "dry run", "plan hash", "reconciliation correction"], "company", ["bank-reconciliation-batch", "bookkeeping-workbench", "bank-reconciliation-correction"]],
-  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense"], ["vendor", "payable", "purchase VAT"], "company", ["supplier-expense-booking", "supplier-payable-handling", "direct-bank-purchase-payable-correction"]],
+  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense", "adopt legacy payable", "provisional purchase case", "group purchase evidence"], ["vendor", "payable", "purchase VAT", "legacy backfill", "purchase case", "purchase overview"], "company", ["supplier-expense-booking", "supplier-payable-handling", "purchase-case-lifecycle", "purchase-case-group-review", "direct-bank-purchase-payable-correction", "legacy-bank-payable-backfill"]],
   ["supplier-commitments", "Supplier commitments and 13-week liquidity", "Review recurring supplier commitments and inspect a source-linked cash forecast without generating payments.", "planning", ["track supplier subscription", "forecast cash 13 weeks", "review renewals"], ["commitment", "subscription", "cash forecast", "renewal"], "company", ["supplier-commitment-forecast"]],
   ["customer-invoicing", "Customer invoice lifecycle", "Create customers and handle issue, delivery, payment, reminder and correction.", "sales", ["issue customer invoice", "send invoice", "record payment", "send reminder", "credit note"], ["customer", "invoice", "settlement"], "company", ["customer-invoice-lifecycle"]],
   ["vat", "VAT preparation", "Validate and post supported VAT treatments and prepare evidence.", "vat", ["prepare VAT", "domestic purchase VAT", "reverse charge"], ["moms", "VIES", "input VAT"], "company", ["vat-preparation"]],
@@ -347,7 +440,9 @@ const capabilityTuples: CapabilityTuple[] = [
   ["accounting-dimensions", "Accounting dimensions", "Classify source-linked journal lines by reviewed projects, products, departments or cost centres without changing legal accounting.", "reporting", ["classify project cost", "assign cost centre", "dimension actuals"], ["dimension", "project", "cost centre", "department", "allocation"], "company", ["accounting-dimensions"]],
   ["posting-rules", "Posting rules", "Propose, approve and explain reusable posting rules.", "rules", ["create posting rule", "approve bookkeeping rule"], ["automation", "review separation"], "company", ["posting-rule-review"]],
   ["workspace-parties", "Workspace parties", "Maintain canonical counterparties with isolated company roles and reviewed supersession.", "master data", ["create canonical party", "link company party role", "review duplicate party"], ["party", "counterparty", "identity", "vendor role"], "workspace", ["workspace-party-lifecycle"]],
-  ["document-party-resolution", "Document party resolution", "Resolve a document to canonical party relations, an explicit internal no-party decision, or a bounded unresolved state.", "documents", ["link document party", "confirm internal voucher has no external party", "inspect document party resolution"], ["document party", "issuer", "supplier", "payer", "payment descriptor"], "company", ["document-party-resolution"]],
+  ["legacy-party-mapping", "Legacy contact mapping", "Map existing company contacts to canonical parties with evidence-bound, append-only review.", "master data", ["map legacy vendor", "map legacy customer", "correct legacy party mapping"], ["legacy contact", "vendor mapping", "customer mapping", "party evidence"], "company", ["legacy-party-mapping"]],
+  ["vendor-identity-enrichment", "Vendor identity enrichment", "Complete unresolved imported vendor identity typing from verified source bytes.", "master data", ["enrich vendor identity", "resolve imported vendor"], ["vendor identity", "supplier identity", "non-EU vendor"], "company", ["vendor-identity-enrichment"]],
+  ["document-party-resolution", "Document and bank-row party resolution", "Resolve document-wide canonical parties or bind a distinct counterparty to one exact bank transaction with append-only correction.", "documents", ["link document party", "identify bank row counterparty", "correct bank row party", "review legacy document counterparty", "confirm internal voucher has no external party", "inspect party coverage"], ["document party", "bank row party", "shared document", "counterparty", "source hash", "issuer", "supplier", "payee", "authority"], "company", ["document-party-resolution"]],
   ["corporate-records", "Corporate records", "Store immutable corporate and governance evidence with typed, access-controlled links.", "governance", ["ingest corporate record", "link governance evidence", "supersede corporate record"], ["corporate record", "governance", "articles", "ownership evidence"], "workspace", ["corporate-record-lifecycle"]],
   ["ownership-graph", "Ownership and control graph", "Review source-backed, party-aware ownership and control facts without changing legal ledgers or inferring consolidation.", "governance", ["review ownership", "record registry ownership", "query control graph"], ["ownership", "shareholder", "control", "registry diff"], "legal-group", ["ownership-graph-review"]],
 ];
@@ -372,7 +467,21 @@ export function catalogueIdentity() {
   return { schemaVersion: AGENT_CATALOGUE_SCHEMA_VERSION, hash: AGENT_CATALOGUE_HASH, entryPoint: AGENT_CATALOGUE_ENTRY_POINT, capabilityCount: AGENT_CAPABILITIES.length, workflowCount: AGENT_WORKFLOWS.length, coverage: coverageIdentity(), build: getBuildIdentity(), provenance: getReleaseProvenance(), ruleBundleVersion };
 }
 
-export type LiveTool = { name: string; annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean } };
+export type LiveTool = {
+  /** The immutable legacy/original registration identity. */
+  name: string;
+  annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean };
+  /** Canonical identity from the captured MCP operation registry. */
+  canonicalName?: string;
+  aliases?: readonly string[];
+  /** False in compact profile: the operation is available through a gateway
+   * even though it is intentionally absent from tools/list. */
+  available?: boolean;
+  directlyListed?: boolean;
+  invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
+  schemaIdentityHash?: string;
+  operationIdentityHash?: string;
+};
 export type LiveOperationSources = { tools?: readonly LiveTool[]; commands?: readonly DiscoveryCommand[]; routes?: readonly DiscoveryRoute[]; unavailableSurfaces?: Array<"mcp" | "cli" | "http"> };
 
 export function operationId(reference: OperationReference): string { return reference.surface === "mcp" ? `mcp:${reference.name}` : reference.surface === "cli" ? `cli:${reference.key}` : `http:${reference.method} ${reference.pattern}`; }
@@ -383,7 +492,21 @@ function resolveOperation(reference: OperationReference, sources: LiveOperationS
     const tool = sources.tools?.find((candidate) => candidate.name === reference.name);
     if (!tool) return { ...reference, id: operationId(reference), resolved: false, reason: "Live MCP tool is not registered." };
     if (!tool.annotations || typeof tool.annotations.readOnlyHint !== "boolean") return { ...reference, id: operationId(reference), resolved: false, reason: "Live MCP tool has no safety annotations." };
-    return { ...reference, id: operationId(reference), resolved: true, safety: tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write", idempotent: tool.annotations.idempotentHint === true };
+    return {
+      ...reference,
+      id: operationId(reference),
+      resolved: true,
+      available: true,
+      directlyListed: tool.directlyListed !== false,
+      invocationRoute: tool.invocationRoute,
+      canonicalName: tool.canonicalName,
+      aliases: tool.aliases,
+      schemaIdentityHash: tool.schemaIdentityHash,
+      operationIdentityHash: tool.operationIdentityHash,
+      reason: tool.directlyListed === false ? "Available through the compact operation gateway; not directly listed." : undefined,
+      safety: tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write",
+      idempotent: tool.annotations.idempotentHint === true,
+    };
   }
   if (reference.surface === "cli") return sources.commands?.some((candidate) => candidate.key === reference.key) ? { ...reference, id: operationId(reference), resolved: true } : { ...reference, id: operationId(reference), resolved: false, reason: "Canonical CLI command is not registered." };
   const route = sources.routes?.find((candidate) => candidate.method === reference.method && candidate.pattern === reference.pattern);
@@ -431,6 +554,13 @@ export type DiscoveryOperationBinding = {
   requiresActor: boolean;
   requiresConfirmation: boolean;
   retryClass: RetryClass;
+  canonicalName?: string;
+  aliases?: readonly string[];
+  available?: boolean;
+  directlyListed?: boolean;
+  invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
+  schemaIdentityHash?: string;
+  operationIdentityHash?: string;
 };
 
 /** These are the only MCP mutations with a durable caller-key receipt. Keep
@@ -450,6 +580,7 @@ const NATURAL_IDEMPOTENT_CLI_OPERATIONS = RETRY_OPERATION_NAMES.naturalIdempoten
 
 export function retryClassForOperation(id: string, source: { safety: OperationSafety; idempotent: boolean | null; external?: boolean }): RetryClass {
   if (source.safety === "read") return "safe-read";
+  if (/^(?:mcp:(?:tasks_|task_series_|task_boards_)|cli:(?:tasks |task-series |task-boards ))/.test(id)) return "key-idempotent";
   if (source.external || (id.startsWith("mcp:") && EXTERNAL_PROVIDER_MCP_OPERATIONS.has(id.slice(4)))) return "external-provider-reconciled";
   if (id.startsWith("mcp:") && KEY_IDEMPOTENT_MCP_OPERATIONS.has(id.slice(4))) return "key-idempotent";
   if ((id.startsWith("mcp:") && NATURAL_IDEMPOTENT_MCP_OPERATIONS.has(id.slice(4))) || (id.startsWith("cli:") && NATURAL_IDEMPOTENT_CLI_OPERATIONS.has(id.slice(4)))) return "natural-idempotent";
@@ -467,18 +598,22 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 214, hash: "140e4dbbe69f461805a0f0ec71b76874bd8b0def02789eaa8f33dccc0a703a20" },
-  cli: { count: 265, hash: "8d92dd9cd3a66c487ef06e9ba5bbedeaa8f324a34ecd23e92f0c2bb6e65661f0" },
-  http: { count: 208, hash: "af44c2c61c50d8a479a02b1d04ce12ba789aafc3699ab81ea98f7ff4a7cb1160" },
+  mcp: { count: 269, hash: "7033b9228199350dbda6227ffcde262070f94e3e883eefc6937c1b221af50829" },
+  cli: { count: 319, hash: "3526cef0f3c1f5c352777da1d0609a82d8932aa80f55b635f4321d5dc843d266" },
+  http: { count: 264, hash: "26495100ba7c9f7ce0d22fcadb92afb47de2bf6e6cd9b2464192e9f7aed1bc2b" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
+  { capabilityId: "workspace-tasks", pattern: /(?:^mcp:(?:tasks_|task_series_|task_boards_)|^cli:(?:tasks |task-series |task-boards )|^http:\w+ \/api\/(?:tasks|task-series|task-boards)(?:\/|$))/ },
+  { capabilityId: "non-cash-balance-corrections", pattern: /(?:documents_(?:ingest|list)|journal_(?:dry_run|post|list))/ },
   { capabilityId: "accounting-dimensions", pattern: /dimensions?|dimension[_-]/ },
   { capabilityId: "cfo-analytics", pattern: /(?:cfo[_-]analytics|report analytics|cfo-analytics)/ },
   { capabilityId: "workspace-document-inbox", pattern: /workspace[_-]inbox/ },
   { capabilityId: "corporate-records", pattern: /(?:corporate[_-]record|corporate-record)/ },
-  { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|^cli:party )/ },
-  { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|internal-no-external-party/ },
+  { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|party[_-](?:hub|profile)|^cli:party )/ },
+  { capabilityId: "legacy-party-mapping", pattern: /legacy[_-]party[_-]mapping/ },
+  { capabilityId: "vendor-identity-enrichment", pattern: /vendor[_-]identity[_-]enrichment/ },
+  { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|party[_-]coverage|internal-no-external-party/ },
   { capabilityId: "digisense-nemhandel", pattern: /(?:efaktura|digisense|peppol|send-public)/ },
   { capabilityId: "group-intercompany", pattern: /(?:group|portfolio)/ },
   { capabilityId: "posting-rules", pattern: /(?:posting[_-]rules?|posting_rule|agent-suggestions)/ },
@@ -489,14 +624,14 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "vat", pattern: /(?:vat|moms|oss-report|eu-sales)/ },
   { capabilityId: "bank-bookkeeping", pattern: /(?:bank|reconcile|bookkeeping[_-](?:batch|workbench))/ },
   { capabilityId: "document-intake", pattern: /(?:documents?|mail[_-]intake|imap[_-]intake|bilagsmail)/ },
-  { capabilityId: "supplier-purchases", pattern: /(?:expense|payable|vendor|supplier)/ },
+  { capabilityId: "supplier-purchases", pattern: /(?:expense|payable|vendor|supplier|purchase[_ -](?:case|overview))/ },
   { capabilityId: "supplier-commitments", pattern: /(?:supplier[_-]commitment|commitment|subscription|liquidity[_-]forecast_13)/ },
   { capabilityId: "customer-invoicing", pattern: /(?:invoice|customer|recurring)/ },
   { capabilityId: "exceptions-corrections", pattern: /(?:exceptions?|journal|accounting-draft|opening-balance)/ },
   { capabilityId: "imports", pattern: /(?:import|archive\/:year)/ },
   { capabilityId: "planning-reporting", pattern: /(?:report|dashboard|budget|cashflow|tax_return|tax\b|annual|accrual|compliance|obligations|multi-year)/ },
-  { capabilityId: "operations-assurance", pattern: /(?:system|audit|health|ready|retention|integrity|backup|meta_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
-  { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
+  { capabilityId: "operations-assurance", pattern: /(?:system|audit|changes-since|health|ready|retention|integrity|backup|meta_about|system_server_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
+  { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|approval[_-]policy|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
   { capabilityId: "company-knowledge", pattern: /(?:company[_-]knowledge|\/knowledge)/ },
   { capabilityId: "ownership-graph", pattern: /(?:ownership(?:[_ -](?:graph|snapshot|query|propose|review|apply|history|projection))?|ownership-graph)/ },
 ];
@@ -542,7 +677,21 @@ function bindingForOperation(id: string, input: AgentDiscoveryCoverageInput): Di
     if (!tool?.annotations || typeof tool.annotations.readOnlyHint !== "boolean") return null;
     const safety = tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write";
     const idempotent = tool.annotations.idempotentHint === true;
-    return { id, capabilityIds, safety, idempotent, requiresActor: safety !== "read", requiresConfirmation: safety !== "read", retryClass: retryClassForOperation(id, { safety, idempotent }) };
+    return {
+      id,
+      capabilityIds,
+      safety,
+      idempotent,
+      requiresActor: safety !== "read",
+      requiresConfirmation: safety !== "read",
+      retryClass: retryClassForOperation(id, { safety, idempotent }),
+      canonicalName: tool.canonicalName,
+      aliases: tool.aliases,
+      directlyListed: tool.directlyListed !== false,
+      invocationRoute: tool.invocationRoute,
+      schemaIdentityHash: tool.schemaIdentityHash,
+      operationIdentityHash: tool.operationIdentityHash,
+    };
   }
   if (id.startsWith("cli:")) {
     const command = input.commands.find((item) => item.key === id.slice(4));

@@ -32,10 +32,17 @@ import { applyPagination, paginationFields, paginationDescriptionSuffix } from "
 import { planBankReconciliationCorrection, applyBankReconciliationCorrection } from "../../core/bank-journal-reconciliation";
 import { currentMcpAuthenticatedPrincipal } from "../security";
 import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../../core/direct-bank-purchase-payable-correction";
+import { applyLegacyBankBinding, applyLegacyPayablePaymentBackfill, planLegacyBankBinding, planLegacyPayablePaymentBackfill } from "../../core/legacy-bank-payable-backfill";
 
 const statusSchema = z.enum(["all", "matched", "unmatched"]).optional();
 
 export function registerBankTools(server: McpServer): void {
+  const legacyBinding={bankAccountId:z.number().int().positive(),ledgerAccountNo:z.string().min(1),cutoff:z.string().regex(/^\d{4}-\d{2}-\d{2}$/)};
+  const legacyPayable={purchaseJournalEntryId:z.number().int().positive(),paymentJournalEntryId:z.number().int().positive(),documentId:z.number().int().positive(),bankTransactionId:z.number().int().positive()};
+  server.registerTool("bank_legacy_binding_plan",{title:"Plan initial legacy bank binding",description:"Read-only, NULL-only plan that binds one exact existing bank account to the confirmed DKK bank ledger account at a verified cutoff. It never remaps a bound account.",inputSchema:{company:z.string().min(1),...legacyBinding},outputSchema:envelopeShape,annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDb<any>(server,({db,args})=>wrapCoreResult(planLegacyBankBinding(db,args))));
+  server.registerTool("bank_legacy_binding_apply",{title:"Apply initial legacy bank binding",description:"Applies exactly the reviewed NULL-to-account binding with actor, principal, confirmation and idempotency. It never changes bank rows or journals.",inputSchema:{company:z.string().min(1),...legacyBinding,planHash:z.string().regex(/^[a-f0-9]{64}$/),idempotencyKey:z.string().min(1).max(128),confirm:confirmField},outputSchema:envelopeShape,annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDbConfirmed<any>(server,"bank_legacy_binding_apply",({db,actor,args})=>{const p=currentMcpAuthenticatedPrincipal();return wrapCoreResult(applyLegacyBankBinding(db,{...args,actor:actor.createdBy,principal:p?{kind:p.kind,subjectId:p.subjectId}:undefined,confirm:true}));},{keyIdempotent:"bank_legacy_binding_apply",requireIdempotencyKey:true}));
+  server.registerTool("payable_legacy_backfill_plan",{title:"Plan explicit legacy payable/payment backfill",description:"Read-only exact-ID plan. It never searches by amount and never posts, rewrites or repoints source records.",inputSchema:{company:z.string().min(1),...legacyPayable},outputSchema:envelopeShape,annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDb<any>(server,({db,args})=>wrapCoreResult(planLegacyPayablePaymentBackfill(db,args))));
+  server.registerTool("payable_legacy_backfill_apply",{title:"Apply explicit legacy payable/payment backfill",description:"Appends only canonical payable/payment and durable audit evidence for exactly the reviewed IDs. Requires authenticated principal, actor, confirmation and idempotency key.",inputSchema:{company:z.string().min(1),...legacyPayable,planHash:z.string().regex(/^[a-f0-9]{64}$/),idempotencyKey:z.string().min(1).max(128),confirm:confirmField},outputSchema:envelopeShape,annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDbConfirmed<any>(server,"payable_legacy_backfill_apply",({db,actor,args})=>{const p=currentMcpAuthenticatedPrincipal();return wrapCoreResult(applyLegacyPayablePaymentBackfill(db,{...args,actor:actor.createdBy,principal:p?{kind:p.kind,subjectId:p.subjectId}:undefined,confirm:true}));},{keyIdempotent:"payable_legacy_backfill_apply",requireIdempotencyKey:true}));
   const directPayableInput={documentId:z.number().int().positive(),bankTransactionId:z.number().int().positive(),billDate:z.string(),dueDate:z.string(),expenseAccountNo:z.string().min(1),vatTreatment:z.enum(["standard","exempt","non_deductible"]).optional(),vendorId:z.number().int().positive().optional(),note:z.string().optional()};
   server.registerTool("direct_bank_purchase_payable_correction_plan",{title:"Plan direct-bank purchase payable correction",description:"Read-only hash-bound plan to convert one reconciled direct-bank purchase into the existing payable lifecycle.",inputSchema:{company:z.string().min(1),...directPayableInput},outputSchema:envelopeShape,annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDb<any>(server,({db,args})=>wrapCoreResult(planDirectBankPurchasePayableCorrection(db,args))));
   server.registerTool("direct_bank_purchase_payable_correction_apply",{title:"Apply direct-bank purchase payable correction",description:"Atomically reverses the original direct-bank posting on its original date, registers a payable and settles it on the authoritative bank date.",inputSchema:{company:z.string().min(1),...directPayableInput,planHash:z.string().regex(/^[a-f0-9]{64}$/),reason:z.string().min(1).max(1000),idempotencyKey:z.string().min(1).max(128),confirm:confirmField},outputSchema:envelopeShape,annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false}},withCompanyDbConfirmed<any>(server,"direct_bank_purchase_payable_correction_apply",({db,actor,args})=>{const p=currentMcpAuthenticatedPrincipal();return wrapCoreResult(applyDirectBankPurchasePayableCorrection(db,{...args,actor:actor.createdBy,principal:p?{kind:p.kind,subjectId:p.subjectId}:undefined,confirm:true}));},{keyIdempotent:"direct_bank_purchase_payable_correction_apply",requireIdempotencyKey:true,idempotencyPayload:(args)=>({documentId:args.documentId,bankTransactionId:args.bankTransactionId,billDate:args.billDate,dueDate:args.dueDate,expenseAccountNo:args.expenseAccountNo,vatTreatment:args.vatTreatment??null,vendorId:args.vendorId??null,note:args.note??null,planHash:args.planHash,reason:args.reason})}));
@@ -356,6 +363,9 @@ export function registerBankTools(server: McpServer): void {
               "the generic CSV parser is used (auto-detected headers). An unknown " +
               "profile aborts the import before parsing.",
           ),
+        statementOrder: z.enum(["ascending", "descending"]).optional().describe(
+          "Explicit source-row chronology for an unprofiled export. Required for a provable same-date closing balance when the source has multiple rows on one date; profile metadata takes precedence.",
+        ),
         // ===== END BANK CLUSTER (#187,#186) =====
         confirm: confirmField,
       },
@@ -365,7 +375,7 @@ export function registerBankTools(server: McpServer): void {
       // agent a retry after a network hiccup is safe.
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-    withCompanyDbConfirmed<{ company: string; csvPath?: string; csvContent?: string; account?: string; profile?: string; confirm?: boolean }>(
+    withCompanyDbConfirmed<{ company: string; csvPath?: string; csvContent?: string; account?: string; profile?: string; statementOrder?: "ascending" | "descending"; confirm?: boolean }>(
       server,
       "bank_import",
       ({ db, args }) => {
@@ -392,6 +402,7 @@ export function registerBankTools(server: McpServer): void {
           const result = importBankCsv(db, args.company, path, {
             account: args.account && args.account.trim() !== "" ? args.account : undefined,
             profile: args.profile && args.profile.trim() !== "" ? args.profile : undefined,
+            statementOrder: args.statementOrder,
           });
           const sync = result.ok
             ? syncUnmatchedBankTransactionExceptions(db)

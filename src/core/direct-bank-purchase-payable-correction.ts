@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Correct one direct-bank purchase into the existing payable lifecycle (#594). */
 import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
@@ -7,8 +8,8 @@ import { reverseJournalEntryInCurrentTransaction } from "./ledger";
 import { payPayableFromBankInCurrentTransaction, registerPayableInCurrentTransaction } from "./payables";
 import { applyBankReconciliationCorrection, planBankReconciliationCorrection } from "./bank-journal-reconciliation";
 
-const canonical=(v:unknown):string=>v===null||typeof v!=="object"?JSON.stringify(v):Array.isArray(v)?`[${v.map(canonical).join(",")}]`:`{${Object.keys(v as object).sort().map(k=>`${JSON.stringify(k)}:${canonical((v as Record<string,unknown>)[k])}`).join(",")}}`;
-const hash=(v:unknown)=>createHash("sha256").update(canonical(v)).digest("hex");
+const canonical = canonicalJson;
+const hash=(value:unknown)=>createHash("sha256").update(canonical(value)).digest("hex");
 const text=(v:unknown,max=1000)=>typeof v==="string"&&v.trim().length>0&&v.trim().length<=max?v.trim():null;
 export type DirectBankPurchasePayableCorrectionPlanInput={documentId:number;bankTransactionId:number;billDate:string;dueDate:string;expenseAccountNo:string;vatTreatment?:"standard"|"exempt"|"non_deductible";vendorId?:number;note?:string};
 export type ApplyDirectBankPurchasePayableCorrectionInput=DirectBankPurchasePayableCorrectionPlanInput&{planHash:string;reason:string;actor?:string;principal?:StablePrincipal;confirm:boolean};

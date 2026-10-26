@@ -7,6 +7,8 @@ import { insertAuditLog } from "./actor";
 import { promoteTempFile, writeFileAtomic, writeTempFileFor } from "./atomic-file";
 import { createTar, dirToTarEntries } from "./tar";
 import { getReleaseProvenance, type ReleaseProvenance } from "./release-provenance";
+import { registeredDocumentEvidenceLocation } from "./document-storage";
+import { removePathWithRetry } from "./fs-cleanup";
 
 const BACKUP_RULE_ID = "DK-BOOKKEEPING-BACKUP-001";
 const BACKUP_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -353,6 +355,7 @@ export function createSystemBackup(db: Database, companyRoot: string, input: Cre
     documents: (snapshotDb.query("SELECT COUNT(*) AS n FROM documents").get() as { n: number }).n,
     bankTransactions: (snapshotDb.query("SELECT COUNT(*) AS n FROM bank_transactions").get() as { n: number }).n,
   };
+  const documents = snapshotDb.query("SELECT document_no, stored_path, document_type, sha256_hash FROM documents").all() as Array<{ document_no: string; stored_path: string; document_type: string; sha256_hash: string }>;
   snapshotDb.close();
 
   const manifestKey = ensureBackupManifestKey(companyRoot);
@@ -411,6 +414,15 @@ export function createSystemBackup(db: Database, companyRoot: string, input: Cre
     ledgerStats,
   };
 
+  // Validate the copied bytes against the frozen register, rather than merely
+  // signing whatever happened to remain on disk after the database snapshot.
+  try {
+    assertBackupDocumentEvidence(documents, manifest);
+  } catch (error) {
+    removePathWithRetry(backupDir);
+    return { ok: false, appliedRules: [BACKUP_RULE_ID], errors: [`backup document evidence verification failed: ${error instanceof Error ? error.message : String(error)}`] };
+  }
+
   // Atomic, crash-safe ordering (issue #151): write every signature to disk
   // FIRST, then promote the manifest LAST. A crash before the manifest rename
   // leaves an unreferenced manifest-less directory (ignored by listing); a
@@ -435,6 +447,24 @@ export function createSystemBackup(db: Database, companyRoot: string, input: Cre
   });
 
   return { ok: true, backupId, backupDir, manifestPath, dbSnapshotPath, appliedRules: [BACKUP_RULE_ID], errors: [] };
+}
+
+/** A signed backup must contain exactly the frozen document register's evidence. */
+export function assertBackupDocumentEvidence(documents: Array<{ document_no: string | null; stored_path: string | null; document_type: string; sha256_hash: string }>, manifest: BackupManifest): void {
+  const files = [...manifest.copiedFiles.documentsOriginals, ...manifest.copiedFiles.invoicesIssued];
+  const copied = new Map(files.map(file => [file.path, file]));
+  if (copied.size !== files.length) throw new Error("duplicate document evidence manifest paths");
+  for (const document of documents) {
+    const location = registeredDocumentEvidenceLocation(document.stored_path!, document.document_type);
+    const store = location.relativeStore[0] === "documents" ? "documents-originals" : "invoices-issued";
+    const path = `${store}/${location.filename}`;
+    const file = copied.get(path);
+    if (!file || file.sha256 !== document.sha256_hash.trim().toLowerCase() || file.sizeBytes <= 0) {
+      throw new Error(`document ${document.document_no}: copied evidence is missing or does not match the document register`);
+    }
+    copied.delete(path);
+  }
+  if (copied.size > 0) throw new Error("copied document evidence is not registered in the database snapshot");
 }
 
 export function getBackupComplianceStatus(db: Database, companyRoot: string, asOf?: string): BackupComplianceStatus {

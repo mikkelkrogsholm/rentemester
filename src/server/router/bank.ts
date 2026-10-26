@@ -9,6 +9,9 @@ import { companyPaths } from "../../core/paths";
 import { openLedgerReadOnly, inspectOpenLedger } from "../../core/ledger-inspection";
 import { planBankReconciliationCorrection } from "../../core/bank-journal-reconciliation";
 import { ApiError } from "../errors";
+import { readJsonBody } from "./_shared";
+import { withCompanyMutation } from "../mutations";
+import { applyLegacyBankBinding, planLegacyBankBinding } from "../../core/legacy-bank-payable-backfill";
 
 export function handleCompanyBank(
   config: ServerConfig,
@@ -43,3 +46,6 @@ export function handleBankReconciliationCorrectionPlan(config: ServerConfig, slu
     return okResponse({plan:result});
   } finally { db.close(); }
 }
+
+export async function handleLegacyBankBindingPlan(config:ServerConfig,slug:string,request:Request):Promise<Response>{const body=await readJsonBody(request);const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);try{const result=planLegacyBankBinding(db,body as any);if(!result.ok)throw ApiError.conflict(result.errors.join("; "));return okResponse({plan:result.plan});}finally{db.close();}}
+export async function handleLegacyBankBindingApply(config:ServerConfig,slug:string,request:Request):Promise<Response>{const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{const p=ctx.principal;return applyLegacyBankBinding(ctx.db,{...(body as any),actor:ctx.actor.createdBy,principal:p.serviceAccountId?{kind:"service-account" as const,subjectId:p.serviceAccountId}:{kind:"user" as const,subjectId:p.userId??p.id},confirm:true});},{requireConfirm:true,keyIdempotent:"bank_legacy_binding_apply",requireIdempotencyKey:true});return okResponse({binding:result,...("idempotency" in result?{idempotency:result.idempotency}:{})});}

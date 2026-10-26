@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+import { join } from "node:path";
+import { writeFileSync } from "node:fs";
 import { createParty, linkPartyRole } from "../../../src/core/party-registry";
 import { openWorkspaceControlDb } from "../../../src/core/workspace-control";
 import { seedAccounts, postJournalEntry } from "../../../src/core/ledger";
@@ -131,6 +134,15 @@ describe("#588 document-party HTTP contract", () => {
       rmSync(workspace, { recursive: true, force: true });
     }
   });
+
+  test("HTTP exposes the same source-bound plan/apply contract",async()=>{const {workspace}=fixture();try{
+    const root=companyRootForSlug(workspace,slug), path=join(root,"documents","originals","legacy-source.txt"), bytes=Buffer.from("synthetic source naming Foreign Merchant"); writeFileSync(path,bytes); const sha=createHash("sha256").update(bytes).digest("hex");
+    const db=openDb(companyPaths(root).db); const doc=db.query("INSERT INTO documents(document_no,sha256_hash,stored_path,mime_type,payload_json,upload_datetime,source,status,document_type,retain_until) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING id").get("LEGACY-640",sha,path,"text/plain","{}","2026-09-03T00:00:00.000Z","synthetic","posted","purchase_sale","2032-01-01") as {id:number}; db.close();
+    const registry=openWorkspaceControlDb(workspace); const party=createParty(registry,{partyId:"party-reviewed-http",kind:"organization",name:"Foreign Merchant",source:"synthetic",observedAt:"2026-09-03T00:00:00.000Z",reviewAssertion:"reviewed",actor:"user:test"}); linkPartyRole(registry,{partyId:party.partyId,companySlug:slug,role:"vendor",actor:"user:test"}); registry.close();
+    const input={documentId:doc.id,partyId:party.partyId,role:"vendor",sourceReview:{observedName:"Foreign Merchant",jurisdiction:"US",identifierKind:"non_eu",sourceReference:"synthetic source",sourceLocation:"line 1",rationale:"reviewed immutable source"}};
+    const planned=await post(workspace,`/api/companies/${slug}/documents/party-links/plan`,input); expect(planned).toMatchObject({status:200,body:{ok:true,plan:{documentSha256:sha,evidence:{kind:"reviewed_source_observation"}}}});
+    const applied=await post(workspace,`/api/companies/${slug}/documents/party-links/apply`,{...input,planHash:planned.body.plan.planHash,idempotencyKey:"http-source-640",confirm:true}); expect(applied).toMatchObject({status:200,body:{ok:true,idempotent:false}});
+  }finally{rmSync(workspace,{recursive:true,force:true});}});
 
   test("reaches the catalogued internal no-external-party route without changing evidence",async()=>{const {workspace}=fixture();try{const db=openDb(companyPaths(companyRootForSlug(workspace,slug)).db);const internal=db.query("INSERT INTO documents(document_no,sha256_hash,payload_json,upload_datetime,source,status,document_type,retain_until) VALUES(?,?,?,?,?,'stored','internal_voucher',?) RETURNING id").get("INTERNAL-588","b".repeat(64),"{}","2026-08-30T00:00:00.000Z","synthetic","2031-12-31") as {id:number};db.close();const before=snapshot(workspace,internal.id);const decided=await post(workspace,`/api/companies/${slug}/documents/internal-no-external-party`,{documentId:internal.id,reason:"Synthetic internal transfer",confirm:true,idempotencyKey:"internal-http"});expect(decided).toMatchObject({status:200,body:{ok:true,idempotent:false}});const after=snapshot(workspace,internal.id);expect(after.document).toEqual(before.document);expect(after.journal).toEqual(before.journal);}finally{rmSync(workspace,{recursive:true,force:true});}});
 });

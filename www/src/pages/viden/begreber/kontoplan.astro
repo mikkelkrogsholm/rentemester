@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="En kontoplan bestemmer hvor salg, moms, bank, udgifter og egenkapital lander. Den gør regnskabet læsbart og gør automatisering mindre risikabel."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En kontoplan er listen over konti, virksomheden bogfører på. For små virksomheder handler den ikke om flest mulige konti, men om nok struktur til at moms, bank, omsætning og omkostninger kan afstemmes.
     </p>
 
@@ -37,21 +38,21 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Typiske kontoområder</h2>
-    <ul>
-      <li>bank og likvider</li>
-      <li>debitorer og kreditorer</li>
-      <li>salg og anden indtægt</li>
-      <li>køb og driftsomkostninger</li>
-      <li>moms og afgifter</li>
-      <li>egenkapital, mellemregning og resultat</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typiske kontoområder</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bank og likvider</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>debitorer og kreditorer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>salg og anden indtægt</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>køb og driftsomkostninger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>moms og afgifter</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>egenkapital, mellemregning og resultat</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester bruger en kontoplan som del af den lokale ledger og regelmotor. Det gør det muligt at validere posteringer og holde moms- og auditflow tæt på kildekoden i stedet for fri tekst.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En god kontoplan bør være stabil nok til rapportering, men enkel nok til at små virksomheder faktisk bruger den rigtigt. Når konti bliver for detaljerede, ender brugeren ofte med tilfældige valg; når de er for grove, bliver moms, bank og omkostninger svære at forklare senere.
     </p>
   </article>

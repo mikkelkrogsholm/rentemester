@@ -60,6 +60,42 @@ korrekt. Implementeringen ligger i `src/cli-actor.ts` og `src/cli.ts`.
 
 ## 1. Actor-politik for muterende kommandoer
 
+`documents party-link-apply`, `party-link-supersede`,
+`internal-no-external-party` og `internal-no-external-party-supersede` kræver
+`RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` og `RENTEMESTER_WORKSPACE` i processen.
+Den aktive token og virksomhedens aktuelle `company.master-data`-membership
+verificeres før mutation. Gemt principal er `service-account:<serviceAccountId>`
+fra autentificeringen; `--actor` forbliver den separate policy-godkendte
+revisionsidentitet. Udelad normalt `--principal`: flaget er kun en valgfri
+lighedsassertion og afvises, hvis det ikke matcher den verificerede principal.
+MCP's tilsvarende dokument-part-operationer udleder også principal fra den
+autentificerede servicekonto, aldrig fra klientens actor eller inputfelter.
+Eksisterende historik omskrives ikke.
+
+Efter en godkendt legacy mapping bruges de samme identitets-/referencefelter
+fra dokument-part-planen ved apply, sammen med dens eksakte `--plan-hash`,
+`--idempotency-key`, `--confirm yes` og `--actor`. CLI's `--company` er her
+virksomhedsstien; `--workspace` og `--company-slug` skal pege på samme
+autentificerede workspace og virksomhed. Se `docs/deployment-modes.md` for
+lokal service-bootstrap og sikker tokenoverførsel til containerprocessen.
+
+`legacy-party-mapping plan` er read-only. `legacy-party-mapping apply` kræver
+`--confirm yes`, actor, en autentificeret workspace-servicekonto, idempotency
+key, eksakt plan-hash og et eksisterende kildebilag; den er idempotent. Planen
+binder bilagets hash og den gennemgåede reference. En reviewed legacy reference
+alene opretter aldrig en mapping.
+Korrektioner sker kun med `legacy-party-mapping supersede`; kontakt, bilag,
+journal og moms ændres ikke.
+
+En importeret leverandør med `identity_status=human_resolution_required` og
+manglende `country_code`/`identifier_kind` klargøres først med
+`vendor-identity-enrichment plan` og `apply`. Planen verificerer det registrerede
+originalbilags faktiske bytes og binder leverandørens nuværende navn, adresse og
+eventuelle eksisterende identifikator. `apply` kræver samme service-principal,
+actor-, confirmation-, plan-hash- og idempotency-gates som legacy mapping og
+udfylder kun de manglende typefelter. Den opfinder ikke et ID og ændrer ikke
+leverandørens ID, navn, adresse, noter, bilaget, journalen eller momsdata.
+
 Enhver **muterende** kommando (alt der skriver til ledger'en — fakturaer,
 finansposteringer, backups, kunde-/leverandøroprettelse osv.) kræver en kendt
 actor. Det fulde sæt ligger i `MUTATING_COMMANDS` i `src/cli-actor.ts`.
@@ -80,7 +116,7 @@ Actoren bestemmes i denne rækkefølge:
    afvises med en klar fejl.
 2. `RENTEMESTER_ACTOR` miljøvariabel — behandles som et eksplicit, kanonisk
    actor-id (samme allowlist-krav som `--actor`).
-3. En **udledt** actor fra miljøet, hvis intet eksplicit er sat (ingen
+3. En **udledt** actor fra miljøet, hvis intet eksplicit er sat (samme
    allowlist-kontrol):
    - `OPENCLAW_AGENT` → `agent:<værdi>`
    - `RENTEMESTER_AGENT` → `agent:<værdi>`
@@ -96,6 +132,18 @@ hvilken kanal mutationen kom igennem; standard `rentemester-cli`).
 
 For `system restore-backup` håndhæves politikken mod `--target-company`-stien,
 ikke `--company`, fordi det er dér data skrives.
+
+Workspace-kommandoerne `company-knowledge propose/review/supersede` og
+`ownership propose/review/apply` kræver aktive, registrerede og initialiserede
+virksomheder. Actoren skal stå i hver berørt virksomheds allowlist, også når
+actoren er udledt fra miljøet. Knowledge review/supersede bruger virksomhedens
+slug fra den gemte assertion; ownership review/apply bruger alle endpoints fra
+det gemte snapshot. Afvisning sker før workspace-kontrolbasen åbnes til skrivning.
+
+Bankafstemning for fakturabetaling, refundering og kravbetaling kræver en
+entydig `bankTransactionReference`. Ved flere rækker med samme reference skal
+`bankTransactionId` angives. Angives begge, skal referencen tilhøre det valgte ID.
+En afvisning bogfører eller afstemmer intet.
 
 ## 2. Exit-koder
 
@@ -119,6 +167,19 @@ Resultatet skrives altid til stdout (JSON med `--format json`/`--json`).
 Parse-/brugsfejl (`exit 2`) skrives til stderr.
 
 ## 3. Confirm-flag
+
+### TastSelv momsangivelse
+
+`vat momsangivelse` / `vat filing` og MCP `vat_filing` returnerer samme
+read-only form: `salgsmoms`, `kobsmoms`, `momsAfVarekobUdland`,
+`momsAfYdelseskobUdland`, A-varer, A-ydelser, de tre B-felter, C og de seks
+afgiftsrefusionsfelter samt `momsIAlt`. Alle indtastningsfelter er signed
+integer DKK. Hvert råbeløb trunceres mod nul før `momsIAlt` beregnes; rå
+ledger- og momsrapportværdier bevarer øre. Tvetydigt B-salg eller en
+refusion uden append-only evidence afviser filing-rapporten. Ingen kommando
+indsender til Skattestyrelsen.
+
+De primære, versionsbundne kilder er [Skattestyrelsens vejledning om angivelse i hele kroner](https://info.skat.dk/data.aspx?oid=2062862) og [TastSelv-dataformatets feltdefinitioner](https://info.skat.dk/data.aspx?oid=1878548). Den lovbundne kildehash står i `DK-VAT-FILING-001` i `rules/dk/vat.yaml`; nye feltfortolkninger må ikke indføres uden fornyet kildekontrol.
 
 CLI'ens `confirm`-konvention er **anderledes** end MCP's og cockpit's, men
 ækvivalent i intention. Slå op i [`docs/confirm-contract.md`](confirm-contract.md)
@@ -442,3 +503,89 @@ kvalificerede Unix/Linux-miljøer og korrekt UID/filmode/descriptor-admission.
 En syntetisk macOS-test er ikke bevis for Linux broker/cgroup eller et ægte
 provider-/hosted-miljø. Et ikke-kvalificeret miljø afvises eksplicit; der findes
 ingen skjult TS-fallback. Ingen live migration eller cutover er accepteret her.
+
+## Historical TypeScript task source reference (not native task parity)
+
+The following describes the explicitly selected legacy source implementation. Native task port and schema adoption remain separate work; do not apply these local-access or retry rules to native clients.
+
+## 5. Opgaver, rutineserier og boards
+
+`tasks`, `task-series` og `task-boards` bruger det eksplicit valgte
+`--workspace <dir>` (eller `RENTEMESTER_WORKSPACE`). De kræver aldrig
+`--company` eller en standardvirksomhed og åbner ikke en ledger til skrivning.
+Den fælles opgaveservice filtrerer adgang før søgning og optælling og kontrollerer
+actor-allowlisten for alle berørte selskaber. For arbejde uden selskaber bruges
+`<workspace>/config/policy.yaml` med samme `actor_allowlist`-format. Hvis den
+workspace-policy mangler, kræves en actor tilladt i mindst ét registreret
+selskab; uden nogen sådan policy afvises mutation. Tildeling ændrer ingen
+rettigheder. `ACTOR_REQUIRED` og `ACTOR_DENIED` er CLI-brugsfejl (exit `2`).
+
+CLI med `RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` bruger tokenens verificerede
+servicekonto og aktuelle membership. Den valgte workspace skal være den
+samme som den autentificerede workspace. En ugyldig token kan aldrig falde
+tilbage til lokal adgang. Uden servicecredentials er CLI et betroet lokalt
+filsystemværktøj. `--actor` er separat revisionsidentitet og giver ingen adgang.
+
+Mutationer kræver `--input <file.json>` med et typet JSON-objekt og
+`idempotencyKey`. Eksisterende opgaver kræver også `taskId` og
+`expectedVersion`; ændringer af en serie eller et board kræver den aktuelle
+version, eller `0` ved oprettelse. Et identisk genforsøg returnerer den gemte
+effekt; ændret payload med samme nøgle afvises. Brug en ny nøgle til en ny
+synkronisering eller reminderkørsel. Et uklart resultat verificeres med `tasks
+get` og `tasks history`, før samme request genforsøges.
+
+Læsning accepterer enten `--input` eller de dokumenterede selector-/filterflags,
+aldrig begge. `--companies` er en kommasepareret slugliste. `--include-archived` er et bart booleanflag. Værdiflags
+`--show-done`, `--undated` og `--unassigned` accepterer kun `true` eller `false`. Alle datoer er `YYYY-MM-DD`.
+
+| CLI | MCP | JSON-input ud over workspace |
+| --- | --- | --- |
+| `tasks list` | `tasks_list` | `companySlugs?`, `includeArchived?`, `status?`, `type?`, `search?`, `assigneeId?`, `from?`, `to?`, `undated?`, `unassigned?`, `showDone?` |
+| `tasks get`, `tasks history` | `tasks_get`, `tasks_history` | `taskId` |
+| `tasks create` | `tasks_create` | `title`, eksplicit `scope`, `idempotencyKey` og valgfrie opgavefelter |
+| `tasks update` | `tasks_update` | `taskId`, `patch`, `expectedVersion`, `idempotencyKey` |
+| `tasks move` | `tasks_move` | `taskId`, fælles `status`, `columnId?`, `workspaceColumnId?`, `expectedVersion`, `idempotencyKey` |
+| `tasks complete` | `tasks_complete` | `taskId`, `outcome`, `note`, `references?`, `expectedVersion`, `idempotencyKey` |
+| `tasks reopen` | `tasks_reopen` | `taskId`, `reason`, `expectedVersion`, `idempotencyKey` |
+| `tasks sync` | `tasks_sync` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
+| `tasks reminder` | `tasks_reminder_set` | `taskId`, `reminder`, `expectedVersion`, `idempotencyKey` |
+| `tasks notifications`, `tasks runtime` | `tasks_notifications`, `tasks_runtime` | Ingen forretningsfelter |
+| `tasks run` | `tasks_run` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
+| `task-series list` | `task_series_list` | `companySlugs?`, `includeArchived?` |
+| `task-series save` | `task_series_save` | `series`, `expectedVersion`, `idempotencyKey` |
+| `task-series project` | `task_series_project` | `from`, `to`, `companySlugs?`, `includeArchived?` |
+| `task-series materialize` | `task_series_materialize` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
+| `task-boards list` | `task_boards_list` | `companySlugs?`, `includeArchived?` |
+| `task-boards preview` | `task_boards_preview` | `board`, `expectedVersion?` |
+| `task-boards save` | `task_boards_save` | `board`, `expectedVersion`, `idempotencyKey` |
+
+`scope` er `{kind:"company",companySlug:"syntetisk-drift"}` eller
+`{kind:"workspace",companySlugs:[...]}`. Fælles status er `open`, `in_progress`,
+`waiting` eller `done`. `outcome` er `completed`, `not_relevant`, `cancelled`
+eller `exception`; et særskilt outcome forhindrer, at en begrundet undtagelse
+fremstår som en faktisk indberetning. Flytning til `done` omgår aldrig
+beviskrav eller kildekontrol.
+
+Den præcise typede feltliste for `patch`, `series`, `board` og `reminder`
+fremgår af CLI'ens per-kommando `--help` og MCP's operation description/schema.
+Et minimalt manuelt opgaveinput er:
+
+```json
+{"title":"Kontrollér månedens bilag","scope":{"kind":"company","companySlug":"syntetisk-drift"},"idempotencyKey":"manual-task-1"}
+```
+
+Alle opgavekommandoer, også reads, returnerer flad
+`{ok:true,errors:[],...serviceFields}` på CLI. MCP wrapper de samme servicefelter
+under `data`. Dette er en dokumenteret undtagelse til de ældre read-former i
+§4. `TaskError` bevarer sin stabile `code`; businessfejl er exit `1`, ugyldige
+flags/JSON/schemafelter er exit `2`.
+
+CLI's almindelige opgavewrites kræver actor. `task-boards save` kræver desuden
+altid `--confirm yes`; ændring af betydning eller sletning af en fyldt kolonne
+kræver den aktuelle `previewHash` og eksplicit omplacering. MCP kræver
+`confirm:true` ved **alle** opgavewrites. Hver opgaveændring og dens historik
+committes atomisk i workspacebasen, uden bogføring, betaling eller indberetning.
+
+`tasks run` kører ét deterministisk tick og afslutter; det starter ikke en
+baggrundsproces. Påmindelser er kun interne og brugerens aktivering er
+udtrykkelig. `tasks runtime` viser den observerede runnerstatus.

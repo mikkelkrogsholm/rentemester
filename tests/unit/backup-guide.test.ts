@@ -26,6 +26,10 @@ describe("backup guide page", () => {
       const html = renderBackupGuide(input);
 
       expect(html).toContain("<!doctype html>");
+      expect(html).not.toContain("fonts.googleapis.com");
+      expect(html).not.toContain("fonts.gstatic.com");
+      expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/);
+      expect(html).toContain("new FontFace");
       expect(html).toContain("BEK 205/2024");
       expect(html).toContain("§ 4, stk. 2");
       expect(html).toContain("EU- eller EØS-land");

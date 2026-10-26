@@ -28,10 +28,12 @@ import { registerInvoiceSettlementTools } from "./invoice/settlement";
 import { registerInvoiceReminderTools } from "./invoice/reminder";
 import { registerInvoiceInterestTools } from "./invoice/interest";
 import { registerInvoiceCompensationTools } from "./invoice/compensation";
+import { registerInvoiceBackfillTools } from "./invoice/backfill";
 
 export function registerInvoiceTools(server: McpServer): void {
   // Order is load-bearing — see the file-level comment.
   registerInvoiceQueryTools(server);
+  registerInvoiceBackfillTools(server);
   registerInvoiceIssuanceTools(server);
   registerInvoiceSettlementTools(server);
   registerInvoiceReminderTools(server);

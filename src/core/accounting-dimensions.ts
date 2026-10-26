@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /**
  * Company-ledger accounting dimensions.  These records deliberately sit next
  * to, rather than inside, immutable journal lines: classifications can be

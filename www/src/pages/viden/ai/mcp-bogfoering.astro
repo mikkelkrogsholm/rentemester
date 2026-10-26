@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="AI" title="MCP gør AI-bogføring mere struktureret" lead="Model Context Protocol kan give AI-klienter adgang til konkrete tools i stedet for fri tekst. For bogføring er den forskel afgørende." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En AI-model bør ikke bare skrive "bogfør denne udgift" i fri tekst. Den bør kalde et værktøj med strukturerede felter, få valideret input og blive stoppet, hvis noget mangler. Det er den type grænse MCP kan hjælpe med.
     </p>
 
@@ -33,20 +34,20 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvorfor strukturerede tools?</h2>
-    <ul>
-      <li>krævede felter kan valideres</li>
-      <li>mutationer kan kræve bekræftelse</li>
-      <li>fejl kan returneres som strukturerede svar</li>
-      <li>audit trail kan gemme hvilken actor der gjorde hvad</li>
-      <li>AI kan hjælpe uden at omgå bogføringsreglerne</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor strukturerede tools?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>krævede felter kan valideres</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>mutationer kan kræve bekræftelse</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>fejl kan returneres som strukturerede svar</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>audit trail kan gemme hvilken actor der gjorde hvad</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>AI kan hjælpe uden at omgå bogføringsreglerne</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har en MCP-server og tests for værktøjsoverfladen. Flere muterende tools kræver eksplicit bekræftelse, og flowet skal stadig gennem samme validering som CLI'en. Det er ikke en garanti mod fejl, men en vigtig arkitekturgrænse.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den rigtige rollefordeling er, at AI-klienten hjælper brugeren med at forberede handlinger, mens Rentemesters tools afgør om input er komplet, balanceret og tilladt. Derfor skal MCP ses som et kontrolinterface, ikke som en genvej udenom bogføringsreglerne.
     </p>
   </article>

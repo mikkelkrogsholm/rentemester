@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Persondata i bogføring kan ikke altid slettes, bare fordi nogen beder om det. Rentemester skelner mellem indsigt, eksport, redigering af ikke-pligtige data og materiale der skal bevares."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring rummer ofte personoplysninger: navne, adresser, email, kontaktpersoner og bilagsmetadata. GDPR giver rettigheder, men bogføringsloven og opbevaringspligt kan samtidig kræve, at regnskabsmateriale bevares.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Indsigt før sletning</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Indsigt før sletning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan samle en subject export for en kunde eller leverandør, så det er synligt hvilke data systemet har om den pågældende. Det er read-only og ændrer ikke regnskabet.
     </p>
 
-    <h2>Opbevaringspligt vinder over ønsket sletning</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Opbevaringspligt vinder over ønsket sletning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis data stadig er regnskabsmateriale under opbevaringspligt, skal sletning afvises eller begrænses. Koden er bygget til at beskytte ledger og audit-kæde, så historiske posteringer ikke bliver redigeret væk.
     </p>
 
-    <h2>Hvad kan redigeres?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad kan redigeres?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Ikke-pligtige kontaktfelter og data uden fortsat opbevaringsgrundlag kan anonymiseres eller fjernes. Det kræver en konkret vurdering, og Rentemester giver mekanik til at udføre den uden at bryde bogføringens sporbarhed.
     </p>
   </article>

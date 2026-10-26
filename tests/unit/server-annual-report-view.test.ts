@@ -77,6 +77,20 @@ describe("#338 — GET /api/companies/:slug/annual-report", () => {
     }
   });
 
+  test("#656 resolves a selected canonical year and returns a read-only readiness list", async () => {
+    const ws = makeWorkspace("annual-canonical-year", ["Acme ApS"]);
+    try {
+      const body = await fetchJson<{ annualReport: { fiscalYearStart: string; fiscalYearEnd: string; readiness: { status: string; items: Array<{ label: string; ok: boolean }> } } }>(
+        config(ws),
+        "/api/companies/acme-aps/annual-report?year=2026",
+      );
+      expect(body.annualReport.fiscalYearStart).toBe("2026-01-01");
+      expect(body.annualReport.fiscalYearEnd).toBe("2026-12-31");
+      expect(body.annualReport.readiness.status).toBe("Ikke klar");
+      expect(body.annualReport.readiness.items.map(item => item.label)).toContain("Regnskabsåret er låst");
+    } finally { rmSync(ws, { recursive: true, force: true }); }
+  });
+
   test("rute-kataloget annoncerer /annual-report", async () => {
     const ws = makeWorkspace("annual-catalog");
     try {

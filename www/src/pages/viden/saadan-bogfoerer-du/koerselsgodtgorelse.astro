@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const skatKoerselUrl = "https://skat.dk/erhverv/ansatte-og-loen/koerselsgodtgoer
     lead="Kørselsgodtgørelse kræver både korrekt sats og dokumentation for erhvervsmæssig kørsel. Start med kørselsregnskabet, ikke med bankudbetalingen."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Skattestyrelsen offentliggør satser for skattefri kørselsgodtgørelse. For 2026 er satserne blandt andet 3,94 kr./km for egen bil eller motorcykel op til 20.000 km pr. år og 2,28 kr./km over grænsen. Kontrollér altid de aktuelle satser før bogføring.
     </p>
 
@@ -39,21 +40,21 @@ const skatKoerselUrl = "https://skat.dk/erhverv/ansatte-og-loen/koerselsgodtgoer
       ]}
     />
 
-    <h2>Hvad skal dokumenteres?</h2>
-    <ul>
-      <li>dato for kørslen</li>
-      <li>start, stop og eventuelle delmål</li>
-      <li>erhvervsmæssigt formål</li>
-      <li>antal kilometer</li>
-      <li>anvendt sats og beregning</li>
-      <li>hvem der har kørt</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad skal dokumenteres?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato for kørslen</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>start, stop og eventuelle delmål</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>erhvervsmæssigt formål</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>antal kilometer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>anvendt sats og beregning</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvem der har kørt</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har generelle journal-, bilags- og auditflows, men siden lover ikke et færdigt kørselsmodul. Den korrekte behandling i dag er at bogføre dokumenteret kørselsgodtgørelse manuelt eller via struktureret bilag, så beregning og grundlag kan efterprøves.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det vigtigste er, at udbetalingen ikke står alene. Et kørselsregnskab skal forklare hvorfor turen var erhvervsmæssig, hvor langt der blev kørt, hvilken sats der blev brugt, og hvordan beløbet er beregnet. Uden det grundlag er bankposten ikke nok.
     </p>
   </article>

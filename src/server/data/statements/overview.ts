@@ -7,7 +7,7 @@
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../../core/paths";
 import { diffDaysSafe as daysBetween } from "../../../core/dates";
-import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { getCompanySettings } from "../../../core/company";
 import { listExceptions } from "../../../core/exceptions";
 import { buildInvoiceList } from "../../../core/invoice-list";
@@ -25,8 +25,7 @@ import {
 } from "../shared";
 import {
   bankBalanceAsOf,
-  actualBankBalanceAsOf,
-  bankStatementStatusAsOf,
+  resolveActualBankBalanceAsOf,
 } from "../bank";
 import { selectVatPeriod, vatPeriodEffectiveStatus } from "../vat";
 import { groupExceptions, type ExceptionGroup } from "../exceptions";
@@ -34,6 +33,7 @@ import {
   archiveIncomeStatement,
   archiveYearRow,
 } from "../archive";
+import { buildCompanyAttention } from "../attention";
 
 export type OverviewMonth = {
   /** 1–12. */
@@ -117,10 +117,10 @@ export function buildCompanyOverview(
   const selected = years.find((y) => y.label === selectedLabel);
   const isArchivedOnly = selected ? selected.source === "archive" : false;
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
+    const attention = buildCompanyAttention(workspaceRoot, entry.slug);
 
     const companyBlock = {
       name: company.name,
@@ -233,9 +233,11 @@ export function buildCompanyOverview(
           actualBalance: null,
           difference: null,
           bankStatementStatus: "none" as const,
+          bankStatementDiagnostics: [] as string[],
         },
         receivables: { openCount: 0, openTotal: 0 },
         vat: null,
+        attention: { count: attention.count, status: attention.status },
         exceptions: {
           count: 0,
           rows: [] as ExceptionPreview[],
@@ -342,13 +344,14 @@ export function buildCompanyOverview(
     // needs the actual figure — the booked one alone is misleading when the
     // import is not yet reconciled.
     const bookedBalance = bankBalanceAsOf(db, yearEnd);
-    const actualBalance = actualBankBalanceAsOf(db, yearEnd);
+    const statementBalance = resolveActualBankBalanceAsOf(db, yearEnd);
+    const actualBalance = statementBalance.balance;
     const bankDifference =
       actualBalance === null ? null : roundKroner(bookedBalance - actualBalance);
     // EJER-12: WHY the actual balance is null — distinguishes "no statement
     // imported" from "imported without a balance column" so the dashboard
     // never wrongly says "intet kontoudtog importeret".
-    const bankStatementStatus = bankStatementStatusAsOf(db, yearEnd);
+    const bankStatementStatus = statementBalance.status;
 
     // Receivables (debitorer): money owed TO the company — the still-open
     // balance of issued sales invoices as of the year end. `buildInvoiceList`
@@ -419,9 +422,11 @@ export function buildCompanyOverview(
         actualBalance,
         difference: bankDifference,
         bankStatementStatus,
+        bankStatementDiagnostics: statementBalance.diagnostics,
       },
       receivables,
       vat: vatBlock,
+      attention: { count: attention.count, status: attention.status },
       exceptions: {
         count: exceptions.count,
         rows: exceptionRows,

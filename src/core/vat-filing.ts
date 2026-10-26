@@ -1,6 +1,9 @@
 import type { Database } from "bun:sqlite";
 import { buildVatReport, type VatPeriodReport } from "./vat";
 import { emptyVatRubric, type VatRubric } from "./vat-rubric";
+import { currentVatFilingEvidence, vatFilingFormForPeriod } from "./vat-filing-evidence";
+import { buildViesRecapitulativeStatement } from "./vat-vies-list";
+import { roundDkk } from "./money";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { getCompanySettings } from "./company";
 import {
@@ -173,57 +176,41 @@ export function buildVatFiling(db: Database, periodStart: string, periodEnd: str
     );
   }
 
-  // The shared projection keeps CLI/MCP/report/cockpit/export figures alike.
-  const rubrikker = vatReport.rubrikker;
-  // Moms af ydelseskøb i udlandet: reverse charge on EU service purchases.
-  // Use the VAT *actually booked* on account 1200 per purchase, not
-  // percentOfDkk(summed base, 25). Each purchase's VAT is øre-rounded when
-  // booked, so the booked total can differ from 25%-of-aggregate by up to 1
-  // øre per purchase. Using the booked figure keeps this rubrik equal to what
-  // hit the ledger AND lets salgsmoms below come out as the exact own-sale VAT.
-  const momsAfYdelseskobUdland = rubrikker.momsAfYdelseskobUdland;
+  const rubrikker = vatFilingFormForPeriod(db, vatReport);
+  const evidence = currentVatFilingEvidence(db, periodStart, periodEnd);
+  const classifiedB = roundDkk((evidence.rubrikBVarerEuSalesList ?? 0)
+    + (evidence.rubrikBVarerIkkeEuSalesList ?? 0) + (evidence.rubrikBYdelser ?? 0));
+  // A historical aggregate cannot legally select one of TastSelv's three B
+  // fields. Do not silently move it: a dedicated evidence classification is
+  // required before this return can be filed.
+  if (classifiedB !== vatReport.foreignReverseChargeSalesBase) {
+    return failure(
+      periodStart,
+      periodEnd,
+      periodStatus,
+      ["foreign VAT-free sales require documented B-field classification before filing; Rentemester will not infer goods/services or EU-sales-list status from an aggregate"],
+      vatReport,
+      vatPeriodType,
+      period.reference,
+    );
+  }
 
-  // Salgsmoms: output VAT on own sales only. buildVatReport.outputVat is
-  // account-based (1200) and therefore includes the reverse-charge output VAT
-  // booked by postEuServiceReverseChargePurchase — but on TastSelv that VAT
-  // belongs exclusively in "Moms af ydelseskøb i udlandet" (momsloven §46 jf.
-  // §37). Subtract the exact same ydelseskøb figure so the two rubrikker never
-  // double-count and momstilsvar stays equal to the raw report's netVatPayable.
-  // buildVatReport.outputVat already nets bad-debt relief out of output VAT.
-  const salgsmoms = rubrikker.salgsmoms;
-
-  // Moms af varekøb i udlandet: booked §11 EU-goods acquisition VAT. The
-  // shared projection removes this exact amount from salgsmoms, so it appears
-  // once and only once in the filing while momstilsvar remains the booked net.
-  const momsAfVarekobUdland = rubrikker.momsAfVarekobUdland;
-
-  // Købsmoms: total deductible input VAT (domestic + reverse-charge +
-  // representation), already aggregated by buildVatReport.
-  const kobsmoms = rubrikker.kobsmoms;
-
-  // Momstilsvar = salgsmoms + udenlandsk moms − købsmoms.
-  // Positive = payable to SKAT; negative = refund (negativt momstilsvar).
-  const momstilsvar = rubrikker.momstilsvar;
-
-  // Rubrik A: value of goods/services purchased abroad without Danish VAT.
-  const rubrikA = rubrikker.rubrikA;
-  // Rubrik B (JUR-2/KODE-2): value of goods/services SOLD ABROAD without Danish
-  // VAT — cross-border EU B2B reverse-charge sales ONLY. This is the figure
-  // cross-checked against the EU sales list (VIES), so only the FOREIGN reverse-
-  // charge base belongs here. Domestic §46 omvendt betalingspligt is explicitly
-  // excluded (it would otherwise inflate rubrik B and break the VIES reconciliation).
-  const rubrikB = rubrikker.rubrikB;
-  // Rubrik C: value of other VAT-exempt sales. Two sources, both derived from
-  // real ledger data:
-  //   1. §13-exempt domestic sales (DK_SALE_EXEMPT), and
-  //   2. domestic §46 omvendt betalingspligt sales (DOMESTIC_REVERSE_CHARGE_EXEMPT,
-  //      e.g. mobiltelefoner, CPU'er, metalskrot). SKAT Den juridiske vejledning
-  //      A.B.3.3.1.5 places these in rubrik C ("værdi af andet salg uden moms"),
-  //      NOT rubrik B.
-  // OSS consumer sales (OSS_EU_CONSUMER) are deliberately NOT part of rubrik C:
-  // they belong on the separate OSS return, so buildVatReport keeps them in their
-  // own base and they never reach this momsangivelse.
-  const rubrikC = rubrikker.rubrikC;
+  // The EU sales list is an independent filing surface. Only the two B fields
+  // that are explicitly marked for it may reconcile to its total; the
+  // non-list goods field must never be used to make the check pass.
+  const vies = buildViesRecapitulativeStatement(db, periodStart, periodEnd);
+  const euSalesListB = roundDkk((evidence.rubrikBVarerEuSalesList ?? 0) + (evidence.rubrikBYdelser ?? 0));
+  if (!vies.ok || euSalesListB !== vies.totalValue) {
+    return failure(
+      periodStart,
+      periodEnd,
+      periodStatus,
+      ["EU-sales-list total must reconcile to Rubrik B goods/EU-list plus Rubrik B services; non-list goods cannot satisfy this control"],
+      vatReport,
+      vatPeriodType,
+      period.reference,
+    );
+  }
 
   return {
     ok: true,
@@ -234,16 +221,7 @@ export function buildVatFiling(db: Database, periodStart: string, periodEnd: str
     periodStatus,
     periodReference: period.reference,
     filingDeadline: canonicalWindow.filingDeadline,
-    rubrikker: {
-      salgsmoms,
-      momsAfVarekobUdland,
-      momsAfYdelseskobUdland,
-      kobsmoms,
-      momstilsvar,
-      rubrikA,
-      rubrikB,
-      rubrikC,
-    },
+    rubrikker,
     vatReport,
     warnings: [...vatReport.warnings],
     errors: [],

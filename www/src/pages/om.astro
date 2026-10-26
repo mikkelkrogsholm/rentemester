@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import { SITE } from "../consts";
@@ -19,46 +20,46 @@ import { SITE } from "../consts";
     lead="Rentemester er et open source projekt — ikke et firma, ikke en service. Her er hvad det betyder i praksis."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <h2>Hvem står bag</h2>
-    <p>
-      Projektet er startet og vedligeholdes af {SITE.author}. Du kan se <a href="https://github.com/mikkelkrogsholm" rel="noopener" target="_blank">Mikkels GitHub-profil</a>, og alt arbejde foregår offentligt i <a href={SITE.github} rel="noopener" target="_blank">GitHub-repoet</a>.
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvem står bag</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Projektet er startet og vedligeholdes af {SITE.author}. Du kan se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="https://github.com/mikkelkrogsholm" rel="noopener" target="_blank">Mikkels GitHub-profil</a>, og alt arbejde foregår offentligt i <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">GitHub-repoet</a>.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bidrag fra andre er velkomne — revisorer, bogholdere, udviklere, brugere. Se commit-historikken og issues hvis du vil se hvem der ellers er involveret.
     </p>
 
-    <h2>Hvordan projektet drives</h2>
-    <ul>
-      <li><strong>Offentligt</strong>. Alt sker på GitHub. Roadmap, issues, pull requests, diskussioner.</li>
-      <li><strong>Bygget på bevis</strong>. Hver ændring starter med en failing test der beviser at noget mangler eller er forkert. Først derefter kommer patchen.</li>
-      <li><strong>Minimal patch</strong>. Vi bygger ikke ting "i tilfælde af". Hver pull request skal have et klart formål og være så lille som muligt.</li>
-      <li><strong>Deterministisk</strong>. Output skal være forudsigeligt. Smoke-build og test skal være grønne før noget merges.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvordan projektet drives</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Offentligt</strong>. Alt sker på GitHub. Roadmap, issues, pull requests, diskussioner.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Bygget på bevis</strong>. Hver ændring starter med en failing test der beviser at noget mangler eller er forkert. Først derefter kommer patchen.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Minimal patch</strong>. Vi bygger ikke ting "i tilfælde af". Hver pull request skal have et klart formål og være så lille som muligt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Deterministisk</strong>. Output skal være forudsigeligt. Smoke-build og test skal være grønne før noget merges.</li>
     </ul>
 
-    <h2>Hvordan det <em>ikke</em> drives</h2>
-    <ul>
-      <li>Der er ingen kommerciel støtteaftale.</li>
-      <li>Der er ingen SLA.</li>
-      <li>Der er ingen telemetri tilbage til en server.</li>
-      <li>Der er ingen plan om at lave en hosted version. Hvis nogen vil starte en kommerciel hosting baseret på koden, må de det fint under MIT-licensen — men det vil være en separat virksomhed, ikke det her projekt.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvordan det <em {...sx.pages_docs_foersteFaktura_em1}>ikke</em> drives</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Der er ingen kommerciel støtteaftale.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Der er ingen SLA.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Der er ingen telemetri tilbage til en server.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Der er ingen plan om at lave en hosted version. Hvis nogen vil starte en kommerciel hosting baseret på koden, må de det fint under MIT-licensen — men det vil være en separat virksomhed, ikke det her projekt.</li>
     </ul>
 
-    <h2>Licens</h2>
-    <p>
-      MIT. Hele teksten ligger i repoet: <a href={`${SITE.github}/blob/main/LICENSE`} rel="noopener" target="_blank">LICENSE ↗</a>.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Licens</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      MIT. Hele teksten ligger i repoet: <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/LICENSE`} rel="noopener" target="_blank">LICENSE ↗</a>.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Du kan frit bruge, ændre, distribuere og kommercialisere koden — også internt i din virksomhed. Kravet er at copyright-noticen følger med.
     </p>
 
-    <h2>Sponsorat</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sponsorat</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Projektet tager imod GitHub Sponsors hvis du har lyst til at støtte. Det giver ingen særrettigheder — al kode er stadig MIT, og prioriteringen sættes ud fra hvad der gør projektet bedre, ikke hvem der har betalt.
     </p>
 
-    <h2>Brandets navn</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Brandets navn</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       "Rentemester" er en historisk dansk embedsmandstitel for den kongelige finansforvalter — den der havde øjnene på pengene. Det er en knipoje til at projektet henter sin troværdighed fra dansk administrativ tradition, men leverer den med moderne værktøjer.
     </p>
   </article>

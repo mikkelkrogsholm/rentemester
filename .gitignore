@@ -49,3 +49,10 @@ app/.cache/
 
 # Rust build artifacts (source and Cargo.lock remain tracked)
 /target/
+
+# StyleX website compiler products and browser evidence
+www/.stylex/
+www/.astro/
+www/public/_stylex/
+www/test-results/
+www/playwright-report/

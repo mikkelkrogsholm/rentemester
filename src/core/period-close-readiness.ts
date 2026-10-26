@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Pure period-close readiness plus explicit, append-only review evidence. */
 import { createHash } from "node:crypto";
 import type { Database, SQLQueryBindings } from "bun:sqlite";
@@ -7,15 +8,35 @@ import { buildTrialBalance } from "./financial-statements";
 import { buildVatReport } from "./vat";
 import { resolveAccountRole } from "./account-roles";
 import { fromOre, toOre } from "./money";
-import { importedReceivableBalanceOre } from "./imported-receivables";
+import { importedReceivableBalanceOre, importedReceivableControlDate } from "./imported-receivables";
+import { getPurchaseCase, purchaseCaseNeed } from "./purchase-cases";
 
 export type CloseControlStatus = "passed" | "warning" | "blocked" | "unavailable";
 export type CloseReadinessItem = { code: string; status: CloseControlStatus; waivable: boolean; count: number; amount: number; evidence: readonly Record<string, unknown>[]; sourceHash: string };
-export type CloseReadinessPacket = { version: 3; periodStart: string; periodEnd: string; cutoff: string; controlsRun: readonly string[]; items: readonly CloseReadinessItem[]; blockers: number; warnings: number; hash: string };
+export type CloseReadinessPacket = { version: 4; periodStart: string; periodEnd: string; cutoff: string; controlsRun: readonly string[]; items: readonly CloseReadinessItem[]; blockers: number; warnings: number; hash: string };
 export type CloseReviewPrincipal = { kind: "user" | "service-account" | "local-trusted"; subjectId: string };
 export type PeriodCloseReview = { id: number; packet: CloseReadinessPacket; reviewerActor: string; reviewerPrincipal: CloseReviewPrincipal | null; createdAt: string };
+/** A deliberately non-durable, human-facing summary of a packet. */
+export type HumanReadiness = {
+  status: "Ikke klar" | "Kræver stillingtagen" | "Klar" | "Lukket/endelig";
+  openControls: number;
+  reason: string;
+};
 
-export function canonicalCloseReadiness(value: unknown): string { if (Array.isArray(value)) return `[${value.map(canonicalCloseReadiness).join(",")}]`; if (value && typeof value === "object") return `{${Object.keys(value as Record<string, unknown>).sort().map(k => `${JSON.stringify(k)}:${canonicalCloseReadiness((value as Record<string, unknown>)[k])}`).join(",")}}`; return JSON.stringify(value); }
+/**
+ * Maps immutable control evidence to the common Cockpit vocabulary. This is
+ * presentation only: it neither changes the packet hash nor authorizes close.
+ */
+export function projectHumanReadiness(packet: CloseReadinessPacket, effectiveStatus: "open" | "closed" | "reported" = "open"): HumanReadiness {
+  const nonWaivable = packet.items.some(item => !item.waivable && (item.status === "blocked" || item.status === "unavailable"));
+  if (nonWaivable) return { status: "Ikke klar", openControls: packet.items.filter(item => item.status !== "passed").length, reason: "En ufravigelig kontrol er blokeret eller utilgængelig." };
+  const review = packet.items.some(item => item.status === "warning" || (item.waivable && item.status === "blocked"));
+  if (review) return { status: "Kræver stillingtagen", openControls: packet.items.filter(item => item.status !== "passed").length, reason: "En advarsel eller en fravigelig blokering kræver et dokumenteret valg." };
+  if (effectiveStatus === "closed" || effectiveStatus === "reported") return { status: "Lukket/endelig", openControls: 0, reason: "Alle kontroller er bestået, og perioden er effektivt lukket eller indberettet." };
+  return { status: "Klar", openControls: 0, reason: "Alle kontroller er bestået, og perioden er åben." };
+}
+
+export const canonicalCloseReadiness = canonicalJson;
 export function closeReadinessDigest(value: unknown): string { return createHash("sha256").update(canonicalCloseReadiness(value)).digest("hex"); }
 function exists(db: Database, name: string): boolean { return db.query("SELECT 1 FROM sqlite_master WHERE type IN ('table','view') AND name=?").get(name) !== null; }
 function has(db: Database, name: string, column: string): boolean { return exists(db,name) && (db.query(`PRAGMA table_info(${name})`).all() as Array<{name:string}>).some(row => row.name === column); }
@@ -100,6 +121,17 @@ function dkkControlAccounts(db: Database, cutoff: string): CloseReadinessItem {
 
   const foreignPayable = db.query("SELECT id,currency FROM payables WHERE bill_date<=? AND UPPER(currency)!='DKK' LIMIT 1").get(cutoff) as { id:number; currency:string } | null;
   if (foreignPayable) return unavailable("DKK_CONTROL_ACCOUNTS", `payable ${foreignPayable.id} uses ${foreignPayable.currency}; DKK payable control cannot value it independently`);
+  const importedBoundary = importedReceivableControlDate(db, debtors.accountNo);
+  if (importedBoundary) {
+    const overlap = db.query(`SELECT d.id FROM documents d
+      JOIN issued_invoice_postings p ON p.invoice_document_id=d.id
+      JOIN journal_entries j ON j.id=p.journal_entry_id
+      WHERE d.document_type='issued_invoice' AND d.invoice_date<=? AND j.status='posted'
+        AND j.reversal_of_entry_id IS NULL
+        AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)
+        AND p.receivable_account_id=(SELECT id FROM accounts WHERE account_no=?) LIMIT 1`).get(importedBoundary, debtors.accountNo) as {id:number} | null;
+    if (overlap) throw new Error(`native receivable ${overlap.id} overlaps imported cut-over boundary ${importedBoundary}`);
+  }
   const receivableRows = rows(db, `SELECT d.id AS document_id, p.journal_entry_id, p.booked_gross_dkk,
       COALESCE(SUM(CASE WHEN ip.payment_date<=? AND ipj.status='posted' AND ipj.reversal_of_entry_id IS NULL
         AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=ipj.id) THEN ip.amount ELSE 0 END),0) AS paid_amount
@@ -109,7 +141,8 @@ function dkkControlAccounts(db: Database, cutoff: string): CloseReadinessItem {
     WHERE d.document_type='issued_invoice' AND d.invoice_date<=? AND j.transaction_date<=? AND j.status='posted' AND j.reversal_of_entry_id IS NULL
       AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)
       AND p.receivable_account_id=(SELECT id FROM accounts WHERE account_no=?)
-    GROUP BY d.id,p.journal_entry_id,p.booked_gross_dkk ORDER BY d.id`, cutoff, cutoff, cutoff, debtors.accountNo);
+      AND (? IS NULL OR d.invoice_date>?)
+    GROUP BY d.id,p.journal_entry_id,p.booked_gross_dkk ORDER BY d.id`, cutoff, cutoff, cutoff, debtors.accountNo, importedBoundary, importedBoundary);
   const payableRows = rows(db, `SELECT p.id AS payable_id,p.journal_entry_id,p.gross_amount,
       COALESCE(SUM(CASE WHEN pp.payment_date<=? AND ppj.status='posted' AND ppj.reversal_of_entry_id IS NULL
         AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=ppj.id) THEN pp.amount ELSE 0 END),0) AS paid_amount
@@ -124,7 +157,7 @@ function dkkControlAccounts(db: Database, cutoff: string): CloseReadinessItem {
   const payableOpenOre = payableRows.reduce((sum,row)=>sum + toOre(Number(row.gross_amount)) - toOre(Number(row.paid_amount)),0n);
   const sources: DkkControlSource[] = [
     { role:"bank", accountNo:bank.accountNo, ledgerOre:ledger.get("bank")!, sourceOre:bankOre, evidence:bankSource.ok ? bankSource.evidence : [{role:"bank",sourceCount:0,statementBalanceDkk:0}] },
-    { role:"debtors", accountNo:debtors.accountNo, ledgerOre:ledger.get("debtors")!, sourceOre:receivableOre + importedReceivables.total, evidence:[...receivableRows.map(row=>({role:"debtors",source:"native",documentId:row.document_id,journalEntryId:row.journal_entry_id,grossDkk:row.booked_gross_dkk,paidDkk:row.paid_amount})), ...importedReceivables.evidence.map(row=>({role:"debtors",...row}))] },
+    { role:"debtors", accountNo:debtors.accountNo, ledgerOre:ledger.get("debtors")!, sourceOre:receivableOre + importedReceivables.total, evidence:[...receivableRows.map(row=>({role:"debtors",source:"native",documentId:row.document_id,journalEntryId:row.journal_entry_id,grossDkk:row.booked_gross_dkk,paidDkk:row.paid_amount,importedCutoverBoundary:importedBoundary})), ...importedReceivables.evidence.map(row=>({role:"debtors",importedCutoverBoundary:importedBoundary,...row}))] },
     { role:"creditors", accountNo:creditors.accountNo, ledgerOre:ledger.get("creditors")!, sourceOre:-payableOpenOre, evidence:payableRows.map(row=>({role:"creditors",payableId:row.payable_id,journalEntryId:row.journal_entry_id,grossDkk:row.gross_amount,paidDkk:row.paid_amount})) },
   ];
   const evidence = sources.map(source => ({ role:source.role, accountNo:source.accountNo, ledgerBalanceDkk:fromOre(source.ledgerOre), sourceBalanceDkk:fromOre(source.sourceOre), differenceDkk:fromOre(source.ledgerOre-source.sourceOre), sourceCount:source.evidence.length, sourceIds:source.evidence }));
@@ -179,6 +212,24 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
     if (!has(db,"documents","status") || !has(db,"documents","invoice_date")) return unavailable("DOCUMENT_OUTSTANDING","document status/date schema unavailable");
     const evidence=rows(db,"SELECT id,status,invoice_date FROM documents WHERE status IN ('pending','failed','needs_review') AND (invoice_date BETWEEN ? AND ? OR invoice_date IS NULL) ORDER BY id",input.periodStart,cutoff); return control("DOCUMENT_OUTSTANDING",evidence.length?"blocked":"passed",true,evidence);
   }));
+  items.push(protect("PURCHASE_CASE_DOCUMENTATION",()=>{
+    if (!exists(db,"current_purchase_cases") || !has(db,"purchase_case_events","documentation_outcome") || !has(db,"bank_transactions","transaction_date") || !has(db,"documents","invoice_date") || !has(db,"payables","bill_date")) return unavailable("PURCHASE_CASE_DOCUMENTATION","purchase-case documentation schema unavailable");
+    const evidence: Array<Record<string, unknown>>=rows(db,`SELECT c.case_id,c.version,c.source_kind,c.source_id,c.source_fingerprint,c.documentation_outcome,c.actor,c.program,
+      CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END AS source_date
+      FROM current_purchase_cases c
+      LEFT JOIN bank_transactions bt ON c.source_kind='bank_transaction' AND bt.id=c.source_id
+      LEFT JOIN documents d ON c.source_kind='document' AND d.id=c.source_id
+      LEFT JOIN payables p ON c.source_kind='payable' AND p.id=c.source_id
+      WHERE (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END BETWEEN ? AND ?)
+        OR (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END IS NULL)
+      ORDER BY c.case_id`,input.periodStart,cutoff).map(row=>{const purchaseCase=getPurchaseCase(db,String(row.case_id));const sourceStatus=purchaseCase?.sourceStatus?.status??"missing";const need=purchaseCase?purchaseCaseNeed(db,purchaseCase):null;return {...row,sourceStatus,currentSourceFingerprint:purchaseCase?.sourceStatus?.currentSourceFingerprint??null,resolutionKey:`purchase-case:${row.case_id}:v${row.version}:${row.source_fingerprint}`,vatEligibility:"separate_vat_preflight_required",need:sourceStatus==="missing"?"The source is unavailable; restore or document it before closing the period.":sourceStatus==="stale"?"The source changed; reassess it against the current evidence before closing the period.":need?.question};});
+    const unresolved=evidence.filter(row=>row.documentation_outcome==="unresolved");
+    const alternative=evidence.filter(row=>row.documentation_outcome==="alternative_evidence_assessed");
+    // Alternative evidence is an auditable documentation outcome only. It is
+    // intentionally not a VAT approval; VAT_PREFLIGHT remains authoritative.
+    const nonCurrent=evidence.filter(row=>row.sourceStatus!=="current");
+    return control("PURCHASE_CASE_DOCUMENTATION",nonCurrent.length||unresolved.length?"blocked":alternative.length?"warning":"passed",false,evidence);
+  }));
   items.push(protect("PAYABLE_OUTSTANDING",()=>{
     if (!has(db,"payables","due_date") || !has(db,"payables","gross_amount") || !has(db,"payable_payments","payable_id") || !has(db,"payable_payments","amount")) return unavailable("PAYABLE_OUTSTANDING","payable/payment schema unavailable");
     const evidence=rows(db,`SELECT p.id,p.due_date,p.gross_amount,COALESCE(SUM(pp.amount),0) AS paid_amount FROM payables p LEFT JOIN payable_payments pp ON pp.payable_id=p.id AND pp.payment_date<=? WHERE p.due_date<=? GROUP BY p.id HAVING COALESCE(SUM(pp.amount),0)<p.gross_amount ORDER BY p.id`,cutoff,cutoff); return control("PAYABLE_OUTSTANDING",evidence.length?"warning":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.gross_amount??0)-Number(r.paid_amount??0)),0));
@@ -197,6 +248,15 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
     return control("RECEIVABLE_OUTSTANDING",evidence.length?"warning":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.amount_inc_vat??0)-Number(r.paid_amount??0)),0));
   }));
   items.push(protect("DKK_CONTROL_ACCOUNTS",()=>dkkControlAccounts(db,cutoff)));
+  items.push(protect("UNRESOLVED_EXTERNAL_PARTIES",()=>{
+    if(!exists(db,"party_coverage_bank_resolution_events")||!has(db,"party_coverage_bank_resolution_events","document_id"))return control("UNRESOLVED_EXTERNAL_PARTIES","passed",true,[]);
+    const resolutionSource=exists(db,"current_party_coverage_bank_resolution_events")?"current_party_coverage_bank_resolution_events":"party_coverage_bank_resolution_events";
+    const evidence=rows(db,`SELECT r.id,r.document_id AS documentId,r.bank_transaction_id AS bankTransactionId,r.document_sha256 AS documentSha256,r.transaction_hash AS transactionHash,r.journal_entry_hash AS journalEntryHash,r.next_action AS nextAction
+      FROM ${resolutionSource} r JOIN bank_transactions bt ON bt.id=r.bank_transaction_id
+      WHERE r.resolution_type='unresolved_external_party' AND bt.transaction_date BETWEEN ? AND ?
+      AND NOT EXISTS(SELECT 1 FROM current_document_party_links l WHERE l.document_id=r.document_id AND l.party_role NOT IN ('establishment','location','payment_descriptor')) ORDER BY r.id`,input.periodStart,cutoff);
+    return control("UNRESOLVED_EXTERNAL_PARTIES",evidence.length?"warning":"passed",true,evidence);
+  }));
   // A read-only snapshot has a temporary SQLite filename, so it cannot infer
   // the original company directory for document-evidence verification. The
   // caller supplies that stable root; the exact same root is used at review
@@ -207,7 +267,7 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
   items.push(protect("VAT_PREFLIGHT",()=>{const r=buildVatReport(db,input.periodStart,cutoff);return control("VAT_PREFLIGHT",r.ok?"passed":"blocked",false,[...r.errors.map(error=>({error})),{filingReceipt:"not-modelled; this is a calculation/preflight, not evidence of submission"}]);}));
   items.push(protect("SQLITE_INTEGRITY",()=>{const result=db.query("PRAGMA integrity_check").all() as Array<{integrity_check?:string}>;const ok=result.length===1&&result[0]?.integrity_check==="ok";return control("SQLITE_INTEGRITY",ok?"passed":"blocked",false,ok?[]:result.map(row=>({result:row.integrity_check??null})));}));
   const sorted=items.sort((a,b)=>a.code.localeCompare(b.code));
-  const body={version:3 as const,periodStart:input.periodStart,periodEnd:input.periodEnd,cutoff,controlsRun:sorted.map(item=>item.code),items:sorted,blockers:sorted.filter(item=>item.status==="blocked"||item.status==="unavailable").length,warnings:sorted.filter(item=>item.status==="warning").length};
+  const body={version:4 as const,periodStart:input.periodStart,periodEnd:input.periodEnd,cutoff,controlsRun:sorted.map(item=>item.code),items:sorted,blockers:sorted.filter(item=>item.status==="blocked"||item.status==="unavailable").length,warnings:sorted.filter(item=>item.status==="warning").length};
   return {...body,hash:closeReadinessDigest(body)};
 }
 export const createPeriodCloseReadinessPacket=computePeriodCloseReadiness;

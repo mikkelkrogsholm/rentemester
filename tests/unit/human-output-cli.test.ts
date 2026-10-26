@@ -175,7 +175,7 @@ describe("vat momsangivelse human output (#235, #236)", () => {
     expect(human.stdout).toContain("Rubrikker til TastSelv Erhverv:");
     expect(human.stdout).toContain("Salgsmoms:");
     expect(human.stdout).toContain("Købsmoms:");
-    expect(human.stdout).toContain("Momstilsvar:");
+    expect(human.stdout).toContain("Moms i alt:");
     expect(human.stdout).toContain("250,00 kr.");
     // No raw JSON field names / structure leak through. ("momstilsvar" is a
     // real Danish word and is allowed in prose; the camelCase JSON keys and
@@ -189,7 +189,7 @@ describe("vat momsangivelse human output (#235, #236)", () => {
     // The json path stays byte-stable and now carries filingDeadline.
     const parsed = JSON.parse(jsonRun.stdout);
     expect(parsed.ok).toBe(true);
-    expect(parsed.rubrikker.momstilsvar).toBe(-250);
+    expect(parsed.rubrikker.momsIAlt).toBe(-250);
     expect(parsed.filingDeadline).toBe("2026-06-25");
   });
 });

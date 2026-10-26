@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -56,8 +57,8 @@ const jsonLd = [
 >
   <PageHero eyebrow={page.eyebrow} title={page.h1} lead={page.lead} />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring i en enkeltmandsvirksomhed bliver ofte svær, fordi virksomheden og ejeren ligger tæt på hinanden i hverdagen. Systemet skal hjælpe med bilag, bank og moms, men det må ikke skjule hvad der er virksomhedens aktivitet, og hvad der er privat.
     </p>
 
@@ -77,43 +78,43 @@ const jsonLd = [
       ]}
     />
 
-    <h2>De typiske bogføringsopgaver</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>De typiske bogføringsopgaver</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       For mange enkeltmandsvirksomheder er kernen et overskueligt sæt gentagelser. Risikoen ligger ikke i kompleks koncernregnskab, men i manglende bilag, fejl i moms, uafstemte banklinjer og uklare private hævninger eller andele.
     </p>
-    <ul>
-      <li>Fakturaer skal udstedes, bogføres og markeres betalt.</li>
-      <li>Køb skal have bilag, leverandør, dato, beløb og formål.</li>
-      <li>Banken skal afstemmes, så betalinger ikke bare står som løse linjer.</li>
-      <li>Moms skal håndteres efter sats, periode og eventuelle særlige regler.</li>
-      <li>Rettelser skal kunne forklares senere, ikke bare redigere historikken væk.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Fakturaer skal udstedes, bogføres og markeres betalt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Køb skal have bilag, leverandør, dato, beløb og formål.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Banken skal afstemmes, så betalinger ikke bare står som løse linjer.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Moms skal håndteres efter sats, periode og eventuelle særlige regler.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Rettelser skal kunne forklares senere, ikke bare redigere historikken væk.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester arbejder med lokal virksomhedsmappe, SQLite-ledger, bilag, bankimport, fakturaer, momsrapport, audit trail og eksport. Det passer til små virksomheder, hvor gennemsigtighed og ejerskab over data er vigtigere end en poleret SaaS-overflade.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Projektet bruger deterministiske regler og tests, så AI-assistance ikke bliver det samme som fri tekstgætteri. Agenten kan forberede og strukturere arbejde, men bogføringen skal stadig passere systemets regler.
     </p>
 
-    <h2>Begrænsninger og ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsninger og ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er ikke juridisk rådgivning, revisorerklæring eller et registreret standardbogføringssystem. Enkeltmandsvirksomheder kan blive omfattet af krav om digital bogføring, og kravene afhænger af omsætning, virksomhedsform og tidspunkt. Brug officielle kilder og faglig rådgivning til den endelige vurdering.
     </p>
 
-    <h2>Næste skridt</h2>
-    <ul>
-      <li><a href="/funktioner">Se hvilke funktioner kodebasen understøtter</a></li>
-      <li><a href="/bogfoeringsprogram">Læs om bogføringsprogrammet</a></li>
-      <li><a href="/viden/saadan-bogfoerer-du/udlaeg">Lær at bogføre udlæg</a></li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/funktioner">Se hvilke funktioner kodebasen understøtter</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/bogfoeringsprogram">Læs om bogføringsprogrammet</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/saadan-bogfoerer-du/udlaeg">Lær at bogføre udlæg</a></li>
     </ul>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

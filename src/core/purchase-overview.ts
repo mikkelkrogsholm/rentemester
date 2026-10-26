@@ -1,0 +1,147 @@
+import type { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
+import { canonicalJson } from "./canonical-json";
+import { listPurchaseCases, purchaseCaseNeed, type PurchaseCase, type PurchaseCaseNeed } from "./purchase-cases";
+import { listAccountingDrafts } from "./accounting-drafts";
+import { buildProfitAndLoss } from "./financial-statements";
+
+export type PurchaseOverviewFilter = { from: string; to: string; includeProvisional?: boolean };
+export type PurchaseSourceFact = { date: string | null; supplier: string | null; amount: number | null; currency: string | null; documentId: number | null };
+type KnownEffect = {
+  caseId: string | null;
+  caseIds: string[];
+  status: "known";
+  draftId: string;
+  draftVersion: number;
+  draftEventHash: string;
+  expense: number;
+  expectedVat: number;
+};
+const iso = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+const digest = (value: unknown) => createHash("sha256").update(canonicalJson(value)).digest("hex");
+
+export function purchaseCaseSourceFact(db: Database, purchaseCase: PurchaseCase): PurchaseSourceFact {
+  if (purchaseCase.source.kind === "bank_transaction") {
+    return (db.query("SELECT transaction_date AS date,NULL AS supplier,amount,currency,NULL AS documentId FROM bank_transactions WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
+  }
+  if (purchaseCase.source.kind === "document") {
+    return (db.query("SELECT invoice_date AS date,COALESCE(supplier_name,sender_name) AS supplier,amount_inc_vat AS amount,currency,id AS documentId FROM documents WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
+  }
+  return (db.query("SELECT bill_date AS date,supplier_name AS supplier,gross_amount AS amount,currency,document_id AS documentId FROM payables WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
+}
+
+function inScope(fact: PurchaseSourceFact, input: PurchaseOverviewFilter): boolean {
+  return fact.date === null || (fact.date >= input.from && fact.date <= input.to);
+}
+
+function group(purchaseCase: PurchaseCase, sourceFact: PurchaseSourceFact, need: PurchaseCaseNeed) {
+  return {
+    need,
+    case: { caseId: purchaseCase.caseId, version: purchaseCase.version, source: purchaseCase.source, sourceFact, sourceStatus: purchaseCase.sourceStatus, sourceFingerprint: purchaseCase.sourceFingerprint, documentationOutcome: purchaseCase.documentationOutcome, accountingProgress: purchaseCase.accountingProgress, vatEvidence: purchaseCase.vatEvidence, need },
+  };
+}
+
+/** Read-only operational projection. It intentionally does not aggregate money:
+ * a document, bank transaction and payable can describe the same economic fact.
+ * Canonical reporting remains the ledger/reporting surface. */
+export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilter) {
+  if (!iso(input.from) || !iso(input.to) || input.from > input.to) throw new Error("ordered ISO from and to dates are required");
+  const all = listPurchaseCases(db);
+  const scoped = all.map(purchaseCase => ({ purchaseCase, fact: purchaseCaseSourceFact(db, purchaseCase) })).filter(item => inScope(item.fact, input));
+  const current = scoped.map(item => {
+    const need = purchaseCaseNeed(db, item.purchaseCase);
+    return { ...item, need };
+  });
+  const profitAndLoss=buildProfitAndLoss(db,input.from,input.to);
+  const canonical = {
+    sourceCaseCount: current.length,
+    postedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "posted").length,
+    unpostedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "unposted").length,
+    financialAggregation: "canonical_ledger" as const,
+    economicEffect: { expense: profitAndLoss.totalExpense, result: profitAndLoss.result, basis: "posted_ledger" as const },
+  };
+  const activeDrafts = listAccountingDrafts(db).filter(draft => (draft.status === "created" || draft.status === "revised" || draft.status === "submitted") && draft.payload.transactionDate >= input.from && draft.payload.transactionDate <= input.to);
+  const sourceKeys = (draft: (typeof activeDrafts)[number]) => [
+    ...(draft.payload.documentId == null ? [] : [`document:${draft.payload.documentId}`]),
+    ...(draft.payload.sourceBankTransactionId == null ? [] : [`bank_transaction:${draft.payload.sourceBankTransactionId}`]),
+  ];
+  const activeDraftsPerSource = new Map<string, number>();
+  for (const draft of activeDrafts) for (const key of sourceKeys(draft)) {
+    activeDraftsPerSource.set(key, (activeDraftsPerSource.get(key) ?? 0) + 1);
+  }
+  const hasCanonicalBooking = (draft: (typeof activeDrafts)[number]) =>
+    (draft.payload.documentId != null && db.query(`SELECT 1 FROM journal_entries entry
+      WHERE entry.document_id=? AND entry.status='posted' AND entry.reversal_of_entry_id IS NULL
+        AND NOT EXISTS (SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=entry.id)
+      LIMIT 1`).get(draft.payload.documentId) != null) ||
+    (draft.payload.sourceBankTransactionId != null && db.query("SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=? LIMIT 1").get(draft.payload.sourceBankTransactionId) != null);
+  const draftCaseIds = (draft: (typeof activeDrafts)[number]) => all.filter(purchaseCase =>
+    (purchaseCase.source.kind === "document" && draft.payload.documentId === purchaseCase.source.id) ||
+    (purchaseCase.source.kind === "bank_transaction" && draft.payload.sourceBankTransactionId === purchaseCase.source.id),
+  ).map(purchaseCase => purchaseCase.caseId).sort();
+  const activeDraftEffects = activeDrafts.map((draft): KnownEffect | { caseId: string | null; caseIds: string[]; status: "unknown" | "excluded"; reason: string } => {
+    const caseIds = draftCaseIds(draft);
+    const caseId = caseIds[0] ?? null;
+    if (input.includeProvisional === false) return { caseId, caseIds, status: "excluded", reason: "provisional_projection_disabled" };
+    if (sourceKeys(draft).some(key => (activeDraftsPerSource.get(key) ?? 0) > 1)) return { caseId, caseIds, status: "unknown", reason: "multiple_active_drafts_for_source" };
+    if (hasCanonicalBooking(draft)) return { caseId, caseIds, status: "excluded", reason: "canonical_booking_exists" };
+    const currency = draft.payload.currency ?? "DKK";
+    const hasDocumentedConversion = draft.payload.amountForeign != null && draft.payload.amountDkk != null && draft.payload.fxRateToDkk != null;
+    if (currency !== "DKK" && !hasDocumentedConversion) return { caseId, caseIds, status: "excluded", reason: "foreign_currency_without_documented_conversion" };
+    const amounts = draft.payload.lines.map(line=>{const account=db.query("SELECT type FROM accounts WHERE account_no=?").get(line.accountNo) as {type:string}|null;return {type:account?.type??null,amount:Number(line.debitAmount??0)-Number(line.creditAmount??0)};});
+    if (amounts.some(line=>line.type===null)) return { caseId, caseIds, status: "unknown", reason: "unknown_account" };
+    const documentId = draft.payload.documentId ?? null;
+    const documentedVat = documentId == null ? null : (db.query("SELECT vat_amount AS vatAmount FROM documents WHERE id=?").get(documentId) as {vatAmount:number|null}|null)?.vatAmount ?? null;
+    const expectedVat = amounts.filter(line=>line.type==="vat").reduce((sum,line)=>sum+line.amount,0);
+    if (documentedVat == null && expectedVat === 0 && !draft.payload.lines.some(line => line.vatCode != null)) return { caseId, caseIds, status: "unknown", reason: "vat_classification_missing" };
+    return { caseId, caseIds, status: "known", draftId:draft.id, draftVersion:draft.version, draftEventHash:draft.eventHash, expense:amounts.filter(line=>line.type==="expense").reduce((sum,line)=>sum+line.amount,0), expectedVat };
+  });
+  const draftLinkedCases = new Set(activeDraftEffects.flatMap(effect => effect.caseIds));
+  const caseOnlyEffects = current.filter(({ purchaseCase }) => !draftLinkedCases.has(purchaseCase.caseId)).map(({ purchaseCase }) => purchaseCase.accountingProgress === "posted"
+    ? { caseId: purchaseCase.caseId, caseIds: [purchaseCase.caseId], status: "excluded" as const, reason: "canonical_booking_exists" }
+    : { caseId: purchaseCase.caseId, caseIds: [purchaseCase.caseId], status: "unknown" as const, reason: "no_active_draft" });
+  const provisionalEffects = [...activeDraftEffects, ...caseOnlyEffects];
+  const known=provisionalEffects.filter((item):item is KnownEffect=>item.status==="known");
+  const provisionalExpense = known.reduce((sum,item)=>sum+item.expense,0);
+  const expectedVat = known.reduce((sum,item)=>sum+item.expectedVat,0);
+  const provisional = {
+    included: input.includeProvisional !== false,
+    caseCount: input.includeProvisional === false ? 0 : current.length,
+    unresolvedDocumentationCount: input.includeProvisional === false ? 0 : current.filter(item => item.purchaseCase.documentationOutcome === "unresolved").length,
+    alternativeEvidenceCount: input.includeProvisional === false ? 0 : current.filter(item => item.purchaseCase.documentationOutcome === "alternative_evidence_assessed").length,
+    financialAggregation: "deduplicated_by_accounting_draft" as const,
+    economicEffect: { status: "projection_not_filing_ready" as const, expense: provisionalExpense, expectedVat, effects: provisionalEffects },
+  };
+  const byNeed = new Map<string, Array<ReturnType<typeof group>>>();
+  if (input.includeProvisional !== false) for (const item of current) if (item.need) {
+    const items = byNeed.get(item.need.key) ?? [];
+    items.push(group(item.purchaseCase, item.fact, item.need));
+    byNeed.set(item.need.key, items);
+  }
+  const groups = [...byNeed.entries()].map(([needKey, members]) => ({
+    need: members[0]!.need,
+    caseCount: members.length,
+    members: members.map(member => member.case).sort((a, b) => a.caseId.localeCompare(b.caseId)),
+    selectionHash: digest({ needKey, members: members.map(member => ({ caseId: member.case.caseId, version: member.case.version, sourceFingerprint: member.case.sourceFingerprint })).sort((a, b) => a.caseId.localeCompare(b.caseId)) }),
+  })).sort((a, b) => a.need.key.localeCompare(b.need.key));
+  return {
+    scope: { from: input.from, to: input.to },
+    basis: {
+      canonical,
+      provisional,
+      difference: {
+        basis: "canonical_plus_known_unposted_drafts" as const,
+        provisionalCaseCount: provisional.caseCount,
+        expenseDelta: provisionalExpense,
+        expectedVatDelta: expectedVat,
+        combinedEconomicEffect: {
+          expense: canonical.economicEffect.expense + provisionalExpense,
+          result: canonical.economicEffect.result - provisionalExpense,
+        },
+        canonicalPostingIsUnchanged: true,
+      },
+    },
+    groups,
+    sourceHash: digest({ scope: input, current: current.map(item => ({ caseId: item.purchaseCase.caseId, version: item.purchaseCase.version, sourceFingerprint: item.purchaseCase.sourceFingerprint, need: item.need?.key ?? null, fact: item.fact })) }),
+  };
+}

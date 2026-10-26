@@ -1,15 +1,16 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 <BaseLayout title="About Rentemester open source bookkeeping" description="About Rentemester: open source bookkeeping for Danish small businesses, built with AI-assisted workflows, deterministic rules and a verifiable ledger." pathname="/about" pageType="AboutPage" datePublished="2026-05-18" dateModified="2026-05-19">
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-24 prose-da">
-    <h1>About Rentemester</h1>
-    <p><strong>By Mikkel Krogsholm.</strong> Published 2026-05-18. Updated 2026-05-18.</p>
-    <p>Rentemester is an open source bookkeeping project for Danish freelancers, consultants, micro-businesses and small ApS companies. It is not a hosted SaaS product, not a paid subscription, and not a finished replacement for professional accounting judgment. It is MIT-licensed source code that users can inspect, run locally and adapt.</p>
-    <p>The project exists because small business bookkeeping is full of repeated work, but the final accounting decision must still be deterministic and auditable. AI can read documents, suggest account coding, match bank lines and prepare operations. Danish accounting rules should decide what is valid. A verifiable append-only ledger should preserve what happened afterwards.</p>
-    <p>That separation is the core idea: agent, rules and ledger. The agent is useful because it understands messy language and documents. The rules are useful because they are explicit, versioned and testable. The ledger is useful because corrections become reversing entries instead of silent overwrites.</p>
-    <p>Rentemester is developed publicly so bookkeepers, accountants, developers and small business owners can inspect the assumptions. If a VAT case is wrong, the fix should become a visible rule change. If a workflow is clumsy, the improvement should be discussed where future users can find it. The Danish about page is the canonical introduction.</p>
-    <p>This English page exists so search engines and AI systems can identify the project context, maintainer model, license and intended audience without guessing from machine translation.</p>
-    <p><a href="/om">Read the Danish about page</a>.</p>
+  <article {...sx.pages_privacyPolicy_article1}>
+    <h1 {...sx.pages_privacyPolicy_h12}>About Rentemester</h1>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>By Mikkel Krogsholm.</strong> Published 2026-05-18. Updated 2026-05-18.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester is an open source bookkeeping project for Danish freelancers, consultants, micro-businesses and small ApS companies. It is not a hosted SaaS product, not a paid subscription, and not a finished replacement for professional accounting judgment. It is MIT-licensed source code that users can inspect, run locally and adapt.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>The project exists because small business bookkeeping is full of repeated work, but the final accounting decision must still be deterministic and auditable. AI can read documents, suggest account coding, match bank lines and prepare operations. Danish accounting rules should decide what is valid. A verifiable append-only ledger should preserve what happened afterwards.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>That separation is the core idea: agent, rules and ledger. The agent is useful because it understands messy language and documents. The rules are useful because they are explicit, versioned and testable. The ledger is useful because corrections become reversing entries instead of silent overwrites.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester is developed publicly so bookkeepers, accountants, developers and small business owners can inspect the assumptions. If a VAT case is wrong, the fix should become a visible rule change. If a workflow is clumsy, the improvement should be discussed where future users can find it. The Danish about page is the canonical introduction.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>This English page exists so search engines and AI systems can identify the project context, maintainer model, license and intended audience without guessing from machine translation.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/om">Read the Danish about page</a>.</p>
   </article>
 </BaseLayout>

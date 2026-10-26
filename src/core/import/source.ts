@@ -369,20 +369,25 @@ export function resolveSource(path: string): MultiArtifactSource {
   }
   if (stat.isFile() && isZipPath(path)) {
     const extracted = unzipToTempDir(path);
-    const files: Record<string, ImportArtifact> = {};
-    collect(extracted.rootDir, extracted.rootDir, files);
-    const importedEntryCount = Object.keys(files).length;
-    if (importedEntryCount !== extracted.archiveIntegrity.archiveEntryCount) {
-      throw new Error(
-        `ZIP archive integrity check failed for '${sanitizeForErrorMessage(path)}': archive, extracted and imported file counts differ`,
-      );
+    try {
+      const files: Record<string, ImportArtifact> = {};
+      collect(extracted.rootDir, extracted.rootDir, files);
+      const importedEntryCount = Object.keys(files).length;
+      if (importedEntryCount !== extracted.archiveIntegrity.archiveEntryCount) {
+        throw new Error(
+          `ZIP archive integrity check failed for '${sanitizeForErrorMessage(path)}': archive, extracted and imported file counts differ`,
+        );
+      }
+      return {
+        rootDir: extracted.rootDir,
+        files,
+        sourceEvidence: extracted.sourceEvidence,
+        archiveIntegrity: { ...extracted.archiveIntegrity, importedEntryCount },
+      };
+    } catch (error) {
+      removePathWithRetry(extracted.rootDir);
+      throw error;
     }
-    return {
-      rootDir: extracted.rootDir,
-      files,
-      sourceEvidence: extracted.sourceEvidence,
-      archiveIntegrity: { ...extracted.archiveIntegrity, importedEntryCount },
-    };
   }
   // A single file: expose it under its basename.
   const name = path.split(/[/\\]/).pop() ?? path;

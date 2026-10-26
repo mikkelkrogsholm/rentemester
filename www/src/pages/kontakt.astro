@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import { SITE } from "../consts";
@@ -26,64 +27,64 @@ const jsonLd = {
     lead="Den hurtigste vej til svar er et issue på GitHub — så ligger spørgsmålet offentligt og kan hjælpe andre. Men hvis det skal være direkte, så er der her."
   />
 
-  <section class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16">
-    <div class="grid sm:grid-cols-2 gap-6">
+  <section {...sx.pages_kontakt_section1}>
+    <div {...sx.pages_kontakt_div2}>
       <a
         href={`${SITE.github}/issues/new`}
         rel="noopener"
         target="_blank"
-        class="block bg-surface-container border border-outline-variant/15 hover:border-primary/40 p-8 transition-colors"
+        {...sx.pages_kontakt_a3}
       >
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Anbefalet</div>
-        <h2 class="font-serif text-2xl text-on-background mb-2">Åbn et issue</h2>
-        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+        <div {...sx.pages_index_div28}>Anbefalet</div>
+        <h2 {...sx.pages_kontakt_h24}>Åbn et issue</h2>
+        <p {...sx.pages_kontakt_p5}>
           Bug, feature, spørgsmål om hvordan noget virker. Det er den åbne kanal — andre kan se og hjælpe.
         </p>
-        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">GitHub Issues ↗</span>
+        <span {...sx.pages_kontakt_span6}>GitHub Issues ↗</span>
       </a>
 
       <a
         href={SITE.github}
         rel="noopener"
         target="_blank"
-        class="block bg-surface-container border border-outline-variant/15 hover:border-primary/40 p-8 transition-colors"
+        {...sx.pages_kontakt_a3}
       >
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-3">Diskussion</div>
-        <h2 class="font-serif text-2xl text-on-background mb-2">GitHub repo</h2>
-        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+        <div {...sx.pages_kontakt_div7}>Diskussion</div>
+        <h2 {...sx.pages_kontakt_h24}>GitHub repo</h2>
+        <p {...sx.pages_kontakt_p5}>
           Læs koden, roadmap og README før du åbner et issue. Det gør spørgsmål bedre og svar hurtigere.
         </p>
-        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">GitHub repo ↗</span>
+        <span {...sx.pages_kontakt_span6}>GitHub repo ↗</span>
       </a>
 
-      <div class="block bg-surface-container-low border border-outline-variant/15 p-8">
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-3">Direkte</div>
-        <h2 class="font-serif text-2xl text-on-background mb-2">Email</h2>
-        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+      <div {...sx.pages_kontakt_div8}>
+        <div {...sx.pages_kontakt_div7}>Direkte</div>
+        <h2 {...sx.pages_kontakt_h24}>Email</h2>
+        <p {...sx.pages_kontakt_p5}>
           Hvis det er fortroligt, handler om ansvarlig disclosure, eller ikke passer i et offentligt forum.
         </p>
-        <a href={`mailto:${SITE.email}`} class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary hover:text-cyber-blue">{SITE.email}</a>
+        <a href={`mailto:${SITE.email}`} {...sx.pages_kontakt_a9}>{SITE.email}</a>
       </div>
 
       <a
         href="/sikkerhed"
-        class="block bg-surface-container-low border border-outline-variant/15 hover:border-error/60 p-8 transition-colors"
+        {...sx.pages_kontakt_a10}
       >
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-error mb-3">Sikkerhed</div>
-        <h2 class="font-serif text-2xl text-on-background mb-2">Sårbarhed?</h2>
-        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+        <div {...sx.pages_kontakt_div11}>Sikkerhed</div>
+        <h2 {...sx.pages_kontakt_h24}>Sårbarhed?</h2>
+        <p {...sx.pages_kontakt_p5}>
           Hvis du har fundet en sikkerhedsfejl, så følg den ansvarlige proces — ikke et offentligt issue.
         </p>
-        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">Læs sikkerhedspolitik →</span>
+        <span {...sx.pages_kontakt_span6}>Læs sikkerhedspolitik →</span>
       </a>
     </div>
   </section>
 
-  <section class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop pb-12 md:pb-16 prose-da">
-    <h2>Før du skriver</h2>
-    <p>Rentemester er et åbent udviklingsprojekt, ikke en supportafdeling for et færdigt SaaS-produkt. Den bedste henvendelse er konkret: hvad prøvede du, hvad forventede du, hvad skete der, og hvilken version eller commit kørte du?</p>
-    <p>Spørgsmål om dansk bogføringslogik er meget velkomne, især når de peger på konkrete regler i <code>rules/dk/</code>. Projektet bliver bedre af cases fra virkelige freelancere, små ApS’er, revisorer og bogholdere.</p>
-    <p>Hvis din henvendelse handler om en konkret virksomhed, så fjern CPR-numre, bankkonti, fakturanumre og bilag før du deler noget offentligt. Brug email til fortrolige detaljer, men hold helst eksempler minimale og anonymiserede.</p>
-    <p>For almindelige featureforslag er et offentligt issue stadig bedst: det giver kontekst til andre, undgår gentagne spørgsmål og gør beslutningerne søgbare senere.</p>
+  <section {...sx.pages_kontakt_section12}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Før du skriver</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester er et åbent udviklingsprojekt, ikke en supportafdeling for et færdigt SaaS-produkt. Den bedste henvendelse er konkret: hvad prøvede du, hvad forventede du, hvad skete der, og hvilken version eller commit kørte du?</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Spørgsmål om dansk bogføringslogik er meget velkomne, især når de peger på konkrete regler i <code {...sx.pages_sikkerhed_code1}>rules/dk/</code>. Projektet bliver bedre af cases fra virkelige freelancere, små ApS’er, revisorer og bogholdere.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Hvis din henvendelse handler om en konkret virksomhed, så fjern CPR-numre, bankkonti, fakturanumre og bilag før du deler noget offentligt. Brug email til fortrolige detaljer, men hold helst eksempler minimale og anonymiserede.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>For almindelige featureforslag er et offentligt issue stadig bedst: det giver kontekst til andre, undgår gentagne spørgsmål og gør beslutningerne søgbare senere.</p>
   </section>
 </BaseLayout>

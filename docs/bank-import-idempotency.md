@@ -43,3 +43,19 @@ for at bevare rækkefølgen af identiske transaktioner.
 Ændres et fingerprint-felt — også bankkonto, bookingdato, reference,
 `amount_dkk` eller FX-kurs — er det en anden række for importens dedup-regel.
 Kontrollér derfor bankeksporten før du ændrer data og re-importerer.
+
+## Kildeorden og faktisk banksaldo
+
+En løbende `balance_after` er kun autoritativ, når Rentemester kan bevise den
+sidste kildelinje. En importprofil kan erklære rækkefølgen, og en generisk CSV
+kan gøre det eksplicit med `--statement-order ascending|descending` (eller
+`statementOrder` i MCP/HTTP). Retningen og rækkeindekset gemmes append-only på
+hver importeret bankrække.
+
+Ved flere rækker på samme dato bruger saldoresolveren denne lagrede kildeorden
+— aldrig SQLite-id eller importtidspunkt. Proveniensen er bundet til den
+immutable `sourceFileHash` plus den erklærede profil/retning; to forskellige
+eksporter på samme dato kan derfor ikke stiltiende kædes sammen. En manglende, modstridende eller
+inkonsistent saldo-kæde giver status `ambiguous` og ingen faktisk banksaldo.
+Det samme fail-closed resultat og den tilhørende proveniens bruges af
+portefølje, overblik, bank- og likviditetsvisninger samt API'et.

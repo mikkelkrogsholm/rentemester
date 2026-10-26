@@ -5,11 +5,17 @@ on:
     branches: [main]
     paths:
       - "www/**"
+      - "scripts/stylex-precompile.ts"
+      - "scripts/check-stylex.ts"
+      - "DESIGN.md"
       - ".github/workflows/www.yml"
   push:
     branches: [main]
     paths:
       - "www/**"
+      - "scripts/stylex-precompile.ts"
+      - "scripts/check-stylex.ts"
+      - "DESIGN.md"
       - ".github/workflows/www.yml"
 
 concurrency:
@@ -40,5 +46,13 @@ jobs:
         run: bun run site:check
       - name: Check graph content coverage
         run: bun run content:coverage
+      - name: Verify StyleX compiler and watcher
+        run: bun run test
       - name: Build static site
         run: bun run build
+      - name: Verify generated SVG artifacts
+        run: git diff --exit-code -- public/favicon.svg public/og-*.svg
+      - name: Install browser engines
+        run: bunx playwright install --with-deps chromium webkit
+      - name: Verify site in Chromium and WebKit
+        run: bun run test:browser

@@ -70,6 +70,18 @@ describe("asset depreciation schedule", () => {
 });
 
 describe("asset registration + depreciation posting", () => {
+  test("rejects depreciation before acquisition without consuming audit or journal numbers", () => {
+    const { db, documentId, cleanup } = setup("before-acquisition");
+    try {
+      const asset = registerAsset(db, { name: "Synthetic equipment", category: "hardware", acquisitionDate: "2026-01-10", cost: 40000, usefulLifeMonths: 40, purchaseDocumentId: documentId });
+      expect(asset.ok).toBe(true);
+      const snapshot = () => ["journal_entries", "asset_depreciation_entries", "audit_log", "sequences"].map(table => db.query(`SELECT * FROM ${table} ORDER BY rowid`).all());
+      const before = snapshot();
+      expect(postDepreciationPeriod(db, { assetId: asset.assetId!, periodIndex: 1, transactionDate: "2025-01-01" })).toMatchObject({ ok: false, errors: ["transactionDate must not precede asset acquisitionDate 2026-01-10"] });
+      expect(snapshot()).toEqual(before);
+      expect(postDepreciationPeriod(db, { assetId: asset.assetId!, periodIndex: 1, transactionDate: "2026-01-10" }).ok).toBe(true);
+    } finally { cleanup(); }
+  });
   test("registers a capitalized asset and posts a balanced depreciation entry", () => {
     const { db, documentId, cleanup } = setup("asset-depr-ok");
     const reg = registerAsset(db, {

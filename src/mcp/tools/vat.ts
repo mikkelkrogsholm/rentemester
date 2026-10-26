@@ -21,6 +21,8 @@ import {
 } from "../../core/vat";
 import { buildViesRecapitulativeStatement } from "../../core/vat-vies-list";
 import { buildOssReport } from "../../core/vat-oss";
+import { buildVatFiling } from "../../core/vat-filing";
+import { recordVatFilingEvidence, VAT_EVIDENCE_FIELDS } from "../../core/vat-filing-evidence";
 import { withActor } from "../actor";
 import { envelopeShape, errorEnvelope, wrapCoreResult, type Envelope } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
@@ -173,6 +175,50 @@ export function registerVatTools(server: McpServer): void {
       const result = buildVatReport(db, args.from, args.to);
       return wrapCoreResult(result);
     }),
+  );
+
+  server.registerTool(
+    "vat_filing",
+    {
+      title: "TastSelv VAT filing form",
+      description: "Builds the exact whole-kroner TastSelv VAT form for a closed period. Read-only; does not submit to Skattestyrelsen.",
+      inputSchema: {
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        from: z.string().min(1).describe("Period start, YYYY-MM-DD (inclusive)."),
+        to: z.string().min(1).describe("Period end, YYYY-MM-DD (inclusive)."),
+      },
+      outputSchema: envelopeShape,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    withCompanyDb<{ company: string; from: string; to: string }>(server, ({ db, args }) => {
+      const refusal = refuseIfNotVatRegistered(db);
+      if (refusal) return refusal;
+      return wrapCoreResult(buildVatFiling(db, args.from, args.to));
+    }),
+  );
+
+  server.registerTool(
+    "vat_filing_evidence_record",
+    {
+      title: "Record VAT filing field evidence",
+      description: "Records one reviewed B-field classification or statutory refund with immutable evidence. It never changes journals or submits a return.",
+      inputSchema: {
+        company: z.string().min(1),
+        periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        fieldName: z.enum(VAT_EVIDENCE_FIELDS),
+        amountDkk: z.number().finite(),
+        evidenceRef: z.string().min(1).max(500),
+        confirm: confirmField,
+      },
+      outputSchema: envelopeShape,
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    withCompanyDbConfirmed(server, "vat_filing_evidence_record", ({ db, actor, args }) => wrapCoreResult(recordVatFilingEvidence(db, {
+      periodStart: args.periodStart, periodEnd: args.periodEnd, fieldName: args.fieldName,
+      amountDkk: args.amountDkk, evidenceRef: args.evidenceRef, actor: actor.createdBy,
+      principal: actor.createdByProgram, confirm: args.confirm === true,
+    }))),
   );
 
   server.registerTool(

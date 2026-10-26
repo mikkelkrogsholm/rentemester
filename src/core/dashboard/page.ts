@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // Outer `renderDashboard()` composer — assembles the page from the
 // per-section render functions.
 
@@ -28,45 +29,45 @@ export function renderDashboard(input: DashboardInput, _options: RenderOptions =
   const sections = [
     header(input),
     metricsSection(input),
-    `<section class="section"><h2>Åbne exceptions</h2>${exceptionsSection(input)}</section>`,
-    `<section class="section"><h2>Næste deadline</h2>${deadlineSection(input)}</section>`,
-    `<section class="section"><h2>Åbne fakturaer</h2>${invoiceTable(input.invoices)}</section>`,
+    `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Åbne exceptions</h2>${exceptionsSection(input)}</section>`,
+    `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Næste deadline</h2>${deadlineSection(input)}</section>`,
+    `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Åbne fakturaer</h2>${invoiceTable(input.invoices)}</section>`,
   ];
 
   // Creditor card — symmetric to the open-invoices (debitor) view above.
   if (input.payables) {
     sections.push(
-      `<section class="section"><h2>Åbne kreditorposter</h2>${payablesSection(input.payables)}</section>`,
+      `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Åbne kreditorposter</h2>${payablesSection(input.payables)}</section>`,
     );
   }
   // Accruals — open balance-sheet exposure + due recognition periods.
   if (input.accrualRegister || input.accrualsDue) {
     sections.push(
-      `<section class="section"><h2>Periodeafgrænsningsposter</h2>${accrualsSection(input.accrualRegister, input.accrualsDue)}</section>`,
+      `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Periodeafgrænsningsposter</h2>${accrualsSection(input.accrualRegister, input.accrualsDue)}</section>`,
     );
   }
   // Budget & liquidity — budget-vs-actual + the forward forecast.
   if (input.budgetVsActual || input.liquidity) {
     sections.push(
-      `<section class="section"><h2>Budget &amp; likviditet</h2>${budgetLiquiditySection(input.budgetVsActual, input.liquidity)}</section>`,
+      `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Budget &amp; likviditet</h2>${budgetLiquiditySection(input.budgetVsActual, input.liquidity)}</section>`,
     );
   }
   // Tax — estimated selskabsskat, or the "awaiting year-end" state.
   if (input.tax) {
     sections.push(
-      `<section class="section"><h2>Skat</h2>${taxSection(input.tax)}</section>`,
+      `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Skat</h2>${taxSection(input.tax)}</section>`,
     );
   }
   // EU sales / OSS — a light indicator: only surfaced when there is activity
   // that needs a separate filing.
   if (hasEuSalesOssActivity(input.euSalesOss)) {
     sections.push(
-      `<section class="section"><h2>EU-salg &amp; OSS</h2>${euSalesOssSection(input.euSalesOss!)}</section>`,
+      `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>EU-salg &amp; OSS</h2>${euSalesOssSection(input.euSalesOss!)}</section>`,
     );
   }
 
   sections.push(
-    `<section class="section"><h2>Seneste aktivitet</h2>${activityList(input.recentActivity)}</section>`,
+    `<section ${documentAttr("section")}><h2 ${documentAttr("h2")}>Seneste aktivitet</h2>${activityList(input.recentActivity)}</section>`,
     statusSection(input),
     footer(input),
   );
@@ -74,7 +75,7 @@ export function renderDashboard(input: DashboardInput, _options: RenderOptions =
   const rendered = sections.join("\n");
 
   return `<!DOCTYPE html>
-<html lang="da">
+<html lang="da" ${documentAttr("root")}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,8 +85,8 @@ ${fontLink()}
 ${buildStyle()}
 </style>
 </head>
-<body>
-<main class="page">
+<body ${documentAttr("body")}>
+<main ${documentAttr("page")}>
 ${rendered}
 </main>
 </body>

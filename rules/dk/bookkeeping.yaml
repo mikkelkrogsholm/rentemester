@@ -1,4 +1,4 @@
-version: dk-bookkeeping-v0.0.8
+version: dk-bookkeeping-v0.0.10
 sources:
   - DK-BOGFORINGSLOVEN-2022-700
   - DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
@@ -58,6 +58,43 @@ rules:
     machine_rule:
       require: document_link_for_expense_or_sale
     explanation: Transactions must be linked to appropriate documentation unless explicitly exempted.
+  - rule_id: DK-BOOKKEEPING-NON-CASH-BALANCE-CORRECTION-001
+    name: Non-cash balance corrections must be document-bound and restricted to balance-sheet accounts
+    category: ledger_validation
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - immutable_internal_voucher_hash
+        - explicit_accounting_rationale
+        - exact_date_currency_and_amount_match
+        - balanced_balance_sheet_only_journal
+        - append_only_document_to_journal_binding
+      forbid:
+        - bank_account_posting
+        - profit_and_loss_posting
+        - vat_posting
+        - reuse_with_conflicting_journal_payload
+    explanation: Rentemester may post a documented non-cash correction only between eligible balance-sheet accounts when a DKK internal voucher supplies an immutable hash, date, amount and rationale; the exact journal is linked append-only and cannot touch bank, profit-and-loss or VAT accounts.
+  - rule_id: DK-BOOKKEEPING-LEGACY-OPENING-CREDITOR-RECLASSIFICATION-001
+    name: Legacy opening creditor reclassification requires exact historical evidence
+    category: ledger_validation
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
+    severity: hard_stop
+    machine_rule:
+      require: [immutable_internal_voucher_hash, exact_posted_primobalance_creditor_line, documented_remaining_opening_balance, exactly_two_balance_sheet_lines, append_only_document_to_journal_binding]
+      forbid: [canonical_payable_or_payment_evidence, bank_account_posting, debtor_or_vat_posting, profit_and_loss_posting, historical_ledger_mutation]
+    explanation: A legacy creditor opening balance may only be reclassified through a DKK internal voucher that hash-binds one exact posted primobalance creditor line, remains within its documented unexplained balance, has no canonical payable evidence and posts one append-only two-sided balance-sheet correction.
   - rule_id: DK-BOOKKEEPING-BANK-IMPORT-001
     name: Imported bank transactions must preserve transaction date, amount, text, and traceable source batch
     category: transaction_registration

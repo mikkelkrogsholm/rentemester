@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -48,8 +49,8 @@ const jsonLd = [
     lead="Rentemester er et dansk open source regnskabsprogram under udvikling. Det er bygget til lokale data, deterministiske regler, verifiérbar bogføring og AI-agent workflows uden at give AI'en fri adgang til at gætte i regnskabet."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Et godt regnskabsprogram skal gøre hverdagen lettere uden at gøre regnskabet uklart. Rentemester går efter en anden model end de klassiske cloud-systemer: bogføringsdata ligger lokalt, kernen er open source, og alle posteringer skal kunne forklares, verificeres og rettes med modposteringer.
     </p>
 
@@ -66,59 +67,59 @@ const jsonLd = [
       ]}
     />
 
-    <h2>Hvad kildekoden understøtter i dag</h2>
-    <p>Den tekniske prototype har en lokalt testet kerne for små danske virksomheders almindelige flows. Claims her skal læses som repo-status, ikke som garanti for almindelig produktion uden faglig gennemgang:</p>
-    <ul>
-      <li>lokal virksomhedsmappe med SQLite-ledger</li>
-      <li>append-only dobbelt bogholderi med hash-chain og audit-verifikation</li>
-      <li>bank-CSV import, afstemning og match-forslag</li>
-      <li>bilagsindlæsning med SHA-256 hash og metadata-validering</li>
-      <li>fakturaudstedelse, PDF-rendering, bogføring, status og betaling</li>
-      <li>rykkergebyr, morarente, kompensation, kreditnota, refundering og tab på debitor</li>
-      <li>momsrapport, EU reverse charge, repræsentationsmoms og VIES-validering</li>
-      <li>backup, restore, myndighedseksport og lokal revisor-/bogholder-handoff</li>
-      <li>MCP-server, så AI-klienter kan bruge systemet gennem strukturerede tools</li>
-      <li>cockpit — en lokal web-UI med overblik, resultatopgørelse, balance, bank, bilag, fakturaer, moms og forpligtelser, så ejeren ikke skal leve i terminalen</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad kildekoden understøtter i dag</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Den tekniske prototype har en lokalt testet kerne for små danske virksomheders almindelige flows. Claims her skal læses som repo-status, ikke som garanti for almindelig produktion uden faglig gennemgang:</p>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>lokal virksomhedsmappe med SQLite-ledger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>append-only dobbelt bogholderi med hash-chain og audit-verifikation</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bank-CSV import, afstemning og match-forslag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilagsindlæsning med SHA-256 hash og metadata-validering</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>fakturaudstedelse, PDF-rendering, bogføring, status og betaling</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>rykkergebyr, morarente, kompensation, kreditnota, refundering og tab på debitor</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>momsrapport, EU reverse charge, repræsentationsmoms og VIES-validering</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>backup, restore, myndighedseksport og lokal revisor-/bogholder-handoff</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>MCP-server, så AI-klienter kan bruge systemet gennem strukturerede tools</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>cockpit — en lokal web-UI med overblik, resultatopgørelse, balance, bank, bilag, fakturaer, moms og forpligtelser, så ejeren ikke skal leve i terminalen</li>
     </ul>
 
-    <h2>Hvad Rentemester ikke er endnu</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad Rentemester ikke er endnu</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er ikke et færdigt kommercielt regnskabsprogram med login, betalingsflow og supportafdeling. Der er ingen hosted app, ingen abonnementer og ingen garanti for at det passer til dit konkrete regnskab uden faglig gennemgang.
     </p>
-    <p>
-      Projektet er stadig under aktiv udvikling. PSD2-bankfeeds, direkte PEPPOL-transport, hosted revisor-/bogholder-adgang og bred revisor-review af reglerne er stadig roadmap. Bilagsmail (IMAP + maildrop), cockpit-web-UI og GDPR-kommandoer er bygget i dag — se <a href="/docs">docs-oversigten</a>.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Projektet er stadig under aktiv udvikling. PSD2-bankfeeds, direkte PEPPOL-transport, hosted revisor-/bogholder-adgang og bred revisor-review af reglerne er stadig roadmap. Bilagsmail (IMAP + maildrop), cockpit-web-UI og GDPR-kommandoer er bygget i dag — se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs">docs-oversigten</a>.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er heller ikke et registreret digitalt standardbogføringssystem. Hvis du har pligt til at bruge et bestemt registreret system, skal du kontrollere kravene hos Erhvervsstyrelsen og din rådgiver.
     </p>
 
-    <h2>Hvorfor open source regnskab?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor open source regnskab?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring er for vigtig til at være en sort boks. Når reglerne og ledgeren er åbne, kan udviklere, bogholdere og revisorer se hvordan systemet konterer, validerer moms, låser historik og eksporterer data.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det betyder ikke at alle brugere skal læse TypeScript. Det betyder at systemet kan efterprøves. Tillid kommer ikke fra marketingtekst; den kommer fra kildekode, tests, regler og audit trail.
     </p>
 
-    <h2>Sådan adskiller Rentemester sig</h2>
-    <ul>
-      <li><strong>Lokalt først:</strong> data ligger i en mappe du ejer.</li>
-      <li><strong>Ingen lock-in:</strong> eksport og audit er kernefunktioner.</li>
-      <li><strong>AI med grænser:</strong> agenten kan hjælpe, men reglerne bestemmer hvad der må bogføres.</li>
-      <li><strong>Append-only:</strong> fejl rettes med modposter, ikke skjulte overskrivninger.</li>
-      <li><strong>Verifiérbart:</strong> hash-kæde og signeret backup gør manipulation synlig.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan adskiller Rentemester sig</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Lokalt først:</strong> data ligger i en mappe du ejer.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Ingen lock-in:</strong> eksport og audit er kernefunktioner.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>AI med grænser:</strong> agenten kan hjælpe, men reglerne bestemmer hvad der må bogføres.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Append-only:</strong> fejl rettes med modposter, ikke skjulte overskrivninger.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Verifiérbart:</strong> hash-kæde og signeret backup gør manipulation synlig.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
-      Start med <a href="/docs/installation">installationsguiden</a>, læs <a href="/funktioner">funktionsoversigten</a>, og se projektets aktuelle status på <a href={SITE.github} rel="noopener" target="_blank">GitHub</a>. Hvis du leder efter et færdigt program til almindelig drift i dag, skal du stadig bruge en etableret løsning eller en bogholder. Hvis du vil følge eller bidrage til et åbent dansk regnskabssystem, er Rentemester bygget til netop det.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Start med <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">installationsguiden</a>, læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/funktioner">funktionsoversigten</a>, og se projektets aktuelle status på <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">GitHub</a>. Hvis du leder efter et færdigt program til almindelig drift i dag, skal du stadig bruge en etableret løsning eller en bogholder. Hvis du vil følge eller bidrage til et åbent dansk regnskabssystem, er Rentemester bygget til netop det.
     </p>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

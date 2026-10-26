@@ -20,7 +20,7 @@ export function registerAgentDiscoveryTools(server: McpServer, liveTools: () => 
     routes: ROUTE_CATALOG,
   });
   server.registerTool("agent_capability_search", {
-    title: "Search supported agent outcomes", description: "Read-only, paginated search of the versioned Rentemester outcome catalogue. Start with meta_about.",
+    title: "Search supported agent outcomes", description: "Read-only, paginated search of the versioned Rentemester outcome catalogue. Start with system_server_about.",
     inputSchema: { query: z.string().max(200).optional(), cursor: z.number().int().min(0).optional(), limit: z.number().int().min(1).max(50).optional() }, outputSchema: envelopeShape,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, ({ query, cursor, limit }) => envelopeToCallResult(successEnvelope(searchCapabilities(query, cursor ?? 0, limit ?? 10, sources()))));

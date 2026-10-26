@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -42,8 +43,8 @@ const jsonLd = {
     lead="Når en kunde er en offentlig modtager, skal fakturaen kunne bære EAN/GLN-metadata og eksporteres til et format, der kan afleveres videre. Rentemester skelner mellem fakturadata, OIOUBL-handoff og selve PEPPOL-transporten."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Offentlig e-fakturering bør ikke beskrives som én magisk knap. Der er mindst tre lag: den udstedte faktura, et stabilt e-faktura-artefakt og en transportkanal. Hvis de blandes sammen, bliver det uklart om bogføringssystemet har udstedt dokumentet, forberedt en fil eller faktisk sendt den gennem et access point.
     </p>
 
@@ -62,31 +63,31 @@ const jsonLd = {
       ]}
     />
 
-    <h2>EAN/GLN først</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>EAN/GLN først</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En offentlig modtager skal kunne identificeres deterministisk. I Rentemesters regler betyder det, at den immutable buyer snapshot på fakturaen skal indeholde de nødvendige EAN/GLN-oplysninger, før der kan eksporteres en offentlig e-faktura-preview eller OIOUBL-handoff.
     </p>
 
-    <h2>OIOUBL som handoff</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>OIOUBL som handoff</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan materialisere et deterministisk OIOUBL-handoff-artefakt fra en udstedt faktura. Det er bevidst scoped som handoff: filen er sporbar, reproducerbar og audit-linket, men den må ikke forveksles med bevis for at fakturaen er afleveret gennem PEPPOL.
     </p>
 
-    <h2>PEPPOL uden credential-læk</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>PEPPOL uden credential-læk</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Grafen viser også et PEPPOL-submission-spor. Det bygger en idempotent submission-envelope oven på OIOUBL-handoff, mens access-point-konfiguration og credentials læses udefra. De gemmes ikke i bogføringstilstanden og bliver ikke en del af ledgeren.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CLI-flows for public preview, OIOUBL-handoff og PEPPOL submission-envelope er kodebackede. Den vigtige grænse er, at Rentemester forbereder og registrerer materialet deterministisk; transportansvar, access-point-aftale og credentials ligger uden for kernen.
     </p>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

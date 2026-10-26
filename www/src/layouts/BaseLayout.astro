@@ -1,5 +1,5 @@
 ---
-import "../styles/global.css";
+import { attributes as sx, cssHref } from "../../.stylex/site-stylex";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import KnowledgeSectionLinks from "../components/KnowledgeSectionLinks.astro";
@@ -159,9 +159,10 @@ const showKnowledgeSectionLinks = normalizedPath.startsWith("/viden/") && normal
 ---
 
 <!doctype html>
-<html lang={SITE.lang} class="dark">
+<html lang={SITE.lang} {...sx.layouts_BaseLayout_html1}>
   <head>
     <meta charset="UTF-8" />
+    <link rel="stylesheet" href={cssHref} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
 
@@ -212,22 +213,22 @@ const showKnowledgeSectionLinks = normalizedPath.startsWith("/viden/") && normal
     <!-- AEO/LLM hint -->
     <link rel="alternate" type="text/markdown" href="/llms.txt" />
   </head>
-  <body class="min-h-screen bg-ink-black text-on-surface antialiased">
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brass-gold focus:text-ink-black focus:px-3 focus:py-2 focus:font-mono focus:text-xs">Spring til indhold</a>
+  <body {...sx.layouts_BaseLayout_body2}>
+    <a href="#main" {...sx.layouts_BaseLayout_a3}>Spring til indhold</a>
     <Header />
-    <main id="main" class="pt-16">
+    <main id="main" {...sx.layouts_BaseLayout_main4}>
       {generatedBreadcrumbs.length > 1 && (
-        <nav aria-label="Brødkrumme" class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop pt-5 -mb-3">
-          <ol class="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-outline">
+        <nav aria-label="Brødkrumme" {...sx.layouts_BaseLayout_nav5}>
+          <ol {...sx.layouts_BaseLayout_ol6}>
             {generatedBreadcrumbs.map((item, index) => {
               const isLast = index === generatedBreadcrumbs.length - 1;
               return (
-                <li class="flex items-center gap-2">
-                  {index > 0 && <span aria-hidden="true">/</span>}
+                <li {...sx.layouts_BaseLayout_li7}>
+                  {index > 0 && <span {...sx.layouts_BaseLayout_span8} aria-hidden="true">/</span>}
                   {isLast ? (
-                    <span class="text-on-surface-variant">{item.label}</span>
+                    <span {...sx.layouts_BaseLayout_span9}>{item.label}</span>
                   ) : (
-                    <a href={item.href} class="hover:text-primary">{item.label}</a>
+                    <a href={item.href} {...sx.components_Footer_a17}>{item.label}</a>
                   )}
                 </li>
               );
@@ -236,14 +237,14 @@ const showKnowledgeSectionLinks = normalizedPath.startsWith("/viden/") && normal
         </nav>
       )}
       {datePublished && normalizedPath !== "/" && !noindex && (
-        <div class="byline article-meta max-w-container mx-auto px-margin-mobile md:px-margin-desktop pt-6 -mb-6 font-mono text-[11px] uppercase tracking-[0.12em] text-outline" itemscope itemtype="https://schema.org/Article">
-          <span class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
-            By <a href="/om" rel="author" itemprop="url" class="text-on-surface-variant hover:text-primary"><span class="author-name" itemprop="name">{SITE.author}</span></a>
+        <div {...sx.layouts_BaseLayout_div10} itemscope itemtype="https://schema.org/Article">
+          <span {...sx.layouts_BaseLayout_span11} itemprop="author" itemscope itemtype="https://schema.org/Person">
+            By <a href="/om" rel="author" itemprop="url" {...sx.components_Footer_a13}><span {...sx.layouts_BaseLayout_span12} itemprop="name">{SITE.author}</span></a>
           </span>
-          <span aria-hidden="true"> · </span>
-          <span>Published <time class="published-date" datetime={datePublished} itemprop="datePublished">{datePublished}</time></span>
-          <span aria-hidden="true"> · </span>
-          <span>Updated <time class="updated-date" datetime={dateModified ?? datePublished} itemprop="dateModified">{dateModified ?? datePublished}</time></span>
+          <span {...sx.layouts_BaseLayout_span8} aria-hidden="true"> · </span>
+          <span {...sx.layouts_BaseLayout_span8}>Published <time {...sx.layouts_BaseLayout_time13} datetime={datePublished} itemprop="datePublished">{datePublished}</time></span>
+          <span {...sx.layouts_BaseLayout_span8} aria-hidden="true"> · </span>
+          <span {...sx.layouts_BaseLayout_span8}>Updated <time {...sx.layouts_BaseLayout_time14} datetime={dateModified ?? datePublished} itemprop="dateModified">{dateModified ?? datePublished}</time></span>
         </div>
       )}
       <slot />

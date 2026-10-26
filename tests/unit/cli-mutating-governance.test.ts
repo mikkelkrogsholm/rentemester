@@ -157,7 +157,9 @@ describe("MUTATING_COMMANDS governance-klasser (audit AGENT-1/AGENT-2)", () => {
       expect(mutationPolicyScope(spec.key), `${spec.key}: ${spec.usage}`).not.toBe("company");
     }
     expect(mutationPolicyScope("system restore-backup")).toBe("restore-target");
-    expect(mutationPolicyScope("workspace-access bootstrap-first")).toBe("workspace-bootstrap");
+    for (const subcommand of ["bootstrap-first", "bootstrap-local-service", "local-service-rotate", "local-service-revoke"]) {
+      expect(mutationPolicyScope(`workspace-access ${subcommand}`)).toBe("workspace-bootstrap");
+    }
     expect(mutationPolicyScope("group apply-manifest")).toBe("group-policy");
     expect(mutationPolicyScope("period reopen")).toBe("company");
   });

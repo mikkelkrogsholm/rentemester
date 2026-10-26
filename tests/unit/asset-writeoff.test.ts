@@ -45,6 +45,17 @@ function setup(label: string, amountIncVat: number, opts: { withDoc?: boolean } 
 }
 
 describe("immediate write-off (straksafskrivning)", () => {
+  test("rejects a write-off before acquisition without changing journal, audit or sequence state", () => {
+    const { db, documentId, cleanup } = setup("before-acquisition", 5000);
+    try {
+      const input = { name: "Synthetic drill", category: "tools", acquisitionDate: "2026-01-10", cost: 5000, purchaseDocumentId: documentId!, expenseAccountNo: "3120", transactionDate: "2025-01-01", confirmImmediateWriteOff: true, thresholdRuleSource: "synthetic source-backed threshold" };
+      const snapshot = () => ["journal_entries", "asset_writeoffs", "audit_log", "sequences", "exceptions"].map(table => db.query(`SELECT * FROM ${table} ORDER BY rowid`).all());
+      const before = snapshot();
+      expect(postImmediateWriteOff(db, input)).toMatchObject({ ok: false, errors: ["transactionDate must not precede acquisitionDate"] });
+      expect(snapshot()).toEqual(before);
+      expect(postImmediateWriteOff(db, { ...input, transactionDate: input.acquisitionDate }).ok).toBe(true);
+    } finally { cleanup(); }
+  });
   test("posts a balanced write-off entry for an eligible small purchase with explicit confirmation", () => {
     const { db, documentId, cleanup } = setup("wo-ok", 5000);
     db.run("INSERT INTO accounts (account_no, name, type, normal_balance) VALUES ('9910', 'Imported bank', 'asset', 'debit')");

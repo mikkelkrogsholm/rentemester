@@ -1,5 +1,6 @@
+import { version as productVersion } from "../../package.json";
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -15,6 +16,8 @@ const baseImageDigest = `sha256:${"d".repeat(64)}`;
 const sbomSha256 = `sha256:${"e".repeat(64)}`;
 const supplyChainSha256 = `sha256:${"f".repeat(64)}`;
 const agentDiscoverySha256 = `sha256:${"1".repeat(64)}`;
+const cockpitEvidenceSha256 = `sha256:${"2".repeat(64)}`;
+const cockpitRegressionQuerySha256 = `sha256:${"3".repeat(64)}`;
 
 function runScript(script: string, args: string[], env: NodeJS.ProcessEnv = {}) {
   return spawnSync("bun", ["run", script, ...args], {
@@ -95,6 +98,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("invalid release SemVer");
@@ -104,7 +109,7 @@ describe("release evidence scripts", () => {
     const directory = mkdtempSync(join(tmpdir(), "rentemester-release-evidence-"));
     try {
       const created = runScript("scripts/release/create-manifest.ts", [], {
-        RELEASE_VERSION: "0.2.0",
+        RELEASE_VERSION: productVersion,
         RELEASE_GIT_COMMIT: commit,
         RELEASE_BUILT_AT: builtAt,
         RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -118,6 +123,8 @@ describe("release evidence scripts", () => {
         RELEASE_SBOM_SHA256: sbomSha256,
         RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
         RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+        RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+        RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
       });
       expect(created.status).toBe(0);
       expect(JSON.parse(created.stdout).workflow).toEqual({
@@ -125,7 +132,7 @@ describe("release evidence scripts", () => {
         runAttempt: 1,
       });
       expect(JSON.parse(created.stdout).runtime).toEqual({ bunVersion, baseImageDigest });
-      expect(JSON.parse(created.stdout).evidence).toEqual({ sbomSha256, supplyChainSha256, agentDiscoverySha256 });
+      expect(JSON.parse(created.stdout).evidence).toEqual({ sbomSha256, supplyChainSha256, agentDiscoverySha256, cockpitEvidenceSha256, cockpitRegressionQuerySha256 });
       const manifestPath = join(directory, "release-manifest.json");
       writeFileSync(manifestPath, created.stdout);
       const releaseManifestDigest = `sha256:${createHash("sha256")
@@ -139,7 +146,7 @@ describe("release evidence scripts", () => {
         reviewer: { organization: "Digisense", name: "Test reviewer" },
         releaseManifestDigest,
         imageDigest,
-        version: "0.2.0",
+        version: productVersion,
         gitCommit: commit,
       };
       const approvalPath = join(directory, "approval.json");
@@ -150,7 +157,18 @@ describe("release evidence scripts", () => {
         [manifestPath, approvalPath],
       );
       expect(verified.status).toBe(0);
-      expect(verified.stdout).toContain("Digisense approved 0.2.0");
+      expect(verified.stdout).toContain(`Digisense approved ${productVersion}`);
+
+      const manifest = JSON.parse(created.stdout);
+      manifest.evidence.cockpitEvidenceSha256 = "sha256:not-a-checksum";
+      writeFileSync(manifestPath, JSON.stringify(manifest));
+      const invalidCockpitEvidence = runScript(
+        "scripts/release/verify-approval.ts",
+        [manifestPath, approvalPath],
+      );
+      expect(invalidCockpitEvidence.status).not.toBe(0);
+      expect(invalidCockpitEvidence.stderr).toContain("evidence checksums are invalid");
+      writeFileSync(manifestPath, created.stdout);
 
       writeFileSync(
         approvalPath,
@@ -182,9 +200,49 @@ describe("release evidence scripts", () => {
     }
   });
 
+  test("records the raw SHA-256 values of the Cockpit evidence fixtures", () => {
+    const directory = mkdtempSync(join(tmpdir(), "rentemester-release-cockpit-"));
+    try {
+      const evidencePath = join(directory, "cockpit-evidence.json");
+      const regressionQueryPath = join(directory, "cockpit-epic-648-open-issues.json");
+      writeFileSync(evidencePath, '{"fixture":"cockpit evidence"}\n');
+      writeFileSync(regressionQueryPath, "[]\n");
+      const fixtureSha256 = (path: string) =>
+        `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
+      const cockpitEvidenceSha256 = fixtureSha256(evidencePath);
+      const cockpitRegressionQuerySha256 = fixtureSha256(regressionQueryPath);
+      const created = runScript("scripts/release/create-manifest.ts", [], {
+        RELEASE_VERSION: productVersion,
+        RELEASE_GIT_COMMIT: commit,
+        RELEASE_BUILT_AT: builtAt,
+        RELEASE_IMAGE_REPOSITORY: "ghcr.io/example/rentemester",
+        RELEASE_IMAGE_DIGEST: imageDigest,
+        RELEASE_WORKFLOW_RUN_ID: "123456789",
+        RELEASE_WORKFLOW_RUN_ATTEMPT: "1",
+        RENTEMESTER_GIT_COMMIT: commit,
+        RENTEMESTER_BUILT_AT: builtAt,
+        RENTEMESTER_BUN_VERSION: bunVersion,
+        RENTEMESTER_BASE_IMAGE_DIGEST: baseImageDigest,
+        RELEASE_SBOM_SHA256: sbomSha256,
+        RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
+        RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+        RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+        RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
+      });
+
+      expect(created.status).toBe(0);
+      expect(JSON.parse(created.stdout).evidence).toMatchObject({
+        cockpitEvidenceSha256,
+        cockpitRegressionQuerySha256,
+      });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   test("refuses release evidence without an explicit runtime identity", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.2.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -198,6 +256,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("runtime must declare Bun version and base image digest");
@@ -205,7 +265,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without a checksum for the extracted SBOM", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.2.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -219,6 +279,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: "",
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_SBOM_SHA256 is required");
@@ -226,7 +288,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without the lockfile-bound supply-chain checksum", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.2.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -240,6 +302,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: "",
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_SUPPLY_CHAIN_SHA256 is required");
@@ -247,7 +311,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without the digest-bound agent-discovery checksum", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.2.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -261,6 +325,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: "",
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_AGENT_DISCOVERY_SHA256 is required");

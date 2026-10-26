@@ -5,7 +5,7 @@
  * seed script independently verifies its root, filesystem binding, audit
  * fingerprint and absence of business state before it writes VIES evidence.
  */
-import { Database } from "bun:sqlite";
+import type { Database } from "bun:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import {
   chmodSync,
@@ -18,6 +18,7 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { companyPaths } from "./paths";
+import { openLedgerReadOnly } from "./ledger-inspection";
 
 export const OFFLINE_VIES_DEMO_MARKER_FILENAME = ".rentemester-agent-demo-vies-seed-v1.json";
 export const OFFLINE_VIES_DEMO_MARKER_FORMAT = "rentemester-agent-demo-vies-seed/v1";
@@ -42,7 +43,7 @@ export function writeOfflineViesDemoMarker(companyRoot: string) {
   let fd: number | undefined;
   try {
     fd = openSync(temporary, "wx", 0o600);
-    const db = new Database(ledgerPath, { readonly: true });
+    const db = openLedgerReadOnly(ledgerPath);
     let auditTrailSha256: string;
     try {
       auditTrailSha256 = auditTrailSha256For(db);

@@ -23,11 +23,12 @@ describe("cockpit API — VAT (GET .../vat)", () => {
       // foreign-trade rubrics A/B/C, the same numbers `vat momsangivelse` gives.
       expect(v.rubrikker.salgsmoms).toBe(250);
       expect(v.rubrikker.kobsmoms).toBe(100);
-      expect(v.rubrikker.momstilsvar).toBe(150);
+      expect(v.rubrikker.momsIAlt).toBe(150);
       expect(v.rubrikker.momsAfVarekobUdland).toBe(0);
       expect(v.rubrikker.momsAfYdelseskobUdland).toBe(0);
-      expect(v.rubrikker.rubrikA).toBe(0);
-      expect(v.rubrikker.rubrikB).toBe(0);
+      expect(v.rubrikker.rubrikAVarer).toBe(0);
+      expect(v.rubrikker.rubrikAYdelser).toBe(0);
+      expect(v.rubrikker.rubrikBVarerEuSalesList).toBe(0);
       expect(v.rubrikker.rubrikC).toBe(0);
     } finally {
       rmSync(ws, { recursive: true, force: true });

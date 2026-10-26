@@ -83,7 +83,7 @@ export function renderVatReport(result: Record<string, unknown>): string {
 /**
  * Render a `vat momsangivelse` / `vat filing` payload as Danish human text.
  * The payload is the `VatFilingReport` from `buildVatFiling` — the SKAT
- * rubrikker plus momstilsvar and the filing deadline. (#235, #236)
+ * exact TastSelv fields plus the filing deadline.
  */
 export function renderVatFiling(result: Record<string, unknown>): string {
   const from = asText(result.periodStart);
@@ -95,9 +95,9 @@ export function renderVatFiling(result: Record<string, unknown>): string {
   const rubrikker = (typeof result.rubrikker === "object" && result.rubrikker !== null
     ? result.rubrikker
     : {}) as Record<string, unknown>;
-  const tilsvar = typeof rubrikker.momstilsvar === "number"
-    ? rubrikker.momstilsvar
-    : Number(rubrikker.momstilsvar);
+  const tilsvar = typeof rubrikker.momsIAlt === "number"
+    ? rubrikker.momsIAlt
+    : Number(rubrikker.momsIAlt);
 
   if (Number.isFinite(tilsvar) && tilsvar > 0) {
     lines.push(`Du skal betale ${formatKroner(tilsvar)} i moms til SKAT for perioden.`);
@@ -109,13 +109,23 @@ export function renderVatFiling(result: Record<string, unknown>): string {
   lines.push("");
   lines.push("Rubrikker til TastSelv Erhverv:");
   lines.push(`  Salgsmoms:                       ${formatKroner(rubrikker.salgsmoms)}`);
+  lines.push(`  Købsmoms:                        ${formatKroner(rubrikker.kobsmoms)}`);
   lines.push(`  Moms af varekøb i udlandet:      ${formatKroner(rubrikker.momsAfVarekobUdland)}`);
   lines.push(`  Moms af ydelseskøb i udlandet:   ${formatKroner(rubrikker.momsAfYdelseskobUdland)}`);
-  lines.push(`  Købsmoms:                        ${formatKroner(rubrikker.kobsmoms)}`);
-  lines.push(`  Momstilsvar:                     ${formatKroner(rubrikker.momstilsvar)}`);
-  lines.push(`  Rubrik A (køb i udlandet):       ${formatKroner(rubrikker.rubrikA)}`);
-  lines.push(`  Rubrik B (salg i udlandet):      ${formatKroner(rubrikker.rubrikB)}`);
+  lines.push(`  Moms i alt:                      ${formatKroner(rubrikker.momsIAlt)}`);
+  lines.push(`  Rubrik A - varer:                ${formatKroner(rubrikker.rubrikAVarer)}`);
+  lines.push(`  Rubrik A - ydelser:              ${formatKroner(rubrikker.rubrikAYdelser)}`);
+  lines.push(`  Rubrik B - varer/EU-liste:       ${formatKroner(rubrikker.rubrikBVarerEuSalesList)}`);
+  lines.push(`  Rubrik B - varer/ikke EU-liste:  ${formatKroner(rubrikker.rubrikBVarerIkkeEuSalesList)}`);
+  lines.push(`  Rubrik B - ydelser:              ${formatKroner(rubrikker.rubrikBYdelser)}`);
   lines.push(`  Rubrik C (øvrigt momsfrit salg): ${formatKroner(rubrikker.rubrikC)}`);
+  lines.push(`  Olie- og flaskegasafgift:        ${formatKroner(rubrikker.olieOgFlaskegasafgift)}`);
+  lines.push(`  Elafgift:                        ${formatKroner(rubrikker.elafgift)}`);
+  lines.push(`  Naturgas- og bygasafgift:        ${formatKroner(rubrikker.naturgasOgBygasafgift)}`);
+  lines.push(`  Kulafgift:                       ${formatKroner(rubrikker.kulafgift)}`);
+  lines.push(`  CO2-afgift:                      ${formatKroner(rubrikker.co2Afgift)}`);
+  lines.push(`  Vandafgift:                      ${formatKroner(rubrikker.vandafgift)}`);
+  lines.push(`  Afrunding mod rå momsrapport:    ${formatKroner(rubrikker.wholeKronerDifferenceDkk)}`);
   lines.push("");
 
   const statusDa = result.periodStatus === "reported"

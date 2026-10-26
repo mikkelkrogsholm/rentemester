@@ -12,7 +12,7 @@ import {
   setCompanyVatPeriodType,
   normalizeVatPeriodType,
 } from "../../core/periods";
-import { computePeriodCloseReadiness, loadPeriodCloseReview, reviewPeriodCloseReadiness } from "../../core/period-close-readiness";
+import { computePeriodCloseReadiness, loadPeriodCloseReview, projectHumanReadiness, reviewPeriodCloseReadiness } from "../../core/period-close-readiness";
 import { companyPaths } from "../../core/paths";
 import { companyRootForSlug } from "../../core/workspace";
 import { openDb, migrate } from "../../core/db";
@@ -331,7 +331,7 @@ export function handlePeriodCloseReadiness(config: ServerConfig, slug: string, r
   if (!periodStart || !periodEnd) throw ApiError.badRequest("query parameters 'from' and 'to' are required");
   const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
   const db = openDb(companyPaths(companyRoot).db);
-  try { migrate(db); return okResponse({ packet: computePeriodCloseReadiness(db, { periodStart, periodEnd, companyRoot }) }); }
+  try { migrate(db); const packet=computePeriodCloseReadiness(db, { periodStart, periodEnd, companyRoot }); return okResponse({ packet, readiness: projectHumanReadiness(packet) }); }
   finally { db.close(); }
 }
 

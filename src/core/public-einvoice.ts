@@ -363,6 +363,12 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
   // cac:TaxTotal stays well-formed (TaxAmount is mandatory in UBL).
   const vatAmountForXml =
     formatAmount(payload.totals?.vatAmount) ?? "0.00";
+  // OIOUBL 2.02's Procurement-BilSim profile retains a historical semantic
+  // deviation from generic UBL: LegalMonetaryTotal/TaxExclusiveAmount is the
+  // document tax total, not the VAT-exclusive line base. DigiSense validates
+  // this with F-INV127. Keep the ordinary net amount in LineExtensionAmount;
+  // TaxInclusiveAmount remains net + tax.
+  const oioUblTaxExclusiveAmount = vatAmountForXml;
   const lines = payload.lines ?? [];
   const taxSubtotalGroups = new Map<string, typeof taxLines>();
   for (const line of taxLines) {
@@ -510,7 +516,7 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
     "  </cac:TaxTotal>",
     "  <cac:LegalMonetaryTotal>",
     xmlTagWithAttrs("cbc:LineExtensionAmount", { currencyID: currency }, formatAmount(payload.totals?.netAmount), "    "),
-    xmlTagWithAttrs("cbc:TaxExclusiveAmount", { currencyID: currency }, formatAmount(payload.totals?.netAmount), "    "),
+    xmlTagWithAttrs("cbc:TaxExclusiveAmount", { currencyID: currency }, oioUblTaxExclusiveAmount, "    "),
     xmlTagWithAttrs("cbc:TaxInclusiveAmount", { currencyID: currency }, formatAmount(payload.totals?.grossAmount), "    "),
     xmlTagWithAttrs("cbc:PayableAmount", { currencyID: currency }, formatAmount(payload.totals?.grossAmount), "    "),
     "  </cac:LegalMonetaryTotal>",

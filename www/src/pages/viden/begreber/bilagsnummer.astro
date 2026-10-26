@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Begreb" title="Bilagsnummeret skal gøre dokumentet findbart" lead="Et bilagsnummer er ikke pynt. Det er en stabil reference mellem dokument, journalpost, banklinje og senere kontrol." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bilagsnummeret hjælper dig med at finde dokumentationen igen. Hvis en journalpost henviser til et bilag, skal bilaget kunne lokaliseres uden gætteri. Nummeret bør derfor være stabilt, entydigt og bevaret sammen med dokumentets hash og metadata.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Et godt bilagsnummer er</h2>
-    <ul>
-      <li>entydigt inden for virksomheden</li>
-      <li>stabilt efter bogføring</li>
-      <li>koblet til dokumentets metadata</li>
-      <li>let at finde i eksport eller revisorpakke</li>
-      <li>ikke afhængigt af filnavne, der kan ændres</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Et godt bilagsnummer er</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>entydigt inden for virksomheden</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>stabilt efter bogføring</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>koblet til dokumentets metadata</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>let at finde i eksport eller revisorpakke</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>ikke afhængigt af filnavne, der kan ændres</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester nummererer ingested dokumenter deterministisk og gemmer både dokumentnummer, SHA-256 hash og metadata. Tests dækker blandt andet nummerering per år og konfigurerede regnskabsår, så referencer ikke bygger på tilfældige filnavne.
     </p>
 
-    <h2>Praktisk konsekvens</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Praktisk konsekvens</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når bilagsnummeret er stabilt, kan en eksportpakke eller audit gennemgang pege direkte fra journalpost til dokument. Det gør det hurtigere at forklare en postering og sværere at skjule, at et bilag mangler.
     </p>
   </article>

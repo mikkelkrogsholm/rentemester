@@ -50,6 +50,7 @@ function harness(register: (server: McpServer) => void) {
         ok: boolean;
         data?: any;
         errors: string[];
+        code?: string;
       };
     },
   };
@@ -169,7 +170,7 @@ describe("portfolio MCP tools (#172)", () => {
     const ws = tmpWorkspace("overview");
     try {
       createCompany(ws, { name: "Acme ApS", cvr: "DK12345678" });
-      createCompany(ws, { name: "Beta IVS" });
+      createCompany(ws, { name: "Beta IVS", cvr: "DK87654321" });
       const h = harness(registerPortfolioTools);
       const env = await h.call("portfolio_overview", { workspace: ws });
       expect(env.ok).toBe(true);
@@ -201,6 +202,24 @@ describe("portfolio MCP tools (#172)", () => {
       expect(env.ok).toBe(true);
       expect(env.data?.companyCount).toBe(0);
       expect(env.data?.companies).toEqual([]);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("portfolio_overview fails closed with the canonical duplicate-identity diagnostic", async () => {
+    const ws = tmpWorkspace("overview-duplicate");
+    try {
+      createCompany(ws, { name: "Alpha ApS", cvr: "DK10000015" });
+      createCompany(ws, { name: "Beta ApS", cvr: "10000015" });
+      const env = await harness(registerPortfolioTools).call("portfolio_overview", { workspace: ws });
+      expect(env.ok).toBe(false);
+      expect(env.code).toBe("WORKSPACE_CANONICALITY_FAILED");
+      expect(env.errors).toEqual([
+        "WORKSPACE_DUPLICATE_LEGAL_IDENTITY:alpha-aps,WORKSPACE_DUPLICATE_LEGAL_IDENTITY:beta-aps",
+      ]);
+      expect(env.data).toBeUndefined();
+      expect(JSON.stringify(env)).not.toContain("10000015");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

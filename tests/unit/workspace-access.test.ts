@@ -270,8 +270,8 @@ describe("workspace access event core", () => {
 
   test("has an exhaustive central permission policy with workspace management only for workspace owners", () => {
     expect(ALL_ROUTE_PERMISSIONS).toEqual([
-      "public.read", "public.invitation.claim", "workspace.read", "workspace.group.read", "workspace.manage",
-      "workspace.members.read", "workspace.members.manage", "company.read", "company.documents.read",
+      "public.read", "public.invitation.claim", "workspace.read", "workspace.tasks.read", "workspace.tasks.manage", "workspace.group.read", "workspace.manage",
+      "workspace.members.read", "workspace.members.manage", "company.read", "company.tasks.read", "company.tasks.write", "company.tasks.manage", "company.documents.read",
       "company.documents.upload", "company.master-data", "company.draft.write", "company.ledger.post",
       "company.review", "company.period.force-close", "company.export", "company.external-lookup", "company.external-send", "company.admin",
       "company.knowledge.read", "company.knowledge.manage", "company.ownership.read", "company.ownership.manage",
@@ -283,11 +283,11 @@ describe("workspace access event core", () => {
     expect(ROUTE_PERMISSION_POLICY.bookkeeper).not.toContain("company.review");
     expect(ROUTE_PERMISSION_POLICY.bookkeeper).not.toContain("company.external-send");
     expect(ROUTE_PERMISSION_POLICY.reviewer).toEqual([
-      "company.read", "company.documents.read", "company.review", "company.export",
+      "company.read", "company.tasks.read", "company.tasks.write", "company.documents.read", "company.review", "company.export",
       "company.knowledge.read", "company.knowledge.manage", "company.ownership.read", "company.ownership.manage",
     ]);
     expect(ROUTE_PERMISSION_POLICY.reader).toEqual([
-      "company.read", "company.documents.read", "company.export", "company.knowledge.read", "company.ownership.read",
+      "company.read", "company.tasks.read", "company.documents.read", "company.export", "company.knowledge.read", "company.ownership.read",
     ]);
     expect(new Set(Object.values(ROUTE_PERMISSION_POLICY).flat())).toEqual(new Set(ALL_ROUTE_PERMISSIONS));
   });

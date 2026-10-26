@@ -14,6 +14,7 @@ import {
   archiveYearRow,
   type IncomeStatementLine,
 } from "../archive";
+import { dataCoverage } from "../../../data-coverage";
 
 export type CompanyIncomeStatement = ReturnType<typeof buildCompanyIncomeStatement>;
 
@@ -38,6 +39,7 @@ export function buildCompanyIncomeStatement(
       const archYear = parseInt(ctx.selectedLabel, 10);
       const current = archiveIncomeStatement(ctx.db, archYear);
       const prior = archiveIncomeStatement(ctx.db, archYear - 1);
+      const hasPrior = ctx.years.some((entry) => entry.label === String(archYear - 1));
       const priorIncome = new Map(prior.income.map((l) => [l.accountNo, l.amount]));
       const priorExpense = new Map(
         prior.expense.map((l) => [l.accountNo, l.amount]),
@@ -51,18 +53,19 @@ export function buildCompanyIncomeStatement(
         fiscalYears: ctx.years,
         income: current.income.map((l) => ({
           ...l,
-          priorAmount: priorIncome.get(l.accountNo) ?? 0,
+          priorAmount: hasPrior ? (priorIncome.get(l.accountNo) ?? 0) : null,
         })),
         expense: current.expense.map((l) => ({
           ...l,
-          priorAmount: priorExpense.get(l.accountNo) ?? 0,
+          priorAmount: hasPrior ? (priorExpense.get(l.accountNo) ?? 0) : null,
         })),
         totalIncome: current.totalIncome,
         totalExpense: current.totalExpense,
-        priorTotalIncome: prior.totalIncome,
-        priorTotalExpense: prior.totalExpense,
+        priorTotalIncome: hasPrior ? prior.totalIncome : null,
+        priorTotalExpense: hasPrior ? prior.totalExpense : null,
         result: current.result,
-        priorResult: prior.result,
+        priorResult: hasPrior ? prior.result : null,
+        coverage: dataCoverage("final", `${ctx.selectedLabel}-12-31`, hasPrior ? "available" : "not_comparable", "archived", ["Læsbar arkivsaldo; perioden er endelig/låst."]),
       };
     }
 
@@ -73,6 +76,8 @@ export function buildCompanyIncomeStatement(
       `${yearNum - 1}-01-01`,
       `${yearNum - 1}-12-31`,
     );
+    const hasPrior = ctx.years.some((entry) => entry.label === String(yearNum - 1));
+    const latest = ctx.db.query(`SELECT MAX(transaction_date) AS date FROM journal_entries WHERE status = 'posted' AND transaction_date >= ? AND transaction_date <= ?`).get(`${yearNum}-01-01`, `${yearNum}-12-31`) as { date: string | null };
     const priorIncome = new Map(prior.income.map((l) => [l.accountNo, l.amount]));
     const priorExpense = new Map(prior.expense.map((l) => [l.accountNo, l.amount]));
 
@@ -80,13 +85,13 @@ export function buildCompanyIncomeStatement(
       accountNo: l.accountNo,
       name: l.name,
       amount: l.amount,
-      priorAmount: priorIncome.get(l.accountNo) ?? 0,
+      priorAmount: hasPrior ? (priorIncome.get(l.accountNo) ?? 0) : null,
     }));
     const expense: IncomeStatementLine[] = current.expense.map((l) => ({
       accountNo: l.accountNo,
       name: l.name,
       amount: l.amount,
-      priorAmount: priorExpense.get(l.accountNo) ?? 0,
+      priorAmount: hasPrior ? (priorExpense.get(l.accountNo) ?? 0) : null,
     }));
 
     return {
@@ -100,10 +105,11 @@ export function buildCompanyIncomeStatement(
       expense,
       totalIncome: current.totalIncome,
       totalExpense: current.totalExpense,
-      priorTotalIncome: prior.totalIncome,
-      priorTotalExpense: prior.totalExpense,
+      priorTotalIncome: hasPrior ? prior.totalIncome : null,
+      priorTotalExpense: hasPrior ? prior.totalExpense : null,
       result: current.result,
-      priorResult: prior.result,
+      priorResult: hasPrior ? prior.result : null,
+      coverage: dataCoverage("current", latest.date, hasPrior ? "available" : "not_comparable", "native", ["Seneste bogførte journalpost i valgt regnskabsår."]),
     };
   } finally {
     ctx.db.close();

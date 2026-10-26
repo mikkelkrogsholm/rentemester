@@ -16,11 +16,16 @@ import type { Database, SQLQueryBindings } from "bun:sqlite";
 import { z } from "zod";
 import { existsSync } from "node:fs";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { isAbsolute, resolve, sep } from "node:path";
 import { openDb, migrate } from "../core/db";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
 import { companyPaths } from "../core/paths";
-import { isValidSlug, resolveConfiguredWorkspaceRoot, resolveWorkspaceSlug } from "../core/workspace";
+import { resolveConfiguredWorkspaceRoot } from "../core/workspace";
+import {
+  companyOperationTargetExists,
+  resolveCompanyOperationTarget,
+  runCompanyWriteSession,
+  type CompanyOperationTarget,
+} from "../core/company-operation";
 import {
   asDocumentId,
   asJournalEntryId,
@@ -64,9 +69,7 @@ function safeErrorEnvelope(context: string, message: string): Envelope {
  * Result of resolving the `company` tool argument: either a concrete company
  * directory, or a caller-safe error message (already path-redacted).
  */
-type CompanyArgResolution =
-  | { ok: true; companyRoot: string }
-  | { ok: false; error: string };
+type CompanyArgResolution = CompanyOperationTarget;
 
 /**
  * Resolves the `company` argument of an MCP tool to a concrete company
@@ -82,47 +85,7 @@ type CompanyArgResolution =
  * accepts a slug with zero per-tool changes — no endpoint or schema churn.
  */
 export function resolveCompanyArg(raw: string): CompanyArgResolution {
-  // Only a bare, separator-free, slug-shaped value is a slug candidate, so a
-  // real path can never be misread as a slug.
-  const looksLikeBareSlug = !raw.includes("/") && !raw.includes("\\") && isValidSlug(raw);
-  if (looksLikeBareSlug) {
-    let workspaceRoot: string | null;
-    try {
-      workspaceRoot = resolveConfiguredWorkspaceRoot();
-    } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : String(error) };
-    }
-    if (workspaceRoot) {
-      const fromSlug = resolveWorkspaceSlug(workspaceRoot, raw);
-      if (fromSlug) return { ok: true, companyRoot: fromSlug };
-      // Slug-shaped value, workspace configured, but no such slug in the
-      // manifest. Name the manifest explicitly so the caller knows to check
-      // the registered slugs — not a filesystem path. (AGENT-9)
-      return {
-        ok: false,
-        error: `ingen virksomhed med slug '${raw}' findes i det konfigurerede workspace (slug ikke i workspace-manifestet — tjek de registrerede slugs)`,
-      };
-    }
-    // The argument is slug-shaped (no separators, slug pattern) and clearly NOT
-    // a path the caller meant to pass. With no workspace configured a slug can
-    // never resolve, so report THAT precisely (AGENT-9) rather than letting it
-    // fall through to the generic "company path does not exist" — the caller
-    // needs to set RENTEMESTER_WORKSPACE, not fix a path.
-    return {
-      ok: false,
-      error: `intet workspace konfigureret: sæt RENTEMESTER_WORKSPACE til en workspace-mappe for at bruge slug '${raw}', eller angiv en absolut virksomhedssti i stedet`,
-    };
-  }
-
-  const segments = raw.split(/[\\/]+/);
-  if (segments.includes("..")) {
-    return { ok: false, error: "company must not contain parent-directory ('..') segments" };
-  }
-  const resolved = resolve(raw);
-  if (!isAbsolute(resolved) || resolved.split(sep).includes("..")) {
-    return { ok: false, error: "company resolved to an unsafe path" };
-  }
-  return { ok: true, companyRoot: resolved };
+  return resolveCompanyOperationTarget(raw);
 }
 
 /**
@@ -277,7 +240,7 @@ export function withCompanyDb<TArgs extends { company: string }>(
     // top-level registration proxy.
     const readOnly = readOnlyToolInvocation.getStore() !== false;
     const dbPath = companyPaths(companyRoot).db;
-    if (!existsSync(companyRoot) || (readOnly && !existsSync(dbPath))) {
+    if (!companyOperationTargetExists(companyRoot) || (readOnly && !existsSync(dbPath))) {
       console.error(`[mcp:withCompanyDb] company path does not exist: ${companyRoot}`);
       return envelopeToCallResult(
         errorEnvelope("company path does not exist or is not initialized"),
@@ -338,7 +301,7 @@ export function withCompanyDbConfirmed<TArgs extends { company: string; confirm?
   handler: (ctx: { db: Database; actor: McpActor; args: TArgs }) => Envelope | Promise<Envelope>,
   options: { keyIdempotent?: keyof typeof RETRY_CLASS_BY_OPERATION; requireIdempotencyKey?: boolean; idempotencyPayload?: (args: TArgs) => Record<string, unknown> } = {},
 ): (args: TArgs) => Promise<ReturnType<typeof envelopeToCallResult>> {
-  return async (args) => {
+  return markCompanyRuntime(async (args) => {
     if (args?.confirm !== true) {
       // The machine-readable `code: "CONFIRM_REQUIRED"` lets an agent branch
       // on the missing-confirm precondition without parsing the free-text
@@ -353,34 +316,68 @@ export function withCompanyDbConfirmed<TArgs extends { company: string; confirm?
     }
     // SEC-2: every confirmed MCP write passes the same actor allowlist gate as
     // the CLI. `confirm: true` alone is no longer sufficient.
-    return readOnlyToolInvocation.run(false, () => withCompanyDb<TArgs>(server, async (ctx) => {
-      if (!options.keyIdempotent) return handler(ctx);
-      try {
-        const key = validateIdempotencyKey((ctx.args as TArgs & { idempotencyKey?: unknown }).idempotencyKey);
-        if (!key) {
-          if (options.requireIdempotencyKey) return errorEnvelope("idempotencyKey is required", { code: "IDEMPOTENCY_KEY_REQUIRED" });
-          return handler(ctx);
-        }
-        const principal = currentMcpAuthenticatedPrincipal();
-        const execution = executeLocalIdempotentMutation(ctx.db, {
-          key, operation: options.keyIdempotent, workspaceScope: resolveConfiguredWorkspaceRoot() ?? ctx.args.company,
-          companyScope: ctx.args.company, principal: principal && { kind: principal.kind, subjectId: principal.subjectId },
-          payload: options.idempotencyPayload ? options.idempotencyPayload(ctx.args) : withoutIdempotencyTransportFields(ctx.args as Record<string, unknown>), actor: ctx.actor,
-          execute: () => {
-            const result = handler(ctx);
-            if (result instanceof Promise) throw new IdempotencyError("IDEMPOTENCY_STORAGE_FAILURE", "key-idempotent operation must execute synchronously");
-            return result;
-          },
-        });
-        if (!execution.receipt) return execution.result;
-        const data = execution.result.data && typeof execution.result.data === "object" ? { ...execution.result.data, idempotency: execution.receipt } : { idempotency: execution.receipt };
-        return { ...execution.result, data };
-      } catch (error) {
-        if (error instanceof IdempotencyError) return errorEnvelope(error.message, { code: error.code });
-        throw error;
+    const resolution = resolveCompanyArg(args.company);
+    if (!resolution.ok) {
+      console.error(`[mcp:withCompanyDbConfirmed] ${resolution.error}: ${args.company}`);
+      return envelopeToCallResult(errorEnvelope(redactPaths(resolution.error)));
+    }
+    const companyRoot = resolution.companyRoot;
+    if (!companyOperationTargetExists(companyRoot)) {
+      console.error(`[mcp:withCompanyDbConfirmed] company path does not exist: ${companyRoot}`);
+      return envelopeToCallResult(errorEnvelope("company path does not exist or is not initialized"));
+    }
+    const actor = deriveMcpActor(server.server.getClientVersion());
+    const decision = checkActorAllowlist(companyRoot, actor.createdBy);
+    if (!decision.allowed) {
+      console.error(`[mcp:withCompanyDbConfirmed] actor gate: ${decision.reason}`);
+      return envelopeToCallResult(errorEnvelope(redactPaths(decision.reason), { code: "ACTOR_NOT_ALLOWED" }));
+    }
+    try {
+      const session = await runCompanyWriteSession(
+        { companyRoot, checkBackupLock: !toolName.startsWith("system_") },
+        async (db) => {
+          const ctx = { db, actor, args: { ...args, company: companyRoot } as TArgs };
+          if (!options.keyIdempotent) return handler(ctx);
+          try {
+            const key = validateIdempotencyKey((ctx.args as TArgs & { idempotencyKey?: unknown }).idempotencyKey);
+            if (!key) {
+              if (options.requireIdempotencyKey) return errorEnvelope("idempotencyKey is required", { code: "IDEMPOTENCY_KEY_REQUIRED" });
+              return handler(ctx);
+            }
+            const principal = currentMcpAuthenticatedPrincipal();
+            const execution = executeLocalIdempotentMutation(ctx.db, {
+              key, operation: options.keyIdempotent, workspaceScope: resolveConfiguredWorkspaceRoot() ?? ctx.args.company,
+              companyScope: ctx.args.company, principal: principal && { kind: principal.kind, subjectId: principal.subjectId },
+              payload: options.idempotencyPayload ? options.idempotencyPayload(ctx.args) : withoutIdempotencyTransportFields(ctx.args as Record<string, unknown>), actor: ctx.actor,
+              execute: () => {
+                const result = handler(ctx);
+                if (result instanceof Promise) throw new IdempotencyError("IDEMPOTENCY_STORAGE_FAILURE", "key-idempotent operation must execute synchronously");
+                return result;
+              },
+            });
+            if (!execution.receipt) return execution.result;
+            const data = execution.result.data && typeof execution.result.data === "object" ? { ...execution.result.data, idempotency: execution.receipt } : { idempotency: execution.receipt };
+            return { ...execution.result, data };
+          } catch (error) {
+            if (error instanceof IdempotencyError) return errorEnvelope(error.message, { code: error.code });
+            throw error;
+          }
+        },
+      );
+      if (session.kind === "backup_locked") {
+        return envelopeToCallResult(errorEnvelope(
+          `Bogføring er låst (${toolName}): ${session.reason}. ` +
+            "Diagnosticér med system_backup_status; kør derefter system_backup " +
+            "med archive:true for at låse op og placér kopien på en EU/EØS-" +
+            "destination med system_backup_place.",
+          { code: "BACKUP_LOCKED" },
+        ));
       }
-    }, { enforceActorAllowlist: true })(args));
-  };
+      return envelopeToCallResult(session.value);
+    } catch (error) {
+      return envelopeToCallResult(safeErrorEnvelope("withCompanyDbConfirmed", error instanceof Error ? error.message : String(error)));
+    }
+  }, "write");
 }
 
 /** Read-only company wrapper: never migrates, changes journal mode, or creates sidecars. */

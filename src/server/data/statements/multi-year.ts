@@ -8,7 +8,7 @@
 
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../../core/paths";
-import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { getCompanySettings } from "../../../core/company";
 import {
   buildBalanceSheet,
@@ -93,9 +93,8 @@ export function buildCompanyMultiYear(workspaceRoot: string, slug: string) {
 
   const years = buildCompanyFiscalYears(workspaceRoot, slug).years;
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
 
     // Account number → (type, normalBalance), for classifying archived

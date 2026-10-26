@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 /**
  * Rentemester SEO page template
  *
@@ -59,8 +60,8 @@ const jsonLd = [
 >
   <PageHero eyebrow={page.eyebrow} title={page.h1} lead={page.lead} />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CHANGE ME: open with a direct answer. The first paragraph should be useful on its own, because it often determines whether the page matches the search intent.
     </p>
 
@@ -79,35 +80,35 @@ const jsonLd = [
       ]}
     />
 
-    <h2>CHANGE ME: hvad brugeren skal vide først</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>CHANGE ME: hvad brugeren skal vide først</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CHANGE ME: explain the practical answer in plain Danish. Avoid filler, hype and generic definitions.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CHANGE ME: say exactly what the current code supports. If the feature is roadmap-only, say that plainly. Never imply Rentemester is a finished SaaS or a registered standard bookkeeping system unless that has become true.
     </p>
 
-    <h2>Begrænsninger og ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsninger og ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CHANGE ME: list edge cases, legal uncertainty, implementation gaps, and when the user should ask a bookkeeper, accountant or authority.
     </p>
 
-    <h2>Relaterede næste skridt</h2>
-    <ul>
-      <li><a href="/docs/installation">Installer Rentemester lokalt</a></li>
-      <li><a href="/funktioner">Se funktionsoversigten</a></li>
-      <li><a href={SITE.github} rel="noopener" target="_blank">Læs koden på GitHub</a></li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Relaterede næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">Installer Rentemester lokalt</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/funktioner">Se funktionsoversigten</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">Læs koden på GitHub</a></li>
     </ul>
 
     {faq.length > 0 && (
       <>
-        <h2>Ofte stillede spørgsmål</h2>
+        <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
         {faq.map((item) => (
           <>
-            <h3>{item.q}</h3>
-            <p>{item.a}</p>
+            <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+            <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
           </>
         ))}
       </>

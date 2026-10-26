@@ -230,6 +230,9 @@ describe("generateIxbrl (deterministic iXBRL, micro/small subset)", () => {
     expect(ixbrl.ok).toBe(true);
     expect(ixbrl.xhtml).toContain("<?xml");
     expect(ixbrl.xhtml).toContain("xmlns:ix=");
+    expect(ixbrl.xhtml).toContain('<style type="text/css">');
+    expect(ixbrl.xhtml).not.toMatch(/\bstyle\s*=/);
+    expect(ixbrl.xhtml).not.toContain("<script");
     // iXBRL facts present for the core regnskabsklasse-B elements.
     for (const element of IXBRL_TAXONOMY_SUBSET.elements) {
       // Every declared element name appears as an ix fact name attribute.
