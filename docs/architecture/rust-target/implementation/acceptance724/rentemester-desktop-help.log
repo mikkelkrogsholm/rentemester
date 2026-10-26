@@ -1,0 +1,5 @@
+Rentemester Desktop
+  --local | --create-local [--local-workspace PATH]
+  --server HTTPS_ORIGIN
+  Development: --server-binary PATH --web-dir PATH
+Login og MFA foregår i webinterfacet. Lokal data og nøgler forbliver i den private profil.

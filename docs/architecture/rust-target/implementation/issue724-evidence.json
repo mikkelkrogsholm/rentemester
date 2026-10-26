@@ -1,0 +1,62 @@
+{
+  "issue": 724,
+  "whole_issue_accepted": false,
+  "current_staged_mac_package_accepted": true,
+  "checkedAt": "2026-10-26T00:03:07.526423+00:00",
+  "source_revision": "8119057b8987b59dcc9c9b19d42c582035c227b0",
+  "sgdRun": "issue724-current-macos-20261025T235439.978542000",
+  "sgdPhase": "done",
+  "proofs": {
+    "rentemester-desktop-help.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance724/rentemester-desktop-help.log",
+      "sha256": "58af2e74b97db0a041b101f6f5ba391c2c2f764b83185e799b9851e37117fa6b"
+    },
+    "rentemester-server-help.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance724/rentemester-server-help.log",
+      "sha256": "c83466674d111648b089b3a7f6e3125450cd9e000e0645fe84f33e828b084d15"
+    },
+    "rentemester-update-help.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance724/rentemester-update-help.log",
+      "sha256": "a614c978438f022eb03ae2f7ee2411c0b84839c5e462eb642ba92d0f6fef30ab"
+    },
+    "package.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance724/package.json",
+      "sha256": "e43260472c04391d429d182ab4f34f10c3457b161f7fee624da8b683a293d443"
+    },
+    "package.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance724/package.log",
+      "sha256": "e11b3e20166bd4659b685d6e32d3924f27adde46c931081b38a9ee66513531f2"
+    }
+  },
+  "review": "Main inspected unchanged existing builder/assembler and exact manifest/files/modes/toolchain/UI/icon report. All three native binaries --help exited0 without GUI; current Tauri Managed lifecycle drove the packaged pinned1.94.1 server through ownership, shutdown/crash/reopen tests. No installed app replacement, signing, promotion or financial/provider replay.",
+  "accepted": [
+    "Current clean8119057b arm64 dev bundle; server/updater Rust1.94.1, Tauri Rust1.99.1;13 manifest files, approved icon and accepted current React UI29ad1849.",
+    "Exact copied bundle retained outside completed integration worktree; manifest and binary hashes identify the tested bytes.",
+    "Existing actual_owned_server test PASS against actual packaged server/web;3native headless help PASS. Prior R103 update/fencing receipts retained, not repeated."
+  ],
+  "buildWarnings": [
+    "Rust1.99.1 rust-objcopy could not load its libLLVM.dylib while stripping debug info; build and focused runtime test completed successfully. Exact emitted bytes are hashed; unsigned dev candidate is not a release claim."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "missing": "Qualified claimed OS/CPU signed install/offline launch/update interruption/signature-refusal/uninstall-data-retention native journeys remain."
+    },
+    {
+      "criterion": 2,
+      "missing": "Prior R103 staged update/compatibility/fencing proofs retained; exact shipped-package/native update and qualified-platform failure matrix remain."
+    },
+    {
+      "criterion": 3,
+      "accepted": "Current candidate exact bytes/toolchains identified",
+      "missing": "Apple signing/notarization not performed or qualified. Original release provenance/signing gates remain."
+    },
+    {
+      "criterion": 4,
+      "missing": "Original installed J07 automation lifetime/sleep/closure/update visibility remains final manual acceptance."
+    }
+  ],
+  "wholeIssueClosureBlocker": "All4original criteria and #678/#719/#721/#722 dependencies remain; current unsigned staged candidate is only a technical deliverable for final installed acceptance.",
+  "closed55OriginalIssues": 43,
+  "remaining55OriginalIssues": 12
+}

@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original725 current LinuxARM64 package/HTTPS/signedrestore technical portion accepted; whole725 stays open for AMD64/reproducibility/registry/independentpromotion and native dependencies.",
-  "code_revision": "dbf28b96c43e40b336f5a7f4d6e45701fef8697c",
+  "current_increment": "Original724 current arm64 Mac candidate accepted at8119057b; original signing/platform/installed acceptance stays open.",
+  "code_revision": "8119057b8987b59dcc9c9b19d42c582035c227b0",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original725_technical_accepted_original_external_gates_pending",
+  "state": "original724_current_candidate_accepted_final_release_gates_pending",
   "issues_closed": 43,
-  "next": "Publish accepted725technicalscope with exact remaining original gates; choose next independent719desktop lifecycle restaccept from existingissues. No further server/testplatform polish, no productionpromotion.",
+  "next": "Original723 retained reported-period signed archive source-free fresh-target restore/read-only normal-owner readback; no posting/recording/provider replay.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16748,6 +16748,14 @@
       "report": "docs/architecture/rust-target/implementation/issue722-evidence.json",
       "status": "Current canonicalvisibleorigin/currentcompany actualRustMFAreader accepted; originalfinalnativeJ03J06 gates retained",
       "sgdRun": "issue722-active-server-20261025T233611.651158000"
+    },
+    "issue724_current_mac_package": {
+      "issue": 724,
+      "whole_issue_accepted": false,
+      "source_revision": "8119057b8987b59dcc9c9b19d42c582035c227b0",
+      "report": "docs/architecture/rust-target/implementation/issue724-evidence.json",
+      "status": "Current exact Mac candidate + actual packaged-server Managed compatibility accepted; all original final gates retained",
+      "sgdRun": "issue724-current-macos-20261025T235439.978542000"
     }
   },
   "verified_history": [
@@ -19295,7 +19303,7 @@
     "oneActiveIssue": true,
     "heartbeat": "rentemester-luk-resterende-rust-issues",
     "manualDesktopLast": true,
-    "currentEvidence": "issue718-evidence.json",
+    "currentEvidence": "issue724-evidence.json",
     "allOriginalScopesRetained": true,
     "current718ScopedResult": {
       "evidence": "issue718-evidence.json",
@@ -19313,6 +19321,13 @@
       "runtimeSource": "6ffe5703",
       "harnessSource": "ab7a4cf1",
       "remaining": "OriginalAMD64/reproducibility/registry/independenthuman/providerpromotion plus native712/718LAST dependencies"
+    },
+    "current724TechnicalResult": {
+      "evidence": "issue724-evidence.json",
+      "wholeIssueAccepted": false,
+      "technicalPortionAccepted": true,
+      "source": "8119057b8987b59dcc9c9b19d42c582035c227b0",
+      "remaining": "All4original criteria and #678/#719/#721/#722 dependencies remain; current unsigned staged candidate is only a technical deliverable for final installed acceptance."
     }
   }
 }

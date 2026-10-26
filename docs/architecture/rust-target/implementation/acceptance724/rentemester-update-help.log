@@ -1,0 +1,5 @@
+rentemester-update verify --package CANDIDATE.app --trusted-key INDEPENDENT_RAW32_PUBLIC_KEY
+rentemester-update status --installed INSTALLED.app --trusted-key PUBLIC_KEY
+rentemester-update apply --package CANDIDATE.app --installed INSTALLED.app --trusted-key PUBLIC_KEY --confirm
+rentemester-update recover --installed INSTALLED.app --trusted-key PUBLIC_KEY --confirm
+Close the app first. Existing installation must already have an authenticated manifest. No network, workspace access, schema migration or automatic rollback. After an interrupted operation inspect status, then explicitly recover; never blindly replay apply. Apple signing/notarization remains a separate release gate.
