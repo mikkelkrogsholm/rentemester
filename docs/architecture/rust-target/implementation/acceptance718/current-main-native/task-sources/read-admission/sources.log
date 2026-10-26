@@ -1,0 +1,17 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-source-read-admission-20261026T182806.785458000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-source-read-admission-20261026T182806.785458000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-source-read-admission-20261026T182806.785458000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-source-read-admission-20261026T182806.785458000/integration/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.34s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 6 tests
+test portable_backup::tasks::sources::tests::source_codec_roundtrip_noevent_other_principal_and_downgrade_refusal ... ok
+test tasks::sources::tests::sources_original_integrity_failure_cannot_become_verified_or_erase_known_tasks ... ok
+test tasks::sources::tests::sources_annual_unknown_relevance_records_resolved_fact_without_false_completion ... ok
+test tasks::sources::tests::sources_sync_exact_replay_noop_product_completion_reopen_and_recovery ... ok
+test tasks::sources::tests::sources_native_all_workbench_pages_and_unknown_facts_are_honest ... ok
+test tasks::sources::tests::sources_native_vat_zero_refund_cadences_and_actual_reported_reference ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 730 filtered out; finished in 12.48s
+

@@ -1,0 +1,64 @@
+{
+  "format": "native-task-source-read-admission/1",
+  "sourceCommit": "471b0e8780eefed2642827a6248f3a5519a60510",
+  "runId": "issue718-native-source-read-admission-20261026T182806.785458000",
+  "whole718Accepted": false,
+  "review": "Namespace/descriptor identity is not schema lineage. Narrow wrapper reuses existing journal_preview require_current without a write transaction or migration; host defers all source SQL until this read admission passes. Unknown company schema becomes preserved unknown sources/scoped failure.",
+  "checks": [
+    {
+      "check": "sources",
+      "key": "f5493a7bdc16fbe3994dc44f90fc8d78a1e6be2460fe16fd731f00b1d59f2ddd",
+      "argv": [
+        "env",
+        "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+        "python3",
+        "scripts/rust/cargo-guard.py",
+        "cargo",
+        "test",
+        "-p",
+        "rentemester-storage",
+        "--lib",
+        "tasks::sources::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "sources.log",
+      "sha256": "408c4679b8f227952cdc67fafbf883766f9182d460ccc2dd36ebca6ad1d77b3a"
+    },
+    {
+      "check": "host",
+      "key": "95e1877ec6ce95fa0aef419934aa96e163f2b646de9091fd17c3d7f4e9eb914e",
+      "argv": [
+        "env",
+        "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+        "python3",
+        "scripts/rust/cargo-guard.py",
+        "cargo",
+        "test",
+        "-p",
+        "rentemester-host",
+        "--lib",
+        "tasks::tests::",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "host.log",
+      "sha256": "cc1093063d5ad48a2ed00f6607ec1c8e8b55b0d8d21ee38feee7bf03b4af27a4"
+    }
+  ],
+  "sourceFiles": {
+    "crates/rentemester-host/src/tasks.rs": "d642d3fb74e3eb8733a48a03e1b19b3a850bbb37f46245cc10f6df3d9fe82a44",
+    "crates/rentemester-host/src/tasks/tests.rs": "a670e503efb11d70fe744f651d43c29a2fc178d4f474c7066de33a897834742a",
+    "crates/rentemester-storage/src/tasks/sources.rs": "2976547a74484f5e6cb9d5a156a05be784037cc3f02531d0997ad0a0d2d14f04",
+    "crates/rentemester-storage/src/tasks/sources/tests.rs": "2e21889fb66563fb0dbfd4826e5cfe1711aa51fb1e211c6c6640db6fcca28336"
+  },
+  "observed": [
+    "Canonical native physical101-row source fixture still succeeds; ALTER TABLE unsupported company shape refuses discovery and preserves unknown source tasks",
+    "Same real native ledger with actual reported VAT+reference resolves only with intact original proofs; Err and nonempty integrity failures remain unknown"
+  ],
+  "reusedEvidence": "Prior8e6bb92e actual React/CLI/MCP/stop-restart receipts remain valid for their recorded revision. This guard-only change is qualified by current native host/storage checks; no historical financial/provider effects or accepted browser fixture replayed. No new current release binary or whole-main/platform acceptance claimed."
+}
