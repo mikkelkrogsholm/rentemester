@@ -936,3 +936,217 @@ fn nonempty_jobs_handoff_reconsent_and_target_only_journal_source_unavailable_re
         "unresolved_attempt"
     );
 }
+
+// Same bounded child-process pattern as company_baseline's process-death tests.
+// These barriers observe before the operation and after its durable commit;
+// they do not claim to inject inside SQLite's commit implementation.
+#[test]
+#[ignore = "activation process helper invoked only by its parent test"]
+fn activation_process_child() {
+    let phase = std::env::var("RM_TRANSFER_ACTIVATION_PHASE").unwrap();
+    let path = std::path::PathBuf::from(std::env::var("RM_TRANSFER_ACTIVATION_ROOT").unwrap());
+    let uid = std::env::var("RM_TRANSFER_ACTIVATION_UID")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let mut target =
+        Owner::open_with_profile(&path, uid, "w", "a", NamespaceProfile::LocalUserMacos).unwrap();
+    let cookies = CookieVerifier::new(
+        "w",
+        CookieProfile::Development,
+        "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE",
+    )
+    .unwrap();
+    let cookie = cookies.issue_session("target-token").unwrap();
+    let proof = cookies
+        .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
+        .unwrap();
+    assert_eq!(status(&mut target, &cookies, &proof)["mode"], "staged");
+    if phase == "after" {
+        let input = serde_json::from_slice(
+            &std::fs::read(std::env::var("RM_TRANSFER_ACTIVATION_INPUT").unwrap()).unwrap(),
+        )
+        .unwrap();
+        let trusted = TrustedPublicKey::from_bytes(&key().public_key_bytes()).unwrap();
+        let activated = target
+            .activate_workspace_transfer(&cookies, &Fixed(NOW), &proof, &input, &trusted)
+            .unwrap()
+            .outcome
+            .unwrap();
+        assert_eq!(activated["mode"], "active");
+    } else {
+        assert_eq!(phase, "before");
+    }
+    let observed = status(&mut target, &cookies, &proof);
+    std::fs::write(
+        std::env::var("RM_TRANSFER_ACTIVATION_MARKER").unwrap(),
+        serde_json::to_vec(&observed).unwrap(),
+    )
+    .unwrap();
+    loop {
+        std::thread::park();
+    }
+}
+
+#[test]
+fn activation_process_death_reopens_known_authority_without_old_source_writer() {
+    use std::os::unix::process::ExitStatusExt;
+    use std::process::{Command, Stdio};
+    use std::time::{Duration, Instant};
+    struct Reaped(std::process::Child);
+    impl Drop for Reaped {
+        fn drop(&mut self) {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
+    }
+    for phase in ["before", "after"] {
+        let (d, mut source, cookies, proof, uid) = setup();
+        let key = key();
+        let trusted = TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
+        let frozen = freeze(&mut source, &cookies, &proof);
+        let export =
+            serde_json::from_value(json!({"expectedStateHash":frozen["stateHash"],"confirm":true}))
+                .unwrap();
+        let wire = source
+            .export_workspace_transfer(&cookies, &Fixed(NOW), &proof, &export, &key)
+            .unwrap()
+            .outcome
+            .unwrap();
+        let artifact = rentemester_runtime::backup_artifact::verify(&wire, &trusted).unwrap();
+        let offered = status(&mut source, &cookies, &proof);
+        let root = d.path().canonicalize().unwrap();
+        let target_path = root.join("activation-target");
+        let op = rentemester_runtime::bootstrap::Operator::from_policy(
+            "w",
+            "system:synthetic-transfer",
+            &["system:synthetic-transfer".into()],
+        )
+        .unwrap();
+        let mut target = Owner::stage_transfer_new(
+            &target_path,
+            uid,
+            "w",
+            "a",
+            NamespaceProfile::LocalUserMacos,
+            &artifact,
+            &op,
+            &store::digest(&wire),
+            "https://activation.example.invalid",
+        )
+        .unwrap();
+        let target_proof = install_target_identity(&mut target, &cookies);
+        let staged = status(&mut target, &cookies, &target_proof);
+        let release = serde_json::from_value(json!({"expectedStateHash":offered["stateHash"],"challenge":staged["challenge"],"reason":"Reviewed synthetic activation-crash target","confirm":true})).unwrap();
+        let moved = source
+            .release_workspace_transfer(&cookies, &Fixed(NOW), &proof, &release, &key)
+            .unwrap()
+            .outcome
+            .unwrap();
+        source.try_close().unwrap();
+        target.try_close().unwrap();
+        let input = json!({"expectedStateHash":staged["stateHash"],"release":moved["release"],"reason":"Reviewed source release after activation interruption","confirm":true});
+        let input_path = root.join("activation-input.json");
+        std::fs::write(&input_path, serde_json::to_vec(&input).unwrap()).unwrap();
+        let marker = root.join("activation.ready");
+        let log = std::fs::File::create(root.join("activation-child.log")).unwrap();
+        let mut child = Reaped(
+            Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "workspace_transfer::tests::activation_process_child",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("RM_TRANSFER_ACTIVATION_PHASE", phase)
+                .env("RM_TRANSFER_ACTIVATION_ROOT", &target_path)
+                .env("RM_TRANSFER_ACTIVATION_UID", uid.to_string())
+                .env("RM_TRANSFER_ACTIVATION_INPUT", &input_path)
+                .env("RM_TRANSFER_ACTIVATION_MARKER", &marker)
+                .stdout(Stdio::null())
+                .stderr(Stdio::from(log))
+                .spawn()
+                .unwrap(),
+        );
+        let started = Instant::now();
+        while !marker.exists() {
+            assert!(
+                child.0.try_wait().unwrap().is_none(),
+                "activation child stopped before checkpoint"
+            );
+            assert!(
+                started.elapsed() < Duration::from_secs(10),
+                "bounded activation checkpoint deadline"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let observed: Value = serde_json::from_slice(&std::fs::read(&marker).unwrap()).unwrap();
+        let expected_mode = if phase == "before" {
+            "staged"
+        } else {
+            "active"
+        };
+        assert_eq!(observed["mode"], expected_mode);
+        child.0.kill().unwrap();
+        assert_eq!(child.0.wait().unwrap().signal(), Some(9));
+        let recover = Instant::now();
+        let mut target = Owner::open_with_profile(
+            &target_path,
+            uid,
+            "w",
+            "a",
+            NamespaceProfile::LocalUserMacos,
+        )
+        .unwrap();
+        assert_eq!(status(&mut target, &cookies, &target_proof), observed);
+        let recovered_ms = recover.elapsed().as_millis();
+        assert_eq!(count(&target, "journal_entries"), 0);
+        let mut source = Owner::open_with_profile(
+            &root.join("workspace"),
+            uid,
+            "w",
+            "a",
+            NamespaceProfile::LocalUserMacos,
+        )
+        .unwrap();
+        assert_eq!(status(&mut source, &cookies, &proof), moved);
+        assert!(
+            store::require_business_write(
+                source.held.0.as_ref().unwrap().control.as_ref().unwrap()
+            )
+            .is_err()
+        );
+        // A pre-operation crash needs the original reviewed activation once.
+        // An accepted operation with a lost process/reply is read back, never blindly repeated.
+        if phase == "before" {
+            assert!(
+                store::require_business_write(
+                    target.held.0.as_ref().unwrap().control.as_ref().unwrap()
+                )
+                .is_err()
+            );
+            let activate = serde_json::from_value(input).unwrap();
+            target
+                .activate_workspace_transfer(
+                    &cookies,
+                    &Fixed(NOW),
+                    &target_proof,
+                    &activate,
+                    &trusted,
+                )
+                .unwrap()
+                .outcome
+                .unwrap();
+        }
+        assert_eq!(
+            status(&mut target, &cookies, &target_proof)["mode"],
+            "active"
+        );
+        assert_eq!(count(&source, "journal_entries"), 0);
+        eprintln!(
+            "activation_process_recovery phase={phase} observed={expected_mode} recovery_ms={recovered_ms} journal_entries_lost=0 source_mode=moved"
+        );
+        source.try_close().unwrap();
+        target.try_close().unwrap();
+    }
+}
