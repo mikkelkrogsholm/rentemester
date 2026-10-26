@@ -864,5 +864,12 @@
     "status": "manual application/HTTP/CLI/MCP and existing React lifecycle accepted; whole718 remains OPEN",
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/qualification.json",
     "wholeIssueAccepted": false
+  },
+  "currentMainNativeRoutineJourney": {
+    "whole_issue_accepted": false,
+    "source_revision": "fd716491d0ea58534b63de28e605e2b0960fea36",
+    "report": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/qualification.json",
+    "sha256": "9404c762ca6a4e4cc5b9162083d0f5c02739983ece4dbcbdf3fa34a2e8a8e339",
+    "scope": "Actual existing React routine lifecycle and restart/receipts through shared Rust server/CLI/MCP, with versioned recovery; source/runtime/boards/knowledge/financial main parity and final native gates remain."
   }
 }

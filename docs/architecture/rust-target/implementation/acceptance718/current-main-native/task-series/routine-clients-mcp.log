@@ -1,0 +1,124 @@
+   Compiling libc v0.2.191
+   Compiling syn v3.0.9
+   Compiling synstructure v0.14.0
+   Compiling zerofrom-derive v0.1.8
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling jobserver v0.1.35
+   Compiling cc v1.8.0
+   Compiling yoke v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling zerovec v0.11.8
+   Compiling cmake v0.1.58
+   Compiling displaydoc v0.2.7
+   Compiling aws-lc-sys v0.46.0
+   Compiling tinystr v0.8.4
+   Compiling icu_locale_core v2.3.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling icu_collections v2.3.0
+   Compiling tokio v1.53.3
+   Compiling icu_provider v2.3.1
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling memchr v2.8.3
+   Compiling rustversion v1.0.23
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling idna_adapter v1.2.2
+   Compiling equivalent v1.0.3
+   Compiling hashbrown v0.17.1
+   Compiling cfg_aliases v0.2.2
+   Compiling hyper v1.12.0
+   Compiling nix v0.31.3
+   Compiling indexmap v2.14.2
+   Compiling encoding_rs v0.8.42
+   Compiling idna v1.1.0
+   Compiling security-framework-sys v2.17.0
+   Compiling core-foundation v0.10.1
+   Compiling siphasher v1.0.4
+   Compiling crc32fast v1.5.2
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.21
+   Compiling phf_shared v0.12.1
+   Compiling url v2.5.8
+   Compiling security-framework v3.7.0
+   Compiling aho-corasick v1.1.5
+   Compiling serde_derive v1.0.229
+   Compiling cpufeatures v0.2.17
+   Compiling syn v2.0.119
+   Compiling simdutf8 v0.1.5
+   Compiling multiversion_no_op v1.0.0
+   Compiling zlib-rs v0.6.8
+   Compiling regex-syntax v0.8.11
+   Compiling chrono-tz v0.10.4
+   Compiling scopeguard v1.2.0
+   Compiling regex-automata v0.4.18
+   Compiling flate2 v1.1.10
+   Compiling hashify v0.2.9
+   Compiling sha2 v0.10.9
+   Compiling serde v1.0.229
+   Compiling aws-lc-rs v1.18.2
+   Compiling rustls v0.23.46
+   Compiling serde_json v1.0.154
+   Compiling rustls-webpki v0.103.15
+   Compiling tower-http v0.6.11
+   Compiling phf v0.12.1
+   Compiling chrono v0.4.45
+   Compiling num-integer v0.1.47
+   Compiling errno v0.3.14
+   Compiling typed-path v0.12.4
+   Compiling tokio-rustls v0.26.6
+   Compiling hyper-rustls v0.27.10
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling tinyvec v1.13.3
+   Compiling unicode-normalization v0.1.25
+   Compiling reqwest v0.13.5
+   Compiling zip v9.0.5
+   Compiling rustix v1.1.5
+   Compiling num-bigint v0.5.1
+   Compiling mail-parser v0.11.9
+   Compiling regex v1.13.1
+   Compiling ryu-js v1.0.3
+   Compiling unicode-properties v0.1.4
+   Compiling roxmltree v0.20.0
+   Compiling rentemester-client v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-routine-journey-20261026T135005.992503000/routine-clients/crates/rentemester-client)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-routine-journey-20261026T135005.992503000/routine-clients/crates/rentemester-engine)
+   Compiling rentemester-mcp v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-routine-journey-20261026T135005.992503000/routine-clients/crates/rentemester-mcp)
+warning: unused imports: `company_schema` and `tool`
+ --> crates/rentemester-mcp/src/backup_governance.rs:1:20
+  |
+1 | use crate::tools::{company_schema, tool};
+  |                    ^^^^^^^^^^^^^^  ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `serde::Deserialize`
+ --> crates/rentemester-mcp/src/backup_governance.rs:3:5
+  |
+3 | use serde::Deserialize;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `json`
+ --> crates/rentemester-mcp/src/backup_governance.rs:4:25
+  |
+4 | use serde_json::{Value, json};
+  |                         ^^^^
+
+warning: unused import: `crate::public_einvoice::original717_tool_result`
+  --> crates/rentemester-mcp/src/digisense_received.rs:28:9
+   |
+28 | pub use crate::public_einvoice::original717_tool_result;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rentemester-mcp` (bin "rentemester-mcp" test) generated 4 warnings (run `cargo fix --bin "rentemester-mcp" -p rentemester-mcp --tests` to apply 4 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 02s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/routine-clients/debug/deps/rentemester_mcp-9c27c4f06a987b8c)
+
+running 1 test
+test tasks::tests::tools_keep_original_shapes_and_explicit_confirmation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.01s
+

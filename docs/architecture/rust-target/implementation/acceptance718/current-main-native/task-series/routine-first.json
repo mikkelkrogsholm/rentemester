@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "syntheticOnly": true,
+  "browser": [
+    "routine save",
+    "calendar projection",
+    "explicit materialization",
+    "documented completion",
+    "future revision",
+    "pause"
+  ],
+  "clients": [
+    "original task-series list",
+    "task_series_project"
+  ],
+  "errors": []
+}

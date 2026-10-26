@@ -19,8 +19,25 @@ oprindelige input og nøglen; `tasks receipt` med `{"idempotencyKey":"original-k
 viser kun en kvittering, som stadig er synlig med de aktuelle rettigheder.
 Kontrollér også `get`/`history`, før en ny handling startes. Klienten gentager
 aldrig automatisk en skrivning. Historiske ansvarlige eller receipts giver ingen
-adgang. Dette aktiverer det manuelle opgaveforløb; automatiske kilder, rutiner,
-påmindelser og beskyttede task-linked knowledge-forløb er endnu ikke porteret.
+adgang. Automatiske kilder, påmindelser og beskyttede task-linked knowledge-forløb
+er endnu ikke porteret.
+
+### Rutiner gennem Rust-serveren
+
+`rentemester-rust task-series list|save|project|materialize` bruger samme transport
+og private credentials. MCP-navnene er `task_series_list`, `task_series_save`,
+`task_series_project` og `task_series_materialize`; hjælp og skemaer viser de
+præcise flade JSON-input. `save` kræver `series`, `expectedVersion` (`0` ved
+oprettelse) og `idempotencyKey`. `materialize` accepterer `companySlugs?`,
+`asOfDate?` og `idempotencyKey`. Begge skrivninger kræver eksplicit bekræftelse.
+`project` kræver `from` og `to`; projektion opretter ingen opgaver.
+
+Hvert berørt selskab kræver aktuel manage-adgang før en gemt effekt kan
+returneres. Tomt workspace-scope kræver workspace owner; en eksplicit tom
+`companySlugs` bliver ikke til alle selskaber. Fremtidige revisioner og pause
+ændrer ikke allerede konkrete perioder. `tasks receipt` kan også kontrollere
+de oprindelige rutinenøgler. Materialisering er eksplicit; denne leverance
+starter ingen automatisk runner.
 
 ### Lokal original `system healthcheck` (Rust)
 

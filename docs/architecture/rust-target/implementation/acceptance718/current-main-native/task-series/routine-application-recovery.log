@@ -1,0 +1,14 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-routine-journey-20261026T135005.992503000/routine-application/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.03s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/routine-application/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 6 tests
+test portable_backup::tasks::routine_tests::manual_only_codec1_bytes_and_digest_stay_identical ... ok
+test portable_backup::tasks::routine_tests::codec2_routine_roundtrip_is_source_free_preserves_receipts_and_resets_runtime ... ok
+test portable_backup::tasks::tests::unknown_company_wrong_codec_and_missing_table_refuse_atomically ... ok
+test portable_backup::tasks::tests::history_and_receipts_roundtrip_without_runtime_or_authority ... ok
+test portable_backup::tasks::tests::malformed_cross_principal_and_wrong_operation_receipts_refuse_without_partial_restore ... ok
+test portable_backup::tasks::routine_tests::codec2_refuses_wrong_principal_result_counts_scope_identity_and_codec1_downgrade_atomically ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 723 filtered out; finished in 4.34s
+

@@ -1,0 +1,107 @@
+{
+  "format": "rentemester-native-routine-qualification/1",
+  "wholeIssueAccepted": false,
+  "issue": 718,
+  "sgdRun": "issue718-native-routine-journey-20261026T135005.992503000",
+  "integratedSource": "fd716491d0ea58534b63de28e605e2b0960fea36",
+  "sourceFiles": {
+    "crates/rentemester-application/src/tasks.rs": "f58b0b3b6b501030e7dcd914bd65efb8954d61f7e99e1eb5481c3fc617d0698b",
+    "crates/rentemester-application/src/tasks/series.rs": "c56c0f9e216319a467b42302282d8f9ed649bf085d2840dd3f29d0f8e7803f7c",
+    "crates/rentemester-application/src/tasks/tests.rs": "3a0f2efa2994a9a763046753cc2463680303ecb40e2c41ae9b76b5d9ac488b9f",
+    "crates/rentemester-cli/src/main.rs": "f3c94495620325e9a6283f994c6762b24829f2ece8bf11228b349ac829779f18",
+    "crates/rentemester-cli/src/original_discovery.rs": "3f8090f3a0085f71b9a7a13ceb59949449c588139794d9cd9c800b03d3870ef8",
+    "crates/rentemester-cli/src/tasks.rs": "77d5b138a9af5c779644376f2aa6d624338d5fa7f987fa7b6187609bc537d0df",
+    "crates/rentemester-client/src/tasks-input.json": "bfd81e61ce116b82a4e3d8afc1ce316f0207c2b2e94d939c7c8cc2aab8a9d722",
+    "crates/rentemester-client/src/tasks.rs": "327a2c1f79a58f0465e2fa39e41127b3b782785d234c87f86bda38ea6f06dfd0",
+    "crates/rentemester-engine/src/tasks/mod.rs": "ee874048dec84f9c0b9b0bf59a14d237f39a8ba8c8099d499e82bc7fe7d2e754",
+    "crates/rentemester-engine/src/tasks/series.rs": "5d11f79ea51d21412a51d02ca7d4f691234308d9f207905aaac9c9629469cd6f",
+    "crates/rentemester-engine/src/tasks/series/generate-main.ts": "98b5675c67d5067266f062a28381e0e563a4b5f9b59d1a150ecabec8758bc0f6",
+    "crates/rentemester-engine/src/tasks/series/main-series.json": "71658e7d4244a348fc56cc0fb625177bef77dd4bc516cb4db8ceffb3c6aa64fc",
+    "crates/rentemester-engine/src/tasks/series/tests.rs": "8a513d49c689217fbbb97173064c69a45489df3b7b6d9d58430baf8fc1cac579",
+    "crates/rentemester-mcp/src/tasks.rs": "eae83a18b93bc50eab3e58be223337efd53f9fd09997881994fc61c84f0c77c6",
+    "crates/rentemester-server/src/product_http.rs": "1b5f824a79dc34246414c8e9a44f5a189dfc0c1ec9fd77672a9d2de3a3635779",
+    "crates/rentemester-server/src/product_http/tasks.rs": "d70418f8bfe7eb8049ab6ff762c40e4273ac97f4e093ee7c507bf12e66230025",
+    "crates/rentemester-storage/src/portable_backup/tasks.rs": "232a050797965e5f83ba42093fdcf35b7ab8e36eb25b8b525c4ff86f590d64b9",
+    "crates/rentemester-storage/src/portable_backup/tasks/routine_tests.rs": "ddf9d4a3c138cc46c279c46e03de6cdf90242ba252fc951159ce9e21279430e1",
+    "crates/rentemester-storage/src/portable_backup/tasks/series.rs": "77bcdb09393b8e70ef10e256aa6d362c7ea371f6ac59aaede40ddde8fc007870",
+    "crates/rentemester-storage/src/tasks/mod.rs": "19d67f794c273cbd19f124d0d73105de0863676ca09cbb76a1ccbce90a89cb2a",
+    "crates/rentemester-storage/src/tasks/series.rs": "25665c57655edc647106f4825793c6019df24ba506c7a95c2317c4b4b996494e",
+    "protocol/http-v1.json": "7f9cfee106ac08633cd906692dc902d2bc254467817d3d029871721f4e03816d",
+    "scripts/rust/check-native-task-series.ts": "98dbbc65ef8bf0d5bb27030b9b363ccf915856577fad518cc21ec21aaeb64231",
+    "scripts/rust/check-native-tasks.py": "7c806f48fc9c0bc725b76a23fbbeb98283ea6722272be486cdd297a532e1e093",
+    "scripts/rust/check-native-tasks.ts": "3192b0fcc89d521b1ba5564bc098a7213c090db7fc6932b749254e94e0ab5c17"
+  },
+  "checks": {
+    "routine-application/application": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-application-application.log",
+      "sha256": "0813672ced6f124f8bd9b089e4b81c9660dccb78ac87f3ef95747fc91b92045d",
+      "checkKey": "158f0a6c7530b444caa6041f7cceb3e88fc23d499e73d8a68f25447a570d5d91",
+      "passedCases": 12
+    },
+    "routine-application/recovery": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-application-recovery.log",
+      "sha256": "c1485ce7c614d30058c4bf2ccd478cbedbaaedf76caa7323bd1d72a623c79648",
+      "checkKey": "3486473aa0c1b744b5fe34c8183439943ac34b6b700758f559f5fb7865f0d2da",
+      "passedCases": 6
+    },
+    "routine-application/http": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-application-http.log",
+      "sha256": "cf65842cbbdd8b7aa4a25b4b40ebdcd90f77e73e43ef51ba78198285182318b2",
+      "checkKey": "2088dd30e3f996a776d385ac66961de242e3aa398ce29ee3537e3f930ca5e930",
+      "passedCases": 2
+    },
+    "routine-application/manifest": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-application-manifest.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checkKey": "4c9589b97608f4fc1dacaae787b04922d0c0f07636f6b7832d7906ea8639e2e1",
+      "passedCases": null
+    },
+    "routine-clients/clients": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-clients-clients.log",
+      "sha256": "efaed2c8ad2d145ac65cd606a272d62c83bad0f0764e8e3a6fa7e8a2761f7116",
+      "checkKey": "5700a698bd39abc668337a3d21953de32d80736c00d5804e9da57dc1227b5721",
+      "passedCases": 3
+    },
+    "routine-clients/mcp": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-clients-mcp.log",
+      "sha256": "fd7fdf97e44b288199445b776495c50737df41731c8036a2956f1374bb78b023",
+      "checkKey": "38e8f9c2e1ed8a364f7004b07722c8c2220433184ccbb1e78fd9aaf83edc0016",
+      "passedCases": 1
+    },
+    "routine-engine/engine": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/routine-engine-engine.log",
+      "sha256": "6885c8258da4d245751fcedf915f6ba2515e90bcab7f8f5d71236431b341f1e6",
+      "checkKey": "500238105f4266095882dbff25e7ea448c652fc9981feb4fe5b04f57cdd5e921",
+      "passedCases": 11
+    }
+  },
+  "binaries": {
+    "rentemester-server": {
+      "sha256": "ca7c0560ac033634c22716b11db499aace1b250943154fd5906f890f8dd929b4",
+      "sourceRevision": "315facb2461d7220a13ace41d22a3a07952f840e",
+      "sourceTree": "c54cdb0c74c4c403dfa0bf4666ebcc2f87c13dab"
+    },
+    "rentemester-rust": {
+      "sha256": "48888ebab4a9046a54a1f5506c4d04fa03765b34636ec3690c9ef1803032be57",
+      "sourceRevision": "315facb2461d7220a13ace41d22a3a07952f840e",
+      "sourceTree": "c54cdb0c74c4c403dfa0bf4666ebcc2f87c13dab"
+    },
+    "rentemester-mcp": {
+      "sha256": "6e32dd2c268906de498e6c44cad6781e5ac2a7bccfdafd740bb2f605b16992c9",
+      "sourceRevision": "315facb2461d7220a13ace41d22a3a07952f840e",
+      "sourceTree": "c54cdb0c74c4c403dfa0bf4666ebcc2f87c13dab"
+    }
+  },
+  "web": {
+    "directory": "existing React/StyleX build, unchanged by this journey",
+    "indexSha256": "bbe91bd5ef2a63c081177a86a8ec67f9925fb0f5f1dac202d6b26a275c69c140"
+  },
+  "actualBrowser": {
+    "first": "routine-first.json",
+    "restart": "routine-reopen.json",
+    "runtime": "runtime.json",
+    "scope": "Real local-user-macos Rust native33 server, existing React routine save/calendar projection/explicit materialization/documented completion/future revision/pause; original CLI and MCP; stop/restart/exact original receipts/no duplicate. Synthetic fixture stopped and removed; no financial/provider effects or installed Tauri acceptance."
+  },
+  "review": "Primary reviewed actual engine/client/application/storage/recovery/HTTP diffs against current-main contract. Fresh authority precedes receipts, each concrete scope reauthorized, nested writes share one IMMEDIATE transaction/savepoint and one service charge; codec2 preserves source-free historical evidence while manual-only bytes remain codec1. Explicit future edits preserve concrete tasks. Calendar single-bound manual backlog regression diagnosed and fixed without weakening explicit invalid-range refusal.",
+  "remaining": "Whole718/fullmain23task operations, source/runtime/boards/protected knowledge, remaining financial operations/adoption and original native/platform/release gates remain open.43of55original issues closed."
+}

@@ -1,0 +1,19 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-routine-journey-20261026T135005.992503000/routine-engine/crates/rentemester-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.22s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/routine-engine/debug/deps/rentemester_engine-ed745ee6d15ebdc4)
+
+running 11 tests
+test tasks::series::tests::invalid_ranges_and_cross_scope_materialization_fail_closed ... ok
+test tasks::series::tests::monthly_future_projection_is_pure_and_deadline_is_unconfirmed ... ok
+test tasks::series::tests::offsets_end_date_and_statutory_basis_are_preserved ... ok
+test tasks::series::tests::fiscal_quarters_custom_intervals_and_leap_year_have_stable_anchors ... ok
+test tasks::series::tests::actual_main_source_series_examples_match_exact_json ... ok
+test tasks::series::tests::partial_and_empty_company_selection_cannot_leak_shared_or_workspace_routines ... ok
+test tasks::series::tests::unfinished_periods_are_independent_and_duplicate_materialization_is_existing ... ok
+test tasks::series::tests::pause_preserves_concrete_tasks_and_evidence_without_new_periods ... ok
+test tasks::series::tests::future_revision_preserves_backlog_and_old_concrete_cadence ... ok
+test tasks::series::tests::strict_versions_scope_template_identity_privacy_and_activation_guards ... ok
+test tasks::series::tests::activity_and_unknown_materialize_as_unverified_open_tasks ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.06s
+
