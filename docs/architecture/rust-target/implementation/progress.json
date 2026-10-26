@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original724 current arm64 Mac candidate accepted at8119057b; original signing/platform/installed acceptance stays open.",
-  "code_revision": "8119057b8987b59dcc9c9b19d42c582035c227b0",
+  "current_increment": "Original723 retained reported-period signed recovery accepted; normal fresh-owner MFA/read-only restart and exact financial/audit preservation. Whole723 remains open.",
+  "code_revision": "aa88d6a90a1041c188a0f9b6da49b770f8d82e86",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original724_current_candidate_accepted_final_release_gates_pending",
+  "state": "original723_reported_recovery_accepted_final_qualified_external_gates_pending",
   "issues_closed": 43,
-  "next": "Original723 retained reported-period signed archive source-free fresh-target restore/read-only normal-owner readback; no posting/recording/provider replay.",
+  "next": "Original726 existing transfer rehearsal: nonempty scheduler inventory/dispatch fences and failure/post-write recovery matrix; preserve all prior Group99 effects and original native/release dependencies.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16756,6 +16756,15 @@
       "report": "docs/architecture/rust-target/implementation/issue724-evidence.json",
       "status": "Current exact Mac candidate + actual packaged-server Managed compatibility accepted; all original final gates retained",
       "sgdRun": "issue724-current-macos-20261025T235439.978542000"
+    },
+    "issue723_reported_period_recovery": {
+      "issue": 723,
+      "whole_issue_accepted": false,
+      "report": "docs/architecture/rust-target/implementation/issue723-evidence.json",
+      "runtime_image": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+      "archive_sha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c",
+      "status": "Retained reported-period source-free recovery and exact normal-owner read-only restart accepted; original qualified/native/external gates retained",
+      "sgdRun": "issue723-reported-recovery-20261026T000656.082312000"
     }
   },
   "verified_history": [
@@ -19303,7 +19312,7 @@
     "oneActiveIssue": true,
     "heartbeat": "rentemester-luk-resterende-rust-issues",
     "manualDesktopLast": true,
-    "currentEvidence": "issue724-evidence.json",
+    "currentEvidence": "issue723-evidence.json",
     "allOriginalScopesRetained": true,
     "current718ScopedResult": {
       "evidence": "issue718-evidence.json",

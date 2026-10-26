@@ -1,0 +1,73 @@
+{
+  "issue": 723,
+  "whole_issue_accepted": false,
+  "reported_period_source_free_recovery_accepted": true,
+  "checkedAt": "2026-10-26T00:09:48.129393+00:00",
+  "source_revision": "aa88d6a90a1041c188a0f9b6da49b770f8d82e86",
+  "runtime_source": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+  "runtime_image": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "sgdRun": "issue723-reported-recovery-20261026T000656.082312000",
+  "sgdPhase": "done",
+  "proofs": {
+    "reopen-proof.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/reopen-proof.json",
+      "sha256": "a0203074ad53ba80b87482dd8feaed48808cc46622ad0a186f152b3a60321a8c"
+    },
+    "reported-recovery.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/reported-recovery.json",
+      "sha256": "c56b67ebf28fc162bda411db85e7c2e33839d1f8d9c46d7089e1c5e8cba70655"
+    },
+    "first-snapshot.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/first-snapshot.json",
+      "sha256": "e5b0c2a75037470bc56b845c09b3e3c1e043b3ab4111830c859de7a036aff66d"
+    },
+    "initial-comparator-failure.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/initial-comparator-failure.json",
+      "sha256": "4830ef773a6cc0feba8467db296c0cc5be4c34ce8cd8907feba713a8e3bcdaa7"
+    },
+    "first-proof.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/first-proof.json",
+      "sha256": "ed1dc78bef665dfcae7407f2d3ad253e4362cd8dcf8b3adbcba4b2b13a4977dd"
+    },
+    "isolated-readonly-comparison.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/isolated-readonly-comparison.json",
+      "sha256": "1b9f0bf66e447adc664e45d4b0cc393ccc43fe4ae8faa32236e1104b6af17ca9"
+    },
+    "reopen-snapshot.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance723/reopen-snapshot.json",
+      "sha256": "e5b0c2a75037470bc56b845c09b3e3c1e043b3ab4111830c859de7a036aff66d"
+    }
+  },
+  "review": "Main reviewed existing packaged restore path and actual recovery adapters. Diff from qualified725image to current Rust contains only Managed-parent lifecycle source; restore/storage/VAT paths unchanged. Independent signed verification, isolated fresh target, new ordinary owner verification/password/MFA, exact reported UI/API/reference/packet/ledger/VAT/original and restart passed. Main directly compared all archived rows including duplicates in8financial/period tables/views and original17audit rows; exactly1documented restore-boundary audit addition. No source rebooking, recording, auth rewiring or provider calls.",
+  "accepted": [
+    "Retained R17 archive30b306d1 and separately retained raw32byte trusted key verified by exact packaged Rust image e464771f; source remains stopped and no source/profile/private signer mounted.",
+    "Fresh target ordinary-owner MFA plus unused recovery login: reported2024Q1 reference SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED and exact packet hash, journal1/3lines, debits125=credits125, inputVAT25/net-25, original65bytes/d2f6c961; UI truthfully says no automatic submission.",
+    "Stopped/reopened same target with fresh normal login; all selected full API responses identical and recorded UI intact. Exact archived period/review/decision/journal/line/bank/link/document rows and immutable17audit-prefix rows preserved.",
+    "Owned containers/volumes removed only after actual retained readback/SQL evidence; source archive hash unchanged. Existing annual/period/import/707/716/717/718/725 receipts remain accepted, no unchanged full replay."
+  ],
+  "preservedFailures": [
+    "Final read-only SQL comparison initially assumed rowid on WITHOUT ROWID journal_lines; second assumed primary key on reconciliation view. Stopped growing setup and isolated direct complete-row multiset comparison on existing stopped target. Valid original restore/MFA/browser/restart effects reused, not replayed; original failed SGD receipts retained."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "remaining": "Original complete R01 matrix across allqualified profiles/native and release blockers must remain mapped at final integration; current1726operation contracts and prior actual receipts retained."
+    },
+    {
+      "criterion": 2,
+      "accepted": "Explicit pending R17 reported-period source-free restore/restart gate now accepted",
+      "remaining": "Retain existing annual/period/import/full-year evidence; final qualified installed full-year/J01-J07 composition remains."
+    },
+    {
+      "criterion": 3,
+      "remaining": "Required genuine independent human usability/accessibility/interface/security/provider/regulatory reviews remain external gates; no self-certification."
+    },
+    {
+      "criterion": 4,
+      "remaining": "Original J01-J07 each require qualified installed/platform/profile-specific final acceptance; generic browser recovery does not substitute."
+    }
+  ],
+  "wholeIssueClosureBlocker": "Original remaining qualified native/platform J01-J07 and independent human/provider/security acceptance plus dependencies remain unchanged. Current reported-archive recovery does not close whole723.",
+  "closed55OriginalIssues": 43,
+  "remaining55OriginalIssues": 12
+}

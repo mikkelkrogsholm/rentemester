@@ -1,0 +1,48 @@
+{
+  "accounting_periods": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "period_close_reviews": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "period_close_decisions": {
+    "count": 2,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "journal_entries": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "journal_lines": {
+    "count": 3,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "bank_transactions": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "bank_journal_reconciliations": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "view"
+  },
+  "documents": {
+    "count": 1,
+    "exactRowsIncludingMultiplicity": true,
+    "schemaKind": "table"
+  },
+  "audit": {
+    "exactOriginalPrefix": 17,
+    "boundaryAdditions": 1
+  },
+  "restoredDbSha256": "588f6317d0b9d06fca5889c6685b7dde6f013f6cf42684bf229a42e86132da82",
+  "archiveSha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c"
+}

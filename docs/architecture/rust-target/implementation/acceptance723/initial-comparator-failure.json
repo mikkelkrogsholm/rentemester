@@ -1,0 +1,81 @@
+{
+  "status": "failed",
+  "sgdRun": "issue723-reported-recovery-20261026T000656.082312000",
+  "imageId": "sha256:e464771fc57419835db18a532f8963ff174ef909a58b5029b679d27f9b78b773",
+  "runtimeSource": "6ffe5703514157e31c585a8f19ea195b2ba8e18c",
+  "archiveSha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c",
+  "trustedKeySha256": "e0c1015757b6915ea5db5dfa2396d555aed9b88fa94251a853df155af34f6e63",
+  "sourceDeviceMounted": false,
+  "sourceServerStopped": true,
+  "newFinancialOrProviderEffects": false,
+  "whole723Accepted": false,
+  "startedAt": "2026-10-26T00:07:09.668957+00:00",
+  "browserHelperSha256": "123ac79cc1ddaa4f5f329ea3148d8d807a045e1b09a99991d3647cb62f916ae0",
+  "runnerSha256": "1b6fd5e322084630f12ec1ced5107b35a33fa6c7434ff5f6c95ea6d8ac0fa4cd",
+  "independentPackagedVerification": {
+    "ok": true,
+    "format": "rentemester-native-backup/1",
+    "companies": 1,
+    "scope": "signed_inventory_current_schema_integrity_journal_chain_and_originals"
+  },
+  "restoredHealth": {
+    "authRequired": true,
+    "backend": "rust",
+    "deploymentProfile": "hosted",
+    "ok": true,
+    "readiness": {
+      "code": "current",
+      "status": "ready"
+    },
+    "service": "rentemester",
+    "setupRequired": false,
+    "workspaceReady": true
+  },
+  "first": {
+    "passed": true,
+    "freshOrdinaryMfa": true,
+    "ordinaryUnusedRecoveryLogin": true,
+    "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+    "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+    "exactLedgerVatReportsOriginals": true,
+    "truthfulRecordedUi": true,
+    "financialOrProviderWrites": 0,
+    "identityWrites": 5
+  },
+  "firstStopExit": 0,
+  "reopenHealth": {
+    "authRequired": true,
+    "backend": "rust",
+    "deploymentProfile": "hosted",
+    "ok": true,
+    "readiness": {
+      "code": "current",
+      "status": "ready"
+    },
+    "service": "rentemester",
+    "setupRequired": false,
+    "workspaceReady": true
+  },
+  "reopen": {
+    "passed": true,
+    "freshOrdinaryMfa": false,
+    "ordinaryUnusedRecoveryLogin": true,
+    "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+    "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+    "exactLedgerVatReportsOriginals": true,
+    "truthfulRecordedUi": true,
+    "financialOrProviderWrites": 0,
+    "identityWrites": 2
+  },
+  "targetStopExit": 0,
+  "failureType": "OperationalError",
+  "ownedFixturesPreserved": {
+    "container": "rm-reported723-4ad535b76e6f",
+    "volumes": [
+      "rm-reported723-4ad535b76e6f-archive",
+      "rm-reported723-4ad535b76e6f-state",
+      "rm-reported723-4ad535b76e6f-config"
+    ]
+  },
+  "privateLogs": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue723/issue723-reported-recovery-20261026T000656.082312000/private"
+}
