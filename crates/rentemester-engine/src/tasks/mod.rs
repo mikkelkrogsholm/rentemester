@@ -1,6 +1,7 @@
 //! Pure task-card policy shared by native transports. No database, clock or authority lookup.
 //! Callers must hold current scope authority across receipt lookup, transition and append.
 mod input;
+pub mod series;
 mod transition;
 use crate::Error;
 pub use input::{canonical_json, date, draft, id, instant, payload_hash, references, scope, text};
