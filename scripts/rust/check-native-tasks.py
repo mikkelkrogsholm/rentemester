@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""One disposable macOS task journey on the real shared Rust server; no desktop interaction."""
+import argparse,base64,json,os,queue,secrets,shutil,socket,subprocess,tempfile,threading,urllib.request
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+def main():
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--resume',action='store_true',help='Resume the retained pre-owner fixture after a diagnosed setup error');p.add_argument('--finish-clients',action='store_true',help='Continue accepted UI state at the client boundary only');a=p.parse_args();out=Path(a.output).resolve();out.mkdir(parents=True,exist_ok=True);os.chmod(out,0o700)
+ binary=ROOT/'target/debug/rentemester-server'
+ base=Path(json.loads((out/'retained-fixture.json').read_text())['config']).parent if (a.resume or a.finish_clients) else Path(tempfile.mkdtemp(prefix='Rentemester-Synthetic-Tasks-',dir=Path.home()/'Library/Application Support'));os.chmod(base,0o700)
+ if base.parent!=Path.home()/'Library/Application Support' or not base.name.startswith('Rentemester-Synthetic-Tasks-'):raise RuntimeError('Refuse non-synthetic resume')
+ server=None;accepted=False
+ with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
+ if a.resume or a.finish_clients:port=int(json.loads((out/'retained-fixture.json').read_text())['origin'].rsplit(':',1)[1])
+ origin=f'http://127.0.0.1:{port}';workspace=base/'workspace';config=base/'server.json'
+ key=lambda:base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
+ config_value=json.loads(config.read_text()) if a.resume or a.finish_clients else dict(root=str(workspace),brokerUid=os.getuid(),runtimeProfile='local-user-macos',workspace='synthetic-tasks',companySlug='synthetic',companyName='Synthetic tasks',cookieKey=key(),mfaKey=key(),accounts=[])
+ config_value.update(setupActor='system:synthetic-installer',operatorActors=['system:synthetic-installer']);config.write_text(json.dumps(config_value));os.chmod(config,0o600)
+ def start(create):
+  cmd=['/bin/sh','-c','umask 077; exec "$@"','task-acceptance',str(binary),'--listen',f'127.0.0.1:{port}','--config',str(config),'--web-dir',str(ROOT/'app/dist')]
+  if create:cmd+=['--create']
+  proc=subprocess.Popen(cmd,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True);q=queue.Queue()
+  def reader():
+   for line in proc.stdout:q.put(line)
+   q.put(None)
+  threading.Thread(target=reader,daemon=True).start();setup=None;lines=[]
+  try:
+   while True:
+    line=q.get(timeout=60)
+    if line is None:raise RuntimeError('Synthetic server exited before readiness: '+''.join(lines))
+    if line.startswith('Workspace setup: '):setup=line.strip().removeprefix('Workspace setup: ')
+    else:lines.append(line)
+    if 'Native workspace connected: true' in line:break
+  except BaseException:proc.terminate();proc.wait(timeout=15);raise
+  (out/('reopen-server.log' if not create else 'server.log')).write_text(''.join(lines));return proc,setup
+ def stop(proc):
+  proc.terminate();code=proc.wait(timeout=30)
+  if code!=0:raise RuntimeError(f'Synthetic server failed drain: {code}')
+ try:
+  server,setup=start(not (a.resume or a.finish_clients))
+  env={**os.environ,'RM_TASK_ORIGIN':origin,'RM_TASK_SETUP':setup or '', 'RM_TASK_WORKSPACE':str(workspace),'RM_TASK_OUTPUT':str(out),'RM_TASK_PHASE':'clients' if a.finish_clients else 'first'}
+  subprocess.run(['bun','run','scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
+  stop(server);server=None
+  server,_=start(False);env['RM_TASK_PHASE']='reopen';env.pop('RM_TASK_SETUP',None)
+  subprocess.run(['bun','run','scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
+  stop(server);server=None
+  accepted=True
+  (out/'runtime.json').write_text(json.dumps(dict(origin=origin,profile='local-user-macos',synthetic=True,stopped=True,workspaceRemoved=True),indent=2)+'\n')
+ finally:
+  if server is not None:server.terminate();server.wait(timeout=30)
+  if accepted:shutil.rmtree(base)
+  else:(out/"retained-fixture.json").write_text(json.dumps(dict(root=str(workspace),config=str(config),origin=origin,stopped=True)))
+if __name__=='__main__':main()

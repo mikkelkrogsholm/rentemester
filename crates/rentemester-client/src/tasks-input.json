@@ -1,0 +1,857 @@
+{
+  "list": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "companySlugs": {
+        "maxItems": 200,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 120,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        }
+      },
+      "includeArchived": {
+        "type": "boolean"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "open",
+          "in_progress",
+          "waiting",
+          "done"
+        ]
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "ad_hoc",
+          "routine",
+          "obligation"
+        ]
+      },
+      "search": {
+        "type": "string",
+        "maxLength": 240
+      },
+      "assigneeId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "from": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+      },
+      "to": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+      },
+      "undated": {
+        "type": "boolean"
+      },
+      "unassigned": {
+        "type": "boolean"
+      },
+      "showDone": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false
+  },
+  "get": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    },
+    "required": [
+      "taskId"
+    ],
+    "additionalProperties": false
+  },
+  "history": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    },
+    "required": [
+      "taskId"
+    ],
+    "additionalProperties": false
+  },
+  "create": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 240
+      },
+      "scope": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "company"
+              },
+              "companySlug": {
+                "type": "string",
+                "maxLength": 120,
+                "pattern": "^[a-z0-9][a-z0-9-]*$"
+              }
+            },
+            "required": [
+              "kind",
+              "companySlug"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "workspace"
+              },
+              "companySlugs": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 120,
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "companySlugs"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "description": {
+        "type": "string",
+        "maxLength": 8000
+      },
+      "nextAction": {
+        "type": "string",
+        "maxLength": 2000
+      },
+      "assignee": {
+        "anyOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "member"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "kind",
+                  "userId",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "external"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "kind",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "waitingOn": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "workDate": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "deadline": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "statutory",
+                  "agreement",
+                  "internal"
+                ]
+              },
+              "basis": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "certainty": {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "unconfirmed"
+                ]
+              },
+              "ruleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            },
+            "required": [
+              "date",
+              "kind",
+              "basis",
+              "certainty"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "period": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "references": {
+        "maxItems": 100,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "document",
+                "bank_transaction",
+                "period",
+                "approval",
+                "knowledge",
+                "external_receipt",
+                "party"
+              ]
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "companySlug": {
+              "type": "string",
+              "maxLength": 120,
+              "pattern": "^[a-z0-9][a-z0-9-]*$"
+            }
+          },
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "evidenceRequired": {
+        "type": "boolean"
+      },
+      "relevance": {
+        "type": "string",
+        "enum": [
+          "relevant",
+          "unknown",
+          "not_relevant"
+        ]
+      },
+      "verificationRequired": {
+        "type": "boolean"
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "ad_hoc",
+          "routine",
+          "obligation"
+        ]
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      }
+    },
+    "required": [
+      "title",
+      "scope",
+      "idempotencyKey"
+    ],
+    "additionalProperties": false
+  },
+  "update": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      },
+      "patch": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "company"
+                  },
+                  "companySlug": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "pattern": "^[a-z0-9][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlug"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "workspace"
+                  },
+                  "companySlugs": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9][a-z0-9-]*$"
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlugs"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 8000
+          },
+          "nextAction": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "member"
+                      },
+                      "userId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "userId",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "external"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "waitingOn": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "workDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "statutory",
+                      "agreement",
+                      "internal"
+                    ]
+                  },
+                  "basis": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "certainty": {
+                    "type": "string",
+                    "enum": [
+                      "confirmed",
+                      "unconfirmed"
+                    ]
+                  },
+                  "ruleId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  }
+                },
+                "required": [
+                  "date",
+                  "kind",
+                  "basis",
+                  "certainty"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  }
+                },
+                "required": [
+                  "from",
+                  "to",
+                  "label"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "references": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "document",
+                    "bank_transaction",
+                    "period",
+                    "approval",
+                    "knowledge",
+                    "external_receipt",
+                    "party"
+                  ]
+                },
+                "ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "companySlug": {
+                  "type": "string",
+                  "maxLength": 120,
+                  "pattern": "^[a-z0-9][a-z0-9-]*$"
+                }
+              },
+              "required": [
+                "kind",
+                "ref"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "evidenceRequired": {
+            "type": "boolean"
+          },
+          "relevance": {
+            "type": "string",
+            "enum": [
+              "relevant",
+              "unknown",
+              "not_relevant"
+            ]
+          },
+          "verificationRequired": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "taskId",
+      "expectedVersion",
+      "idempotencyKey",
+      "patch"
+    ],
+    "additionalProperties": false
+  },
+  "move": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "open",
+          "in_progress",
+          "waiting",
+          "done"
+        ]
+      },
+      "columnId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "workspaceColumnId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    },
+    "required": [
+      "taskId",
+      "expectedVersion",
+      "idempotencyKey",
+      "status"
+    ],
+    "additionalProperties": false
+  },
+  "complete": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      },
+      "outcome": {
+        "type": "string",
+        "enum": [
+          "completed",
+          "not_relevant",
+          "cancelled",
+          "exception"
+        ]
+      },
+      "note": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8000
+      },
+      "references": {
+        "maxItems": 100,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "document",
+                "bank_transaction",
+                "period",
+                "approval",
+                "knowledge",
+                "external_receipt",
+                "party"
+              ]
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "companySlug": {
+              "type": "string",
+              "maxLength": 120,
+              "pattern": "^[a-z0-9][a-z0-9-]*$"
+            }
+          },
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "taskId",
+      "expectedVersion",
+      "idempotencyKey",
+      "outcome",
+      "note"
+    ],
+    "additionalProperties": false
+  },
+  "reopen": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      },
+      "reason": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      }
+    },
+    "required": [
+      "taskId",
+      "expectedVersion",
+      "idempotencyKey",
+      "reason"
+    ],
+    "additionalProperties": false
+  },
+  "receipt": {
+    "type": "object",
+    "required": [
+      "idempotencyKey"
+    ],
+    "properties": {
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    },
+    "additionalProperties": false
+  }
+}

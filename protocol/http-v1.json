@@ -3382,6 +3382,71 @@
       "capability": "HEAD /api/system/cvr-status"
     },
     {
+      "method": "GET",
+      "path": "/api/tasks",
+      "capability": "GET /api/tasks"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks",
+      "capability": "HEAD /api/tasks"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks",
+      "capability": "POST /api/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/operations/{key}",
+      "capability": "GET /api/tasks/operations/{key}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks/operations/{key}",
+      "capability": "HEAD /api/tasks/operations/{key}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{id}",
+      "capability": "GET /api/tasks/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks/{id}",
+      "capability": "HEAD /api/tasks/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id}/complete",
+      "capability": "POST /api/tasks/{id}/complete"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{id}/history",
+      "capability": "GET /api/tasks/{id}/history"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks/{id}/history",
+      "capability": "HEAD /api/tasks/{id}/history"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id}/move",
+      "capability": "POST /api/tasks/{id}/move"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id}/reopen",
+      "capability": "POST /api/tasks/{id}/reopen"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id}/update",
+      "capability": "POST /api/tasks/{id}/update"
+    },
+    {
       "method": "POST",
       "path": "/api/workspace/backup",
       "capability": "POST /api/workspace/backup"
@@ -3522,5 +3587,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "f4044e6565d2c977c80e0fed70edf091948b8c45630cf81f9c927393c3183b26"
+  "manifestId": "ad5e4e3ca7b2e8e6a15a0bd819a64c1dfdc8628916c7d833b904d3b9f888cc82"
 }

@@ -58,6 +58,7 @@ mod privacy;
 mod budget;
 mod budget_original;
 mod exceptions;
+mod tasks;
 mod mileage;
 mod company_knowledge;
 mod parties;

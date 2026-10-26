@@ -203,7 +203,7 @@ pub(super) fn actor(value: &str) -> Result<String, Error> {
     let Some((kind, subject)) = value.split_once(':') else {
         return Err(invalid("Actor is required"));
     };
-    if !["user", "agent", "system"].contains(&kind)
+    if !["user", "agent", "system", "service_account"].contains(&kind)
         || subject
             .chars()
             .next()

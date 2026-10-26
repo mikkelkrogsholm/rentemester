@@ -2,6 +2,7 @@
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 mod readiness;
+mod tasks;
 mod namespace_custody;
 mod budget_original;
 mod journal_original;

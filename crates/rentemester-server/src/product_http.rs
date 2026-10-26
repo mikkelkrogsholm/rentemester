@@ -30,6 +30,7 @@ mod company_knowledge;
 mod workspace_inbox;
 mod bilagsmail;
 mod parties;
+mod tasks;
 mod corporate_records;
 mod workspace_access;
 mod company_creation;
@@ -370,6 +371,14 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/reviewed-bank",
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
+        .route("/api/tasks",get(tasks::handle).post(tasks::handle))
+        .route("/api/tasks/operations/{key}",get(tasks::handle))
+        .route("/api/tasks/{id}",get(tasks::handle))
+        .route("/api/tasks/{id}/history",get(tasks::handle))
+        .route("/api/tasks/{id}/update",post(tasks::handle))
+        .route("/api/tasks/{id}/move",post(tasks::handle))
+        .route("/api/tasks/{id}/complete",post(tasks::handle))
+        .route("/api/tasks/{id}/reopen",post(tasks::handle))
         .route("/api/companies/{slug}/workspace-parties",get(parties::handle).post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/create-identity",get(parties::handle).post(parties::handle))
         .route("/api/companies/{slug}/workspace-parties/{id}",get(parties::handle))

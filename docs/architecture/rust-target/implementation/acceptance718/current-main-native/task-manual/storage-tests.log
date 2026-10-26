@@ -1,0 +1,18 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.68s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 9 tests
+test tasks::tests::stale_or_denied_proposals_leave_no_partial_event_or_receipt ... ok
+test tasks::tests::scope_change_checks_old_new_and_receipt_current_scopes ... ok
+test tasks::tests::two_connections_same_command_append_once_under_writer_lock ... ok
+test tasks::tests::create_receipt_replay_does_not_reapply_changed_board_placement ... ok
+test tasks::tests::durable_receipt_replay_is_exact_and_requires_current_authority_first ... ok
+test tasks::tests::append_only_manual_flow_survives_reopen_and_matches_main_snapshots ... ok
+test portable_backup::tasks::tests::unknown_company_wrong_codec_and_missing_table_refuse_atomically ... ok
+test portable_backup::tasks::tests::history_and_receipts_roundtrip_without_runtime_or_authority ... ok
+test portable_backup::tasks::tests::malformed_cross_principal_and_wrong_operation_receipts_refuse_without_partial_restore ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 717 filtered out; finished in 1.86s
+

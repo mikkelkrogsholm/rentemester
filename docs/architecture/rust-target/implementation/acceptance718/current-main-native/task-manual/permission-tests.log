@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_application-616d094866af0072)
+
+running 10 tests
+test access::tests::company_roles_never_grant_workspace_or_public_permissions ... ok
+test access::tests::reevaluation_observes_revocation_and_never_changes_prior_facts ... ok
+test access::tests::exact_vocabulary_and_slug_grammar ... ok
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... ok
+test document_access::tests::audit_failure_and_revoked_session_never_release_bytes ... ok
+test workspace_access::tests::unauthenticated_or_stale_owner_cannot_manage_or_disclose ... ok
+test document_access::tests::served_and_denied_are_attributed_without_changing_company ... ok
+test workspace_access::tests::expiry_cancel_last_owner_and_existing_credential_are_preserved ... ok
+test workspace_access::tests::concurrent_last_effective_owner_removals_serialize ... ok
+test workspace_access::tests::claimed_identity_needs_real_verification_and_mfa_has_no_session_and_single_use ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 228 filtered out; finished in 24.02s
+

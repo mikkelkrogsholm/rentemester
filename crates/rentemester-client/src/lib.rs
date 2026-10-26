@@ -2,6 +2,8 @@
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod protocol;
+mod tasks;
+pub use tasks::{MAX_TASK_BODY,TASK_OPERATIONS,task_input_schema,task_writes};
 mod agent_discovery;
 mod backup_destinations;
 mod backup_remote;

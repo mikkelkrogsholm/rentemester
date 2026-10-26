@@ -86,6 +86,7 @@ mod document_pdf;
 mod documents;
 mod elimination;
 mod exceptions;
+mod tasks;
 mod intercompany;
 mod invoice_extraction;
 mod invoice_extraction_original;
@@ -106,6 +107,7 @@ mod reviewed_bookkeeping;
 mod saft;
 mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().is_some_and(|s|s=="tasks"){return tasks::run(&args[1..]);}
     if args.first().is_some_and(|s|mileage_posting::accepts(s)) { return remote::run(&args); }
     if args.first().is_some_and(|s|s=="reg") { return regulatory::run(&args); }
     if args.first().is_some_and(|s|privacy::accepts(s)||s=="compliance-report") { return remote::run(&args); }

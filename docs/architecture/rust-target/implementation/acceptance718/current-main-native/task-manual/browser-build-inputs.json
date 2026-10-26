@@ -1,0 +1,31 @@
+{
+  "base": "b1837fb46dd74a1c0139c2eb7dd49383cf98f092",
+  "sources": {
+    "crates/rentemester-application/src/access.rs": "99a06e0895f45b2b9edba4f651441954e8ddd879de6f2d9bec1ef78810e451a3",
+    "crates/rentemester-application/src/lib.rs": "b73ea39d427910eef842ba47f5b9ea6cb9b5c8db6f86547d976a980cc82106ae",
+    "crates/rentemester-cli/src/main.rs": "e900468258b160fbfe272c3f50c557c68d329e9396cd048528ef7ef3b7614675",
+    "crates/rentemester-client/src/lib.rs": "6d0260508ed41c72a964ecff52dac8306addd30b1c086250e16ce21b35318443",
+    "crates/rentemester-engine/src/tasks/transition.rs": "1f5a332888c5d9626fe68d47060b1948a71c68e50634e544db5192d75a94fe90",
+    "crates/rentemester-host/src/lib.rs": "cd3a9c6664c7202e1d4dd9a3898bd755fea836f7fa61aa19a907c19451120386",
+    "crates/rentemester-mcp/src/main.rs": "0323b27e266d28e9030f709b6c3d98c375db63c7f1aaa028a13a543a2d5c63e9",
+    "crates/rentemester-mcp/src/tools.rs": "ca2efe2ce27710ab6d0f42fc6c32fb29cf56f6e5de400f16a2b77175e9c94ffa",
+    "crates/rentemester-server/src/product_http.rs": "b9fee514ee01bf96241d8cebd426c7dcd539b150b654cac20f0fb30a7b15e45f",
+    "crates/rentemester-storage/src/tasks/mod.rs": "a3743ec0c6c95f0a3c770d3dfd0521df3308eefb503841909873aab7238d9c0f",
+    "protocol/http-v1.json": "a9761ab1d18ef2a5646f49f86865aff3439c227c2e5539e21c4d5da8023f0acf",
+    "crates/rentemester-application/src/tasks.rs": "0d079b4b9eaaf4d3a3a9fbd46e5f0cddf7f7a08190018822471f647ba895bcb2",
+    "crates/rentemester-application/src/tasks/tests.rs": "dc5f78880d3d1757fc5fd2a5a22195d837f21d955affb43e64ab0bc03c78dc7e",
+    "crates/rentemester-cli/src/tasks.rs": "caccab6f15f00fc6003f9e588c7dcde372b1d94425c208fad77994a05e3d287f",
+    "crates/rentemester-client/src/tasks-input.json": "f11ea493770f61e36c3177e96c1336a2aabe87a6c5c29a2bbe0fd611d421e204",
+    "crates/rentemester-client/src/tasks.rs": "070b0dd92ba36b49c2191333f24ab200174578d65ac50fe3c073324298afe238",
+    "crates/rentemester-host/src/tasks.rs": "1d05f7239d321fb7cec79a8ca0c8eb6f7b5d4e88669b1e035c85b8e530a42ceb",
+    "crates/rentemester-mcp/src/tasks.rs": "a846156eca8e7bbc9b41aba56137c4f0a07098a7e774fe07fde437b7fc780fe2",
+    "crates/rentemester-server/src/product_http/tasks.rs": "e42899557453f1c0b8482a2a0173869f1f20a5fd397912772336fb07883c216c",
+    "scripts/rust/check-native-tasks.py": "1805633f594fdfd14674bbf7f756354d7661632150177a5a77e0ff571213d79f",
+    "scripts/rust/check-native-tasks.ts": "a323e4712f1a1080804a6ee2a7321cca01dd65bf81bf9f7f9bd9e3bf1d825114"
+  },
+  "binaries": {
+    "rentemester-server": "c5c1b1a79b78620601ad8ddd1689140cbba9765af1ea65decc868b79a06ad4f7",
+    "rentemester-rust": "ec09558202b7a4e38a0684830df3a721a4dfd66c63f0637fa14a9c183ab65bcb",
+    "rentemester-mcp": "d96f801d2e0f573ee727da7d31b7e385586aef4476eaa8c7a53747ec900c5732"
+  }
+}

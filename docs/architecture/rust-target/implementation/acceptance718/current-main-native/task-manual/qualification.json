@@ -1,0 +1,122 @@
+{
+  "format": "rentemester-native-manual-task-qualification/1",
+  "wholeIssueAccepted": false,
+  "nativeTaskApiEnabled": "five manual writes plus list/get/history/principal-scoped receipt only",
+  "sourceBase": "b1837fb46dd74a1c0139c2eb7dd49383cf98f092",
+  "sourceFiles": {
+    "crates/rentemester-application/src/access.rs": "0d0dea3377f5cce3376f9bfc649adc34771b5e4f78537654c724c04fa6700fb6",
+    "crates/rentemester-application/src/lib.rs": "b73ea39d427910eef842ba47f5b9ea6cb9b5c8db6f86547d976a980cc82106ae",
+    "crates/rentemester-application/src/tasks.rs": "4c7ac57221f8d8bb132a2460c01cc44899975a1bec9cd32b783f0deb6aad8d8b",
+    "crates/rentemester-application/src/tasks/tests.rs": "9e084ccd775d5f9749d8c63f33099f7b9b02134767819cce21e7c7ef279cbd50",
+    "crates/rentemester-cli/src/main.rs": "e900468258b160fbfe272c3f50c557c68d329e9396cd048528ef7ef3b7614675",
+    "crates/rentemester-cli/src/original_discovery.rs": "9653d77dce44d3ff056d7c966f10b757f8b550267a39091d57253d9209bb9cbf",
+    "crates/rentemester-cli/src/tasks.rs": "d097632c4193913bd3b2425861b4576dbccbffb0fa2d1dbdb7cc69c62588a4b0",
+    "crates/rentemester-client/src/lib.rs": "6d0260508ed41c72a964ecff52dac8306addd30b1c086250e16ce21b35318443",
+    "crates/rentemester-client/src/tasks-input.json": "f11ea493770f61e36c3177e96c1336a2aabe87a6c5c29a2bbe0fd611d421e204",
+    "crates/rentemester-client/src/tasks.rs": "a10bbdf138b578e384214fdf52e83fea4eaef517806953cb3e0258aee7dd971a",
+    "crates/rentemester-engine/src/tasks/transition.rs": "1f5a332888c5d9626fe68d47060b1948a71c68e50634e544db5192d75a94fe90",
+    "crates/rentemester-host/src/lib.rs": "cd3a9c6664c7202e1d4dd9a3898bd755fea836f7fa61aa19a907c19451120386",
+    "crates/rentemester-host/src/tasks.rs": "816b2396f0679667d2c34b3bafac11aec9b87e850286578c14bd1f07c94a1609",
+    "crates/rentemester-mcp/src/main.rs": "0323b27e266d28e9030f709b6c3d98c375db63c7f1aaa028a13a543a2d5c63e9",
+    "crates/rentemester-mcp/src/tasks.rs": "ccce25b1f054b59a062b5f48eb2ba907665a3936f25082d8929d8aadc95f35a4",
+    "crates/rentemester-mcp/src/tools.rs": "ca2efe2ce27710ab6d0f42fc6c32fb29cf56f6e5de400f16a2b77175e9c94ffa",
+    "crates/rentemester-server/src/product_http.rs": "b9fee514ee01bf96241d8cebd426c7dcd539b150b654cac20f0fb30a7b15e45f",
+    "crates/rentemester-server/src/product_http/tasks.rs": "99d8a71f364372db8b17bc76488c236116877bf92e426fab94c348375401f1f5",
+    "crates/rentemester-storage/src/tasks/mod.rs": "9e51812baead2a3965549947d579b8dbf2d4a3a8574eab515544cd238eaa5267",
+    "protocol/http-v1.json": "a9761ab1d18ef2a5646f49f86865aff3439c227c2e5539e21c4d5da8023f0acf",
+    "scripts/rust/check-native-tasks.py": "13860a92a4534999a922c8f8d55b4dd6ba7cd941d9a14527d7dc16f64494e88f",
+    "scripts/rust/check-native-tasks.ts": "200be77f4c4f71118c4b3e9f6654f0b3f8ae90c04efbb810878d7ed6939beebe"
+  },
+  "checks": {
+    "application": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/application-tests.log",
+      "sha256": "a4fd0d05321f350c78c3a82575a16ce9a003c724ca14c405395f9b3d4c4d6201",
+      "passedCases": 7
+    },
+    "storage": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/storage-tests.log",
+      "sha256": "85330942b51a565bec5c1ae0267caf59c2d38c485c046de5ff68df8ba4bc5f83",
+      "passedCases": 9
+    },
+    "permission": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/permission-tests.log",
+      "sha256": "6ea330e0224fa6b180f25d6e6e9925b926a45900c8fe444794729eb26ce3e767",
+      "passedCases": 10
+    },
+    "http": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/http-tests.log",
+      "sha256": "fb7f4c1350d8a1bbc631ed6f734826ef033567f9cf68160c3c4ab90ea55b3523",
+      "passedCases": 1
+    },
+    "client": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/client-tests.log",
+      "sha256": "77ce67a6c55d228283fe86e5ae174f454753d1d149309568e641720716c51c78",
+      "passedCases": 1
+    },
+    "cli": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/cli-tests.log",
+      "sha256": "cd5575d947c2b1afbc5a2a295a21d4ce41a1e9ec6c26a31a7abc4682607dee96",
+      "passedCases": 1
+    },
+    "mcp": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/mcp-tests.log",
+      "sha256": "dbacdb013b73a5c678a26bee0f5d1de446f2337f955159a26db7a4567c261379",
+      "passedCases": 1
+    }
+  },
+  "actualBrowser": {
+    "profile": "macOS local-user Rust native33, real headless Chromium and unchanged shared React/StyleX",
+    "uiPortion": "Actual first-owner/verification/MFA followed by visible create/update/move/evidence-complete/reopen. All five actions and refusal assertions completed before the script found the missing CLI root registration. Preserved SQL history and resumed browser reads confirm versions1–5; UI writes were not replayed.",
+    "completedUiActions": [
+      "create",
+      "update description",
+      "move to in_progress",
+      "complete with synthetic document evidence",
+      "reopen with reason",
+      "read append-only history"
+    ],
+    "refusals": [
+      "anonymous401",
+      "HEAD405",
+      "no confirm400",
+      "stale expectedVersion409"
+    ],
+    "continuation": "After fixing actual CLI root registry, resumed ONLY clients on the same preserved fixture: CLI get/create, MCP get/update. Restart reads retain original UI task/history and the separate client task; exact original client-create replay returns v1 while current client task remains v2, without another task.",
+    "files": {
+      "clients.json": "3a7e2ff0ffd54c33051f5d83a444588dd2605f0be15b0e2e0cf934a23056b447",
+      "restart.json": "d6ed37342d7828608d29b063733e4cafe899135522528c7686a09aaf93cb6849",
+      "runtime.json": "9a17e42bbd95a5182eb17180053a0cf0ae32e67be7acf56f74581460f34665b2",
+      "synthetic-ui-history.json": "2dcc285cc0ba914988ccca4096082fd35ad0e01afd6d996cfd0857801f9af80c",
+      "browser-build-inputs.json": "a514641a50c1dcb6e439ee7fdf216388f598ca047add31b64f1a35356a0ad464"
+    },
+    "actualCliSha256": "0603ffa842861892e6bb4b3945260d344409474f8350021cd5880fbbce804fe5",
+    "actualMcpSha256": "d96f801d2e0f573ee727da7d31b7e385586aef4476eaa8c7a53747ec900c5732",
+    "webIndexSha256": "bbe91bd5ef2a63c081177a86a8ec67f9925fb0f5f1dac202d6b26a275c69c140",
+    "finalSourceDeltaQualification": "Recorded browser hashes precede rustfmt and two later scoped corrections: allow the established lifecycle after an old recipient loses access (application regression PASS), and literal operations/history precedence + explicit empty company selection (HTTP parser check PASS). Latest final source is compiled by the targeted test groups; this does not claim a current release artifact or installed Tauri acceptance."
+  },
+  "review": {
+    "lead": "Inspected actual current auth/transaction and DTO semantics against main tasks-access/task-service and native session/service/owner admission. Independent read-only reviewer confirmed the five authority/history/recipient/savepoint fixes and found one remaining literal receipt-route precedence defect; that exact path now passes its parser check.",
+    "preservedControls": [
+      "current session/MFA or current scoped service before receipt",
+      "every current company role including archived Live; nonlive excluded",
+      "current/historical/new scope and completion evidence boundaries",
+      "proposed assignee identity/rights; historical labels never authority",
+      "IMMEDIATE control transaction with one service charge; business rollback in savepoint; infra failure rolls back and retires",
+      "strict confirm/key/expectedVersion/128KiB and existing identity/protocol/unknown-write guards",
+      "native33 signed task recovery remains required; no second motor or Bun fallback"
+    ]
+  },
+  "remaining": [
+    "All original718 acceptance and #712/J03/native/Tauri LAST gates",
+    "Automatic authoritative task sources, boards/series/routines/materialization/reminders/runtime/protected task-linked knowledge and their codec/recovery forms",
+    "Approved main company56/control-main lineage/adoption and other financial/party/evidence operations",
+    "Unqualified broad UI failures and current release/platform/cutover gates"
+  ],
+  "notClaimed": [
+    "whole718 or a new closed issue",
+    "live migration or production promotion",
+    "new financial/provider effect replay",
+    "full23-task-route/main parity",
+    "installed desktop qualification"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "cli": [
+    "tasks get",
+    "tasks create"
+  ],
+  "mcp": [
+    "tasks_get",
+    "tasks_update"
+  ],
+  "manualTaskVersion": 5,
+  "clientVersion": 2,
+  "syntheticOnly": true,
+  "errors": []
+}

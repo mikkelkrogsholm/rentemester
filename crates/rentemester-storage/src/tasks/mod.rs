@@ -110,7 +110,7 @@ fn read(db: &Connection, id: &str) -> Result<Option<Task>, Error> {
     raw.map(|s| serde_json::from_str(&s).map_err(invalid))
         .transpose()
 }
-fn boards(db: &Connection) -> Result<Vec<Board>, Error> {
+pub fn boards(db: &Connection) -> Result<Vec<Board>, Error> {
     let mut q = db
         .prepare("SELECT payload_json FROM rm_current_task_boards ORDER BY board_id")
         .map_err(invalid)?;
@@ -126,19 +126,63 @@ pub fn mutate<F>(
     db: &mut Connection,
     command: Command<'_>,
     ctx: Context<'_>,
+    authorize: F,
+) -> Result<Outcome, Error>
+where
+    F: FnMut(&Transaction<'_>, &Task) -> Result<(), Error>,
+{
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(invalid)?;
+    let result = mutate_in_tx(&tx, command, ctx, authorize)?;
+    tx.commit().map_err(|_| {
+        Error::new(
+            "commit_outcome_unknown",
+            "Task mutation outcome is unknown; retain the original idempotency key",
+        )
+    })?;
+    Ok(result)
+}
+/// Application already holds current session/service admission on this writer.
+/// Caller alone commits/rolls back and reports an uncertain commit outcome.
+pub fn mutate_in_tx<F>(
+    tx: &Transaction<'_>,
+    command: Command<'_>,
+    ctx: Context<'_>,
     mut authorize: F,
 ) -> Result<Outcome, Error>
 where
     F: FnMut(&Transaction<'_>, &Task) -> Result<(), Error>,
 {
+    mutate_in_tx_checked(tx, command, ctx, &mut authorize, |_, _| Ok(()))
+}
+/// Proposed-recipient validation runs only for a new effect, never against an old receipt.
+pub fn mutate_in_tx_checked<F, V>(
+    tx: &Transaction<'_>,
+    command: Command<'_>,
+    ctx: Context<'_>,
+    mut authorize: F,
+    mut validate_proposed: V,
+) -> Result<Outcome, Error>
+where
+    F: FnMut(&Transaction<'_>, &Task) -> Result<(), Error>,
+    V: FnMut(&Transaction<'_>, &Task) -> Result<(), Error>,
+{
+    if tx
+        .transaction_state(Some(rusqlite::MAIN_DB))
+        .map_err(invalid)?
+        != rusqlite::TransactionState::Write
+    {
+        return Err(Error::new(
+            "control_fence_required",
+            "Task writer transaction required",
+        ));
+    }
     tasks::mutation_identity(ctx.actor, ctx.principal, ctx.idempotency_key)?;
     let now = tasks::instant(ctx.now)?.0;
     let hash = tasks::payload_hash(
         &json!({"payload":command.payload(),"expectedVersion":ctx.expected_version}),
     )?;
-    let tx = db
-        .transaction_with_behavior(TransactionBehavior::Immediate)
-        .map_err(invalid)?;
     let current = command
         .id()
         .map(|id| read(&tx, id)?.ok_or_else(|| Error::new("not_found", "Task is unavailable")))
@@ -173,12 +217,6 @@ where
             .ok_or_else(|| Error::new("not_found", "Task is unavailable"))?;
         authorize(&tx, &live)?;
         authorize(&tx, &task)?;
-        tx.commit().map_err(|_| {
-            Error::new(
-                "commit_outcome_unknown",
-                "Task receipt outcome is unknown; retain the original idempotency key",
-            )
-        })?;
         return Ok(Outcome {
             task,
             replayed: true,
@@ -228,6 +266,7 @@ where
         )?,
     };
     authorize(&tx, &task)?;
+    validate_proposed(tx, &task)?;
     let result = tasks::canonical_json(&json!(task));
     if result.encode_utf16().count() > 1_048_576 {
         return Err(Error::new(
@@ -243,12 +282,6 @@ where
     let version = i64::try_from(task.version).map_err(invalid)?;
     tx.execute("INSERT INTO rm_task_events(task_id,version,operation,payload_json,actor,principal,created_at,reason) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",params![task.task_id,version,command.event(),result,ctx.actor,ctx.principal,now,reason]).map_err(invalid)?;
     tx.execute("INSERT INTO rm_task_receipts(principal,idempotency_key,operation,payload_hash,result_json,created_at) VALUES(?1,?2,?3,?4,?5,?6)",params![ctx.principal,ctx.idempotency_key,command.operation(),hash,result,now]).map_err(invalid)?;
-    tx.commit().map_err(|_| {
-        Error::new(
-            "commit_outcome_unknown",
-            "Task mutation outcome is unknown; retain the original idempotency key",
-        )
-    })?;
     Ok(Outcome {
         task,
         replayed: false,
@@ -263,6 +296,30 @@ where
         authorize(task)?;
     }
     Ok(task)
+}
+/// Metadata only. Both current and historical scope must be visible before any receipt is returned.
+pub fn receipt<F>(
+    db: &Connection,
+    principal: &str,
+    key: &str,
+    mut authorize: F,
+) -> Result<Option<Value>, Error>
+where
+    F: FnMut(&Task) -> Result<(), Error>,
+{
+    tasks::id(&json!(key))?;
+    let row:Option<(String,String)>=db.query_row("SELECT operation,result_json FROM rm_task_receipts WHERE principal=?1 AND idempotency_key=?2",params![principal,key],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(invalid)?;
+    let Some((operation, raw)) = row else {
+        return Ok(None);
+    };
+    let task: Task = serde_json::from_str(&raw).map_err(invalid)?;
+    let live =
+        read(db, &task.task_id)?.ok_or_else(|| Error::new("not_found", "Task is unavailable"))?;
+    authorize(&live)?;
+    authorize(&task)?;
+    Ok(Some(
+        json!({"operation":operation,"taskId":task.task_id,"version":task.version}),
+    ))
 }
 /// Caller has already verified the requested view scope; hidden tasks are never returned.
 pub fn list<F>(db: &Connection, mut visible: F) -> Result<Vec<Task>, Error>
@@ -289,8 +346,20 @@ pub fn history<F>(db: &Connection, id: &str, mut authorize: F) -> Result<Vec<Eve
 where
     F: FnMut(&Task) -> Result<(), Error>,
 {
+    history_visible(db, id, |task| {
+        authorize(task)?;
+        Ok(true)
+    })
+}
+/// Current task must be visible; historical snapshots are filtered without widening access.
+pub fn history_visible<F>(db: &Connection, id: &str, mut visible: F) -> Result<Vec<Event>, Error>
+where
+    F: FnMut(&Task) -> Result<bool, Error>,
+{
     if let Some(task) = read(db, id)? {
-        authorize(&task)?;
+        if !visible(&task)? {
+            return Err(Error::new("access_denied", "Task is unavailable"));
+        }
     }
     let mut q=db.prepare("SELECT task_id,version,operation,actor,principal,created_at,payload_json,reason FROM rm_task_events WHERE task_id=?1 ORDER BY version").map_err(invalid)?;
     let rows = q
@@ -312,7 +381,9 @@ where
         let (task_id, version, operation, actor, principal, at, raw, reason) =
             row.map_err(invalid)?;
         let task = serde_json::from_str(&raw).map_err(invalid)?;
-        authorize(&task)?;
+        if !visible(&task)? {
+            continue;
+        }
         out.push(Event {
             task_id,
             version: u64::try_from(version).map_err(invalid)?,

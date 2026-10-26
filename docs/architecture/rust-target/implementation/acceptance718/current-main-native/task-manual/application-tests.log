@@ -1,0 +1,16 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.73s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_application-616d094866af0072)
+
+running 7 tests
+test tasks::tests::fresh_session_and_every_company_scope_are_checked_before_receipt ... ok
+test tasks::tests::scoped_service_has_no_human_mfa_requirement_and_charges_each_admitted_attempt_once ... ok
+test tasks::tests::task_roles_archived_live_and_nonlive_are_distinct_from_financial_access ... ok
+test tasks::tests::rejects_internal_authority_fields_and_inaccessible_assignees_without_effect ... ok
+test tasks::tests::scope_changes_filter_history_but_never_move_completion_evidence_outside_scope ... ok
+test tasks::tests::revoked_assignee_can_be_removed_and_historical_receipt_still_replays ... ok
+test tasks::tests::manual_journey_replays_exact_result_survives_restart_and_preserves_audit ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 231 filtered out; finished in 24.77s
+

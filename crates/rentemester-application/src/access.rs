@@ -33,6 +33,8 @@ string_enum! { Permission {
     WorkspaceManage => "workspace.manage",
     WorkspaceMembersRead => "workspace.members.read",
     WorkspaceMembersManage => "workspace.members.manage",
+    WorkspaceTasksRead => "workspace.tasks.read",
+    WorkspaceTasksManage => "workspace.tasks.manage",
     CompanyRead => "company.read",
     CompanyDocumentsRead => "company.documents.read",
     CompanyDocumentsUpload => "company.documents.upload",
@@ -49,9 +51,12 @@ string_enum! { Permission {
     CompanyKnowledgeManage => "company.knowledge.manage",
     CompanyOwnershipRead => "company.ownership.read",
     CompanyOwnershipManage => "company.ownership.manage",
+    CompanyTasksRead => "company.tasks.read",
+    CompanyTasksWrite => "company.tasks.write",
+    CompanyTasksManage => "company.tasks.manage",
 } }
 impl Permission {
-    pub const ALL: [Self; 23] = [
+    pub const ALL: [Self; 28] = [
         Self::PublicRead,
         Self::PublicInvitationClaim,
         Self::WorkspaceRead,
@@ -75,6 +80,11 @@ impl Permission {
         Self::CompanyKnowledgeManage,
         Self::CompanyOwnershipRead,
         Self::CompanyOwnershipManage,
+        Self::WorkspaceTasksRead,
+        Self::WorkspaceTasksManage,
+        Self::CompanyTasksRead,
+        Self::CompanyTasksWrite,
+        Self::CompanyTasksManage,
     ];
     fn scope(self) -> Scope {
         match self {
@@ -83,7 +93,9 @@ impl Permission {
             | Self::WorkspaceGroupRead
             | Self::WorkspaceManage
             | Self::WorkspaceMembersRead
-            | Self::WorkspaceMembersManage => Scope::Workspace,
+            | Self::WorkspaceMembersManage
+            | Self::WorkspaceTasksRead
+            | Self::WorkspaceTasksManage => Scope::Workspace,
             Self::CompanyRead
             | Self::CompanyDocumentsRead
             | Self::CompanyDocumentsUpload
@@ -99,7 +111,10 @@ impl Permission {
             | Self::CompanyKnowledgeRead
             | Self::CompanyKnowledgeManage
             | Self::CompanyOwnershipRead
-            | Self::CompanyOwnershipManage => Scope::Company,
+            | Self::CompanyOwnershipManage
+            | Self::CompanyTasksRead
+            | Self::CompanyTasksWrite
+            | Self::CompanyTasksManage => Scope::Company,
         }
     }
     pub(crate) fn is_company(self) -> bool {
@@ -118,7 +133,10 @@ string_enum! { CompanyRole { Owner => "owner", Bookkeeper => "bookkeeper", Revie
 pub fn workspace_role_allows(role: WorkspaceRole, permission: Permission) -> bool {
     match role {
         WorkspaceRole::WorkspaceOwner => permission.is_public() || permission.is_workspace(),
-        WorkspaceRole::Member => permission == Permission::WorkspaceRead,
+        WorkspaceRole::Member => matches!(
+            permission,
+            Permission::WorkspaceRead | Permission::WorkspaceTasksRead
+        ),
     }
 }
 pub fn company_role_allows(role: CompanyRole, permission: Permission) -> bool {
@@ -130,7 +148,10 @@ pub fn company_role_allows(role: CompanyRole, permission: Permission) -> bool {
         CompanyRole::Owner => true,
         CompanyRole::Bookkeeper => matches!(
             permission,
-            CompanyRead
+            CompanyTasksRead
+                | CompanyTasksWrite
+                | CompanyTasksManage
+                | CompanyRead
                 | CompanyDocumentsRead
                 | CompanyDocumentsUpload
                 | CompanyMasterData
@@ -145,7 +166,9 @@ pub fn company_role_allows(role: CompanyRole, permission: Permission) -> bool {
         ),
         CompanyRole::Reviewer => matches!(
             permission,
-            CompanyRead
+            CompanyTasksRead
+                | CompanyTasksWrite
+                | CompanyRead
                 | CompanyDocumentsRead
                 | CompanyReview
                 | CompanyExport
@@ -156,7 +179,8 @@ pub fn company_role_allows(role: CompanyRole, permission: Permission) -> bool {
         ),
         CompanyRole::Reader => matches!(
             permission,
-            CompanyRead
+            CompanyTasksRead
+                | CompanyRead
                 | CompanyDocumentsRead
                 | CompanyExport
                 | CompanyKnowledgeRead

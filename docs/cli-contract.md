@@ -2,6 +2,26 @@
 
 ## Rust-klienten og agentopslag
 
+### Manuelle opgaver gennem Rust-serveren
+
+`rentemester-rust tasks list|get|history|receipt|create|update|move|complete|reopen`
+bruger den fælles server med `--server ORIGIN` eller den eksisterende
+`--local-profile`, og præcis én privat `--cookie-file` eller `--service-key-file`.
+`tasks --help` viser de konkrete JSON-inputskemaer. Input læses fra `--input FILE`
+eller stdin; `list` tillader et tomt input som `{}`. Muterende operationer kræver
+`--confirm`, callerens `idempotencyKey` og ved eksisterende opgaver en positiv
+`expectedVersion`. Actor og principal udledes på serveren; `--actor`, `local`
+og autorisationsfelter i JSON accepteres ikke.
+
+Eksempel på læsning: `tasks get --server ORIGIN --cookie-file PRIVATE_COOKIE`
+med stdin `{"taskId":"task-reference"}`. Ved ukendt skriveudfald beholdes det
+oprindelige input og nøglen; `tasks receipt` med `{"idempotencyKey":"original-key"}`
+viser kun en kvittering, som stadig er synlig med de aktuelle rettigheder.
+Kontrollér også `get`/`history`, før en ny handling startes. Klienten gentager
+aldrig automatisk en skrivning. Historiske ansvarlige eller receipts giver ingen
+adgang. Dette aktiverer det manuelle opgaveforløb; automatiske kilder, rutiner,
+påmindelser og beskyttede task-linked knowledge-forløb er endnu ikke porteret.
+
 ### Lokal original `system healthcheck` (Rust)
 
 `rentemester-rust system healthcheck --company PATH [--json | --format json|human]`

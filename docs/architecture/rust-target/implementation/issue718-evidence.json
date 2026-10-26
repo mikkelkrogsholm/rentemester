@@ -28,7 +28,7 @@
     }
   },
   "remaining": [
-    "Current approved main-native parity, including task/knowledge/approval/party/accounting gaps, needs actual native application and recovery acceptance; new task engine/storage is staged only.",
+    "Full approved current-main native parity remains: automatic task sources, boards/series/routines/runtime/protected knowledge, company56/control-main lineage-aware adoption and remaining approval/purchase/legacy banking/receivable/party/evidence operations. Manual task application/API/React and native recovery now have separate accepted qualifications.",
     "Current-main broad UI failures remain incompletely qualified; no assertion/protocol/identity bypass or unchanged full-suite rerun.",
     "Original #712 dependency and J03 native/Tauri boundary: native/menu/Keychain/WebKit-cookie/close-reopen/cancel/manual installed acceptance LAST; all release/cutover gates retained."
   ],
@@ -858,6 +858,11 @@
   "currentMainPackagedCi": {
     "status": "actual7of7PASS on4c; exact GitHub tested merge has identical tree; historical before native33 recovery changes",
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/packaged-4c/qualification.json",
+    "wholeIssueAccepted": false
+  },
+  "currentMainNativeManualTasks": {
+    "status": "manual application/HTTP/CLI/MCP and existing React lifecycle accepted; whole718 remains OPEN",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-manual/qualification.json",
     "wholeIssueAccepted": false
   }
 }
