@@ -1,0 +1,85 @@
+{
+  "format": "rentemester-current-main-audit-repair/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "failedCiHead": "0fc89fadc22b0a572ee0b0833876ea2f5c96c45c",
+  "diagnosis": "Actual CI advanced past lint and stopped at unchanged bun audit --audit-level=low:9advisories across6packages. Upgrade only affected dependencies and their required transitives; no audit exception or lower severity threshold.",
+  "packages": {
+    "body-parser": [
+      "2.4.0",
+      "https://github.com/advisories/GHSA-27r3-jxmh-p828"
+    ],
+    "fast-uri": [
+      "3.1.9",
+      "https://github.com/advisories/GHSA-w74x-v6f9-j3xg"
+    ],
+    "ip-address": [
+      "10.7.4",
+      "https://github.com/advisories/GHSA-rxp7-6hxx-x8q5"
+    ],
+    "proxy-addr": [
+      "2.0.8",
+      "https://github.com/advisories/GHSA-jqcg-44mw-7w3h"
+    ],
+    "happy-dom": [
+      "21.0.4",
+      "https://github.com/advisories/GHSA-834v-8h66-3h79"
+    ],
+    "zod": [
+      "4.6.7",
+      "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5"
+    ]
+  },
+  "sourceFiles": {
+    "package.json": "10f855d1b94534785e73c45a93a0a42f6d3a2408c7c764ce25f02d867858ba20",
+    "app/package.json": "779011e37709ff7bc7822dbf3de2fb06def7793ac9cacc47cb916bce64e156e2",
+    "bun.lock": "e1b9818086f12cf48d89b535937cb98a5fc4aef69c361fe41a53029f8fe8d458"
+  },
+  "checks": {
+    "audit": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-audit.log",
+      "sha256": "2a85dbc27cadcad8dfeca0a31c4537bfe2c7389cedd62e50276e4d2b411f1fd8"
+    },
+    "frozen_install": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-frozen_install.log",
+      "sha256": "70f54e7713415e4c2b3c6d69a9f2ac5ecdd28ea76afe8663a863bc2ab93358ae"
+    },
+    "ui": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-ui.log",
+      "sha256": "29ce25c6b496e1d625239a3a5be88a7995b8e335fd9fa823c94749811a7f0267"
+    },
+    "auth_mcp": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-auth_mcp.log",
+      "sha256": "855daed31eab6dcfd81e896276441ef20f9cfab754e2feadaf7262c07d2d3840"
+    },
+    "web_build": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-web_build.log",
+      "sha256": "35ea3fd2c084837e657951882f6c01a587ea4022d9ecfb345f2c15afe2168204"
+    },
+    "lint": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-lint.log",
+      "sha256": "a758674f1e163f12009e659f46c1e4b93f604028cc1ae860ce3a89658b76a434"
+    }
+  },
+  "review": "Diff inspected: six patched packages, matching happy-dom global registrator, required body-parser child versions only. Existing MCP SDK and application/runtime versions otherwise retained in lock. Root overrides explicitly pin four audited transitive dependencies. No new dependencies, test platform, audit bypass or product scope change.",
+  "limitations": [
+    "Only scoped dependency correction accepted; fullUI probe is explicitly incomplete/failed and kept as existing718 acceptance debt",
+    "Four selected failures reproduced prepatch; no blanket claim that all broader failures are independent of dependency change",
+    "NewheadCI/native main feature ports/original final gates remain open; no currentnative release/whole718 claim"
+  ],
+  "broaderUiProbe": {
+    "state": "stopped after reproduced baseline defects; not accepted",
+    "observedFailureLines": 121,
+    "rawLog": ".sgd/observations/main-integration/current-main-audit/full-ui-stopped.log",
+    "baselineRevision": "0fc89fadc22b0a572ee0b0833876ea2f5c96c45c",
+    "baselineDependency": "happy-dom20.11.6/zod4.4.3 with original frozen lock",
+    "baselineComparison": "Eight tests across App shell and native invoice compensation:4pass/4fail on exact pre-patch source. Same four failures as patched-dependency broad probe; absent explicit health/protocol fixtures refuse before intended UI assertions. Other full-suite failures remain unqualified, not declared baseline or repaired.",
+    "baselineRawLog": ".sgd/observations/main-integration/current-main-audit/prepatch-baseline-ui.log"
+  }
+}

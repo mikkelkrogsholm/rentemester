@@ -1,0 +1,3 @@
+$ bun run --filter rentemester-cockpit build
+rentemester-cockpit build: $ bun run ../scripts/design-tokens.ts --check
+rentemester-cockpit build: Exited with code 0

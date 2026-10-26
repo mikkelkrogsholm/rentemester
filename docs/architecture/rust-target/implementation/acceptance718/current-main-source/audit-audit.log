@@ -1,0 +1,4 @@
+$ bun audit --audit-level=low
+bun audit v1.4.0 (34cbb9a40)
+
+No vulnerabilities found (checked 260 packages) [253.00ms]

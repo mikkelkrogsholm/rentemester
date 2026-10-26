@@ -827,5 +827,12 @@
     "releaseIdentityCasesPassed": 46,
     "coldCockpitBuild": "PASS",
     "currentNativeReleaseQualified": false
+  },
+  "currentMainAuditCorrection": {
+    "status": "scoped dependency correction; whole718 OPEN",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/audit-qualification.json",
+    "audit": "unchanged low severity gatePASS; zero reported vulnerabilities across260packages",
+    "focusedTests": "130UI +40auth/MCP casesPASS; frozen install/lint/webbuildPASS",
+    "broaderUiAcceptance": "Not accepted; stopped broad probe and exact prepatch4failure comparison preserved. Other failures remain unqualified."
   }
 }

@@ -1,0 +1,61 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/better-auth-cookie-e2e.test.ts:
+(pass) Better Auth cookie E2E security > verification, cookies, CSRF, MFA challenge/recovery, reset and session revocation [567.02ms]
+
+tests/unit/mcp-service-security.test.ts:
+(pass) MCP service principal guard > authorizes ownership snapshots only when a real service credential has every endpoint role [576.77ms]
+(pass) MCP service principal guard > review and apply authorize stored snapshot endpoints even if caller supplies decoy facts [500.73ms]
+(pass) MCP service principal guard > captures token, revalidates revocation, and confines company paths [569.52ms]
+(pass) MCP service principal guard > keeps a complete, unique map for the live MCP surface [60.37ms]
+(pass) MCP service principal guard > requires reviewer permission for an atomic dimension replacement [329.15ms]
+(pass) MCP service principal guard > a hosted service principal replays after token rotation but never across revoked membership, principal, or company [789.95ms]
+
+tests/unit/mcp-operation-registry.test.ts:
+(pass) authoritative MCP operation registry (#647) > profile selection is compact by default, explicit full, and fail-closed [0.07ms]
+(pass) authoritative MCP operation registry (#647) > full tools/list preserves every exact captured schema and identity hash [182.78ms]
+(pass) authoritative MCP operation registry (#647) > compact operation descriptions expose the immutable profile and exact schemas [69.62ms]
+(pass) authoritative MCP operation registry (#647) > registry construction fails closed for missing annotations and exact-schema conversion failures [98.10ms]
+(pass) authoritative MCP operation registry (#647) > the single operation namespace rejects collisions, cycles and dangling aliases [39.59ms]
+[mcp:withCompanyDb] intet workspace konfigureret: sæt RENTEMESTER_WORKSPACE til en workspace-mappe for at bruge slug 'missing-company', eller angiv en absolut virksomhedssti i stedet: missing-company
+[mcp:withCompanyDb] intet workspace konfigureret: sæt RENTEMESTER_WORKSPACE til en workspace-mappe for at bruge slug 'missing-company', eller angiv en absolut virksomhedssti i stedet: missing-company
+(pass) authoritative MCP operation registry (#647) > direct and gateway invocation preserve success, domain errors and schema failures [89.60ms]
+
+tests/unit/better-auth.test.ts:
+(pass) Better Auth workspace foundation > uses Bun Request handler compatibility and rejects public email/password sign-up [31.76ms]
+(pass) Better Auth workspace foundation > keeps the reviewed security configuration explicit [15.71ms]
+(pass) Better Auth workspace foundation > uses Better Auth 1.7 versioned secrets with the first key active and a fixed proxy header [16.75ms]
+{"component":"better-auth","event":"better_auth_warning","level":"warn"}
+(pass) Better Auth workspace foundation > records the active versioned identity-HMAC key id in telemetry [68.08ms]
+(pass) Better Auth workspace foundation > requires an injected high-entropy secret, explicit origins, and secure hosted cookies [15.88ms]
+(pass) Better Auth workspace foundation > disabled email fails closed and the in-memory sender is test-only without I/O [0.13ms]
+(pass) Better Auth workspace foundation > Better Auth callbacks await delivery and propagate only the sanitized gateway failure [17.56ms]
+(pass) Better Auth workspace foundation > private bootstrap creates a credential identity without a session [67.56ms]
+{"component":"better-auth","event":"better_auth_warning","level":"warn"}
+(pass) Better Auth workspace foundation > records actual Better Auth handler sign-in attempts append-only without persisting credentials [113.99ms]
+{"component":"better-auth","event":"better_auth_error","level":"error"}
+(pass) Better Auth workspace foundation > a sign-up delivery callback may leave an identity row, so recovery must use lookup plus explicit resend [570.62ms]
+(pass) Better Auth workspace foundation > background email failures emit only an allowlisted operational event [77.63ms]
+(pass) Better Auth workspace foundation > request provider uses Better Auth's server session API once per call [64.06ms]
+
+tests/unit/mcp-tool-schemas/input-schemas.test.ts:
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > invoice_issue payload is a typed object, not an empty catchall [0.09ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #206 — invoice totals fields state the kroner unit [0.05ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #206 — vat_post_eu_service_purchase netAmount states the kroner unit [0.03ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #206 — invoice_apply_payment amount states the kroner unit [0.02ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #208 — journal_post documentId description states the expense/income requirement [0.02ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #210 — documents_ingest filePath is documented as server-side [0.04ms]
+(pass) #200/#206/#208/#210 — write tools expose fully-typed input schemas > #529 — MCP supplier identity schemas retain country and typed identifier fields [0.03ms]
+(pass) #232 — the remaining write tools carry field-level schemas > recurring_invoice_create.invoice is a typed object, not a schemaless catchall [0.12ms]
+(pass) #232 — the remaining write tools carry field-level schemas > customer_create / vendor_create input fields carry descriptions [0.06ms]
+(pass) #232 — the remaining write tools carry field-level schemas > mileage_log input fields document units and source-backed rate [0.04ms]
+(pass) #232 — the remaining write tools carry field-level schemas > asset_register / asset_write_off flat fields carry descriptions [0.03ms]
+(pass) #232 — the remaining write tools carry field-level schemas > period_close documents the closed/reported status semantics [0.02ms]
+(pass) #232 — the remaining write tools carry field-level schemas > company_add documents the workspace fallback when workspace is omitted [0.02ms]
+(pass) #232 — the remaining write tools carry field-level schemas > invoice_send_email documents config/smtp.json required fields and dry-run [0.05ms]
+(pass) #232 — the remaining write tools carry field-level schemas > customer_validate_vat is classified as the cache-writing operation it is [0.03ms]
+
+ 40 pass
+ 0 fail
+ 2934 expect() calls
+Ran 40 tests across 5 files. [5.78s]

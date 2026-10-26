@@ -33,7 +33,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@babel/core": "^7",
     "@babel/plugin-syntax-typescript": "^7",
-    "@happy-dom/global-registrator": "20.11.6",
+    "@happy-dom/global-registrator": "21.0.4",
     "@playwright/test": "^1.63.0",
     "@stylexjs/babel-plugin": "^0.19.1",
     "@stylexjs/unplugin": "^0.19.1",
@@ -46,7 +46,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "happy-dom": "20.11.6",
+    "happy-dom": "21.0.4",
     "typescript": "^5.7.3",
     "unplugin": "^2.3.11"
   }
