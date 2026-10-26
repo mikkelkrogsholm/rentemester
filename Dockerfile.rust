@@ -15,7 +15,8 @@ COPY protocol/ ./protocol/
 COPY DESIGN.md ./
 COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
 COPY src/design ./src/design
-COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
+# Type-only shared task/knowledge contracts are build inputs, not runtime backend code.
+COPY src/core/access-permissions.ts src/core/tasks-types.ts src/core/knowledge-pages.ts src/core/canonical-json.ts ./src/core/
 COPY crates/rentemester-desktop/src/design_tokens.rs ./crates/rentemester-desktop/src/design_tokens.rs
 RUN bun run cockpit:build
 

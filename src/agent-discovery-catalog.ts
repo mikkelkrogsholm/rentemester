@@ -322,8 +322,8 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("imported-receivable-settlement-status", mcp("invoice_imported_receivable_settlement_status"), "Read back the immutable settlement by bank transaction after an uncertain outcome.", { dependsOn:["apply-imported-receivable-settlement"], inputIdentities:["bankTransactionId"], canonicalRecords:["imported receivable bank settlement"] }),
     write("import-contacts", cli("import contacts"), "Import Dinero contacts idempotently.", { dependsOn: ["supported-systems"], condition: "Optional contacts branch.", expectedIdempotent: true, requiresConfirmation: false, retryClass: "natural-idempotent", canonicalRecords: ["customers", "vendors", "contact import audit"] }),
     read("archive", mcp("import_archive_list"), "Read the retained source archive.", { dependsOn: ["apply-import"] }),
-    read("imported-receivables", mcp("invoice_imported_receivables"), "Read source-evidenced opening debtors at an explicit cutoff. This is a separate archive schedule, never a native invoice list.", { dependsOn: ["apply-import"], inputIdentities: ["asOf"], canonicalRecords: ["imported receivable headers", "imported receivable events", "source hashes"] }),
-  ], unsupportedBoundaries: ["No company-specific mapping is inferred.", "The legacy backfill never replays journals, documents, archive years, paths, import attempts or bank reconciliations.", "A changed ledger/audit head, source hash, schedule or control balance invalidates the reviewed plan."] }),
+    read("imported-receivables", mcp("invoice_imported_receivables"), "Read source-evidenced opening debtors at an explicit cutoff. This is a separate archive schedule, never a native invoice list.", { dependsOn: ["apply-import"], inputIdentities: ["company slug/path", "asOf date (YYYY-MM-DD)"], canonicalRecords: ["imported receivable schedules", "source-hash evidence"] }),
+  ], alternatives: ["Use invoice imported-receivables --company <path> --as-of YYYY-MM-DD for the same read-only archive schedule."], unsupportedBoundaries: ["No company-specific mapping is inferred.", "An imported schedule is not a native invoice; never issue, remind or settle an issued invoice to inspect archive debtors.", "The legacy backfill never replays journals, documents, archive years, paths, import attempts or bank reconciliations.", "A changed ledger/audit head, source hash, schedule or control balance invalidates the reviewed plan."] }),
   workflow({ id: "privacy-governance", capabilityId: "privacy", title: "GDPR discovery and export", intendedOutcome: "Discover and export data-subject records through audited, confirmed operations.", steps: [
     write("discover", mcp("gdpr_discover"), "Create audited discovery evidence.", { canonicalRecords: ["GDPR audit events"] }),
     write("export", mcp("gdpr_export"), "Create the confirmed subject export.", { dependsOn: ["discover"], canonicalRecords: ["GDPR export audit"] }),
@@ -600,10 +600,12 @@ export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
   mcp: { count: 269, hash: "7033b9228199350dbda6227ffcde262070f94e3e883eefc6937c1b221af50829" },
   cli: { count: 319, hash: "3526cef0f3c1f5c352777da1d0609a82d8932aa80f55b635f4321d5dc843d266" },
-  http: { count: 264, hash: "26495100ba7c9f7ce0d22fcadb92afb47de2bf6e6cd9b2464192e9f7aed1bc2b" },
+  http: { count: 265, hash: "d99c5818eaccacf38b5d9541e3aaa27b99f6a9ad416f5ac595ed939e5ff2a91d" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
+  // Passive R05 metadata; never workspace access or mutation authority.
+  { capabilityId: "operations-assurance", pattern: /^http:get \/api\/protocol$/ },
   { capabilityId: "workspace-tasks", pattern: /(?:^mcp:(?:tasks_|task_series_|task_boards_)|^cli:(?:tasks |task-series |task-boards )|^http:\w+ \/api\/(?:tasks|task-series|task-boards)(?:\/|$))/ },
   { capabilityId: "non-cash-balance-corrections", pattern: /(?:documents_(?:ingest|list)|journal_(?:dry_run|post|list))/ },
   { capabilityId: "accounting-dimensions", pattern: /dimensions?|dimension[_-]/ },

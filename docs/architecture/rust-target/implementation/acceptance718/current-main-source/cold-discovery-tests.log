@@ -1,0 +1,24 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/agent-discovery-coverage.test.ts:
+(pass) agent discovery coverage gate (#585) > the real registries pass deterministically [666.60ms]
+(pass) agent discovery coverage gate (#585) > rejects a new MCP tool, CLI subcommand and HTTP route with exact actionable names [4.57ms]
+(pass) agent discovery coverage gate (#585) > rejects missing capability bindings and blanket standalone classifications [1.80ms]
+(pass) agent discovery coverage gate (#585) > rejects dangling workflow operations and dependencies [2.13ms]
+(pass) agent discovery coverage gate (#585) > rejects false surface safety, idempotency, actor and confirmation claims [1.10ms]
+(pass) agent discovery coverage gate (#585) > rejects a false retry class and exposes only the canonical classes [1.83ms]
+(pass) agent discovery coverage gate (#585) > rejects an unreviewed natural-idempotent hint instead of inferring a retry promise [0.90ms]
+
+tests/unit/agent-discovery-catalog.test.ts:
+(pass) agent runtime catalogue (#584) > imports expose a safe read-back for imported receivables without native invoice actions [0.12ms]
+(pass) agent runtime catalogue (#584) > publishes stable capabilities and every required initial workflow with the complete contract [0.44ms]
+(pass) agent runtime catalogue (#584) > finds representative business outcomes by bounded token search [12.36ms]
+(pass) agent runtime catalogue (#584) > is deterministic and paginated for identical build inputs [2.94ms]
+(pass) agent runtime catalogue (#584) > fails closed for missing operations and derives MCP safety/retry facts from live annotations [1.98ms]
+(pass) agent runtime catalogue (#584) > publishes exact CLI actor, confirmation and mode boundaries [0.38ms]
+(pass) agent runtime catalogue (#584) > HTTP publishes the same catalogue while explicitly deferring MCP liveness to tools/list [251.93ms]
+
+ 14 pass
+ 0 fail
+ 1433 expect() calls
+Ran 14 tests across 2 files. [1095.00ms]

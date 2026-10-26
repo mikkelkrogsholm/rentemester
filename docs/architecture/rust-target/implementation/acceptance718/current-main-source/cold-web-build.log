@@ -1,0 +1,89 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.rust
+#1 transferring dockerfile: 7.97kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#2 DONE 0.7s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#4 DONE 0.6s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 217B done
+#5 DONE 0.0s
+
+#6 [web  1/13] FROM docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 4.57MB 0.1s done
+#7 DONE 0.1s
+
+#8 [web  2/13] WORKDIR /build
+#8 CACHED
+
+#9 [web  3/13] COPY package.json bun.lock bunfig.toml ./
+#9 DONE 0.0s
+
+#10 [web  4/13] COPY app/package.json app/bunfig.toml ./app/
+#10 DONE 0.0s
+
+#11 [web  5/13] RUN bun install --frozen-lockfile
+#11 0.091 bun install v1.4.0 (34cbb9a40)
+#11 2.566
+#11 2.566 + @babel/core@7.29.7
+#11 2.566 + @biomejs/biome@2.5.10
+#11 2.566 + @stylexjs/babel-plugin@0.19.1
+#11 2.566 + @types/bun@1.4.0
+#11 2.566 + typescript@5.9.3
+#11 2.566 + @better-auth/api-key@1.7.1
+#11 2.566 + @modelcontextprotocol/sdk@1.32.2
+#11 2.566 + @stylexjs/stylex@0.19.1
+#11 2.566 + better-auth@1.7.1
+#11 2.566 + pdfjs-dist@6.2.108
+#11 2.566 + takumi-pdf@0.15.0
+#11 2.566 + zod@4.4.3
+#11 2.566
+#11 2.566 245 packages installed [2.48s]
+#11 DONE 3.2s
+
+#12 [web  6/13] COPY app/ ./app/
+#12 DONE 0.0s
+
+#13 [web  7/13] COPY protocol/ ./protocol/
+#13 DONE 0.0s
+
+#14 [web  8/13] COPY DESIGN.md ./
+#14 DONE 0.0s
+
+#15 [web  9/13] COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
+#15 DONE 0.0s
+
+#16 [web 10/13] COPY src/design ./src/design
+#16 DONE 0.0s
+
+#17 [web 11/13] COPY src/core/access-permissions.ts src/core/tasks-types.ts src/core/knowledge-pages.ts src/core/canonical-json.ts ./src/core/
+#17 DONE 0.0s
+
+#18 [web 12/13] COPY crates/rentemester-desktop/src/design_tokens.rs ./crates/rentemester-desktop/src/design_tokens.rs
+#18 DONE 0.0s
+
+#19 [web 13/13] RUN bun run cockpit:build
+#19 0.100 $ bun run --filter rentemester-cockpit build
+#19 0.106 rentemester-cockpit build: $ bun run ../scripts/design-tokens.ts --check
+#19 16.22 rentemester-cockpit build: Exited with code 0
+#19 DONE 16.3s
+
+#20 exporting to image
+#20 exporting layers
+#20 exporting layers 1.7s done
+#20 writing image sha256:3af394eeaaf380be5caea64c2d27a97151f97882fb69d784b8956f46a33e96a6 done
+#20 naming to docker.io/library/rentemester-source-web:issue718-cold done
+#20 DONE 1.7s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/b1ir8lnpjuunljxl3x2e6brcn
