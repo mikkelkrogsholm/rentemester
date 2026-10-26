@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -27,19 +29,19 @@ export function NativeAuditVerify({ slug }: { slug: string }) {
     catch (cause) { setError(cause instanceof Error ? cause.message : "Regnskabskontrollen kunne ikke gennemføres."); }
     finally { sending.current = false; setBusy(false); }
   }
-  return <section className="card" aria-label="Regnskabskontrol">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Regnskabskontrol">
     <h3>Regnskabskontrol</h3>
-    <p className="muted">Sammenhold posteringer, bankkoblinger og fakturagrundlag med registrerede originalfiler. Kontrollen ændrer ingen regnskabsdata.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Sammenhold posteringer, bankkoblinger og fakturagrundlag med registrerede originalfiler. Kontrollen ændrer ingen regnskabsdata.</p>
     <Button type="button" disabled={busy} onClick={() => void load()}>Kontrollér regnskabet</Button>
     {error && <p role="alert">{error}</p>}
     {value && <>
-      <p role="status" className={`callout ${value.audit.ok ? "success" : value.audit.available ? "danger" : "warn"}`}>
+      <p role="status" {...stylex.props(...[cockpitStyles.banner, ...(value.audit.ok ? [cockpitStyles.bannerSuccess] : (value.audit.available ? [cockpitStyles.bannerError] : [cockpitStyles.statusChipWarning]))])}>
         {value.audit.ok ? "Kontrollen fandt ingen afvigelser." : value.audit.available ? "Kontrollen fandt afvigelser." : "Kontrollen kunne ikke gennemføres fuldt ud."} Posteringer gennemgået: {value.audit.entries}.
       </p>
       {value.audit.components.map(component => <div key={component.name}>
         <h4>{labels[component.name]}</h4>
         <p>{component.ok ? "Ingen afvigelser fundet." : component.available ? "Afvigelser fundet." : "Kontrollen er ikke fuldført."}</p>
-        {component.errors.length > 0 && <details><summary>Vis kontrollens detaljer</summary><pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{JSON.stringify(component.errors, null, 2)}</pre></details>}
+        {component.errors.length > 0 && <details><summary>Vis kontrollens detaljer</summary><pre {...stylex.props(cockpitStyles.wrappedEvidence)}>{JSON.stringify(component.errors, null, 2)}</pre></details>}
       </div>)}
       {!value.audit.ok && <p>Gennemgå afvigelser og manglende kontroller, før resultatet bruges som dokumentation.</p>}
     </>}

@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
-import { screen, within } from "@testing-library/react";
+import { describe, expect, test, vi } from "bun:test";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IntegrityView } from "./IntegrityView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
+import { stubGlobal } from "../test/globals";
 
 function sample(overrides: Partial<{
   chainOk: boolean;
@@ -67,6 +68,26 @@ function renderView(payload: ReturnType<typeof sample> = sample()) {
 }
 
 describe("IntegrityView (#333)", () => {
+  test("keeps the last integrity result visible during refresh and after refresh failure", async () => {
+    const user = userEvent.setup();
+    let reads = 0;
+    let rejectReload!: (error: Error) => void;
+    const pending = new Promise<Response>((_resolve, reject) => { rejectReload = reject; });
+    stubGlobal("fetch", vi.fn(async () => {
+      reads += 1;
+      return reads === 1 ? Response.json(sample()) : pending;
+    }));
+    renderAt(<IntegrityView />, { route: "/companies/acme-aps/integritet", path: "/companies/:slug/integritet" });
+    expect(await screen.findByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Verificér igen" }));
+    await waitFor(() => expect(reads).toBe(2));
+    expect(screen.getByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    await act(async () => { rejectReload(new Error("Synthetic integrity read failure")); });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Den seneste gennemførte kontrol vises fortsat");
+    expect(screen.getByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verificér igen" })).toBeEnabled();
+  });
+
   test("viser PASS-status når hash-kæden er hel", async () => {
     renderView(sample());
     expect(await screen.findByText(/OK — den kontrollerede kæde er hel/)).toBeInTheDocument();
@@ -98,7 +119,7 @@ describe("IntegrityView (#333)", () => {
 
   test("viser backup-tabel med seneste backup og antal", async () => {
     renderView(sample());
-    expect(await screen.findByText(/Backup-status/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Backup$/)).toBeInTheDocument();
     expect(
       screen.getByText(/2026-05-20T10:00:00Z/),
     ).toBeInTheDocument();
@@ -113,7 +134,7 @@ describe("IntegrityView (#333)", () => {
   test("destinations-tabel viser EU/EØS-flag og senest brugt", async () => {
     renderView(sample());
     expect(
-      await screen.findByText(/Backup-destinationer \(1\)/),
+      await screen.findByText(/Se tekniske destinationer \(1\)/),
     ).toBeInTheDocument();
     const row = (
       await screen.findByRole("cell", { name: "EU Cloud Storage" })

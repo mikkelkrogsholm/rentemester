@@ -2,7 +2,7 @@
 //
 // Invoice row amounts use their currency; explicit *Dkk and summary totalsCurrency identify DKK valuations.
 
-import type { FiscalYearEntry, StatementCompany } from "./common";
+import type { DataCoverage, FiscalYearEntry, StatementCompany } from "./common";
 
 // --- invoices / Fakturaer (GET .../invoices?year=) — cockpit-redesign it. 5 --
 
@@ -44,6 +44,7 @@ export type CompanyInvoiceRow = {
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  partyId?: string | null;
   /**
    * Customer's e-mail when set on the kontaktkort (#429). The cockpit row
    * offers "Send på mail" only when this is present so the dialog can
@@ -106,12 +107,44 @@ export type CompanyInvoices = {
   totalGross: number;
   totalOpen: number;
   overdueCount: number;
+  coverage: DataCoverage;
 };
 
 export type InvoicesResponse = {
   ok: true;
   invoices: CompanyInvoices;
 };
+
+/** Source-evidenced opening debtors.  Kept separate from `CompanyInvoices`: a
+ * native issued invoice is never an import continuation or a duplicate row. */
+export type ImportedReceivableRow = {
+  source: "imported";
+  externalInvoiceId: string;
+  customerExternalId: string | null;
+  customerName: string | null;
+  invoiceDate: string;
+  dueDate: string | null;
+  grossAmount: number;
+  paidAmount: number;
+  openBalance: number;
+  controlAccountNo: string;
+  sourceRecognitionRef: string;
+  sourceDocumentHash: string;
+  scheduleHash: string;
+  archiveBoundary: string;
+};
+
+export type ImportedReceivables = {
+  ok: true;
+  asOfDate: string;
+  boundary: string;
+  count: number;
+  totalOpen: number;
+  rows: ImportedReceivableRow[];
+  errors: string[];
+};
+
+export type ImportedReceivablesResponse = { ok: true; importedReceivables: ImportedReceivables };
 
 /** One previously generated invoice for a recurring-invoice template. */
 export type RecurringInvoiceGenerationRow = {

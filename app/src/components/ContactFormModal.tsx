@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import * as stylex from "@stylexjs/stylex";
@@ -314,7 +315,7 @@ export function ContactFormModal({
       : "Tilføj leverandør";
 
   return (
-    <Dialog title={title} onClose={onClose} busy={busy} initialFocusRef={nameRef}>
+    <Dialog title={title} onClose={onClose} busy={busy} initialFocusRef={nameRef} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
@@ -324,7 +325,7 @@ export function ContactFormModal({
         {error && <Banner kind="error">{error}</Banner>}
         {cvrInfo && <Banner kind="warning">{cvrInfo}</Banner>}
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Navn
           <Input
             ref={nameRef}
@@ -336,7 +337,7 @@ export function ContactFormModal({
           />
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           CVR / moms-nr.
           <div {...stylex.props(viewStyles.site0)}>
             <Input
@@ -349,17 +350,17 @@ export function ContactFormModal({
             />
             <Button requiredPermission="company.external-lookup" variant="secondary"
               type="button"
-              className="btn secondary"
+
               onClick={handleCvrLookup}
               disabled={busy || cvrBusy || !looksLikeDanishCvr(form.vatOrCvr)}
-              title="Slå CVR-nummeret op og udfyld navn + adresse"
+              title="Slå CVR-nummeret op og udfyld navn + adresse" xstyle={[cockpitStyles.buttonComposition]}
             >
               {cvrBusy ? "Slår op…" : "Slå CVR op"}
             </Button>
           </div>
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           E-mail
           <Input
             type="email"
@@ -369,7 +370,7 @@ export function ContactFormModal({
           />
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Telefon
           <Input
             type="tel"
@@ -379,7 +380,7 @@ export function ContactFormModal({
           />
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Adresse
           <Input
             type="text"
@@ -389,7 +390,7 @@ export function ContactFormModal({
           />
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Hjemmeside
           <Input
             type="url"
@@ -401,7 +402,7 @@ export function ContactFormModal({
 
         {kind === "customer" ? (
         <>
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               EAN-nummer (offentlige kunder)
               <Input
                 type="text"
@@ -412,7 +413,7 @@ export function ContactFormModal({
               />
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Betalingsfrist (dage)
               <Input
                 type="number"
@@ -423,7 +424,7 @@ export function ContactFormModal({
               />
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Valuta
               <Input
                 type="text"
@@ -439,17 +440,29 @@ export function ContactFormModal({
           </>
         ) : (
           <>
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Leverandørland (ISO)
               <Input type="text" value={form.countryCode} onChange={(e) => update("countryCode", e.target.value.toUpperCase())} maxLength={2} placeholder="DK, DE, US" disabled={outcome.blocked || (busy)} />
             </label>
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Leverandøridentitet
               <Select value={form.identifierKind} onChange={(e) => update("identifierKind", e.target.value as FormState["identifierKind"])} disabled={outcome.blocked || (busy)}>
-                <option value="">Ikke klassificeret</option><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU-momsnr.</option><option value="non_eu">Ikke-EU</option>
+                <option value="" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Ikke klassificeret</option><option value="dk_cvr" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Dansk CVR</option><option value="eu_vat" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>EU-momsnr.</option><option value="non_eu" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Ikke-EU</option>
               </Select>
             </label>
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Standard udgiftskonto
               <Input
                 type="text"
@@ -462,7 +475,7 @@ export function ContactFormModal({
               />
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Momsbehandling
               <Select
                 value={form.defaultVatTreatment}
@@ -470,7 +483,10 @@ export function ContactFormModal({
                 disabled={outcome.blocked || (busy)}
               >
                 {VAT_TREATMENT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <option key={opt.value} value={opt.value} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
                     {opt.label}
                   </option>
                 ))}
@@ -479,7 +495,7 @@ export function ContactFormModal({
           </>
         )}
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Noter
           <Textarea
             value={form.notes}
@@ -489,19 +505,19 @@ export function ContactFormModal({
           />
         </label>
 
-        <div className="modal-actions">
+        <div {...stylex.props(cockpitStyles.modalActions)}>
           <Button variant="secondary"
             ref={closeRef}
             type="button"
-            className="btn secondary"
+
             onClick={onClose}
-            disabled={busy}
+            disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
           >
             Annullér
           </Button>
           <Button requiredPermission="company.master-data"
             type="button"
-            className="btn"
+
             onClick={handleSave}
             disabled={outcome.blocked || (busy || !form.name.trim())}
           >

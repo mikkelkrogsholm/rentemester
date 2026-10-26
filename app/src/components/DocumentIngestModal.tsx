@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { parseDanishAmount } from "../lib/format";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
@@ -291,17 +292,21 @@ export function DocumentIngestModal({
 
         {done ? (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}>
                 {successText ?? `Bilaget er indlæst${done.documentNo ? ` som ${done.documentNo}` : ""}.`}
               </p>
             </div>
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button
                 type="button"
-                className="btn"
+
                 ref={closeRef}
-                onClick={onClose}
+                onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Luk
               </Button>
@@ -309,8 +314,12 @@ export function DocumentIngestModal({
           </>
         ) : (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}>
                 {metadataReview ? "Gennemgå den bevarede original og indtast kun de kildeoplysninger, du har kontrolleret. Filen indlæses ikke igen." : "Vælg en bilagsfil (PDF, billede eller tekst) og udfyld oplysningerne."} {allowInternalVoucher ? "Interne bilag skal bindes til den importerede bankpost, der udgør det primære bevis." : "Vælg den faktiske bilagstype. Interne bilag oprettes direkte i virksomheden med dens bankbevis; kontrakter og andre dokumenttyper understøttes endnu ikke i denne indbakke."}
               </p>
             </div>
@@ -318,7 +327,7 @@ export function DocumentIngestModal({
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
 
-            {metadataReview ? <section aria-label="Bevaret original"><p>{metadataReview.filename}</p><p>SHA-256: {metadataReview.sourceHash}</p><a href={metadataReview.originalUrl} download>Hent original til gennemgang</a></section> : <label className="modal-field">
+            {metadataReview ? <section aria-label="Bevaret original"><p>{metadataReview.filename}</p><p>SHA-256: {metadataReview.sourceHash}</p><a href={metadataReview.originalUrl} download>Hent original til gennemgang</a></section> : <label {...stylex.props(cockpitStyles.modalField)}>
               Bilagsfil
               <Input
                 type="file"
@@ -328,14 +337,14 @@ export function DocumentIngestModal({
               />
             </label>}
             {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+              <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site0])} >
                 Valgt: {fileName}
               </p>
             )}
             {readingFile && <p role="status">Læser bilagsfil…</p>}
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Bilagstype
                 <Select
                   aria-label="Bilagstype"
@@ -348,12 +357,21 @@ export function DocumentIngestModal({
                   disabled={outcome.blocked || (busy)}
                 >
                   {metadataReview && <option value="">Vælg faktisk bilagstype</option>}
-                  <option value="purchase_sale">Køb/salg</option>
-                  <option value="cash_register_receipt">Kassebon</option>
-                  {allowInternalVoucher && <option value="internal_voucher">Internt bilag</option>}
+                  <option value="purchase_sale" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Køb/salg</option>
+                  <option value="cash_register_receipt" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Kassebon</option>
+                  {allowInternalVoucher && <option value="internal_voucher" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Internt bilag</option>}
                 </Select>
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Kilde
                 <Input
                   type="text"
@@ -365,8 +383,8 @@ export function DocumentIngestModal({
               </label>
             </div>
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Bilagsdato{isPurchaseSale || isInternalVoucher ? "" : " (valgfri)"}
                 <Input
                   type="date"
@@ -375,7 +393,7 @@ export function DocumentIngestModal({
                   disabled={outcome.blocked || (busy)}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Fakturanr. (valgfri)
                 <Input
                   type="text"
@@ -386,8 +404,8 @@ export function DocumentIngestModal({
               </label>
             </div>
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 {isInternalVoucher
                   ? "Beløb"
                   : `Beløb inkl. moms${isPurchaseSale ? "" : " (valgfri)"}`}
@@ -398,7 +416,7 @@ export function DocumentIngestModal({
                   disabled={outcome.blocked || (busy)}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Momsbeløb{isInternalVoucher ? " (altid 0)" : isPurchaseSale ? "" : " (valgfri)"}
                 <MoneyInput
                   inputMode="decimal"
@@ -410,7 +428,7 @@ export function DocumentIngestModal({
               </label>
             </div>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Valuta
               <Input
                 type="text"
@@ -421,7 +439,7 @@ export function DocumentIngestModal({
             </label>
 
             {(isPurchaseSale || isInternalVoucher) && (
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 {isInternalVoucher ? "Beskrivelse" : "Beskrivelse af leverance"}
                 <Input
                   type="text"
@@ -434,7 +452,7 @@ export function DocumentIngestModal({
 
             {isInternalVoucher && (
               <>
-                <label className="modal-field">
+                <label {...stylex.props(cockpitStyles.modalField)}>
                   Banktransaktions-id
                   <Input
                     type="number"
@@ -445,7 +463,7 @@ export function DocumentIngestModal({
                     disabled={outcome.blocked || (busy)}
                   />
                 </label>
-                <label className="modal-field">
+                <label {...stylex.props(cockpitStyles.modalField)}>
                   Regnskabsmæssig begrundelse
                   <Textarea
                     value={accountingRationale}
@@ -458,15 +476,18 @@ export function DocumentIngestModal({
             )}
 
             {isPurchaseSale && (
-              <fieldset className="modal-field">
-                <legend>Momsfordeling (valgfri)</legend>
-                <p className="muted">
+              <fieldset {...stylex.props(cockpitStyles.modalField)}>
+                <legend {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Momsfordeling (valgfri)</legend>
+                <p {...stylex.props(cockpitStyles.muted)}>
                   Brug linjer når kun en del af fakturaen er momspligtig. Summen
                   af nettobeløb og moms skal svare til fakturaens total.
                 </p>
                 {purchaseVatLines.map((line, index) => (
-                  <div className="modal-field-grid" key={index}>
-                    <label className="modal-field">
+                  <div {...stylex.props(cockpitStyles.modalFieldGrid)} key={index}>
+                    <label {...stylex.props(cockpitStyles.modalField)}>
                       Momsart {index + 1}
                       <Select
                         value={line.classification}
@@ -474,11 +495,17 @@ export function DocumentIngestModal({
                         disabled={outcome.blocked || (busy)}
                       >
                         {metadataReview && <option value="">Vælg momsart</option>}
-                        <option value="dk_purchase_25">Dansk køb, 25 %</option>
-                        <option value="exempt">Momsfrit/udlæg</option>
+                        <option value="dk_purchase_25" {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Dansk køb, 25 %</option>
+                        <option value="exempt" {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Momsfrit/udlæg</option>
                       </Select>
                     </label>
-                    <label className="modal-field">
+                    <label {...stylex.props(cockpitStyles.modalField)}>
                       Nettobeløb {index + 1}
                       <MoneyInput
                         inputMode="decimal"
@@ -487,7 +514,7 @@ export function DocumentIngestModal({
                         disabled={outcome.blocked || (busy)}
                       />
                     </label>
-                    <label className="modal-field">
+                    <label {...stylex.props(cockpitStyles.modalField)}>
                       Momsbeløb {index + 1}
                       <MoneyInput
                         inputMode="decimal"
@@ -498,7 +525,7 @@ export function DocumentIngestModal({
                     </label>
                     <Button variant="secondary"
                       type="button"
-                      className="btn secondary"
+
                       aria-label={`Fjern momslinje ${index + 1}`}
                       onClick={() => setPurchaseVatLines((current) => current.filter((_, itemIndex) => itemIndex !== index))}
                       disabled={busy}
@@ -509,7 +536,7 @@ export function DocumentIngestModal({
                 ))}
                 <Button variant="secondary"
                   type="button"
-                  className="btn secondary"
+
                   onClick={() => setPurchaseVatLines((current) => [...current, { classification: metadataReview ? "" : "dk_purchase_25", netAmount: "", vatAmount: "" }])}
                   disabled={busy}
                 >
@@ -520,10 +547,10 @@ export function DocumentIngestModal({
 
             {(isPurchaseSale || documentType === "cash_register_receipt") && (
               <>
-                {documentType === "cash_register_receipt" && <p className="muted">Leverandøren skal være dokumenteret, før kassebonen kan bogføres. Udfyld kun oplysninger, du har kontrolleret på bilaget.</p>}
-                {contacts.loading && <p className="muted" role="status">Henter leverandører…</p>}
-                {contacts.error && <p className="muted">Leverandører kunne ikke hentes. Udfyld afsenderoplysningerne manuelt.</p>}
-                {!!contacts.data?.vendors.length && <label className="modal-field">
+                {documentType === "cash_register_receipt" && <p {...stylex.props(cockpitStyles.muted)}>Leverandøren skal være dokumenteret, før kassebonen kan bogføres. Udfyld kun oplysninger, du har kontrolleret på bilaget.</p>}
+                {contacts.loading && <p {...stylex.props(cockpitStyles.muted)} role="status">Henter leverandører…</p>}
+                {contacts.error && <p {...stylex.props(cockpitStyles.muted)}>Leverandører kunne ikke hentes. Udfyld afsenderoplysningerne manuelt.</p>}
+                {!!contacts.data?.vendors.length && <label {...stylex.props(cockpitStyles.modalField)}>
                   Udfyld fra leverandør (valgfri)
                   <Select value={selectedVendor} disabled={outcome.blocked || busy} onChange={event => {
                     setSelectedVendor(event.target.value);
@@ -533,8 +560,8 @@ export function DocumentIngestModal({
                     setSenderCountryCode(vendor.countryCode ?? ""); setSenderIdentifierKind(vendor.identifierKind ?? "");
                   }}><option value="">Udfyld manuelt</option>{contacts.data.vendors.map(vendor => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}</Select>
                 </label>}
-                <div className="modal-field-grid">
-                  <label className="modal-field">
+                <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Afsender
                     <Input
                       type="text"
@@ -544,7 +571,7 @@ export function DocumentIngestModal({
                       disabled={outcome.blocked || (busy)}
                     />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Afsender CVR/moms
                     <Input
                       type="text"
@@ -553,18 +580,30 @@ export function DocumentIngestModal({
                       disabled={outcome.blocked || (busy)}
                     />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Leverandørland (ISO)
                     <Input type="text" value={senderCountryCode} onChange={(e) => setSenderCountryCode(e.target.value.toUpperCase())} placeholder="US" maxLength={2} disabled={outcome.blocked || (busy)} />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Identitetstype
                     <Select value={senderIdentifierKind} onChange={(e) => setSenderIdentifierKind(e.target.value as typeof senderIdentifierKind)} disabled={outcome.blocked || (busy)}>
-                      <option value="">Vælg</option><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU-momsnr.</option><option value="non_eu">Ikke-EU</option>
+                      <option value="" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Vælg</option><option value="dk_cvr" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Dansk CVR</option><option value="eu_vat" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>EU-momsnr.</option><option value="non_eu" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Ikke-EU</option>
                     </Select>
                   </label>
                 </div>
-                <label className="modal-field">
+                <label {...stylex.props(cockpitStyles.modalField)}>
                   Afsenderadresse
                   <Input
                     type="text"
@@ -577,8 +616,8 @@ export function DocumentIngestModal({
             )}
             {isPurchaseSale && (
               <>
-                <div className="modal-field-grid">
-                  <label className="modal-field">
+                <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Modtager
                     <Input
                       type="text"
@@ -588,7 +627,7 @@ export function DocumentIngestModal({
                       disabled={outcome.blocked || (busy)}
                     />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Modtager CVR/moms
                     <Input
                       type="text"
@@ -598,7 +637,7 @@ export function DocumentIngestModal({
                     />
                   </label>
                 </div>
-                <label className="modal-field">
+                <label {...stylex.props(cockpitStyles.modalField)}>
                   Modtageradresse
                   <Input
                     type="text"
@@ -608,7 +647,7 @@ export function DocumentIngestModal({
                   />
                 </label>
                 {senderIdentifierKind === "non_eu" && (
-                  <label className="modal-field checkbox-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     <Input
                       type="checkbox"
                       checked={reverseChargeWordingConfirmed}
@@ -621,11 +660,11 @@ export function DocumentIngestModal({
               </>
             )}
 
-            {metadataReview && <label className="modal-field checkbox-field"><Input type="checkbox" checked={metadataConfirmed} onChange={e => setMetadataConfirmed(e.target.checked)} disabled={outcome.blocked || busy} />Jeg har gennemgået originalen, målvirksomheden og de indtastede kildeoplysninger.</label>}
-            <div className="modal-actions">
+            {metadataReview && <label {...stylex.props(cockpitStyles.modalField)}><Input type="checkbox" checked={metadataConfirmed} onChange={e => setMetadataConfirmed(e.target.checked)} disabled={outcome.blocked || busy} />Jeg har gennemgået originalen, målvirksomheden og de indtastede kildeoplysninger.</label>}
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button variant="secondary"
                 type="button"
-                className="btn secondary"
+
                 onClick={onClose}
                 disabled={busy}
               >
@@ -633,7 +672,7 @@ export function DocumentIngestModal({
               </Button>
               <Button requiredPermission="company.documents.upload"
                 type="button"
-                className="btn"
+
                 onClick={handleIngest}
                 disabled={outcome.blocked || busy || readingFile || (metadataReview ? !metadataConfirmed || !documentType || !currency.trim() : !fileBase64)}
               >

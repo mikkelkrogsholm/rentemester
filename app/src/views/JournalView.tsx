@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { VirtualJournalList, journalEntryKey, type VirtualJournalRowProps } from "../components/VirtualJournalList";
 import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import * as stylex from "@stylexjs/stylex";
@@ -118,29 +119,29 @@ export function JournalView() {
   const matchCount = filteredEntries.length;
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
-      <PageHeader title="Posteringer" actions={<><div className="row-actions">
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Posteringer" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           {!j.archived && j.nativePosting && can("company.ledger.post") && <Button onClick={() => setPosting(true)}>Ny postering</Button>}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/saldobalance${j.selectedYear ? `?year=${encodeURIComponent(j.selectedYear)}${selectedSource ? `&source=${selectedSource}` : ""}` : ""}`}>Saldobalance</ButtonLink>
+          <ButtonLink  to={`/companies/${slug}/saldobalance${j.selectedYear ? `?year=${encodeURIComponent(j.selectedYear)}${selectedSource ? `&source=${selectedSource}` : ""}` : ""}`}>Saldobalance</ButtonLink>
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
           <a
-            className="btn secondary"
+            {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
             href={api.journalCsvUrl(slug, j.selectedYear, account ?? null, selectedSource)}
             download
           >
             Hent CSV
           </a>
-          <a className="btn secondary" href={api.journalPdfUrl(slug,j.selectedYear,account??null,selectedSource)} download>Hent PDF</a>
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <a {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])} href={api.journalPdfUrl(slug,j.selectedYear,account??null,selectedSource)} download>Hent PDF</a>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
             {j.company.country} · {currency} · Posteringer
           </p>
@@ -163,15 +164,15 @@ export function JournalView() {
         <ArchivedBanner year={j.selectedYear} source={j.archivedSource} />
       )}
       {j.accountFilter && (
-        <div className="account-filter">
-          <p className="muted">
+        <div {...stylex.props(cockpitStyles.accountFilter)}>
+          <p {...stylex.props(cockpitStyles.muted)}>
             Posteringer på konto{" "}
-            <span className="account-no">{j.accountFilter.accountNo}</span>{" "}
+            <span {...stylex.props(...[cockpitStyles.num])}>{j.accountFilter.accountNo}</span>{" "}
             {j.accountFilter.name}
           </p>
           <Button requiredPermission="company.review" variant="secondary"
             type="button"
-            className="btn secondary"
+
             onClick={clearAccount}
           >
             Vis alle posteringer
@@ -179,34 +180,34 @@ export function JournalView() {
         </div>
       )}
 
-      <div className="journal-filter-bar card" role="search">
-        <label className="journal-filter-field journal-filter-field--search">
-          <span className="muted">Søg</span>
+      <div {...stylex.props(cockpitStyles.card)} role="search">
+        <label {...stylex.props(...[cockpitStyles.formField, cockpitStyles.fullWidth])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Søg</span>
           <Input
             type="search"
             value={q}
             placeholder="Søg på tekst, bilagsnummer eller konto…"
-            onChange={(e) => setFilter("q", e.target.value)}
+            onChange={(e) => setFilter("q", e.target.value)} xstyle={[cockpitStyles.statementInputComposition]}
           />
         </label>
-        <label className="journal-filter-field">
-          <span className="muted">Fra</span>
+        <label {...stylex.props(...[cockpitStyles.formField])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Fra</span>
           <Input
             type="date"
             value={fromDate}
-            onChange={(e) => setFilter("from", e.target.value)}
+            onChange={(e) => setFilter("from", e.target.value)} xstyle={[cockpitStyles.statementInputComposition]}
           />
         </label>
-        <label className="journal-filter-field">
-          <span className="muted">Til</span>
+        <label {...stylex.props(...[cockpitStyles.formField])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Til</span>
           <Input
             type="date"
             value={toDate}
-            onChange={(e) => setFilter("to", e.target.value)}
+            onChange={(e) => setFilter("to", e.target.value)} xstyle={[cockpitStyles.statementInputComposition]}
           />
         </label>
-        <label className="journal-filter-field">
-          <span className="muted">Beløb min</span>
+        <label {...stylex.props(...[cockpitStyles.formField])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Beløb min</span>
           <Input
             type="number"
             inputMode="decimal"
@@ -215,8 +216,8 @@ export function JournalView() {
             onChange={(e) => setFilter("amountMin", e.target.value)}
           />
         </label>
-        <label className="journal-filter-field">
-          <span className="muted">Beløb maks</span>
+        <label {...stylex.props(...[cockpitStyles.formField])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Beløb maks</span>
           <Input
             type="number"
             inputMode="decimal"
@@ -228,7 +229,7 @@ export function JournalView() {
         {hasActiveFilter && (
           <Button requiredPermission="company.review" variant="secondary"
             type="button"
-            className="btn secondary"
+
             onClick={clearAllFilters}
           >
             Ryd filtre
@@ -236,15 +237,15 @@ export function JournalView() {
         )}
       </div>
 
-      <p className="statement-asof muted">
+      <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>
         {j.periodStart && j.periodEnd ? `${j.periodStart} – ${j.periodEnd}` : "Regnskabsperiodens grænser er ikke oplyst"} ·{" "}
         {hasActiveFilter
           ? `${matchCount} af ${totalCount} posteringer matcher`
           : `${totalCount} posteringer`}
       </p>
       {filteredEntries.length === 0 ? (
-        <div className="card statement-card">
-          <p className={["empty-inline", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard)}>
+          <p {...stylex.props(...[cockpitStyles.emptyInline, viewStyles.site0])} >
             {hasActiveFilter
               ? "Ingen posteringer matcher filtrene."
               : j.accountFilter
@@ -263,7 +264,7 @@ export function JournalView() {
           />}
         />
       ) : (
-        <ul className="entry-list">
+        <ul {...stylex.props(cockpitStyles.entryList)}>
           {filteredEntries.map((entry) => (
             <EntryRow
               key={entry.id ?? entry.sourceId}
@@ -322,60 +323,83 @@ function EntryRow({
   // #379 — en post har et bilag når både linkage og fil-route er meningsfulde.
   // Arkiverede år vises altid som "Intet bilag" (filen er ikke i `documents`).
   const hasDocument = !archived && entry.documentId !== null;
+  const { xstyle: virtualStyle, ...virtualAttributes } = virtualProps ?? {};
   return (
-    <li {...virtualProps} className={`entry-item${open ? " open" : ""}`}>
+    <li {...virtualAttributes} {...stylex.props(cockpitStyles.entryItem, open && cockpitStyles.entryItemOpen, virtualStyle)}>
       <Button
         type="button"
-        className="entry-summary"
+        data-journal-summary
         aria-expanded={open}
         onClick={() => { setOpen(!open); onOpenChange?.(!open || reversing); }}
       >
-        <span className="entry-caret" aria-hidden="true">
+        <span {...stylex.props(cockpitStyles.entryCaret)} aria-hidden="true">
           {open ? "▾" : "▸"}
         </span>
-        <span className="entry-no">{entry.entryNo}</span>
-        <span className="entry-date">{entry.date}</span>
+        <span {...stylex.props(cockpitStyles.entryNo)}>{entry.entryNo}</span>
+        <span {...stylex.props(cockpitStyles.entryDate)}>{entry.date}</span>
         <span {...stylex.props(viewStyles.entryText)}>{entry.text}</span>
-        <span className="entry-total num">
+        <span {...stylex.props(cockpitStyles.num)}>
           {formatKroner(entry.total, currency)}
         </span>
       </Button>
       {open && (
-        <div className="entry-lines table-scroll">
+        <div {...stylex.props(cockpitStyles.entryLines, cockpitStyles.tableScroll)}>
           {entry.reversalOfEntryNo && <p>Tilbageførsel af {entry.reversalOfEntryNo}</p>}
           {entry.reversedByEntryNo && <p>Tilbageført ved {entry.reversedByEntryNo}</p>}
           {reversalRuleVersion && !archived && entry.reversalOfEntryId == null && entry.reversedByEntryId == null && can("company.ledger.post") && <Button variant="secondary" onClick={() => setReversing(true)}>Tilbagefør postering</Button>}
           {reversing && reversalRuleVersion && entry.id !== null && <JournalReversalForm slug={slug} entry={entry} ruleVersion={reversalRuleVersion} onSaved={() => onChanged?.()} onClose={() => setReversing(false)} />}
-          <table className="data statement-table">
-            <thead>
-              <tr>
-                <th scope="col">Konto</th>
-                <th scope="col">Navn</th>
-                <th className="num" scope="col">Debet</th>
-                <th className="num" scope="col">Kredit</th>
-                <th scope="col">Dimensioner</th>
+          <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+            <thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+                <th scope="col" {...stylex.props(
+										cockpitStyles.entryLinesTableStatementTableThComposition,
+									)}>Konto</th>
+                <th scope="col" {...stylex.props(
+										cockpitStyles.entryLinesTableStatementTableThComposition,
+									)}>Navn</th>
+                <th {...stylex.props(cockpitStyles.num)} scope="col">Debet</th>
+                <th {...stylex.props(cockpitStyles.num)} scope="col">Kredit</th>
+                <th scope="col" {...stylex.props(
+										cockpitStyles.entryLinesTableStatementTableThComposition,
+									)}>Dimensioner</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
               {entry.lines.map((line, i) => (
-                <tr key={i}>
-                  <td className="account-no">{line.accountNo}</td>
-                  <td>
+                <tr key={i} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <td {...stylex.props(...[cockpitStyles.num])}>{line.accountNo}</td>
+                  <td {...stylex.props(
+											cockpitStyles.entryLinesTableStatementTableTdComposition2,
+										)}>
                     {line.accountName}
                     {line.text ? (
-                      <span className="muted"> · {line.text}</span>
+                      <span {...stylex.props(cockpitStyles.muted)}> · {line.text}</span>
                     ) : null}
                   </td>
-                  <td className="num">
+                  <td {...stylex.props(cockpitStyles.num)}>
                     {moneyZero(line.debit) ? "—" : formatKroner(line.debit, currency)}
                   </td>
-                  <td className="num">
+                  <td {...stylex.props(cockpitStyles.num)}>
                     {moneyZero(line.credit) ? "—" : formatKroner(line.credit, currency)}
                   </td>
-                  <td>
-                    {line.sourceAmount && <details><summary>Original kildepost</summary><p>Kilde-ID: {line.sourceId}</p><p>Originalbeløb: {line.sourceAmount} · rapportsaldo: {formatKroner(line.balance ?? null,currency)}</p><p>Original dato: {line.date} · bilagstype: {line.voucherType} · momstype: {line.vatType}</p>{line.sourceRunningBalance !== null && line.sourceRunningBalance !== undefined && <p>Original løbende saldo: {line.sourceRunningBalance}</p>}</details>}
+                  <td {...stylex.props(
+											cockpitStyles.entryLinesTableStatementTableTdComposition2,
+										)}>
+                    {line.sourceAmount && <details {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><summary {...stylex.props(cockpitStyles.summaryComposition)}>Original kildepost</summary><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kilde-ID: {line.sourceId}</p><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Originalbeløb: {line.sourceAmount} · rapportsaldo: {formatKroner(line.balance ?? null,currency)}</p><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Original dato: {line.date} · bilagstype: {line.voucherType} · momstype: {line.vatType}</p>{line.sourceRunningBalance !== null && line.sourceRunningBalance !== undefined && <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Original løbende saldo: {line.sourceRunningBalance}</p>}</details>}
                     {archived || line.journalLineId === null || typeof line.debit !== "number" || typeof line.credit !== "number" ? (
-                      <span className="muted">Ingen dimensionshistorik</span>
+                      <span {...stylex.props(cockpitStyles.muted)}>Ingen dimensionshistorik</span>
                     ) : (
                       <DimensionAssignments slug={slug} journalLineId={line.journalLineId} currency={currency} amountMinor={Math.round(Math.abs(line.debit - line.credit) * 100)} />
                     )}
@@ -384,21 +408,21 @@ function EntryRow({
               ))}
             </tbody>
           </table>
-          <div className="entry-bilag">
+          <div {...stylex.props(...[cockpitStyles.entryLines])}>
             {hasDocument ? (
               <a
-                className="entry-bilag-link"
+                {...stylex.props(...[cockpitStyles.aComposition])}
                 href={api.documentFileUrl(slug, entry.documentId!)}
                 target="_blank"
                 rel="noreferrer"
               >
                 Åbn bilag
                 {entry.documentNo ? (
-                  <span className="muted"> · {entry.documentNo}</span>
+                  <span {...stylex.props(cockpitStyles.muted)}> · {entry.documentNo}</span>
                 ) : null}
               </a>
             ) : (
-              <span className="muted entry-bilag-empty">Intet bilag</span>
+              <span {...stylex.props(cockpitStyles.muted)}>Intet bilag</span>
             )}
           </div>
         </div>
@@ -428,15 +452,22 @@ function currentAssignment(events: AssignmentEvent[]): AssignmentEvent | null {
 }
 function DimensionAssignments({ slug, journalLineId, currency, amountMinor }: { slug: string; journalLineId: number; currency: string; amountMinor: number }) {
   const state = useAsync<AssignmentEvent[]>((signal) => api.dimensionAssignments(slug, journalLineId, { signal }) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
-  if (state.loading && !state.data) return <span className="muted">Henter dimensioner…</span>;
-  if (state.error && !state.data) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
+  if (state.loading && !state.data) return <span {...stylex.props(cockpitStyles.muted)}>Henter dimensioner…</span>;
+  if (state.error && !state.data) return <span {...stylex.props(cockpitStyles.muted)}>Dimensionshistorik kunne ikke hentes</span>;
   const events = state.data ?? [], current = currentAssignment(events);
   const allocations = current ? parseAllocations(current.allocations_json) : [];
-  return <details className="dimension-assignment">
+  return <details {...stylex.props(...[cockpitStyles.formField])}>
     <summary>{current ? allocations.map(a => `${a.dimensionId}: ${a.memberId}`).join(", ") || "Godkendt dimension" : "Ingen godkendt dimension"}</summary>
-    {state.error && <p role="alert">Dimensionshistorik kunne ikke opdateres. Den tidligere hentede historik vises fortsat.</p>}
-    {current && <p className="muted">Kilde: {current.source} · plan-hash <code>{current.plan_hash}</code><br />
-      {current.source_ref && <>Kildereference: {current.source_ref}<br /></>}
+    {state.error && <p role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Dimensionshistorik kunne ikke opdateres. Den tidligere hentede historik vises fortsat.</p>}
+    {current && <p {...stylex.props(cockpitStyles.muted)}>Kilde: {current.source} · plan-hash <code {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.code,
+					)}>{current.plan_hash}</code><br {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)} />
+      {current.source_ref && <>Kildereference: {current.source_ref}<br {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)} /></>}
       Godkendt af {current.actor} via {current.principal} · {current.created_at}</p>}
     <DimensionReview key={current?.id ?? "new"} slug={slug} journalLineId={journalLineId} current={current} currency={currency} amountMinor={amountMinor} onChanged={state.reload} />
     {events.length > 0 && <details><summary>Tildelingshistorik ({events.length})</summary><ol>{events.map(e => <li key={e.id}>
@@ -478,20 +509,31 @@ function DimensionReview({ slug, journalLineId, current, currency, amountMinor, 
     await (current ? api.replaceDimensionAssignment(slug, { ...input, expectedAssignmentId: current.id, reason }) : api.applyDimensionAssignment(slug, input)).catch(outcome.reject);
     guard.dismiss(); onChanged();
   }
-  if (!editing) return <>{outcome.feedback}<Button requiredPermission={current ? "company.review" : "company.draft.write"} disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>{current ? "Gennemgå og ret" : "Fordel på dimensioner"}</Button></>;
-  return <div className="dimension-review card">
-    {outcome.feedback}{guard.confirmation}<p><strong>{current ? "Ret dimensionsklassifikation" : "Fordel på dimensioner"}</strong></p>
-    <p className="muted">Posteringen ændres aldrig. Fordelingen gennemgås som en præcis, hash-bundet plan. En rettelse bevarer den tidligere tildeling med begrundelse.</p>
-    {allocations.map((allocation, index) => <div className="row-actions" key={index}>
-      <label>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={e => change(index, "dimensionId", e.target.value)} /></label>
-      <label>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={e => change(index, "memberId", e.target.value)} /></label>
-      <label>Øre ({allocation.currency})<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" min="1" step="1" value={allocation.amountMinor} onChange={e => change(index, "amountMinor", e.target.value)} /></label>
+  if (!editing) return <>{outcome.feedback}<Button requiredPermission={current ? "company.review" : "company.draft.write"} disabled={outcome.blocked} variant="secondary" type="button"  onClick={() => setEditing(true)}>{current ? "Gennemgå og ret" : "Fordel på dimensioner"}</Button></>;
+  return <div {...stylex.props(cockpitStyles.card)}>
+    {outcome.feedback}{guard.confirmation}<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><strong {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{current ? "Ret dimensionsklassifikation" : "Fordel på dimensioner"}</strong></p>
+    <p {...stylex.props(cockpitStyles.muted)}>Posteringen ændres aldrig. Fordelingen gennemgås som en præcis, hash-bundet plan. En rettelse bevarer den tidligere tildeling med begrundelse.</p>
+    {allocations.map((allocation, index) => <div {...stylex.props(cockpitStyles.rowActions)} key={index}>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={e => change(index, "dimensionId", e.target.value)} /></label>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={e => change(index, "memberId", e.target.value)} /></label>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Øre ({allocation.currency})<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" min="1" step="1" value={allocation.amountMinor} onChange={e => change(index, "amountMinor", e.target.value)} /></label>
       {allocations.length > 1 && <Button variant="secondary" disabled={outcome.blocked} onClick={() => { invalidate(); setAllocations(rows => rows.filter((_, i) => i !== index)); }}>Fjern fordeling {index + 1}</Button>}
     </div>)}
-    <div className="row-actions"><Button variant="secondary" disabled={outcome.blocked} onClick={() => { invalidate(); setAllocations(rows => [...rows, { dimensionId: "", memberId: "", amountMinor: 0, currency }]); }}>Tilføj fordeling</Button><Button variant="secondary" type="button" disabled={outcome.blocked} onClick={() => void makePlan()}>Validér revideret plan</Button><Button variant="secondary" type="button" onClick={guard.onClose}>Annullér</Button></div>
-    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p>{plan.journalEntryHash && <p>Journal-hash: <code>{plan.journalEntryHash}</code> · {plan.lineAmountMinor} øre {plan.lineCurrency}</p>}<label><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={e => setReviewed(e.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" requiredPermission={current ? "company.review" : "company.draft.write"} disabled={!reviewed || outcome.blocked} onClick={() => setConfirming(true)}>{current ? "Erstat nuværende tildeling atomisk" : "Anvend godkendt fordeling"}</Button></div>}
-    {error && <p role="alert">{error}</p>}
-    {confirming && <ConfirmDialog title={current ? "Erstat dimensionsklassifikation" : "Anvend dimensionsklassifikation"} body={<p>Den præcise, hash-bundne fordeling gemmes i revisionssporet. Journalens beløb og identitet ændres aldrig.</p>} confirmLabel={current ? "Erstat tildeling" : "Anvend tildeling"} confirmKind={current ? "danger" : "primary"} noteLabel={current ? "Begrundelse" : undefined} onConfirm={apply} onClose={() => setConfirming(false)} onRefresh={onChanged} />}
+    <div {...stylex.props(cockpitStyles.rowActions)}><Button variant="secondary" disabled={outcome.blocked} onClick={() => { invalidate(); setAllocations(rows => [...rows, { dimensionId: "", memberId: "", amountMinor: 0, currency }]); }}>Tilføj fordeling</Button><Button variant="secondary" type="button" disabled={outcome.blocked} onClick={() => void makePlan()} xstyle={[cockpitStyles.buttonComposition]}>Validér revideret plan</Button><Button variant="secondary" type="button" onClick={guard.onClose} xstyle={[cockpitStyles.buttonComposition]}>Annullér</Button></div>
+    {plan && <div {...stylex.props(cockpitStyles.card)}><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Plan-hash: <code {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.code,
+							)}>{plan.planHash}</code></p>{plan.journalEntryHash && <p>Journal-hash: <code>{plan.journalEntryHash}</code> · {plan.lineAmountMinor} øre {plan.lineCurrency}</p>}<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={e => setReviewed(e.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" requiredPermission={current ? "company.review" : "company.draft.write"} disabled={!reviewed || outcome.blocked} onClick={() => setConfirming(true)}>{current ? "Erstat nuværende tildeling atomisk" : "Anvend godkendt fordeling"}</Button></div>}
+    {error && <p role="alert" {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}>{error}</p>}
+    {confirming && <ConfirmDialog title={current ? "Erstat dimensionsklassifikation" : "Anvend dimensionsklassifikation"} body={<p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Den præcise, hash-bundne fordeling gemmes i revisionssporet. Journalens beløb og identitet ændres aldrig.</p>} confirmLabel={current ? "Erstat tildeling" : "Anvend tildeling"} confirmKind={current ? "danger" : "primary"} noteLabel={current ? "Begrundelse" : undefined} onConfirm={apply} onClose={() => setConfirming(false)} onRefresh={onChanged} />}
   </div>;
 }
 

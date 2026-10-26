@@ -27,6 +27,7 @@ export type ClosePeriodInput = {
   reason?: string;
 };
 
+export type HumanReadiness = { status: "Ikke klar" | "Kræver stillingtagen" | "Klar" | "Lukket/endelig"; openControls: number; reason: string };
 export type PeriodCloseReadinessPacket = { hash: string; blockers: number; warnings: number; items: Array<{ code: string; status: "passed" | "warning" | "blocked" | "unavailable"; waivable: boolean; count: number }> };
 export type PeriodCloseReview = { id: number; packet: PeriodCloseReadinessPacket };
 
@@ -93,7 +94,7 @@ export type PeriodsResponse = {
   periods: CompanyPeriods;
 };
 
-export type PeriodCloseReadinessResponse = { ok: true; packet: PeriodCloseReadinessPacket };
+export type PeriodCloseReadinessResponse = { ok: true; packet: PeriodCloseReadinessPacket; readiness: HumanReadiness };
 export type PeriodCloseReviewResponse = { ok: true; review: PeriodCloseReview };
 
 export type ReportPeriodInput = { periodStart: string; periodEnd: string; kind: AccountingPeriodKind; packetHash: string; reference: string };

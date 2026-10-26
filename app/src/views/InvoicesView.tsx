@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ImportedReceivablesPanel } from "../components/ImportedReceivablesPanel";
 import { NativeInvoiceEmail } from "../components/NativeInvoiceEmail";
 import { NativeInvoicePost } from "../components/NativeInvoicePost";
@@ -83,6 +85,18 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
     (signal) => api.invoices(slug, year, { signal }),
     [slug, year],
   );
+	// The archive schedule is deliberately a second read: it has its own
+	// source hashes and must never be silently mixed into issued-invoice totals.
+	const imported = useAsync(
+		(signal) =>
+			api.importedReceivables(
+				slug,
+				`${year ?? new Date().getFullYear()}-12-31`,
+				{ signal },
+			),
+		[slug, year],
+	);
+
   const native=Boolean(state.data?.nativeSales);
   const publicConfig=useAsync(signal=>native?api.publicEInvoiceConfig(slug,{signal}):Promise.resolve(null),[slug,native]);
   const [registeringPublic,setRegisteringPublic]=useState(false);
@@ -95,6 +109,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   }
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [reminderClaimsId,setReminderClaimsId]=useState<number|null>(null);
+  const [settlingImported, setSettlingImported] = useState<import("../lib/types").ImportedReceivableRow | null>(null);
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
@@ -116,7 +131,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   useEffect(() => {
     setInteractionScope(currentScope);
     setRegisteringPublic(false);setPublicNotice(null);
-    setReminderClaimsId(null); setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
+    setSettlingImported(null); setReminderClaimsId(null); setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
   }, [currentScope]);
 
   const q = params.get("q") ?? "";
@@ -168,26 +183,47 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const totalsCurrency = inv.totalsCurrency || (invoiceCurrencies.size === 1 ? [...invoiceCurrencies][0]! : currency);
 
   return (
-    <section className="statement">
+    <section {...stylex.props(cockpitStyles.statement)}>
       {state.error && <Banner kind="warning">Status kunne ikke opdateres: {state.error} De tidligere hentede fakturaer vises fortsat.</Banner>}
       <PageHeader title={detail ? `Faktura ${filtered[0]?.invoiceNo ?? documentId ?? ""}` : "Fakturaer"}
         description={`${inv.company.name} · ${currency} · Regnskabsår ${inv.selectedYear}`}
-        actions={detail ? <ButtonLink className="btn secondary" to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink className="btn" to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)}>Udsted faktura</ButtonLink> : undefined} />
+        actions={detail ? <ButtonLink  to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink  to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)} xstyle={[cockpitStyles.statementBtnComposition2]}>Udsted faktura</ButtonLink> : undefined} />
 
       {!detail&&<ImportedReceivablesPanel slug={slug} />}
       {publicNotice&&<Banner kind="warning">{publicNotice}</Banner>}
-      {inv.nativeSales&&!inv.archived&&can("company.external-send")&&<div className="card">
+      {inv.nativeSales&&!inv.archived&&can("company.external-send")&&<div {...stylex.props(cockpitStyles.card)}>
         <h2>E-faktura</h2>
         {publicConfig.loading&&<p>Henter opsætning…</p>}
         {publicConfig.error&&<p>Opsætningen kunne ikke hentes. <Button variant="secondary" onClick={publicConfig.reload}>Hent opsætning igen</Button></p>}
         {!publicConfig.loading&&!publicConfig.error&&publicConfig.data&&(!publicConfig.data.configured?
-          <p>E-faktura er ikke konfigureret. Kontakt den ansvarlige for opsætningen.</p>:
-          publicConfig.data.registered&&publicConfig.data.outbound?<p>E-faktura er klar{publicConfig.data.environment==="test"?" i testmiljø":""}. Hver faktura sendes kun efter din bekræftelse.</p>:
-          !inv.company.cvr?<p>Udfyld virksomhedens navn og CVR i virksomhedsopsætningen før tilmelding.</p>:
-          <><p>Tilmeld {inv.company.name}{inv.company.cvr?` · CVR ${inv.company.cvr}`:""} til afsendelse af e-faktura{publicConfig.data.environment==="test"?" i testmiljø":""}.</p><Button variant="secondary" onClick={()=>{setInteractionScope(currentScope);setRegisteringPublic(true);}}>Aktivér e-faktura</Button></>)}
+          <p {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+					cockpitStyles.statementAsof,
+				)}>E-faktura er ikke konfigureret. Kontakt den ansvarlige for opsætningen.</p>:
+          publicConfig.data.registered&&publicConfig.data.outbound?<p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.muted,
+								)}>E-faktura er klar{publicConfig.data.environment==="test"?" i testmiljø":""}. Hver faktura sendes kun efter din bekræftelse.</p>:
+          !inv.company.cvr?<p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+							)}>Udfyld virksomhedens navn og CVR i virksomhedsopsætningen før tilmelding.</p>:
+          <><p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+							)}>Tilmeld {inv.company.name}{inv.company.cvr?` · CVR ${inv.company.cvr}`:""} til afsendelse af e-faktura{publicConfig.data.environment==="test"?" i testmiljø":""}.</p><Button variant="secondary" onClick={()=>{setInteractionScope(currentScope);setRegisteringPublic(true);}}>Aktivér e-faktura</Button></>)}
       </div>}
       {registeringPublic&&inCurrentScope&&<ConfirmDialog title="Aktivér e-faktura" operationKey="public-registration" confirmLabel="Bekræft tilmelding" confirmKind="danger"
-        body={<p>Tilmeld <strong>{inv.company.name}</strong>{inv.company.cvr?` (CVR ${inv.company.cvr})`:""} til afsendelse via DigiSense{publicConfig.data?.environment==="test"?" i testmiljø":""}. Ingen faktura sendes ved tilmeldingen.</p>}
+        body={<p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>Tilmeld <strong>{inv.company.name}</strong>{inv.company.cvr?` (CVR ${inv.company.cvr})`:""} til afsendelse via DigiSense{publicConfig.data?.environment==="test"?" i testmiljø":""}. Ingen faktura sendes ved tilmeldingen.</p>}
         onConfirm={async()=>{const company=(await api.invoices(slug,year)).company;if(company.name!==inv.company.name||company.cvr!==inv.company.cvr)throw new ApiError("conflict","Virksomhedens oplysninger er ændret. Hent oversigten igen før tilmelding.",409);const fresh=await api.publicEInvoiceConfig(slug);if(!fresh.configured)throw new ApiError("bad_request","E-faktura er ikke konfigureret.",400);if(!fresh.registered||!fresh.outbound)await api.registerPublicEInvoice(slug);publicConfig.reload();}}
         onRefresh={refreshPublic} onClose={()=>setRegisteringPublic(false)}/>}
 
@@ -201,12 +237,235 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
       />
 
       {reminderClaimsId!==null && inCurrentScope && <NativeReminderClaims key={`${currentScope}:${reminderClaimsId}`} slug={slug} id={reminderClaimsId} onChanged={state.reload} onClose={()=>setReminderClaimsId(null)}/> }
+<section
+					aria-label="Importerede tilgodehavender"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.card,
+						cockpitStyles.statementCard,
+					)}
+					data-ui="statement-card"
+				>
+					<div
+						{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+					>
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							<h3
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h3,
+								)}
+							>
+								Importerede tilgodehavender
+							</h3>
+							<p
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.muted,
+								)}
+							>
+								Kildearkiv pr. {year ?? new Date().getFullYear()}-12-31 — ikke
+								Rentemester-udstedte fakturaer.
+							</p>
+						</div>
+						<strong
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							{imported.data
+								? formatKroner(imported.data.totalOpen, currency)
+								: "—"}
+						</strong>
+					</div>
+					{imported.error ? (
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+							)}
+						>
+							Kunne ikke hente importarkivet.
+						</p>
+					) : imported.data?.rows.length ? (
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.tableScroll,
+							)}
+							data-ui="table-scroll"
+						>
+							<table
+								aria-label="Kilde-fakturaer"
+								{...stylex.props(
+									cockpitStyles.statementTableScrollTableComposition,
+								)}
+							>
+								<thead
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableThead,
+									)}
+								>
+									<tr
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTr,
+										)}
+									>
+										<th
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableThComposition3,
+											)}
+										>
+											Kilde-faktura
+										</th>
+										<th
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableThComposition3,
+											)}
+										>
+											Kunde
+										</th>
+										<th
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableThComposition3,
+											)}
+										>
+											Dato
+										</th>
+										<th
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableThComposition4,
+											)}
+										>
+											Åben saldo
+										</th>
+										<th
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableThComposition3,
+											)}
+										>
+											Handling
+										</th>
+									</tr>
+								</thead>
+								<tbody
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTbody,
+									)}
+								>
+									{imported.data.rows.map((row) => (
+										<tr
+											key={`${row.scheduleHash}:${row.externalInvoiceId}`}
+											{...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+												cockpitStyles.responsiveTableTr,
+											)}
+										>
+											<td
+												{...stylex.props(
+													cockpitStyles.statementTableScrollTableTdComposition4,
+												)}
+											>
+												{row.externalInvoiceId}
+											</td>
+											<td
+												{...stylex.props(
+													cockpitStyles.statementTableScrollTableTdComposition4,
+												)}
+											>
+												{row.customerName ?? "—"}
+											</td>
+											<td
+												{...stylex.props(
+													cockpitStyles.statementTableScrollTableTdComposition4,
+												)}
+											>
+												{formatDateDa(row.invoiceDate)}
+											</td>
+											<td
+												{...stylex.props(
+													cockpitStyles.tableDataTdNumComposition5,
+												)}
+											>
+												{formatKroner(row.openBalance, currency)}
+											</td>
+											<td
+												{...stylex.props(
+													cockpitStyles.statementTableScrollTableTdComposition4,
+												)}
+											>
+												{row.openBalance > 0 &&
+												!inv.archived &&
+												can("company.ledger.post") ? (
+													<Button
+														type="button"
+														onClick={() => setSettlingImported(row)}
+														variant={"secondary"}
+														xstyle={[cockpitStyles.statementBtnComposition]}
+													>
+														Afstem bankpost
+													</Button>
+												) : (
+													"—"
+												)}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					) : (
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+							)}
+						>
+							Ingen importerede tilgodehavender i arkivet.
+						</p>
+					)}
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						{imported.data?.boundary ??
+							"Importarkivet holdes adskilt fra nye fakturaer for at undgå dobbelttælling."}
+					</p>
+				</section>
       {settling && inCurrentScope && (
         <ConfirmDialog operationKey={String(settling.documentId)}
           title="Afstem faktura mod bankbetaling"
           body={
-            <p>
-              Afstem faktura <strong>{settling.invoiceNo}</strong> mod en
+            <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              Afstem faktura <strong {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>{settling.invoiceNo}</strong> mod en
               indgående bankbetaling med samme reference. Afstemningen lægger en
               postering og kan ikke fortrydes.
               {settling.currency!=="DKK"&&<> Bankposten skal være i {settling.currency} med dokumenteret DKK-værdi. En kursforskel bogføres på bekræftede konti for valutagevinst eller valutatab.</>}
@@ -236,10 +495,93 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 
       {refunding && inCurrentScope && <ConfirmDialog operationKey={`refund:${refunding.documentId}`}
         title="Afstem tilbagebetaling" confirmLabel="Afstem tilbagebetaling" confirmKind="danger"
-        body={<p>Registrér den allerede gennemførte tilbagebetaling til kunden på faktura <strong>{refunding.invoiceNo}</strong>. Kunden har {formatKroner(-refunding.openBalance, refunding.currency)} til gode. Den valgte bankpost bogføres mellem bank og fakturaens debitorkonto.{refunding.currency!=="DKK"&&<> Bankposten skal være i {refunding.currency} med dokumenteret DKK-værdi. Kursforskelle bogføres særskilt.</>}</p>}
+        body={<p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Registrér den allerede gennemførte tilbagebetaling til kunden på faktura <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{refunding.invoiceNo}</strong>. Kunden har {formatKroner(-refunding.openBalance, refunding.currency)} til gode. Den valgte bankpost bogføres mellem bank og fakturaens debitorkonto.{refunding.currency!=="DKK"&&<> Bankposten skal være i {refunding.currency} med dokumenteret DKK-værdi. Kursforskelle bogføres særskilt.</>}</p>}
         noteLabel="Bankreference" notePlaceholder="Referencen på bankens udbetaling"
         onConfirm={async reference => { if (!reference.trim()) throw new Error("Angiv bankreferencen på tilbagebetalingen."); await api.refundInvoice(slug, refunding.documentId, reference.trim()); state.reload(); }}
         onRefresh={state.reload} onClose={() => setRefunding(null)} />}
+
+			{settlingImported &&
+				inCurrentScope &&
+				!inv.archived &&
+				can("company.ledger.post") && (
+					<ConfirmDialog
+						operationKey={`${settlingImported.scheduleHash}:${settlingImported.externalInvoiceId}`}
+						title="Afstem importeret tilgodehavende mod bankpost"
+						body={
+							<p
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Afstem kildefaktura{" "}
+								<strong
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									{settlingImported.externalInvoiceId}
+								</strong>{" "}
+								mod én indgående DKK-bankpost. Det opretter en append-only
+								postering og kan ikke fortrydes.
+							</p>
+						}
+						confirmLabel="Afstem bankpost"
+						confirmKind="danger"
+						noteLabel="Bankpost-id"
+						notePlaceholder="Det numeriske ID fra bankoversigten"
+						onConfirm={async (value) => {
+							const bankTransactionId = Number(value.trim());
+							if (
+								!Number.isInteger(bankTransactionId) ||
+								bankTransactionId <= 0
+							)
+								throw {
+									code: "bad_request",
+									message: "Angiv et gyldigt numerisk bankpost-id.",
+								};
+							const input = {
+								scheduleHash: settlingImported.scheduleHash,
+								externalInvoiceId: settlingImported.externalInvoiceId,
+								bankTransactionId,
+							};
+							const plan = await api.planImportedReceivableSettlement(
+								slug,
+								input,
+							);
+							if (!plan.ok || !plan.plan?.planHash)
+								throw {
+									code: "bad_request",
+									message:
+										"Afregningen blev afvist. Kontrollér bankpost, valuta, beløb og åben saldo.",
+								};
+							const result = await api.applyImportedReceivableSettlement(slug, {
+								...input,
+								planHash: plan.plan.planHash,
+								idempotencyKey: crypto.randomUUID(),
+							});
+							if (!result.ok)
+								throw {
+									code: "bad_request",
+									message:
+										result.errors?.join("; ") || "Afregningen blev afvist.",
+								};
+							await imported.reload();
+						}}
+						onRefresh={() => {
+							imported.reload();
+							state.reload();
+						}}
+						onClose={() => setSettlingImported(null)}
+					/>
+				)}
 
       {/* #412: the Krediter ConfirmDialog. A credit note appends a reversing
           journal entry (and a new credit-note document), so the action is
@@ -249,8 +591,14 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         <ConfirmDialog operationKey={String(crediting.documentId)}
           title="Udsted kreditnota"
           body={
-            <><p>
-              Kreditér faktura <strong>{crediting.invoiceNo}</strong>. En
+            <><p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              Kreditér faktura <strong {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>{crediting.invoiceNo}</strong>. En
               kreditnota bogføres som modgående postering med eget nummer fra
               kreditnota-serien. Handlingen kan ikke fortrydes og kræver en
               begrundelse til revisionssporet.
@@ -300,27 +648,66 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         <ConfirmDialog operationKey={String(sendingPublic.documentId)}
           title="Send e-faktura"
           body={
-            <div>
-              <p>
-                Send faktura <strong>{sendingPublic.invoiceNo}</strong> til{" "}
-                <strong>{sendingPublic.customerName ?? "modtageren"}</strong> som
+            <div {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+                Send faktura <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{sendingPublic.invoiceNo}</strong> til{" "}
+                <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{sendingPublic.customerName ?? "modtageren"}</strong> som
                 e-faktura via NemHandel/PEPPOL.
               </p>
-              <dl className="confirm-meta">
-                <div>
-                  <dt>EAN-nummer</dt>
-                  <dd>{sendingPublic.buyerEanNumber ?? "—"}</dd>
+              <dl {...stylex.props(...[cockpitStyles.muted])}>
+                <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <dt {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>EAN-nummer</dt>
+                  <dd {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{sendingPublic.buyerEanNumber ?? "—"}</dd>
                 </div>
-                <div>
-                  <dt>Kanal</dt>
-                  <dd>DigiSense via NemHandel (PEPPOL)</dd>
+                <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <dt {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Kanal</dt>
+                  <dd {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>DigiSense via NemHandel (PEPPOL)</dd>
                 </div>
-                <div>
-                  <dt>Handling</dt>
-                  <dd>Sendes nu</dd>
+                <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <dt {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Handling</dt>
+                  <dd {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Sendes nu</dd>
                 </div>
               </dl>
-              <p className="muted">
+              <p {...stylex.props(cockpitStyles.muted)}>
                 Fakturaen sendes via DigiSense. Leveringsstatus vises bagefter;
                 en køsat faktura kan kun statuskontrolleres og sendes aldrig igen.
               </p>
@@ -352,7 +739,13 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
       {checkingPublicStatus && inCurrentScope && (
         <ConfirmDialog operationKey={String(checkingPublicStatus.documentId)}
           title="Opdatér leveringsstatus"
-          body={<p>Kontrollér leveringsstatus for <strong>{checkingPublicStatus.invoiceNo}</strong>. Handlingen observerer kun den eksisterende DigiSense-afsendelse og sender ikke fakturaen igen.</p>}
+          body={<p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Kontrollér leveringsstatus for <strong {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>{checkingPublicStatus.invoiceNo}</strong>. Handlingen observerer kun den eksisterende DigiSense-afsendelse og sender ikke fakturaen igen.</p>}
           confirmLabel="Kontrollér status"
           confirmKind="danger"
           onConfirm={async () => {
@@ -380,23 +773,53 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         <ConfirmDialog operationKey={String(sendingEmail.documentId)}
           title="Send faktura på mail"
           body={
-            <div>
-              <p>
-                Send faktura <strong>{sendingEmail.invoiceNo}</strong> til{" "}
-                <strong>{sendingEmail.customerName ?? "modtageren"}</strong>{" "}
+            <div {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+                Send faktura <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{sendingEmail.invoiceNo}</strong> til{" "}
+                <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{sendingEmail.customerName ?? "modtageren"}</strong>{" "}
                 med PDF'en vedhæftet.
               </p>
-              <dl className="confirm-meta">
-                <div>
-                  <dt>Emne</dt>
-                  <dd>Faktura {sendingEmail.invoiceNo}</dd>
+              <dl {...stylex.props(...[cockpitStyles.muted])}>
+                <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <dt {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Emne</dt>
+                  <dd {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Faktura {sendingEmail.invoiceNo}</dd>
                 </div>
-                <div>
-                  <dt>Vedhæftning</dt>
-                  <dd>{sendingEmail.invoiceNo}.pdf</dd>
+                <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <dt {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Vedhæftning</dt>
+                  <dd {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{sendingEmail.invoiceNo}.pdf</dd>
                 </div>
               </dl>
-              <p className="muted">
+              <p {...stylex.props(cockpitStyles.muted)}>
                 Modtageren kan ændres herunder. Afsendelsen registreres i
                 revisionssporet og kan ikke fortrydes.
               </p>
@@ -445,45 +868,96 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
           <ConfirmDialog operationKey={String(sendingReminder.documentId)}
             title="Send rykker til kunden"
             body={
-              <div>
-                <p>
-                  Send <strong>{ord} rykker</strong> for faktura{" "}
-                  <strong>{sendingReminder.invoiceNo}</strong> til{" "}
-                  <strong>
+              <div {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                <p {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>
+                  Send <strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{ord} rykker</strong> for faktura{" "}
+                  <strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{sendingReminder.invoiceNo}</strong> til{" "}
+                  <strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
                     {sendingReminder.customerName ?? "modtageren"}
                   </strong>
                   .
                 </p>
-                <dl className="confirm-meta">
-                  <div>
-                    <dt>Dage forfalden</dt>
-                    <dd>{sendingReminder.overdueDays} dage</dd>
+                <dl {...stylex.props(...[cockpitStyles.muted])}>
+                  <div {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
+                    <dt {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Dage forfalden</dt>
+                    <dd {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>{sendingReminder.overdueDays} dage</dd>
                   </div>
-                  <div>
-                    <dt>Modtager</dt>
-                    <dd>{sendingReminder.customerEmail ?? "—"}</dd>
+                  <div {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
+                    <dt {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Modtager</dt>
+                    <dd {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>{sendingReminder.customerEmail ?? "—"}</dd>
                   </div>
-                  <div>
-                    <dt>Rykkernummer</dt>
-                    <dd>{ord} rykker (af maks. 3)</dd>
+                  <div {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
+                    <dt {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Rykkernummer</dt>
+                    <dd {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>{ord} rykker (af maks. 3)</dd>
                   </div>
-                  <div>
-                    <dt>Rykkergebyr</dt>
-                    <dd>
+                  <div {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
+                    <dt {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>Rykkergebyr</dt>
+                    <dd {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>
                       {formatKroner(REMINDER_FEE_KRONER, "DKK")} (rentel. § 9b)
                     </dd>
                   </div>
                 </dl>
-                <label className="modal-checkbox">
+                <label {...stylex.props(cockpitStyles.modalCheckbox)}>
                   <Input
                     type="checkbox"
                     checked={reminderBookFee}
-                    onChange={(e) => setReminderBookFee(e.target.checked)}
+                    onChange={(e) => setReminderBookFee(e.target.checked)} xstyle={[cockpitStyles.modalCheckboxInputComposition3]}
                   />{" "}
                   Bogfør rykkergebyr ({formatKroner(REMINDER_FEE_KRONER, "DKK")}
                   ) i ledgeren nu
                 </label>
-                <p className="muted">
+                <p {...stylex.props(cockpitStyles.muted)}>
                   Modtageren kan ændres herunder. Afsendelsen registreres i
                   revisionssporet og kan ikke fortrydes.
                 </p>
@@ -522,39 +996,59 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
-      ) : detail && filtered.length === 0 ? (<div className="card" role="status"><h2>Fakturaen findes ikke i {inv.selectedYear}</h2><p>Vælg det relevante regnskabsår eller gå tilbage til fakturaoversigten.</p></div>) : inv.invoices.length === 0 ? (
-        <div className="card archived-notice">
-          <h3>Ingen fakturaer endnu</h3>
-          <p className="muted">
+      ) : detail && filtered.length === 0 ? (<div {...stylex.props(cockpitStyles.card)} role="status"><h2 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h2,
+						)}>Fakturaen findes ikke i {inv.selectedYear}</h2><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Vælg det relevante regnskabsår eller gå tilbage til fakturaoversigten.</p></div>) : inv.invoices.length === 0 ? (
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.archivedNoticeH3,
+						)}>Ingen fakturaer endnu</h3>
+          <p {...stylex.props(cockpitStyles.muted)}>
             Der er ikke udstedt salgsfakturaer i regnskabsåret{" "}
             {inv.selectedYear}. Udstedte fakturaer vises her, så snart de er
-            bogført. Brug <em>Udsted faktura</em> for at lave en ny.
+            bogført. Brug <em {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Udsted faktura</em> for at lave en ny.
           </p>
         </div>
       ) : (
         <>
-          {!detail && <div className="status-grid invoices-summary">
-            <div className="card status-card">
-              <h3>Faktureret i alt</h3>
-              <div className="status-figure">
-                {multipleCurrencies ? <span className="muted">Fakturaer i flere valutaer — se beløbene på den enkelte faktura.</span> : <Amount value={inv.totalGross} currency={totalsCurrency} />}
+          {!detail && <div {...stylex.props(cockpitStyles.statusGrid, cockpitStyles.invoicesSummary)}>
+            <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+              <h3 {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.h3,
+										cockpitStyles.statusCardH3,
+									)}>Faktureret i alt</h3>
+              <div {...stylex.props(cockpitStyles.statusFigure)}>
+                {multipleCurrencies ? <span {...stylex.props(cockpitStyles.muted)}>Fakturaer i flere valutaer — se beløbene på den enkelte faktura.</span> : <Amount value={inv.totalGross} currency={totalsCurrency} />}
               </div>
-              <p className="muted status-note">
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
                 {inv.invoices.length}{" "}
                 {inv.invoices.length === 1 ? "faktura" : "fakturaer"} i{" "}
                 {inv.selectedYear}
               </p>
             </div>
-            <div className="card status-card">
-              <h3>Udestående</h3>
+            <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+              <h3 {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.h3,
+										cockpitStyles.statusCardH3,
+									)}>Udestående</h3>
               <div
-                className={`status-figure${
-                  inv.totalOpen > 0 ? " status-alert" : ""
-                }`}
+                {...stylex.props(...[cockpitStyles.statusFigure, ...(inv.totalOpen > 0 ? [cockpitStyles.statusFigureStatusAlert] : [])])}
               >
-                {multipleCurrencies ? <span className="muted">Udestående vises i den enkelte fakturas valuta.</span> : <Amount value={inv.totalOpen} currency={totalsCurrency} />}
+                {multipleCurrencies ? <span {...stylex.props(cockpitStyles.muted)}>Udestående vises i den enkelte fakturas valuta.</span> : <Amount value={inv.totalOpen} currency={totalsCurrency} />}
               </div>
-              <p className="muted status-note">
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
                 {inv.overdueCount > 0
                   ? `${inv.overdueCount} forfalden${
                       inv.overdueCount === 1 ? "" : "e"
@@ -565,31 +1059,85 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
           </div>}
 
           {!detail && <FilterBar activeCount={[q, from, to, status === "all" ? "" : status].filter(Boolean).length} onReset={clearFilters}>
-            <label className="journal-filter-field journal-filter-field--search">Søg<Input type="search" value={q} placeholder="Kunde eller fakturanummer…" onChange={(event) => setListParam("q", event.target.value)} /></label>
-            <label className="journal-filter-field">Status<Select value={Object.hasOwn(STATUS_META, status) ? status : "all"} onChange={(event) => setListParam("status", event.target.value)}><option value="all">Alle</option>{Object.entries(STATUS_META).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</Select></label>
-            <label className="journal-filter-field">Fra<Input type="date" value={from} onChange={(event) => setListParam("from", event.target.value)} /></label>
-            <label className="journal-filter-field">Til<Input type="date" value={to} onChange={(event) => setListParam("to", event.target.value)} /></label>
-            <label className="journal-filter-field">Sortering<Select value={sort === "date" || sort === "amount" || sort === "due" ? sort : "default"} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "default") { next.delete("sort"); next.delete("dir"); } else { next.set("sort", event.target.value); next.set("dir", params.get("dir") === "desc" ? "desc" : "asc"); } next.delete("page"); setParams(next, { replace: true }); }}><option value="default">Nyeste faktura</option><option value="date">Fakturadato</option><option value="due">Forfaldsdato</option><option value="amount">Beløb</option></Select></label>
-            {(sort === "date" || sort === "amount" || sort === "due") && <label className="journal-filter-field">Rækkefølge<Select value={dir === -1 ? "desc" : "asc"} onChange={(event) => setListParam("dir", event.target.value)}><option value="asc">Stigende</option><option value="desc">Faldende</option></Select></label>}
+            <label {...stylex.props(...[cockpitStyles.formField, cockpitStyles.fullWidth])}>Søg<Input type="search" value={q} placeholder="Kunde eller fakturanummer…" onChange={(event) => setListParam("q", event.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition2]} /></label>
+            <label {...stylex.props(...[cockpitStyles.formField])}>Status<Select value={Object.hasOwn(STATUS_META, status) ? status : "all"} onChange={(event) => setListParam("status", event.target.value)} xstyle={[cockpitStyles.journalFilterFieldSelectComposition2]}><option value="all" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Alle</option>{Object.entries(STATUS_META).map(([value, meta]) => <option key={value} value={value} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{meta.label}</option>)}</Select></label>
+            <label {...stylex.props(...[cockpitStyles.formField])}>Fra<Input type="date" value={from} onChange={(event) => setListParam("from", event.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition2]} /></label>
+            <label {...stylex.props(...[cockpitStyles.formField])}>Til<Input type="date" value={to} onChange={(event) => setListParam("to", event.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition2]} /></label>
+            <label {...stylex.props(...[cockpitStyles.formField])}>Sortering<Select value={sort === "date" || sort === "amount" || sort === "due" ? sort : "default"} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "default") { next.delete("sort"); next.delete("dir"); } else { next.set("sort", event.target.value); next.set("dir", params.get("dir") === "desc" ? "desc" : "asc"); } next.delete("page"); setParams(next, { replace: true }); }}><option value="default" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Nyeste faktura</option><option value="date" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Fakturadato</option><option value="due" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Forfaldsdato</option><option value="amount" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Beløb</option></Select></label>
+            {(sort === "date" || sort === "amount" || sort === "due") && <label {...stylex.props(...[cockpitStyles.formField])}>Rækkefølge<Select value={dir === -1 ? "desc" : "asc"} onChange={(event) => setListParam("dir", event.target.value)} xstyle={[
+											cockpitStyles.journalFilterFieldSelectComposition2,
+										]}><option value="asc" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Stigende</option><option value="desc" {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Faldende</option></Select></label>}
           </FilterBar>}
-          {!detail && <p className="statement-asof muted">{filtered.length} af {inv.invoices.length} fakturaer matcher</p>}
+          {!detail && <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>{filtered.length} af {inv.invoices.length} fakturaer matcher</p>}
 
-          <div className="card statement-card table-scroll">
-            <table className="data statement-table daily-table" role="table">
-              <thead role="rowgroup">
-                <tr role="row">
-                  <th>Fakturanr.</th>
-                  <th>Kunde</th>
-                  <th><Button className="th-sort" onClick={() => toggleSort("date")} aria-label="Sortér efter dato">Dato{sort === "date" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
-                  <th><Button className="th-sort" onClick={() => toggleSort("due")} aria-label="Sortér efter forfald">Forfald{sort === "due" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
-                  <th className="num"><Button className="th-sort" onClick={() => toggleSort("amount")} aria-label="Sortér efter beløb">Beløb inkl. moms{sort === "amount" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
-                  <th className="num">Udestående</th>
-                  <th>Status</th>
-                  <th>Handlinger</th>
+          <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+            <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable, cockpitStyles.dailyListTableComposition])} role="table">
+              <thead role="rowgroup" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.dailyTableThead,
+								)}>
+                <tr role="row" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.dailyTableTr,
+									)}>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Fakturanr.</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Kunde</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}><Button  onClick={() => toggleSort("date")} aria-label="Sortér efter dato" xstyle={[cockpitStyles.statementButtonComposition]}>Dato{sort === "date" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}><Button  onClick={() => toggleSort("due")} aria-label="Sortér efter forfald" xstyle={[cockpitStyles.statementButtonComposition]}>Forfald{sort === "due" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
+                  <th {...stylex.props(cockpitStyles.num)}><Button  onClick={() => toggleSort("amount")} aria-label="Sortér efter beløb" xstyle={[cockpitStyles.statementButtonComposition]}>Beløb inkl. moms{sort === "amount" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
+                  <th {...stylex.props(cockpitStyles.num)}>Udestående</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Status</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Handlinger</th>
                 </tr>
               </thead>
-              <tbody role="rowgroup">
-                {visible.length === 0 && <tr role="row"><td colSpan={8} className="empty-inline">Ingen fakturaer matcher filtrene.</td></tr>}
+              <tbody role="rowgroup" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.dailyTableTbody,
+								)}>
+                {visible.length === 0 && <tr role="row" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.dailyTableTr,
+										)}><td colSpan={8} {...stylex.props(cockpitStyles.emptyInline)}>Ingen fakturaer matcher filtrene.</td></tr>}
                 {visible.map((row) => {
                   const knownStatus = Object.hasOwn(STATUS_META, row.status);
                   const meta = STATUS_META[row.status] ?? { label: "Ukendt status", tone: "neutral" };
@@ -631,23 +1179,31 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                     Boolean(row.customerEmail) &&
                     reminderSeq < 3;
                   return (
-                    <tr role="row" key={row.documentId}>
-                      <td role="cell" data-label="Faktura" className="account-no"><Link to={workflowTo(slug, "fakturaer", String(row.documentId), params, inv.selectedYear)}>{row.invoiceNo}</Link></td>
-                      <td role="cell" data-label="Kunde">{row.customerName ?? "—"}</td>
-                      <td role="cell" data-label="Dato" className="entry-date">{row.invoiceDate ?? "—"}</td>
-                      <td role="cell" data-label="Forfald" className="entry-date">
+                    <tr role="row" key={row.documentId} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+												cockpitStyles.dailyTableTr,
+											)}>
+                      <td role="cell" data-label="Faktura" {...stylex.props(...[cockpitStyles.num])}><Link to={workflowTo(slug, "fakturaer", String(row.documentId), params, inv.selectedYear)}>{row.invoiceNo}</Link></td>
+                      <td role="cell" data-label="Kunde" {...stylex.props(
+													cockpitStyles.dailyTableTdComposition3,
+												)}>{row.customerName ?? "—"}</td>
+                      <td role="cell" data-label="Dato" {...stylex.props(cockpitStyles.entryDate)}>{row.invoiceDate ?? "—"}</td>
+                      <td role="cell" data-label="Forfald" {...stylex.props(cockpitStyles.entryDate)}>
                         {row.effectiveDueDate ?? "—"}
                       </td>
-                      <td role="cell" data-label="Beløb inkl. moms" className="num">
+                      <td role="cell" data-label="Beløb inkl. moms" {...stylex.props(cockpitStyles.num)}>
                         <Amount value={row.grossAmount} currency={row.currency || currency} />
-                        {row.currency!=="DKK"&&typeof row.grossAmountDkk==="number"&&<div className="muted">{formatKroner(row.grossAmountDkk,"DKK")} · kurs {row.fxRateToDkk}</div>}
+                        {row.currency!=="DKK"&&typeof row.grossAmountDkk==="number"&&<div {...stylex.props(cockpitStyles.muted)}>{formatKroner(row.grossAmountDkk,"DKK")} · kurs {row.fxRateToDkk}</div>}
                       </td>
-                      <td role="cell" data-label="Udestående" className="num">
+                      <td role="cell" data-label="Udestående" {...stylex.props(cockpitStyles.num)}>
                         <Amount value={row.openBalance} currency={row.currency || currency} />
-                        {row.currency!=="DKK"&&typeof row.openBalanceDkk==="number"&&<div className="muted">Bogført: {formatKroner(row.openBalanceDkk,"DKK")}</div>}
+                        {row.currency!=="DKK"&&typeof row.openBalanceDkk==="number"&&<div {...stylex.props(cockpitStyles.muted)}>Bogført: {formatKroner(row.openBalanceDkk,"DKK")}</div>}
                       </td>
-                      <td role="cell" data-label="Status">
-                        <span className={`flag ${meta.tone}`}>
+                      <td role="cell" data-label="Status" {...stylex.props(
+													cockpitStyles.dailyTableTdComposition3,
+												)}>
+                        <span {...stylex.props(cockpitStyles.flag, meta.tone === "ok" ? cockpitStyles.flagOk : meta.tone === "critical" ? cockpitStyles.flagCritical : meta.tone === "warning" ? cockpitStyles.flagWarning : cockpitStyles.flagNeutral)}>
                           {row.posted === false ? "Udstedt – afventer bogføring" : meta.label}
                           {/* Singular/plural — "· 1 dage" is wrong Danish. */}
                           {row.status === "overdue" && row.overdueDays > 0
@@ -656,7 +1212,16 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                               }`
                             : ""}
                         </span>
-                        {!knownStatus && <details><summary>Teknisk status</summary><code>{row.status}</code></details>}
+                        {!knownStatus && <details {...stylex.props(
+															cockpitStyles.element,
+															cockpitStyles.focusVisible,
+														)}><summary {...stylex.props(
+																cockpitStyles.summaryComposition,
+															)}>Teknisk status</summary><code {...stylex.props(
+																cockpitStyles.element,
+																cockpitStyles.focusVisible,
+																cockpitStyles.code,
+															)}>{row.status}</code></details>}
                         {/* #429 — surface a "Sendt {dato}" flag once the
                             invoice has been emailed from the cockpit so the
                             owner can see at a glance whether the customer
@@ -665,7 +1230,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                             full timestamp, the row only needs the day. */}
                         {row.lastEmailedAt && (
                           <span
-                            className="flag ok"
+                            {...stylex.props(cockpitStyles.flag)}
                             title={`Sendt på mail ${row.lastEmailedAt}`}
                           >
                             Sendt {formatDateDa(row.lastEmailedAt.slice(0, 10))}
@@ -681,7 +1246,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                             not guaranteed (SMTP may run in test mode). */}
                         {row.lastReminderAt && row.lastReminderSequence > 0 && (
                           <span
-                            className="flag warning"
+                            {...stylex.props(cockpitStyles.flag)}
                             title={`Rykker registreret ${row.lastReminderAt}`}
                           >
                             {row.lastReminderSequence}. rykker registreret{" "}
@@ -693,11 +1258,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                             the invoice has been transmitted to NemHandel. */}
                         {row.peppolStatus && (
                           <span
-                            className={`flag ${
-                              row.peppolStatus.status === "acknowledged"
-                                ? "ok"
-                                : "neutral"
-                            }`}
+                            {...stylex.props(...[cockpitStyles.flag, ...(row.peppolStatus.status === "acknowledged" ? [cockpitStyles.flagOk] : [cockpitStyles.flagNeutral])])}
                             title={
                               row.peppolStatus.acknowledgedAt
                                 ? `Bekræftet ${row.peppolStatus.acknowledgedAt}`
@@ -722,22 +1283,24 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           </span>
                         )}
                       </td>
-                      <td role="cell" data-label="Handlinger">
-                        <div className="row-actions">
+                      <td role="cell" data-label="Handlinger" {...stylex.props(
+													cockpitStyles.dailyTableTdComposition3,
+												)}>
+                        <div {...stylex.props(cockpitStyles.rowActions)}>
                           {/* #378: the PDF link is the primary action — the
                               whole point of issuing an invoice is to send it
                               to the customer. Download the exact original or
                               open it separately without losing the table view. */}
                           {inv.nativeSales && row.posted === false && can("company.ledger.post") && <NativeInvoicePost slug={slug} id={row.documentId} number={row.invoiceNo} accounts={inv.nativeSales.revenueAccounts} onPosted={state.reload} />}
                           <a
-                            className="btn secondary"
+                            {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
                             href={api.invoicePdfUrl(slug, row.documentId)}
                             download={`faktura-${row.documentId}.pdf`}
                           >
                             Hent PDF
                           </a>
                           <a
-                            className="btn secondary"
+                            {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
                             href={api.invoicePdfUrl(slug, row.documentId)}
                             target="_blank"
                             rel="noopener"
@@ -749,7 +1312,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           {!inv.archived && can("company.ledger.post") && canSettle && (
                             <Button
                               type="button"
-                              className="btn secondary"
+
                               onClick={() => { setInteractionScope(currentScope); setSettling(row); }}
                             >
                               Afstem
@@ -762,7 +1325,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           {!inv.archived && can("company.ledger.post") && canCredit && (
                             <Button
                               type="button"
-                              className="btn secondary"
+
                               onClick={() => { setInteractionScope(currentScope); setCreditGross(""); setCrediting(row); }}
                             >
                               Kreditér
@@ -777,14 +1340,14 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           {!inv.archived && can("company.external-send") && canSendPublic && (
                             <Button
                               type="button"
-                              className="btn secondary"
+
                               onClick={() => { setInteractionScope(currentScope); setSendingPublic(row); }}
                             >
                               Send e-faktura
                             </Button>
                           )}
                           {!inv.archived && can("company.external-send") && canCheckPublicStatus && (
-                            <Button type="button" className="btn secondary" onClick={() => { setInteractionScope(currentScope); setCheckingPublicStatus(row); }}>
+                            <Button type="button"  onClick={() => { setInteractionScope(currentScope); setCheckingPublicStatus(row); }}>
                               Opdatér leveringsstatus
                             </Button>
                           )}
@@ -798,7 +1361,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           {!inv.archived && can("company.external-send") && canSendEmail && (
                             <Button
                               type="button"
-                              className="btn secondary"
+
                               onClick={() => { setInteractionScope(currentScope); setSendingEmail(row); }}
                             >
                               Send på mail
@@ -815,7 +1378,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           {!inv.archived && can("company.external-send") && canSendReminder && (
                             <Button
                               type="button"
-                              className="btn secondary"
+
                               onClick={() => { setInteractionScope(currentScope); setSendingReminder(row); }}
                             >
                               Send rykker
@@ -838,9 +1401,14 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 
 function ArchivedNotice({ year }: { year: string }) {
   return (
-    <div className="card archived-notice">
-      <h3>Fakturaer er ikke tilgængelige for {year}</h3>
-      <p className="muted">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+      <h3 {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					cockpitStyles.archivedNoticeH3,
+				)}>Fakturaer er ikke tilgængelige for {year}</h3>
+      <p {...stylex.props(cockpitStyles.muted)}>
         {year} er et arkiveret regnskabsår. Udstedte fakturaer føres kun i den
         aktive ledger og vises derfor ikke for et arkiveret år.
         Resultatopgørelse, balance, saldobalance og posteringer for {year} er

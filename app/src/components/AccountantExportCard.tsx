@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { Button, Input } from "./ui";
 // Revisor-eksport — the accountant-handoff package card.
 //
@@ -84,30 +86,30 @@ export function AccountantExportCard({ slug }: { slug: string }) {
     periodStart > periodEnd;
 
   return (
-    <div className="card accountant-export">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.accountantExport)}>
       {outcome.feedback}
-      <h3 className="section-title">Revisor-eksport</h3>
-      <p className="muted">
+      <h3 {...stylex.props(cockpitStyles.sectionTitle)}>Revisor-eksport</h3>
+      <p {...stylex.props(cockpitStyles.muted)}>
         Pakker journal, bilag, banktransaktioner og audit-log for perioden i én
         .tar-fil. Serveren danner pakken, når du klikker «Generér og download».
         Du vælger selv, hvordan du deler den med din revisor.
       </p>
-      <label>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
         Fra
         <Input
           type="date"
           value={periodStart}
           onChange={(e) => setPeriodStart(e.target.value)}
-          disabled={busy}
+          disabled={busy} xstyle={[cockpitStyles.inputComposition]}
         />
       </label>
-      <label>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
         Til
         <Input
           type="date"
           value={periodEnd}
           onChange={(e) => setPeriodEnd(e.target.value)}
-          disabled={busy}
+          disabled={busy} xstyle={[cockpitStyles.inputComposition]}
         />
       </label>
       {error && <Banner kind="error">{error}</Banner>}
@@ -118,21 +120,21 @@ export function AccountantExportCard({ slug }: { slug: string }) {
           {done.profile && " Afgrænset Rentemester v3-profil; ingen officiel validering eller indberetning."}
         </Banner>
       )}
-      <div className="row-actions">
+      <div {...stylex.props(cockpitStyles.rowActions)}>
         <Button
           requiredPermission="company.export"
-          className="btn"
+
           onClick={() => generate()}
           disabled={disabled}
           type="button"
         >
           {busy ? "Genererer…" : "Generér og download"}
         </Button>
-        <Button requiredPermission="company.export" className="btn" onClick={() => generate(true)} disabled={disabled} type="button">
+        <Button requiredPermission="company.export"  onClick={() => generate(true)} disabled={disabled} type="button">
           SAF-T v3 — generér og download
         </Button>
       </div>
-      <p className="muted">SAF-T v3 er Rentemesters afgrænsede profil: kontoplan, journal, fakturaer og stamdata med manifest. Originalbilag verificeres, men pakkes ikke med. Ingen officiel skemavalidering eller indberetning. Eksporten registreres i audit-loggen.</p>
+      <p {...stylex.props(cockpitStyles.muted)}>SAF-T v3 er Rentemesters afgrænsede profil: kontoplan, journal, fakturaer og stamdata med manifest. Originalbilag verificeres, men pakkes ikke med. Ingen officiel skemavalidering eller indberetning. Eksporten registreres i audit-loggen.</p>
     </div>
   );
 }

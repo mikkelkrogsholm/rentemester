@@ -30,6 +30,7 @@ export type ContactCustomerRow = {
    * `> 0` udløser den røde flag-styling i Kontakter-tabellen.
    */
   overdueCount: number;
+  partyId?: string | null;
 };
 
 export type ContactVendorRow = {
@@ -48,6 +49,7 @@ export type ContactVendorRow = {
   phone: string | null;
   website: string | null;
   notes: string | null;
+  partyId?: string | null;
 };
 
 // --- contact create/update payloads (#390) ----------------------------------

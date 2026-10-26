@@ -1,6 +1,9 @@
 import { WorkspaceTransferProvider, WorkspaceTransferBanner, WorkspaceReadOnlyGuard } from "./components/WorkspaceTransferProvider";
 import { WorkspaceHandoffView } from "./views/WorkspaceHandoffView";
 import { ScheduledRecurringProvider } from "./components/ScheduledRecurringProvider";
+import { cockpitStyles } from './design/cockpit.stylex';
+import { colors } from './design/tokens.stylex';
+import * as stylex from '@stylexjs/stylex';
 import { ButtonLink } from "./components/ui";
 // App shell + routing for the cockpit SPA (#171).
 //
@@ -28,11 +31,11 @@ import { ButtonLink } from "./components/ui";
 //
 // The per-company views share a sub-navigation and a fiscal-year selector
 // (`CompanyNav`); the chosen year is carried in the URL as `?year=`.
-
 import { NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { WorkspaceSetupView } from "./views/WorkspaceSetupView";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { api } from "./lib/api";
+import { MutationMemoryProvider } from "./lib/mutation-memory";
 import { useAsync } from "./lib/useAsync";
 import { ForgotPasswordView, LoginView, ResetPasswordView, VerificationRecoveryView } from "./views/LoginView";
 import { MfaEnrollmentView, VerificationRequiredView } from "./views/MfaEnrollmentView";
@@ -42,219 +45,159 @@ import { CockpitLayout, SkipLink } from "./components/AppChrome";
 import { useCapabilities } from "./lib/useCapabilities";
 import { ErrorState } from "./components/Feedback";
 import packageJson from "../package.json";
+import { KnowledgePageView } from "./views/KnowledgePageView";
+import { TasksView, TaskDetailView } from "./views/TasksView";
 import { PortfolioView } from "./views/PortfolioView";
 import { AddCompanyView } from "./views/AddCompanyView";
-import { DashboardView } from "./views/DashboardView";
-import { IncomeStatementView } from "./views/IncomeStatementView";
-import { BalanceView } from "./views/BalanceView";
-import { TrialBalanceView } from "./views/TrialBalanceView";
-import { ObligationsView } from "./views/ObligationsView";
-import { LiquidityView } from "./views/LiquidityView";
-import { BudgetView } from "./views/BudgetView";
-import { JournalView } from "./views/JournalView";
-import { BankView } from "./views/BankView";
-import {EuSalesView} from "./views/EuSalesView";
-import { VatView } from "./views/VatView";
-import { DocumentsView, DocumentDetailView } from "./views/DocumentsView";
-import { ArchiveView } from "./views/ArchiveView";
-import { MultiYearView } from "./views/MultiYearView";
-import { InvoicesView, InvoiceDetailView } from "./views/InvoicesView";
-import { PayablesView } from "./views/PayablesView";
-import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
-import { ContactsView } from "./views/ContactsView";
-import { MileageView } from "./views/MileageView";
-import { AssetsView } from "./views/AssetsView";
-import { SuggestionsView } from "./views/SuggestionsView";
-import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
 import { RulesView } from "./views/RulesView";
-import { RetentionView } from "./views/RetentionView";
-import { IntegrityView } from "./views/IntegrityView";
-import { AccountsView } from "./views/AccountsView";
-import { ExceptionsView } from "./views/ExceptionsView";
-import { PeriodsView } from "./views/PeriodsView";
-import { BankAccountsView } from "./views/BankAccountsView";
-import { GdprView } from "./views/GdprView";
-import { AccrualsView } from "./views/AccrualsView";
-import { AnnualReportView } from "./views/AnnualReportView";
-import { BilagsmailView } from "./views/BilagsmailView";
 import { GroupOverviewView } from "./views/GroupOverviewView";
-import { AccountingDraftsView } from "./views/AccountingDraftsView";
 import { InvitationView } from "./views/InvitationView";
 import { WorkspaceAccessView } from "./views/WorkspaceAccessView";
-import { PostingRulesView } from "./views/PostingRulesView";
-import { BookkeepingBatchView } from "./views/BookkeepingBatchView";
-import { WorkspaceRegistryView } from "./views/WorkspaceRegistryView";
-import { WorkspaceInboxView } from "./views/WorkspaceInboxView";
 import { CfoCockpitView } from "./views/CfoCockpitView";
-import { DimensionsView } from "./views/DimensionsView";
-import {
-  CompanyNavigationShell,
-} from "./components/CompanyNav";
-import { InvoiceCreateView } from "./views/InvoiceCreateView";
-import { DocumentBookingView } from "./views/DocumentBookingView";
+import { CompanyNavigationShell, } from "./components/CompanyNav";
 import { cloneElement, type ReactElement } from "react";
-import {
-  COMPANY_ROUTE_DEFINITIONS,
-  assertCompanyRouteCoverage,
-  companyRoutePattern,
-  type CompanyRouteId,
-  companyRouteForPath,
-} from "./company-navigation";
-
-const COMPANY_ROUTE_ELEMENTS: Record<CompanyRouteId, ReactElement> = {
-  dashboard: <DashboardView />,
-  "income-statement": <IncomeStatementView />,
-  balance: <BalanceView />,
-  "trial-balance": <TrialBalanceView />,
-  obligations: <ObligationsView />,
-  liquidity: <LiquidityView />,
-  budget: <BudgetView />,
-  journal: <JournalView />,
-  drafts: <AccountingDraftsView />,
-  "posting-rules": <PostingRulesView />,
-  "batch-bookkeeping": <BookkeepingBatchView />,
-  bank: <BankView />,
-  vat: <VatView />,
-  "eu-sales": <EuSalesView />,
-  documents: <DocumentsView />,
-  payables: <PayablesView />,
-  invoices: <InvoicesView />,
-  "invoice-templates": <RecurringInvoicesView />,
-  contacts: <ContactsView />,
-  "workspace-register": <WorkspaceRegistryView />,
-  "workspace-inbox": <WorkspaceInboxView />,
-  mileage: <MileageView />,
-  assets: <AssetsView />,
-  suggestions: <SuggestionsView />,
-  archive: <ArchiveView />,
-  "multi-year": <MultiYearView />,
-  manage: <ManageCompanyView />,
-  retention: <RetentionView />,
-  integrity: <IntegrityView />,
-  accounts: <AccountsView />,
-  dimensions: <DimensionsView />,
-  exceptions: <ExceptionsView />,
-  "period-lock": <PeriodsView />,
-  "bank-accounts": <BankAccountsView />,
-  gdpr: <GdprView />,
-  accruals: <AccrualsView />,
-  "annual-report": <AnnualReportView />,
-  "receipt-email": <BilagsmailView />,
-  "invoice-create": <InvoiceCreateView />,
-  "invoice-detail": <InvoiceDetailView />,
-  "document-detail": <DocumentDetailView />,
-  "document-booking": <DocumentBookingView />,
-};
-
-// Keep the executable route registration and the navigation catalogue in lockstep.
-assertCompanyRouteCoverage(Object.keys(COMPANY_ROUTE_ELEMENTS));
-
+import { COMPANY_ROUTE_REGISTRY, COMPANY_FLOW_ROUTE_REGISTRY, COMPANY_TASK_AREAS, companyRoutePattern, companyRouteForPath, type CompanyRouteId, } from "./company-route-registry";
+const COMPANY_NAVIGATION = { routes: COMPANY_ROUTE_REGISTRY, areas: COMPANY_TASK_AREAS };
 export function App() {
-  const health = useAsync((signal) => api.health({ signal }), []);
-  const profile = health.data?.deploymentProfile;
-  if (health.loading) return <div className="state-msg">Starter Rentemester…</div>;
-  // This gate deliberately has no fallback. A reverse proxy error or an old
-  // server must not accidentally expose a local/trusted cockpit in production.
-  if (
-    health.error ||
-    (profile !== "local" && profile !== "local-container" && profile !== "hosted")
-  ) {
-    return <div className="state-msg" role="alert">Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
-  }
-  if (health.data?.backend === "rust" && health.data.setupRequired) return <WorkspaceSetupView onComplete={health.reload} />;
-  return <AuthProvider hosted={profile === "hosted"} backend={health.data?.backend}><AuthGate /></AuthProvider>;
+    const health = useAsync((signal) => api.health({ signal }), []);
+    const profile = health.data?.deploymentProfile;
+    if (health.loading)
+        return <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Starter Rentemester…</div>;
+    // This gate deliberately has no fallback. A reverse proxy error or an old
+    // server must not accidentally expose a local/trusted cockpit in production.
+    if (health.error ||
+        (profile !== "local" && profile !== "local-container" && profile !== "hosted")) {
+        return <div role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
+    }
+    if (health.data?.backend === "rust" && health.data.setupRequired)
+        return <WorkspaceSetupView onComplete={health.reload}/>;
+    return <AuthProvider hosted={profile === "hosted"} backend={health.data?.backend}><AuthGate /></AuthProvider>;
 }
-
 function AuthGate() {
-  const { hosted, loading, session, context, bootstrapError, refresh } = useAuth();
-  const location = useLocation();
-  if (!hosted) return <CockpitApp />;
-  if (loading) return <div className="state-msg">Kontrollerer din session…</div>;
-  if (location.pathname === "/invite") return <InvitationView />;
-  if (bootstrapError) return <div className="state-msg" role="alert">{bootstrapError} <button type="button" onClick={() => void refresh()}>Prøv igen</button></div>;
-  if (!session) return <AuthRecoveryRoutes />;
-  if (!session.emailVerified) return <VerificationRequiredView />;
-  if (!session.twoFactorEnabled) return <MfaEnrollmentView />;
-  if (!context) return <div className="state-msg">Indlæser din adgang…</div>;
-  return <CockpitApp />;
+    const { hosted, loading, session, context, bootstrapError, refresh } = useAuth();
+    const location = useLocation();
+    if (!hosted)
+        return <MutationMemoryProvider><CockpitApp /></MutationMemoryProvider>;
+    if (loading)
+        return <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kontrollerer din session…</div>;
+    if (location.pathname === "/invite")
+        return <InvitationView />;
+    if (bootstrapError)
+        return <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)} role="alert">{bootstrapError} <button type="button" onClick={() => void refresh()}>Prøv igen</button></div>;
+    if (!session)
+        return <AuthRecoveryRoutes />;
+    if (!session.emailVerified)
+        return <VerificationRequiredView />;
+    if (!session.twoFactorEnabled)
+        return <MfaEnrollmentView />;
+    if (!context)
+        return <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Indlæser din adgang…</div>;
+    return <MutationMemoryProvider key={session.id} scope={`user:${session.id}`}><CockpitApp /></MutationMemoryProvider>;
 }
-
 function AuthRecoveryRoutes() {
-  return <Routes><Route path="/invite" element={<InvitationView />} /><Route path="/forgot-password" element={<ForgotPasswordView />} /><Route path="/reset-password" element={<ResetPasswordView />} /><Route path="/verify-email" element={<VerificationRecoveryView />} /><Route path="*" element={<LoginView />} /></Routes>;
+    return <Routes><Route path="/invite" element={<InvitationView />}/><Route path="/forgot-password" element={<ForgotPasswordView />}/><Route path="/reset-password" element={<ResetPasswordView />}/><Route path="/verify-email" element={<VerificationRecoveryView />}/><Route path="*" element={<LoginView />}/></Routes>;
 }
-
+const navigationStyles = stylex.create({
+    serverIdentity: { minWidth: 0, overflowWrap: "anywhere", color: colors.inkMuted },
+    navigation: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginLeft: 'auto' },
+    link: {
+        "display": 'inline-flex',
+        "alignItems": 'center',
+        "minHeight": 44,
+        "paddingInline": '12px',
+        "color": { "default": colors.inkMuted, ":hover": colors.ink },
+        "textDecoration": { "default": 'none', ":hover": 'none' },
+        "borderBottomWidth": 2,
+        "borderBottomStyle": 'solid',
+        "borderBottomColor": 'transparent',
+    },
+    active: { color: colors.ink, fontWeight: 600, borderBottomColor: colors.accent },
+    menu: { position: 'relative' },
+});
 function CockpitApp() {
-  const { hosted, context, backend } = useAuth();
-  const location = useLocation();
-  const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
-  return (
-    <WorkspaceTransferProvider><ScheduledRecurringProvider><div className="app-shell">
-      <header className="topbar">
+    const { hosted, context, backend } = useAuth();
+    const location = useLocation();
+    const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
+    return (<WorkspaceTransferProvider><ScheduledRecurringProvider><div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.appShell)}>
+      <header {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.topbar)}>
         <SkipLink />
-        <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
-        <span className="server-identity muted" title="Aktiv server">{`Server: ${globalThis.location.origin}`}</span>
-        <nav className="global-navigation" aria-label="Workspace"><details><summary>Workspace</summary><div className="global-links">
-          <NavLink to="/" end>
-            Portefølje
-          </NavLink>
-          {hosted && <NavLink to="/cfo">CFO-overblik</NavLink>}
-          {canManageWorkspace && backend === "rust" && <NavLink to="/flytning">Flyt workspace</NavLink>}
-          {canManageWorkspace && <NavLink to="/companies/new">Tilføj virksomhed</NavLink>}
-          {hosted && canManageWorkspace && <NavLink to="/koncernstruktur">Koncernstruktur</NavLink>}
-          {hosted && canManageWorkspace && <NavLink to="/adgang">Brugere</NavLink>}
-          <NavLink to="/lovgrundlag">Lovgrundlag</NavLink>
-          <NavLink to="/help">Hjælp</NavLink>
+        <Link to="/" {...stylex.props(cockpitStyles.topbarBrandComposition)}>Rentemester <span title="Installeret Rentemester-version" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.topbarBuildVersion, cockpitStyles.brandBuildVersion)}>v{packageJson.version}</span></Link>
+        <span title="Aktiv server" {...stylex.props(navigationStyles.serverIdentity)}>{`Server: ${globalThis.location.origin}`}</span>
+        <nav aria-label="Workspace" {...stylex.props(cockpitStyles.element, cockpitStyles.topbarNav, navigationStyles.navigation)}>
+          <NavLink to="/" end {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname === '/' && navigationStyles.active)}>Portefølje</NavLink>
+          <NavLink to="/opgaver" {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname.startsWith('/opgaver') && navigationStyles.active)}>Opgaver</NavLink>
+          {hosted && <NavLink to="/cfo" {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname.startsWith('/cfo') && navigationStyles.active)}>CFO-overblik</NavLink>}
+          <details {...stylex.props(cockpitStyles.element, navigationStyles.menu)}><summary {...stylex.props(cockpitStyles.focusVisible, cockpitStyles.globalNavigationSummary)}>Workspace</summary><div {...stylex.props(cockpitStyles.element, cockpitStyles.globalLinks)}>
+          {canManageWorkspace && backend === "rust" && <NavLink to="/flytning" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Flyt workspace</NavLink>}
+          {canManageWorkspace && <NavLink to="/companies/new" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Tilføj virksomhed</NavLink>}
+          {hosted && canManageWorkspace && <NavLink to="/koncernstruktur" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Koncernstruktur</NavLink>}
+          {hosted && canManageWorkspace && <NavLink to="/adgang" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Brugere</NavLink>}
+          <NavLink to="/lovgrundlag" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Lovgrundlag</NavLink>
+          <NavLink to="/help" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Hjælp</NavLink>
         </div></details></nav>
         {hosted && !companyRouteForPath(location.pathname) && <CompanySwitcher />}
         {hosted && <AccountMenu />}
       </header>
 
       <WorkspaceTransferBanner />
-      <CompanyNavigationShell>
+      <CompanyNavigationShell navigation={COMPANY_NAVIGATION} rendersNavigation>
         <CockpitLayout>
+          <TaskSourceReturnLink />
           <WorkspaceReadOnlyGuard><Routes>
-            <Route path="/" element={<PortfolioView />} />
+            <Route path="/" element={<PortfolioView />}/>
             <Route path="/flytning" element={<WorkspaceHandoffView />} />
-            {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
-            <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder." />} />
-            {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
-            {hosted && canManageWorkspace && <Route path="/adgang" element={<WorkspaceAccessView />} />}
-            {COMPANY_ROUTE_DEFINITIONS.map((route) => (
-              <Route
-                key={route.id}
-                path={companyRoutePattern(route.segment)}
-                element={<CompanyRouteGate id={route.id}>{COMPANY_ROUTE_ELEMENTS[route.id]}</CompanyRouteGate>}
-              />
-            ))}
-            <Route path="/help" element={<HelpView />} />
-            <Route path="/lovgrundlag" element={<RulesView />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/opgaver" element={<TasksView />}/>
+            <Route path="/opgaver/:taskId" element={<TaskDetailView />}/>
+            <Route path="/viden/:pageId" element={<KnowledgePageView />}/>
+            {hosted && <Route path="/cfo" element={<CfoCockpitView />}/>}
+            <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder."/>}/>
+            {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />}/>}
+            {hosted && canManageWorkspace && <Route path="/adgang" element={<WorkspaceAccessView />}/>}
+            {COMPANY_ROUTE_REGISTRY.map((route) => (<Route key={route.id} path={companyRoutePattern(route.segment)} element={<CompanyRouteGate id={route.id}>{route.element}</CompanyRouteGate>}/>))}
+            {COMPANY_FLOW_ROUTE_REGISTRY.map((route) => (<Route key={route.id} path={companyRoutePattern(route.segment)} element={<CompanyRouteGate id={route.id}>{route.element}</CompanyRouteGate>}/>))}
+            <Route path="/help" element={<HelpView />}/>
+            <Route path="/lovgrundlag" element={<RulesView />}/>
+            <Route path="*" element={<NotFound />}/>
           </Routes></WorkspaceReadOnlyGuard>
         </CockpitLayout>
       </CompanyNavigationShell>
-    </div></ScheduledRecurringProvider></WorkspaceTransferProvider>
-  );
+    </div></ScheduledRecurringProvider></WorkspaceTransferProvider>);
 }
-
-function CompanyRouteGate({ id, children }: { id: CompanyRouteId; children: ReactElement }) {
-  const { slug, documentId } = useParams();
-  const [params] = useSearchParams();
-  const { can } = useCapabilities();
-  const permission = id === "contacts" ? "company.master-data" : id === "manage" ? "company.admin" : id === "invoice-create" ? "company.draft.write" : id === "document-booking" ? "company.ledger.post" : "company.read";
-  if (!can(permission)) return <ErrorState message="Din adgang giver ikke rettighed til denne side. Vælg en anden side i menuen." />;
-  // Reset local forms and manually loaded results at the resource boundary.
-  // Read hooks also mask stale snapshots during render and abort old requests.
-  return cloneElement(children, { key: `${id}:${slug}:${documentId ?? ""}:${params.get("year") ?? ""}` });
+function CompanyRouteGate({ id, children }: {
+    id: CompanyRouteId;
+    children: ReactElement;
+}) {
+    const { slug, documentId, partyId } = useParams();
+    const [params] = useSearchParams();
+    const { can } = useCapabilities(slug);
+    const permission = id === "manage" ? "company.admin" : id === "invoice-create" ? "company.draft.write" : id === "document-booking" ? "company.ledger.post" : "company.read";
+    if (!can(permission))
+        return <ErrorState message="Din adgang giver ikke rettighed til denne side. Vælg en anden side i menuen."/>;
+    // Reset local forms and manually loaded results at the resource boundary.
+    // Read hooks also mask stale snapshots during render and abort old requests.
+    return cloneElement(children, { key: `${id}:${slug}:${documentId ?? partyId ?? ""}:${params.get("year") ?? ""}:${params.get("source") ?? ""}` });
 }
-
 function NotFound() {
-  return (
-    <section className="state-msg">
-      <p>Siden findes ikke.</p>
-      <ButtonLink className="btn secondary" to="/">
+    return (<section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Siden findes ikke.</p>
+      <ButtonLink to="/" variant={"secondary"} xstyle={[cockpitStyles.aComposition]}>
         Til porteføljen
       </ButtonLink>
-    </section>
-  );
+    </section>);
+}
+function TaskSourceReturnLink() {
+    const [params] = useSearchParams();
+    const raw = params.get("returnTo");
+    if (!raw || /[\\\r\n]/.test(raw))
+        return null;
+    try {
+        const url = new URL(raw, "https://rentemester.invalid");
+        if (url.origin !== "https://rentemester.invalid" || !/^\/opgaver\/[^/]+$/.test(url.pathname))
+            return null;
+        return <ButtonLink variant="secondary" to={`${url.pathname}${url.search}`} xstyle={[cockpitStyles.aComposition]}>Tilbage til opgaven</ButtonLink>;
+    }
+    catch {
+        return null;
+    }
 }

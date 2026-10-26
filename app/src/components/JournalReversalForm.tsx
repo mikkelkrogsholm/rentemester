@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState, type FormEvent } from "react";
 import { Button, Field, Input, Textarea } from "./ui";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -17,7 +19,7 @@ export function JournalReversalForm({ slug, entry, ruleVersion, onSaved, onClose
     } }) });
     onSaved(); onClose();
   };
-  return <section className="card" aria-label="Tilbagefør postering"><h3>Tilbagefør {entry.entryNo}</h3><p>Originalen bevares. Der oprettes en ny postering med omvendt debet og kredit.</p>
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Tilbagefør postering"><h3>Tilbagefør {entry.entryNo}</h3><p>Originalen bevares. Der oprettes en ny postering med omvendt debet og kredit.</p>
     <form onSubmit={review}>
       <Field label="Tilbageførselsdato"><Input required type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
       <Field label="Begrundelse"><Textarea required maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>

@@ -1,12 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { COMPANY_ROUTE_DEFINITIONS } from "../src/company-navigation";
+import companyRoutes from "./data/routes.json" with { type: "json" };
 import { COMPANY_SLUG, mockApi } from "./fixtures";
 
-const pageRoutes = COMPANY_ROUTE_DEFINITIONS.filter((route) => !("kind" in route) || route.kind === "page");
+const pageRoutes = companyRoutes.filter((route) => !("kind" in route) || route.kind === "page");
 
 // Assert view-specific data/content, not just that a shell survived an error.
 const routeEvidence: Record<string, RegExp> = {
   dashboard: /Omsætning/,
+  tasks: /Afstem oktober/,
+  attention: /Ingen opgaver kræver opmærksomhed/,
+  "approval-policy": /Uafhængig reviewer/,
+  "purchase-overview": /Ingen åbne grupper i perioden/,
+  "party-hub": /Ingen parter endnu/,
   "income-statement": /Vareforbrug/,
   balance: /Selskabskapital/,
   "trial-balance": /Omsætning/,
@@ -16,7 +21,7 @@ const routeEvidence: Record<string, RegExp> = {
   journal: /Salg af ydelse/,
   drafts: /Ny kladde/,
   "posting-rules": /Posteringsregler/,
-  "batch-bookkeeping": /Vis arbejdskø/,
+  "batch-bookkeeping": /Bogføringsarbejdsbord/,
   bank: /Gebyr/,
   vat: /Salgsmoms/,
   documents: /DOC-2026-000001/,
@@ -39,10 +44,10 @@ const routeEvidence: Record<string, RegExp> = {
   exceptions: /Ingen.*undtagelser|Ingen åbne/,
   "period-lock": /Luk periode/,
   "bank-accounts": /synthetic-csv/,
-  gdpr: /Søg person eller virksomhed/,
+  gdpr: /Find oplysninger/,
   accruals: /Accruals|Periodisering/,
   "annual-report": /Vælg regnskabsår/,
-  "receipt-email": /IMAP-konfiguration/,
+  "receipt-email": /Forbind til mailkonto/,
 };
 
 for (const route of pageRoutes) {
@@ -68,7 +73,17 @@ for (const route of pageRoutes) {
     const suffix = route.segment ? `/${route.segment}` : "";
     await page.goto(`/companies/${COMPANY_SLUG}${suffix}?year=2026`);
     await expect(page.getByRole("main")).toContainText(routeEvidence[route.id]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    const layout = await page.evaluate(() => ({
+      fits: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      overflow: Array.from(document.querySelectorAll("main *")).filter(element => {
+        if (element.getBoundingClientRect().right <= window.innerWidth + 1) return false;
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (["auto", "scroll", "hidden", "clip"].includes(getComputedStyle(parent).overflowX)) return false;
+        }
+        return true;
+      }).slice(0, 8).map(element => ({ tag: element.tagName, ui: element.getAttribute("data-ui"), text: element.textContent?.slice(0, 80), width: element.getBoundingClientRect().width })),
+    }));
+    expect(layout.fits, JSON.stringify(layout.overflow)).toBe(true);
     expect(errors).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath(`${route.id}-320.png`), fullPage: true });
     fixture.assertComplete();
@@ -77,6 +92,7 @@ for (const route of pageRoutes) {
 
 for (const route of [
   { path: "/", evidence: /Acme ApS/ },
+  { path: "/opgaver", evidence: /Afstem oktober/ },
   { path: "/companies/new", evidence: /Opret virksomhed/ },
   { path: "/help", evidence: /Hjælp/ },
   { path: "/lovgrundlag", evidence: /Syntetiske regler/ },

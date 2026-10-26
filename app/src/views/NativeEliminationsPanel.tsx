@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState, type FormEvent } from "react";
 import { Banner, ErrorState } from "../components/Feedback";
 import { Button, Input, Select, Textarea } from "../components/ui";
@@ -135,7 +137,7 @@ export function NativeEliminationsPanel({
 		}
 	}
 	return (
-		<section className="card" aria-label="Balanceelimineringer">
+		<section {...stylex.props(cockpitStyles.card)} aria-label="Balanceelimineringer">
 			<h2>Balanceelimineringer</h2>
 			<p>
 				Kun eksakt afstemte, positive mellemregninger kan elimineres.

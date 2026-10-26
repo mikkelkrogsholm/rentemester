@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import type {BankMatchKind} from "../lib/types/bank-matches";
 import {bankMatchesApi} from "../lib/api/bank-matches";
 import {formatKroner} from "../lib/format";
@@ -36,6 +38,6 @@ export function BankMatchSuggestionsModal({slug, transaction, onClose}: {
     </>}
     <p>Luk forslagene, og vælg Bogfør på bankposten for at gennemgå et køb eller en kundebetaling. Tilbagebetaling til en kunde håndteres under Fakturaer efter gennemgang af kreditnotaen.</p>
     <p>Leverandørforslag er kun et spor til gennemgang af det oprindelige køb. De bekræfter ikke en kreditnota eller et tilgodehavende og kan ikke bogføres her.</p>
-    <div className="modal-actions"><Button variant="secondary" onClick={onClose}>Luk</Button></div>
+    <div {...stylex.props(cockpitStyles.modalActions)}><Button variant="secondary" onClick={onClose}>Luk</Button></div>
   </Dialog>;
 }

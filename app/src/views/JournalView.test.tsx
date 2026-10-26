@@ -94,7 +94,7 @@ describe("JournalView — Posteringer", () => {
   test("the company sub-nav exposes the new tabs", async () => {
     mockFetch(route());
     renderView();
-    const bankTab = await screen.findByRole("link", { name: "Bank" });
+    const bankTab = await screen.findByRole("link", { name: "Penge og bilag" });
     expect(bankTab).toHaveAttribute(
       "href",
       expect.stringContaining("/companies/acme-aps/bank"),
@@ -134,7 +134,7 @@ describe("JournalView — Posteringer", () => {
       path: "/companies/:slug/posteringer",
     });
     // The filter banner names the account.
-    expect(await screen.findByText("Bank")).toBeInTheDocument();
+    expect(await screen.findByText(/Posteringer på konto/)).toHaveTextContent("55000 Bank");
     expect(screen.getByText("55000")).toBeInTheDocument();
     // The fetch carried the account param.
     const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;

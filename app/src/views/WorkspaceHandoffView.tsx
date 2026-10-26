@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useWorkspaceTransfer } from "../components/WorkspaceTransferProvider";
@@ -63,7 +65,7 @@ function Handoff({ owner }: { owner: boolean }) {
       setReview({ action, title: "Bekræft aktivering af målet", button: "Aktivér dette mål", body: { ...common, release: release.trim() }, snapshot: t });
     }
   }
-  return <section className="statement">
+  return <section {...stylex.props(cockpitStyles.statement)}>
     <PageHeader title="Flyt workspace" description={`Denne forbindelse: ${window.location.origin}`} />
     <p>Flytning er særskilt fra almindelig backup. Kilden fryses, et signeret arkiv klargøres på et nyt mål, og ejeren frigiver derefter netop dette mål. Ingen automatisk ophævelse af frysning eller aktivering.</p>
     <Button variant="secondary" onClick={() => void lifecycle.refresh()}>Genlæs flyttestatus</Button>
@@ -185,6 +187,6 @@ function TransferConfirmation({ review, onClose, onDone }: { review: Review; onC
     {error && <p role="alert">{error}</p>}
     {marker.blocked && <UnknownMutationNotice onRefresh={lifecycle.refresh} onRelease={() => { marker.release(); setError(""); }} persistent={marker.persistent} verifyPersistence={marker.verifyPersistence} />}
     <label><input type="checkbox" checked={confirmed} disabled={busy || marker.blocked} onChange={e => setConfirmed(e.target.checked)} />Jeg bekræfter den gennemgåede handling</label>
-    <div className="modal-actions"><Button variant="secondary" disabled={busy} onClick={onClose}>Tilbage uden handling</Button><Button disabled={busy || !confirmed || marker.blocked} onClick={() => void send()}>{review.button}</Button></div>
+    <div {...stylex.props(cockpitStyles.modalActions)}><Button variant="secondary" disabled={busy} onClick={onClose}>Tilbage uden handling</Button><Button disabled={busy || !confirmed || marker.blocked} onClick={() => void send()}>{review.button}</Button></div>
   </Dialog>;
 }

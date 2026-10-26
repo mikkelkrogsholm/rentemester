@@ -118,9 +118,9 @@ describe("tastSelvNumber (#UI-10)", () => {
     expect(tastSelvNumber(4457)).toBe("4457");
   });
 
-  test("emits øre with a comma, never a thousand separator", () => {
-    expect(tastSelvNumber(1234.5)).toBe("1234,50");
-    expect(tastSelvNumber(0.05)).toBe("0,05");
+  test("disregards øre by truncating toward zero", () => {
+    expect(tastSelvNumber(1234.5)).toBe("1234");
+    expect(tastSelvNumber(-0.05)).toBe("0");
   });
 });
 
@@ -256,5 +256,15 @@ describe("sortByAttention", () => {
       "a",
       "b",
     ]);
+  });
+});
+
+
+describe("native exact money presentation after main integration", () => {
+  test("does not round exact decimal strings through binary floats", () => {
+    expect(formatKroner("9007199254740993.01")).toBe("9.007.199.254.740.993,01 kr.");
+    expect(formatKroner("-12.30", "EUR")).toBe("-12,30 EUR");
+    expect(formatKroner(null)).toBe("—");
+    expect(formatKroner("not-money")).toBe("—");
   });
 });

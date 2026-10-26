@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Standalone "add company" route — the same form as onboarding, reached from
 // the portfolio when the workspace is already populated.
@@ -10,13 +12,13 @@ export function AddCompanyView() {
   const navigate = useNavigate();
   const auth = useOptionalAuth();
   return (
-    <section>
-      <PageHeader title="Tilføj virksomhed" actions={<><ButtonLink className="btn secondary" to="/">
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <PageHeader title="Tilføj virksomhed" actions={<><ButtonLink xstyle={[cockpitStyles.buttonComposition]} variant="secondary" to="/">
           Annullér
         </ButtonLink></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>
             Registrerer en ny virksomhed i arbejdsområdet og opretter dens
             regnskab.
           </p>

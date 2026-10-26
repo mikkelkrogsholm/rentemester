@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -86,9 +88,9 @@ export function NativeBackupRegistrations({ slug }: { slug: string }) {
     } catch { setError("Kontrol-id kunne ikke bevares. Hent resultatet igen."); }
   }
   const disabled = busy || !!pending;
-  return <section className="card" aria-label="Registrerede backupdestinationer">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Registrerede backupdestinationer">
     <h3>Registrerede backupdestinationer</h3>
-    <p className="muted">Registrér, hvor du opbevarer kopier. En adresse er en beskrivelse; registreringen uploader ingen fil og ændrer ikke serverens godkendte mål. Eksterne overførsler, du noterer her, er uverificerede.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Registrér, hvor du opbevarer kopier. En adresse er en beskrivelse; registreringen uploader ingen fil og ændrer ikke serverens godkendte mål. Eksterne overførsler, du noterer her, er uverificerede.</p>
     <Button type="button" disabled={busy} onClick={() => void load()}>Hent registrerede destinationer</Button>
     {pending && <><p>Kontrol-id: {pending.operationId}</p><Button type="button" disabled={busy} onClick={() => void run(pending, true)}>Hent registreringens resultat</Button></>}
     {missing && pending && <>

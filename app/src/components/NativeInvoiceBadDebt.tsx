@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { NativeInvoiceBadDebtInput, NativeInvoiceBadDebtReceipt, NativeReminderClaimStatus } from "../lib/api/invoices";
@@ -20,7 +22,7 @@ export function NativeInvoiceBadDebt({slug,id,status,onChanged}:Props){
  async function refresh(){setBusy(true);setError(null);try{setCurrent(await api.invoiceReminderClaims(slug,id));onChanged();}catch(e){setCurrent(null);setError(e instanceof Error?e.message:"Tabsstatus kunne ikke hentes.");}finally{setBusy(false);}}
  function prepare(){if(!valid||!current||!selected||parsed===null)return;setReview({body:{invoiceDocumentId:id,writeOffDate:date,expenseAccountNo:selected.accountNo,...(parsed!==undefined?{grossAmount:parsed}:{}),...(note.trim()?{note:note.trim()}:{}),confirm:true},currency:current.principalCurrency,invoiceNumber:current.invoiceNumber,openPrincipal:current.principalOpenBalance});}
  return <section aria-label="Konstateret tab"><h4>Konstateret tab</h4>
- <p className="muted">Afskriv kun et konstateret og dokumenteret tab på fakturaens hovedstol. Du bekræfter dokumentationen; serveren afgør ikke selv, om tabet er juridisk konstateret. Gebyr-, kompensations- og rentekrav afskrives ikke i dette trin. Der sendes ingen e-mail.</p>
+ <p {...stylex.props(cockpitStyles.muted)}>Afskriv kun et konstateret og dokumenteret tab på fakturaens hovedstol. Du bekræfter dokumentationen; serveren afgør ikke selv, om tabet er juridisk konstateret. Gebyr-, kompensations- og rentekrav afskrives ikke i dette trin. Der sendes ingen e-mail.</p>
  {current&&<><p>Aktuel hovedstol: {formatKroner(current.principalOpenBalance,current.principalCurrency)}. Bogførte øvrige restkrav: {formatKroner(current.ledgerBackedClaimBalance,"DKK")}.</p>
  {typeof current.totalBadDebtWrittenOff==="number"&&<p>Afskrevet hovedstol i fakturaens valuta: {formatKroner(current.totalBadDebtWrittenOff,current.principalCurrency)}. Bogført afskrivning i DKK: {formatKroner(current.totalBadDebtWrittenOffDkk,"DKK")}.</p>}
  <ul>{(current.badDebtWriteOffs??[]).map(w=><li key={w.writeOffId}>Tabsafskrivning {w.writeOffId} den {w.writeOffDate} · postering {w.journalEntryNo}. Fakturavaluta: brutto {formatKroner(w.grossAmount,current.principalCurrency)}, netto {formatKroner(w.netAmount,current.principalCurrency)}, moms {formatKroner(w.vatAmount,current.principalCurrency)}. Bogført i DKK: brutto {formatKroner(w.grossAmountDkk,"DKK")}, udgift {formatKroner(w.netAmountDkk,"DKK")}, momsregulering {formatKroner(w.vatAmountDkk,"DKK")}.</li>)}</ul>

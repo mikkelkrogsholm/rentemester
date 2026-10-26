@@ -8,51 +8,18 @@
 // This file is now a thin barrel that assembles per-domain modules from
 // `./api/*` into the single `api` object the cockpit imports. Domain files
 // hold the actual `fetch`-call bodies + their wire-input/output types.
-
 export { ApiError } from "./api/_shared";
-
 // Re-export the wire-input/output types each domain owns.
-export type {
-  BankImportInput,
-  BankImportSummary,
-} from "./api/bank";
-export type {
-  DataImportCounts,
-  DataImportDetected,
-  DataImportInput,
-  DataImportSummary,
-  DocumentBookExpenseInput,
-  DocumentBookExpenseSummary,
-  DocumentBookingOptions,
-  DocumentBookingOptionsDocument,
-  DocumentVatPreflight,
-  DocumentIngestInput,
-  DocumentIngestMetadata,
-  ExpenseAccountOption,
-  ExpenseVatTreatment,
-  UnmatchedBankOption,
-} from "./api/documents";
+export type { BankImportInput, BankImportSummary, } from "./api/bank";
+export type { DataImportCounts, DataImportDetected, DataImportInput, DataImportSummary, DocumentBookExpenseInput, DocumentBookExpenseSummary, DocumentBookingOptions, DocumentBookingOptionsDocument, DocumentVatPreflight, DocumentIngestInput, DocumentIngestMetadata, ExpenseAccountOption, ExpenseVatTreatment, UnmatchedBankOption, } from "./api/documents";
 export type { AccountantExportResult } from "./api/accountant";
-export type {
-  InvoiceCreditNoteInput,
-  InvoiceCreditNoteSummary,
-  InvoiceIssueInput,
-  InvoiceIssueSummary,
-  InvoiceLineInput,
-  InvoicePartyInput,
-  InvoiceSendEInvoiceInput,
-  InvoiceSendEInvoiceSummary,
-  InvoiceSendEmailInput,
-  InvoiceSendEmailSummary,
-  InvoiceSendReminderInput,
-  InvoiceSendReminderSummary,
-  InvoiceSettleInput,
-  InvoiceSettleSummary,
-} from "./api/invoices";
-
-import {euSalesApi} from "./api/eu-sales";
+export type { InvoiceCreditNoteInput, InvoiceCreditNoteSummary, InvoiceIssueInput, InvoiceIssueSummary, InvoiceLineInput, InvoicePartyInput, InvoiceSendEInvoiceInput, InvoiceSendEInvoiceSummary, InvoiceSendEmailInput, InvoiceSendEmailSummary, InvoiceSendReminderInput, InvoiceSendReminderSummary, InvoiceSettleInput, InvoiceSettleSummary, } from "./api/invoices";
+import { euSalesApi } from "./api/eu-sales";
+import { knowledgePagesApi } from "./api/knowledge-pages";
+import { tasksApi } from "./api/tasks";
 import { accountantApi } from "./api/accountant";
 import { accountingDraftsApi } from "./api/accounting-drafts";
+import { accountingApprovalPolicyApi } from "./api/accounting-approval-policy";
 import { accountsApi } from "./api/accounts";
 import { accrualsApi } from "./api/accruals";
 import { agentSuggestionsApi, exceptionsApi } from "./api/exceptions";
@@ -85,45 +52,49 @@ import { workspaceRegistryApi } from "./api/workspace-registry";
 import { cfoAnalyticsApi } from "./api/cfo-analytics";
 import { supplierCommitmentsApi } from "./api/supplier-commitments";
 import { dimensionsApi } from "./api/dimensions";
-
+import { purchaseCasesApi } from "./api/purchase-cases";
 // One method per key — the earlier legacy `closePeriod` / `reopenPeriod` /
 // `resolveException` duplicates (#UI-9) have been deleted, so no spread-order
 // shadowing is load-bearing any more.
 export const api = {
-  ...euSalesApi,
-  ...accountingDraftsApi,
-  ...systemApi,
-  ...retentionApi,
-  ...integrityApi,
-  ...accountsApi,
-  ...annualReportApi,
-  ...accrualsApi,
-  ...gdprApi,
-  ...bilagsmailApi,
-  ...bankApi,
-  ...companiesApi,
-  ...dashboardApi,
-  ...statementsApi,
-  ...vatApi,
-  ...bankMatchesApi,
-  ...documentsApi,
-  ...invoicesApi,
-  ...invoiceEmailApi,
-  ...contactsApi,
-  ...mileageApi,
-  ...budgetApi,
-  ...periodsApi,
-  ...exceptionsApi,
-  ...accountantApi,
-  ...assetsApi,
-  ...payablesApi,
-  ...agentSuggestionsApi,
-  ...groupApi,
-  ...workspaceApi,
-  ...postingRulesApi,
-  ...bookkeepingBatchApi,
-  ...workspaceRegistryApi,
-  ...cfoAnalyticsApi,
-  ...supplierCommitmentsApi,
-  ...dimensionsApi,
+    ...euSalesApi,
+    ...tasksApi,
+    ...knowledgePagesApi,
+    ...accountingDraftsApi,
+    ...accountingApprovalPolicyApi,
+    ...systemApi,
+    ...retentionApi,
+    ...integrityApi,
+    ...accountsApi,
+    ...annualReportApi,
+    ...accrualsApi,
+    ...gdprApi,
+    ...bilagsmailApi,
+    ...bankApi,
+    ...companiesApi,
+    ...dashboardApi,
+    ...statementsApi,
+    ...vatApi,
+    ...bankMatchesApi,
+    ...documentsApi,
+    ...invoicesApi,
+    ...invoiceEmailApi,
+    ...contactsApi,
+    ...mileageApi,
+    ...budgetApi,
+    ...periodsApi,
+    ...exceptionsApi,
+    ...accountantApi,
+    ...assetsApi,
+    ...payablesApi,
+    ...agentSuggestionsApi,
+    ...groupApi,
+    ...workspaceApi,
+    ...postingRulesApi,
+    ...bookkeepingBatchApi,
+    ...workspaceRegistryApi,
+    ...cfoAnalyticsApi,
+    ...supplierCommitmentsApi,
+    ...dimensionsApi,
+    ...purchaseCasesApi,
 };

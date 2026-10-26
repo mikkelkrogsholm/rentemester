@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import type { NativeInvoiceInterestCalculate, NativeInvoiceInterestResult, NativeInvoiceInterestCorrection, NativeInvoiceInterestPost, NativeInvoiceInterestCorrectionPost, NativeReminderClaimStatus } from "../lib/api/invoices";
@@ -23,7 +25,7 @@ export function NativeInvoiceInterest({slug,id,asOfDate,principalCurrency,accoun
  const pending=result?.claims.filter(c=>c.postedJournalEntryId===null)??[],selected=pending.find(c=>c.id===Number(claim));
  const safeCorrection=correction?.canPost===true&&correction.requiresRefund===false&&correction.hasProposal&&correction.overClaimedAmount>0&&correction.proposedLines.length>=2;
  return <section aria-label="Renter"><h4>Renter</h4>
- <p className="muted">Beregn renter, registrér kravet og bogfør det i særskilte trin. Der sendes ingen e-mail. En tom referencerente bruger serverens daterede regler. Krav og korrektioner er i DKK.</p>
+ <p {...stylex.props(cockpitStyles.muted)}>Beregn renter, registrér kravet og bogfør det i særskilte trin. Der sendes ingen e-mail. En tom referencerente bruger serverens daterede regler. Krav og korrektioner er i DKK.</p>
  {!supported&&<Banner kind="warning">Renter understøttes endnu kun for fakturaer i DKK. Fakturaens valuta er {principalCurrency}. Hovedstol og øvrige krav håndteres fortsat i deres respektive forløb.</Banner>}
  <label>Opgørelsesdato for renter<Input type="date" value={date} disabled={busy} onChange={e=>{setDate(e.target.value);setResult(null);setQuery(null);}}/></label>
  <label>Referencerente i procent (valgfri)<Input inputMode="decimal" value={rate} disabled={busy} onChange={e=>{setRate(e.target.value);setResult(null);setQuery(null);}}/></label>

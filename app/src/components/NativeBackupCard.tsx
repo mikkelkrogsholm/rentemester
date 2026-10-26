@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { downloadNativeBackup } from "../lib/api/native-backup";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -32,17 +34,17 @@ export function NativeBackupCard() {
       setError(cause instanceof Error ? cause.message : "Backupfilen kunne ikke hentes.");
     } finally { sending.current = false; setBusy(false); }
   }
-  return <section className="card native-backup">
+  return <section {...stylex.props(cockpitStyles.card)}>
     <h3>Hent workspace-backup</h3>
     <p>Hent en signeret pakke med workspace-regnskaber og originalbilag. Du skal have adgang til at administrere hele workspacet og alle virksomhederne.</p>
-    <p className="muted">Gem filen sikkert og serverens offentlige verifikationsnøgle separat. Ved gendannelse skal login og adgang oprettes på ny. Serverens administrator skal have konfigureret backup, før filen kan hentes.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Gem filen sikkert og serverens offentlige verifikationsnøgle separat. Ved gendannelse skal login og adgang oprettes på ny. Serverens administrator skal have konfigureret backup, før filen kan hentes.</p>
     <h4>Kontrollér den eksporterede fil uafhængigt</h4>
     <ol>
       <li>Ved lokal drift: Se den offentlige nøgle i desktopmenuen <strong>Lokal drift</strong>, og gem dens 32 rå bytes via <strong>Backup → Gem offentlig backupnøgle…</strong>. Opbevar den betroede kopi separat. Ved hosted drift: Få den separat betroede offentlige nøgle fra serverens operatør; den aktive forbindelse er ikke i sig selv bevis på tillid.</li>
       <li>Åbn desktopappens menu <strong>Backup → Kontrollér eksporteret backup…</strong>. Vælg først den gemte backupfil og derefter den separat betroede nøglefil. Kontrollér filens og nøglens fingeraftryk, før du bekræfter kontrollen. Menuen kan bruges uden server, login eller åbent workspace.</li>
       <li>Afvent en fuld verificeret kvittering: Kontrollen omfatter signatur, indholdsfortegnelse, aktuelt databaseskema, databaseintegritet, journalkæde og originalbilag uden adgang til kilde-workspacet. Afbrydelse, fejl eller timeout er ikke en godkendelse.</li>
     </ol>
-    <p className="muted">Browseren kan ikke åbne desktopmenuen eller læse lokale filer; brug desktopappen. Download og destinationsstatus er ikke denne uafhængige kontrol. Selv en fuld verificeret kvittering er ikke en faktisk gendannelsesprøve i en ny mappe; gendannelse og genoprettelse af login og totrinsbekræftelse skal aftales særskilt med operatøren.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Browseren kan ikke åbne desktopmenuen eller læse lokale filer; brug desktopappen. Download og destinationsstatus er ikke denne uafhængige kontrol. Selv en fuld verificeret kvittering er ikke en faktisk gendannelsesprøve i en ny mappe; gendannelse og genoprettelse af login og totrinsbekræftelse skal aftales særskilt med operatøren.</p>
     <details>
       <summary>Hvis computeren eller adgangen mistes</summary>
       <p>Gem backupfilen og den betroede offentlige verifikationsnøgle uden for denne computer. En kopi på den mistede disk kan ikke bruges til gendannelse.</p>

@@ -1,3 +1,6 @@
+import { dashboardStyles as styles } from "./DashboardView.stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Overblik — the per-company overview dashboard (cockpit-redesign iteration 1).
@@ -45,16 +48,16 @@ export function DashboardView() {
   const positive = !moneyNegative(o.profitAndLoss.resultat);
 
   return (
-    <section className="overview">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
-      <PageHeader title="Overblik" actions={<><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+    <section {...stylex.props(...[styles.overview])}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Overblik" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
         <div>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
             {o.company.country} · {currency} · Overblik
           </p>
@@ -75,14 +78,14 @@ export function DashboardView() {
         <ArchivedBanner year={o.selectedYear} source={o.archivedSource} />
       )}
       {isFreshEmptyCompany(o) && <GetStartedCard slug={slug} />}
-      <p className="period-head muted">
+      <p {...stylex.props(cockpitStyles.muted)}>
         Regnskabsår {o.selectedYear} ·{" "}
         {o.lastPostedDate
           ? `${o.archived ? "Seneste observerede posteringsdato" : "Senest bogført pr."} ${formatDateDa(o.lastPostedDate)}`
           : "Ingen posteringer bogført endnu"}
       </p>
 
-      <div className="status-grid">
+      <div {...stylex.props(cockpitStyles.statusGrid)}>
         {o.archived ? (
           // An archived year has no live bank / VAT / exception data — show an
           // honest "not available" card rather than faking a zero.
@@ -113,12 +116,12 @@ export function DashboardView() {
               to={statementTo(slug, "fakturaer", o.selectedYear, selectedSource)}
             />
             {o.payables && <StatusCard title="Leverandørgæld" to={statementTo(slug, "leverandoerfaktura", o.selectedYear, selectedSource)}>
-              <div className="status-figure">{formatKroner(o.payables.openTotal, currency)}</div>
-              <p className="muted status-note">{o.payables.openCount} åbne regninger pr. {formatDateDa(o.payables.asOfDate)}.</p>
+              <div {...stylex.props(cockpitStyles.statusFigure)}>{formatKroner(o.payables.openTotal, currency)}</div>
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>{o.payables.openCount} åbne regninger pr. {formatDateDa(o.payables.asOfDate)}.</p>
             </StatusCard>}
             {o.documents && <StatusCard title="Bilag" to={statementTo(slug, "bilag", o.selectedYear, selectedSource)}>
-              <div className="status-figure">{o.documents.unlinkedCount}</div>
-              <p className="muted status-note">Bilag uden postering · aktuel bilagsstatus. {o.documents.linkedCount} bilag har posteringer.</p>
+              <div {...stylex.props(cockpitStyles.statusFigure)}>{o.documents.unlinkedCount}</div>
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Bilag uden postering · aktuel bilagsstatus. {o.documents.linkedCount} bilag har posteringer.</p>
             </StatusCard>}
 
           </>
@@ -126,7 +129,7 @@ export function DashboardView() {
         <RecentEntriesCard entries={o.recentEntries} currency={currency} />
       </div>
 
-      <div className="kpi-row">
+      <div {...stylex.props(...[styles.kpis])}>
         <KpiCard
           label="Omsætning"
           value={formatKroner(o.profitAndLoss.omsaetning, currency)}
@@ -151,10 +154,10 @@ export function DashboardView() {
 
       <KeyFigures keyFigures={o.keyFigures} />
 
-      <div className="section">
-        <h3>Indtægter og udgifter — {o.selectedYear}</h3>
-        <div className="card chart-card">
-          {o.profitAndLoss.months.every((month):month is OverviewMonth=>typeof month.month === "number" && typeof month.income === "number" && typeof month.expense === "number") ? <PnlChart months={o.profitAndLoss.months} currency={currency} /> : <><p>Observeret aktivitet pr. faktisk kalendermåned. Dette angiver ikke regnskabsperiodens grænser.</p><table aria-label="Observeret månedsaktivitet"><thead><tr><th>Måned</th><th>Indtægter</th><th>Udgifter</th></tr></thead><tbody>{o.profitAndLoss.months.map(month=><tr key={month.month}><td>{month.label}</td><td>{formatKroner(month.income,currency)}</td><td>{formatKroner(month.expense,currency)}</td></tr>)}</tbody></table></>}
+      <div {...stylex.props(cockpitStyles.section)}>
+        <h3 {...stylex.props(styles.heading)}>Indtægter og udgifter — {o.selectedYear}</h3>
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.chartCard)}>
+          {o.profitAndLoss.months.every((month):month is OverviewMonth=>typeof month.month === "number" && typeof month.income === "number" && typeof month.expense === "number") ? <PnlChart months={o.profitAndLoss.months} currency={currency} /> : <><p {...stylex.props(styles.muted)}>Observeret aktivitet pr. faktisk kalendermåned. Dette angiver ikke regnskabsperiodens grænser.</p><table aria-label="Observeret månedsaktivitet"><thead><tr><th {...stylex.props(styles.cell)}>Måned</th><th {...stylex.props(styles.cell)}>Indtægter</th><th>Udgifter</th></tr></thead><tbody>{o.profitAndLoss.months.map(month=><tr key={month.month}><td {...stylex.props(styles.cell)}>{month.label}</td><td {...stylex.props(styles.cell, styles.amount)}>{formatKroner(month.income,currency)}</td><td>{formatKroner(month.expense,currency)}</td></tr>)}</tbody></table></>}
         </div>
       </div>
 
@@ -164,9 +167,9 @@ export function DashboardView() {
           page too — this is purely about discoverability. Hidden for an
           archived (read-only) year, since the export reads the live ledger. */}
       {!o.archived && (
-        <div className="section">
+        <div {...stylex.props(cockpitStyles.section)}>
           <h3>Eksport til revisor</h3>
-          {o.availability?.accountantExport === false ? <div className="card"><p className="muted">Samlet revisor-eksport er endnu ikke tilgængelig. Hent rapporterne fra <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}>Resultatopgørelse</Link> og <Link to={statementTo(slug, "balance", o.selectedYear, selectedSource)}>Balance</Link>.</p></div> : <AccountantExportCard slug={slug} />}
+          {o.availability?.accountantExport === false ? <div {...stylex.props(cockpitStyles.card)}><p {...stylex.props(cockpitStyles.muted)}>Samlet revisor-eksport er endnu ikke tilgængelig. Hent rapporterne fra <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}>Resultatopgørelse</Link> og <Link to={statementTo(slug, "balance", o.selectedYear, selectedSource)}>Balance</Link>.</p></div> : <AccountantExportCard slug={slug} />}
         </div>
       )}
     </section>
@@ -193,20 +196,20 @@ function isFreshEmptyCompany(o: CompanyOverview): boolean {
 
 function GetStartedCard({ slug }: { slug: string }) {
   return (
-    <div className="card get-started-card">
-      <h3>Sådan kommer du i gang</h3>
-      <p className="muted">
+    <div {...stylex.props(cockpitStyles.card)}>
+      <h3 {...stylex.props(styles.heading, styles.getStartedTitle)}>Sådan kommer du i gang</h3>
+      <p {...stylex.props(cockpitStyles.muted)}>
         Du er klar til at bogføre din første postering. Vælg én af de tre veje
         — du kan altid bruge agenten eller kommandolinjen i stedet.
       </p>
-      <div className="get-started-actions">
-        <ButtonLink className="btn primary" to={`/companies/${slug}/bilag`}>
+      <div {...stylex.props(...[cockpitStyles.rowActions])}>
+        <ButtonLink  to={`/companies/${slug}/bilag`}>
           Indlæs dit første bilag
         </ButtonLink>
-        <ButtonLink className="btn secondary" to={`/companies/${slug}/bank`}>
+        <ButtonLink  to={`/companies/${slug}/bank`}>
           Importér bankudtog
         </ButtonLink>
-        <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+        <ButtonLink  to={`/companies/${slug}/fakturaer`}>
           Udsted din første faktura
         </ButtonLink>
       </div>
@@ -222,9 +225,9 @@ function GetStartedCard({ slug }: { slug: string }) {
  */
 function ArchivedUnavailableCard() {
   return (
-    <div className="card status-card">
-      <h3>Bank, moms og opgaver</h3>
-      <p className="muted status-note">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+      <h3 {...stylex.props(styles.heading)}>Bank, moms og opgaver</h3>
+      <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
         Bankafstemning, momsopgørelse og opgavekøen bygger på den aktive
         ledger og er ikke tilgængelige for et arkiveret regnskabsår.
         Resultatopgørelse, balance, saldobalance og posteringer vises ud fra
@@ -264,22 +267,22 @@ function KpiCard({
   /** When given, the whole card is a drill-down link. */
   to?: string;
 }) {
-  const className = `kpi ${tone}${emphasised ? " emphasised" : ""}`;
+  const cardStyle = [styles.kpi, emphasised && styles.emphasised, tone === "result-positive" && styles.positiveBorder, tone === "result-negative" && styles.negativeBorder] as const;
   const body = (
     <>
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-      {sub && <div className="kpi-sub">{sub}</div>}
+      <div {...stylex.props(...[styles.kpiLabel])}>{label}</div>
+      <div {...stylex.props(...[styles.kpiValue])}>{value}</div>
+      {sub && <div {...stylex.props(...[styles.kpiSub])}>{sub}</div>}
     </>
   );
   if (to) {
     return (
-      <Link className={`${className} kpi-link`} to={to}>
+      <Link {...stylex.props(...cardStyle, styles.cardLink)} to={to}>
         {body}
       </Link>
     );
   }
-  return <div className={className}>{body}</div>;
+  return <div {...stylex.props(...cardStyle)}>{body}</div>;
 }
 
 // --------------------------------------------------------------------------
@@ -292,24 +295,24 @@ function KeyFigures({
   keyFigures: CompanyOverview["keyFigures"];
 }) {
   return (
-    <div className="key-figures">
-      <div className="key-figure">
+    <div {...stylex.props(...[styles.keyFigures])}>
+      <div {...stylex.props(...[styles.keyFigure])}>
         {/* `keyFigures.bruttomargin` is computed as resultat ÷ omsætning —
             that is the profit margin (overskudsgrad/resultatgrad), not the
             gross margin. The label tracks what the figure actually measures
             so an owner never quotes the wrong term to a bank or accountant. */}
-        <span className="key-figure-label">Overskudsgrad</span>
-        <span className="key-figure-value">
+        <span {...stylex.props(...[styles.keyLabel])}>Overskudsgrad</span>
+        <span {...stylex.props(...[styles.keyValue])}>
           {formatPercent(keyFigures.bruttomargin)}
         </span>
-        <span className="key-figure-note">resultat ÷ omsætning</span>
+        <span {...stylex.props(...[styles.keyNote])}>resultat ÷ omsætning</span>
       </div>
-      <div className="key-figure">
-        <span className="key-figure-label">Egenkapitalandel</span>
-        <span className="key-figure-value">
+      <div {...stylex.props(...[styles.keyFigure])}>
+        <span {...stylex.props(...[styles.keyLabel])}>Egenkapitalandel</span>
+        <span {...stylex.props(...[styles.keyValue])}>
           {formatPercent(keyFigures.egenkapitalandel)}
         </span>
-        <span className="key-figure-note">egenkapital ÷ balancesum</span>
+        <span {...stylex.props(...[styles.keyNote])}>egenkapital ÷ balancesum</span>
       </div>
     </div>
   );
@@ -331,15 +334,15 @@ function StatusCard({
 }) {
   if (to) {
     return (
-      <Link className="card status-card status-card-link" to={to}>
-        <h3>{title}</h3>
+      <Link {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)} to={to}>
+        <h3 {...stylex.props(styles.statusTitle)}>{title}</h3>
         {children}
       </Link>
     );
   }
   return (
-    <div className="card status-card">
-      <h3>{title}</h3>
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+      <h3 {...stylex.props(styles.statusTitle)}>{title}</h3>
       {children}
     </div>
   );
@@ -361,24 +364,24 @@ function BankCard({
   const reconciled = difference !== null && (typeof difference === "number" ? Math.abs(difference) < 0.005 : moneyZero(difference));
   return (
     <StatusCard title="Bank" to={to}>
-      <div className="status-figure">
+      <div {...stylex.props(cockpitStyles.statusFigure)}>
         {formatKroner(actualBalance ?? balance, currency)}
       </div>
       {actualBalance === null ? (
-        <p className="muted status-note">
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
           {bank.bankStatementProblem ?? (bank.bankStatementStatus === "no-balance-column" ? "Bogført saldo — kontoudtoget har ingen saldokolonne" : bank.bankStatementStatus === "unavailable" ? "Bogført saldo — faktisk banksaldo kan ikke opgøres" : "Bogført saldo på bank- og kassekonti — intet kontoudtog importeret")}
         </p>
       ) : (
-        <p className="muted status-note">
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
           Kontoudtog {formatKroner(actualBalance, currency)} · Bogført{" "}
           {formatKroner(balance, currency)}
           {difference !== null && (
             <>
               {" · "}
               {reconciled ? (
-                <span className="bank-diff ok">Afstemt</span>
+                <span {...stylex.props(...[cockpitStyles.bankDiffBanner, cockpitStyles.bankDiffBannerOk])}>Afstemt</span>
               ) : (
-                <span className="bank-diff alert">
+                <span {...stylex.props(...[cockpitStyles.bankDiffBanner, cockpitStyles.bankDiffBannerAlert])}>
                   Difference {formatKroner(difference, currency)} — ikke afstemt
                 </span>
               )}
@@ -423,17 +426,17 @@ function VatCard({
         : "Åben";
   return (
     <StatusCard title="Moms" to={to}>
-      <div className="status-figure">
+      <div {...stylex.props(cockpitStyles.statusFigure)}>
         {formatKroner(vat.payable, currency)}
       </div>
-      <p className="muted status-note">
+      <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
         Momsperiode {vat.periodLabel} ({vat.periodStart} – {vat.periodEnd}) · {periodStatus} ·{" "}
         {vat.payable >= 0 ? "at betale" : "tilgode"}
       </p>
-      {vat.errors?.length ? <p className="status-note" role="alert">Momsgrundlaget kræver gennemgang: {vat.errors.join(" · ")}</p> : null}
-      <p className="muted status-note">
+      {vat.errors?.length ? <p {...stylex.props(cockpitStyles.statusNote)} role="alert">Momsgrundlaget kræver gennemgang: {vat.errors.join(" · ")}</p> : null}
+      <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
         Indberettes og betales til SKAT senest {vat.deadline} ·{" "}
-        <span className={`bank-diff ${tone === "ok" ? "ok" : "alert"}`}>
+        <span {...stylex.props(...[cockpitStyles.bankDiffBanner, ...(tone === "ok" ? [cockpitStyles.bankDiffBannerOk] : [cockpitStyles.bankDiffBannerAlert])])}>
           {countdown}
         </span>
       </p>
@@ -452,17 +455,17 @@ function ReceivablesCard({
 }) {
   // "Hvem skylder mig" — the open balance of issued sales invoices. For a
   // company with no outstanding receivables (Helheim) this is a clean zero.
-  if (receivables === null || receivables.openCount === null || receivables.openTotal === null) return <StatusCard title="Tilgodehavender" to={to}><p className="muted status-note">Tilgodehavender for denne dato er ikke tilgængelige. Historiske saldi og saldi i andre valutaer kræver en særskilt opgørelse.</p></StatusCard>;
+  if (receivables === null || receivables.openCount === null || receivables.openTotal === null) return <StatusCard title="Tilgodehavender" to={to}><p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Tilgodehavender for denne dato er ikke tilgængelige. Historiske saldi og saldi i andre valutaer kræver en særskilt opgørelse.</p></StatusCard>;
   const { openCount, openTotal } = receivables;
   return (
     <StatusCard title="Tilgodehavender" to={to}>
       <div
-        className={`status-figure${openTotal !== null && !moneyZero(openTotal) && !moneyNegative(openTotal) ? " status-alert" : ""}`}
+        {...stylex.props(...[cockpitStyles.statusFigure, ...(openTotal !== null && !moneyZero(openTotal) && !moneyNegative(openTotal) ? [cockpitStyles.statusFigureStatusAlert] : [])])}
       >
         {formatKroner(openTotal, currency)}
       </div>
-      {receivables.basis === "current" && <p className="muted status-note">Aktuelle åbne fakturaer på tværs af regnskabsår · {receivables.asOfDate ? formatDateDa(receivables.asOfDate) : "nu"}.</p>}
-      <p className="muted status-note">
+      {receivables.basis === "current" && <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Aktuelle åbne fakturaer på tværs af regnskabsår · {receivables.asOfDate ? formatDateDa(receivables.asOfDate) : "nu"}.</p>}
+      <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
         {openCount === 0
           ? "Ingen udestående fakturaer — ingen skylder dig penge."
           : `${openCount} ${
@@ -501,26 +504,22 @@ function ExceptionsCard({
   return (
     <StatusCard title="Opgaver">
       <div
-        className={`status-figure${
-          exceptions.count > 0 ? " status-alert" : ""
-        }`}
+        {...stylex.props(...[cockpitStyles.statusFigure, ...(exceptions.count > 0 ? [cockpitStyles.statusFigureStatusAlert] : [])])}
       >
         {exceptions.count}
       </div>
       {exceptions.count === 0 ? (
-        <p className="muted status-note">Ingen åbne opgaver.</p>
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Ingen åbne opgaver.</p>
       ) : (
         <>
           {/* The grouped summary lines — one Danish line per exception type. */}
-          <ul className="status-list">
+          <ul {...stylex.props(...[styles.statusList])}>
             {exceptions.groups.map((g) => {
               const to = exceptionLinkTo(slug, g.link);
               const body = (
                 <>
                   <span
-                    className={`flag ${
-                      g.severity === "high" ? "critical" : "warning"
-                    }`}
+                    {...stylex.props(...[cockpitStyles.flag, ...(g.severity === "high" ? [cockpitStyles.flagCritical] : [styles.warning])])}
                   >
                     {g.count}
                   </span>{" "}
@@ -530,7 +529,7 @@ function ExceptionsCard({
               return (
                 <li key={g.type}>
                   {to ? (
-                    <Link className="status-link" to={to}>
+                    <Link {...stylex.props(...[styles.statusLink])} to={to}>
                       {body}
                     </Link>
                   ) : (
@@ -544,22 +543,20 @@ function ExceptionsCard({
               requiredAction guidance and a "Markér som gennemgået" action.
               The action is hidden for an archived (read-only) year. */}
           {!archived && exceptions.rows.length > 0 && (
-            <ul className="status-list task-list">
+            <ul {...stylex.props(...[cockpitStyles.entryList, cockpitStyles.entryList])}>
               {exceptions.rows.map((row) => (
-                <li key={row.id} className="task-row">
-                  <div className="task-row-text">
-                    <span className="task-row-message">
+                <li key={row.id} {...stylex.props(...[styles.taskRow])}>
+                  <div {...stylex.props(...[styles.taskText])}>
+                    <span {...stylex.props(...[styles.taskMessage])}>
                       <span
-                        className={`flag ${
-                          row.severity === "high" ? "critical" : "warning"
-                        }`}
+                        {...stylex.props(...[cockpitStyles.flag, ...(row.severity === "high" ? [cockpitStyles.flagCritical] : [styles.warning])])}
                       >
                         !
                       </span>{" "}
                       {row.message}
                     </span>
                     {row.requiredAction && (
-                      <p className="task-row-action">
+                      <p {...stylex.props(...[styles.taskAction])}>
                         <strong>Sådan løser du den:</strong>{" "}
                         {row.requiredAction}
                       </p>
@@ -567,7 +564,7 @@ function ExceptionsCard({
                   </div>
                   {reviewAvailable && <Button requiredPermission="company.review" variant="secondary"
                     type="button"
-                    className="btn secondary"
+
                     onClick={() => setResolving(row)}
                   >
                     Markér som gennemgået
@@ -579,17 +576,17 @@ function ExceptionsCard({
         </>
       )}
 
-      {!reviewAvailable && exceptions.count > 0 && <p className="muted status-note">Opgaverne kan læses her. Markering som gennemgået er endnu ikke tilgængelig.</p>}
+      {!reviewAvailable && exceptions.count > 0 && <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Opgaverne kan læses her. Markering som gennemgået er endnu ikke tilgængelig.</p>}
       {resolving && (
         <ConfirmDialog
           title="Markér opgave som gennemgået"
           body={
             <>
-              <p>
+              <p {...stylex.props(styles.paragraph)}>
                 Dette markerer opgaven <em>{resolving.message}</em> som
                 gennemgået, så den ikke længere står på listen.
               </p>
-              <p className="dialog-warning">
+              <p {...stylex.props(...[styles.dialogWarning])}>
                 <strong>Bemærk:</strong> dette bogfører ikke noget. Selve
                 posteringen — fx en bankindbetaling, en udgift eller moms —
                 skal stadig bogføres
@@ -632,15 +629,15 @@ function RecentEntriesCard({
   return (
     <StatusCard title="Seneste posteringer">
       {entries.length === 0 ? (
-        <p className="muted status-note">Ingen posteringer i året endnu.</p>
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>Ingen posteringer i året endnu.</p>
       ) : (
-        <ul className="recent-entries">
+        <ul {...stylex.props(...[styles.recentEntries])}>
           {entries.map((e) => (
-            <li key={e.id ?? e.sourceId} className="recent-entry">
-              <span className="recent-entry-text">{e.text}</span>
-              <span className="recent-entry-meta">
-                <span className="entry-date">{e.date}</span>
-                <span className="recent-entry-amount num">
+            <li key={e.id ?? e.sourceId} {...stylex.props(...[styles.recentEntry])}>
+              <span {...stylex.props(...[styles.recentText])}>{e.text}</span>
+              <span {...stylex.props(...[styles.recentMeta])}>
+                <span {...stylex.props(cockpitStyles.entryDate)}>{e.date}</span>
+                <span {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(e.amount, currency)}
                 </span>
               </span>

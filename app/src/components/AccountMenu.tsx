@@ -1,165 +1,231 @@
-import { Button, Dialog, Field, Input } from "./ui";
 import { BackupCodesDialog } from "./BackupCodesDialog";
-import { ConfirmDialog } from "./ConfirmDialog";
-import { usePendingChanges } from "../lib/useUnsavedChanges";
+import * as stylex from "@stylexjs/stylex";
 import { useId, useRef, useState } from "react";
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "../lib/auth-context";
-
+import { usePendingChanges } from "../lib/useUnsavedChanges";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { Button, Dialog, Field, Input } from "./ui";
 type ListedSession = {
-  id: string;
-  token?: string;
-  current?: boolean;
-  createdAt: string | Date;
-  userAgent?: string | null;
+    id: string;
+    token?: string;
+    current?: boolean;
+    createdAt: string | Date;
+    userAgent?: string | null;
 };
-
 function workspaceRoleLabel(role: "workspace_owner" | "member" | undefined): string {
-  return role === "workspace_owner" ? "Workspace-ejer" : "Medlem";
+    return role === "workspace_owner" ? "Workspace-ejer" : "Medlem";
 }
-
 function deviceHint(userAgent: string | null | undefined): string {
-  if (!userAgent) return "Ukendt browser";
-  if (/firefox/i.test(userAgent)) return "Firefox";
-  if (/edg/i.test(userAgent)) return "Edge";
-  if (/chrome|chromium/i.test(userAgent)) return "Chrome";
-  if (/safari/i.test(userAgent)) return "Safari";
-  return "Anden browser";
+    if (!userAgent)
+        return "Ukendt browser";
+    if (/firefox/i.test(userAgent))
+        return "Firefox";
+    if (/edg/i.test(userAgent))
+        return "Edge";
+    if (/chrome|chromium/i.test(userAgent))
+        return "Chrome";
+    if (/safari/i.test(userAgent))
+        return "Safari";
+    return "Anden browser";
 }
-
 function createdLabel(value: string | Date): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Tidspunkt ukendt" : `Oprettet ${date.toLocaleString("da-DK")}`;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? "Tidspunkt ukendt"
+        : `Oprettet ${date.toLocaleString("da-DK")}`;
 }
-
 export function AccountMenu() {
-  const { session, currentSessionId, context, clear, refresh, notice } = useAuth();
-  const pendingChanges = usePendingChanges();
-  const [confirmation, setConfirmation] = useState<"sign-out" | "all" | ListedSession | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<ListedSession[] | null>(null);
-  const [showBackup, setShowBackup] = useState(false);
-  const backupTrigger = useRef<HTMLButtonElement>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const sessionsId = useId();
-  const passwordId = useId();
-  const sessionsTrigger = useRef<HTMLButtonElement>(null);
-  const passwordTrigger = useRef<HTMLButtonElement>(null);
-  const closePassword = () => {
-    setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-    setShowPassword(false); setError(null);
-  };
-  if (!session) return null;
-  const signOut = async (reportFailure = false) => {
-    setBusy(true); setError(null);
-    try {
-      const result = await authClient.signOut();
-      if (result.error) throw new Error("sign out failed");
-      clear();
-    } catch { const message = "Kunne ikke logge ud. Prøv igen."; setError(message); if (reportFailure) throw new Error(message); }
-    finally { setBusy(false); }
-  };
-  const revokeAll = async () => {
-    setBusy(true); setError(null);
-    try {
-      const result = await authClient.revokeSessions({ fetchOptions: { retry: 0 } });
-      if (result.error || result.data?.status !== true) throw new Error("revoke failed");
-      clear();
-    } catch { const message = "Kunne ikke bekræfte, at alle enheder er logget ud. Kontrollér din session ved at logge ind igen."; throw new Error(message); }
-    finally { setBusy(false); }
-  };
-  const showSessions = async () => {
-    if (sessions) { setSessions(null); return; }
-    closePassword();
-    setBusy(true); setError(null);
-    try {
-      const result = await authClient.listSessions({ fetchOptions: { retry: 0 } });
-      if (result.error || !Array.isArray(result.data)) throw new Error("list failed");
-      // Native rows carry an explicit current flag and no bearer. Legacy rows remain
-      // supported until backend cutover, but contracts must never be mixed or guessed.
-      const entries: ListedSession[] = result.data.map((value: unknown) => {
-        if (!value || typeof value !== "object") throw new Error("invalid session");
-        const entry = value as Record<string, unknown>;
-        if (typeof entry.id !== "string" || typeof entry.createdAt !== "string" && !(entry.createdAt instanceof Date)
-          || entry.userAgent != null && typeof entry.userAgent !== "string") throw new Error("invalid session");
-        const display = { id: entry.id, createdAt: entry.createdAt, userAgent: entry.userAgent as string | null | undefined };
-        if (typeof entry.current === "boolean" && !("token" in entry)) return { ...display, current: entry.current };
-        if (!("current" in entry) && typeof entry.token === "string") return { ...display, token: entry.token };
-        throw new Error("invalid session contract");
-      });
-      if (entries.some((entry) => typeof entry.current !== typeof entries[0]?.current)) throw new Error("mixed sessions");
-      setSessions(entries);
-    } catch { setError("Kunne ikke hente aktive sessioner."); }
-    finally { setBusy(false); }
-  };
-  const revokeOne = async (listed: ListedSession) => {
-    setBusy(true); setError(null);
-    try {
-      const result = typeof listed.current === "boolean"
-        ? await authClient.$fetch<{ status: boolean }>("/revoke-session", { method: "POST", body: { sessionId: listed.id }, retry: 0 })
-        : await authClient.revokeSession({ token: listed.token!, fetchOptions: { retry: 0 } });
-      if (result.error || result.data?.status !== true) throw new Error("revoke failed");
-      setSessions((current) => current?.filter((entry) => entry.id !== listed.id) ?? null);
-    } catch { const message = "Kunne ikke bekræfte, at sessionen er afsluttet. Hent sessionsoversigten igen."; throw new Error(message); }
-    finally { setBusy(false); }
-  };
-  const changePassword = async () => {
-    setError(null); setMessage(null);
-    if (newPassword.length < 12 || newPassword !== confirmPassword) {
-      setError("Den nye adgangskode skal være mindst 12 tegn, og gentagelsen skal være ens.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const result = await authClient.changePassword({
-        currentPassword, newPassword, revokeOtherSessions: true, fetchOptions: { retry: 0 },
-      });
-      if (result.error || result.data?.user?.id !== session.id || "status" in result.data && result.data.status !== true) throw new Error("password change unconfirmed");
-      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-      setShowPassword(false);
-      await refresh({ expectedUserId: session.id, successNotice: "Adgangskoden er ændret, og alle tidligere sessioner er afsluttet." });
-    } catch {
-      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-      setError("Adgangskodeskiftet kunne ikke bekræftes. Log ind igen. Prøv den nye adgangskode først og derefter den tidligere.");
-    } finally { setBusy(false); }
-  };
-  return <div className="account-menu" role="group" aria-label="Konto">
-    <span className="account-identity"><span className="account-email">{session.email}</span><span className="account-role">{workspaceRoleLabel(context?.workspaceRole)}</span></span>
-    <Button className="btn secondary" type="button" onClick={() => pendingChanges ? setConfirmation("sign-out") : void signOut()} disabled={busy}>Log ud</Button>
-    <Button ref={sessionsTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={sessions !== null} aria-controls={sessionsId} onClick={() => void showSessions()} disabled={busy}>Sessioner</Button>
-    <Button ref={passwordTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={showPassword} aria-controls={passwordId} onClick={() => { setSessions(null); setError(null); setMessage(null); setShowPassword(true); }} disabled={busy}>Skift adgangskode</Button>
-    <Button ref={backupTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={showBackup} disabled={busy} onClick={() => { closePassword(); setSessions(null); setShowBackup(true); }}>Sikkerhedskoder</Button>
-    {showBackup && <BackupCodesDialog key={`${session.id}:${currentSessionId ?? ""}`} onClose={() => setShowBackup(false)} returnFocusRef={backupTrigger} />}
-    {sessions && <Dialog id={sessionsId} title="Aktive sessioner" onClose={() => setSessions(null)} busy={busy} returnFocusRef={sessionsTrigger}>
-      <div className="account-panel">
-      {sessions.length === 0 && <p>Ingen aktive sessioner.</p>}
-      <ul>{sessions.map((listed) => <li key={listed.id}>
-        <span><strong>{(listed.current ?? listed.id === currentSessionId) ? "Denne enhed" : deviceHint(listed.userAgent)}</strong><small>{createdLabel(listed.createdAt)}</small></span>
-        {!(listed.current ?? listed.id === currentSessionId) && <Button type="button" className="account-revoke" disabled={busy} onClick={() => setConfirmation(listed)}>Afslut</Button>}
+    const { session, currentSessionId, context, clear, refresh, notice } = useAuth();
+    const pendingChanges = usePendingChanges();
+    const [confirmation, setConfirmation] = useState<"sign-out" | "all" | ListedSession | null>(null);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [sessions, setSessions] = useState<ListedSession[] | null>(null);
+    const [showBackup, setShowBackup] = useState(false);
+    const backupTrigger = useRef<HTMLButtonElement>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const sessionsId = useId();
+    const passwordId = useId();
+    const sessionsTrigger = useRef<HTMLButtonElement>(null);
+    const passwordTrigger = useRef<HTMLButtonElement>(null);
+    const closePassword = () => {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setError(null);
+    };
+    if (!session)
+        return null;
+    const signOut = async (reportFailure = false) => {
+        setBusy(true);
+        setError(null);
+        try {
+            const result = await authClient.signOut();
+            if (result.error)
+                throw new Error("sign out failed");
+            clear();
+        }
+        catch {
+            const message = "Kunne ikke logge ud. Prøv igen.";
+            setError(message);
+            if (reportFailure)
+                throw new Error(message);
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    const revokeAll = async () => {
+        setBusy(true);
+        setError(null);
+        try {
+            const result = await authClient.revokeSessions({ fetchOptions: { retry: 0 } });
+            if (result.error || result.data?.status !== true)
+                throw new Error("revoke failed");
+            clear();
+        }
+        catch {
+            const message = "Kunne ikke bekræfte, at alle enheder er logget ud. Kontrollér din session ved at logge ind igen.";
+            throw new Error(message);
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    const showSessions = async () => {
+        if (sessions) {
+            setSessions(null);
+            return;
+        }
+        closePassword();
+        setBusy(true);
+        setError(null);
+        try {
+            const result = await authClient.listSessions({ fetchOptions: { retry: 0 } });
+            if (result.error || !Array.isArray(result.data))
+                throw new Error("list failed");
+            // Native rows carry an explicit current flag and no bearer. Legacy rows remain
+            // supported until backend cutover, but contracts must never be mixed or guessed.
+            const entries: ListedSession[] = result.data.map((value: unknown) => {
+                if (!value || typeof value !== "object")
+                    throw new Error("invalid session");
+                const entry = value as Record<string, unknown>;
+                if (typeof entry.id !== "string" || typeof entry.createdAt !== "string" && !(entry.createdAt instanceof Date)
+                    || entry.userAgent != null && typeof entry.userAgent !== "string")
+                    throw new Error("invalid session");
+                const display = { id: entry.id, createdAt: entry.createdAt, userAgent: entry.userAgent as string | null | undefined };
+                if (typeof entry.current === "boolean" && !("token" in entry))
+                    return { ...display, current: entry.current };
+                if (!("current" in entry) && typeof entry.token === "string")
+                    return { ...display, token: entry.token };
+                throw new Error("invalid session contract");
+            });
+            if (entries.some((entry) => typeof entry.current !== typeof entries[0]?.current))
+                throw new Error("mixed sessions");
+            setSessions(entries);
+        }
+        catch {
+            setError("Kunne ikke hente aktive sessioner.");
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    const revokeOne = async (listed: ListedSession) => {
+        setBusy(true);
+        setError(null);
+        try {
+            const result = typeof listed.current === "boolean"
+                ? await authClient.$fetch<{
+                    status: boolean;
+                }>("/revoke-session", { method: "POST", body: { sessionId: listed.id }, retry: 0 })
+                : await authClient.revokeSession({ token: listed.token!, fetchOptions: { retry: 0 } });
+            if (result.error || result.data?.status !== true)
+                throw new Error("revoke failed");
+            setSessions((current) => current?.filter((entry) => entry.id !== listed.id) ?? null);
+        }
+        catch {
+            const message = "Kunne ikke bekræfte, at sessionen er afsluttet. Hent sessionsoversigten igen.";
+            throw new Error(message);
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    const changePassword = async () => {
+        setError(null);
+        setMessage(null);
+        if (newPassword.length < 12 || newPassword !== confirmPassword) {
+            setError("Den nye adgangskode skal være mindst 12 tegn, og gentagelsen skal være ens.");
+            return;
+        }
+        setBusy(true);
+        try {
+            const result = await authClient.changePassword({
+                currentPassword, newPassword, revokeOtherSessions: true, fetchOptions: { retry: 0 },
+            });
+            if (result.error || result.data?.user?.id !== session.id || "status" in result.data && result.data.status !== true)
+                throw new Error("password change unconfirmed");
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setShowPassword(false);
+            await refresh({ expectedUserId: session.id, successNotice: "Adgangskoden er ændret, og alle tidligere sessioner er afsluttet." });
+        }
+        catch {
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setError("Adgangskodeskiftet kunne ikke bekræftes. Log ind igen. Prøv den nye adgangskode først og derefter den tidligere.");
+        }
+        finally {
+            setBusy(false);
+        }
+    };
+    return <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.accountMenu)} role="group" aria-label="Konto">
+    <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.accountIdentity)}><span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.accountEmail)}>{session.email}</span><span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.accountRole)}>{workspaceRoleLabel(context?.workspaceRole)}</span></span>
+    <Button xstyle={[cockpitStyles.buttonComposition]} variant="secondary" type="button" onClick={() => pendingChanges ? setConfirmation("sign-out") : void signOut()} disabled={busy}>Log ud</Button>
+    <Button ref={sessionsTrigger} xstyle={[cockpitStyles.accountRevokeComposition, cockpitStyles.buttonComposition]} variant="quiet" type="button" aria-haspopup="dialog" aria-expanded={sessions !== null} aria-controls={sessionsId} onClick={() => void showSessions()} disabled={busy}>Sessioner</Button>
+    <Button ref={passwordTrigger} xstyle={[cockpitStyles.accountRevokeComposition, cockpitStyles.buttonComposition]} variant="quiet" type="button" aria-haspopup="dialog" aria-expanded={showPassword} aria-controls={passwordId} onClick={() => { setSessions(null); setError(null); setMessage(null); setShowPassword(true); }} disabled={busy}>Skift adgangskode</Button>
+    <Button ref={backupTrigger} xstyle={[cockpitStyles.accountRevokeComposition, cockpitStyles.buttonComposition]} variant="quiet" type="button" aria-haspopup="dialog" aria-expanded={showBackup} disabled={busy} onClick={() => { closePassword(); setSessions(null); setShowBackup(true); }}>Sikkerhedskoder</Button>
+    {showBackup && <BackupCodesDialog key={`${session.id}:${currentSessionId ?? ""}`} onClose={() => setShowBackup(false)} returnFocusRef={backupTrigger}/>}
+    {sessions && <Dialog id={sessionsId} title="Aktive sessioner" onClose={() => setSessions(null)} busy={busy} returnFocusRef={sessionsTrigger} xstyle={[cockpitStyles.element]}>
+      <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.element)}>
+      {sessions.length === 0 && <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Ingen aktive sessioner.</p>}
+      <ul {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{sessions.map((listed) => <li key={listed.id} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+        <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><strong {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{(listed.current ?? listed.id === currentSessionId) ? "Denne enhed" : deviceHint(listed.userAgent)}</strong><small {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{createdLabel(listed.createdAt)}</small></span>
+        {!(listed.current ?? listed.id === currentSessionId) && <Button type="button" xstyle={[cockpitStyles.accountRevokeComposition, cockpitStyles.buttonComposition]} variant="quiet" disabled={busy} onClick={() => setConfirmation(listed)}>Afslut</Button>}
       </li>)}</ul>
-      <Button className="account-revoke" type="button" onClick={() => setConfirmation("all")} disabled={busy}>Log ud på alle enheder</Button>
-      <div className="modal-actions"><Button variant="secondary" onClick={() => setSessions(null)} disabled={busy}>Luk</Button></div>
+      <Button xstyle={[cockpitStyles.accountRevokeComposition, cockpitStyles.buttonComposition]} variant="quiet" type="button" onClick={() => setConfirmation("all")} disabled={busy}>Log ud på alle enheder</Button>
+      <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.modalActions)}><Button variant="secondary" onClick={() => setSessions(null)} disabled={busy} xstyle={[cockpitStyles.buttonComposition]}>Luk</Button></div>
       </div>
     </Dialog>}
-    {showPassword && <Dialog id={passwordId} title="Skift adgangskode" onClose={closePassword} busy={busy} returnFocusRef={passwordTrigger}>
-      <form className="workflow-form" onSubmit={(event) => { event.preventDefault(); void changePassword(); }}>
-        {error && <p role="alert" className="banner error">{error}</p>}
-        <Field label="Nuværende adgangskode"><Input type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></Field>
-        <Field label="Ny adgangskode" help="Mindst 12 tegn. Andre enheder skal logge ind igen."><Input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} disabled={busy} /></Field>
-        <Field label="Gentag ny adgangskode"><Input type="password" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={busy} /></Field>
-        <div className="modal-actions">
-          <Button variant="secondary" onClick={closePassword} disabled={busy}>Annullér</Button>
-          <Button type="submit" busy={busy} disabled={!currentPassword || !newPassword || !confirmPassword}>Skift adgangskode</Button>
+    {showPassword && <Dialog id={passwordId} title="Skift adgangskode" onClose={closePassword} busy={busy} returnFocusRef={passwordTrigger} xstyle={[cockpitStyles.element]}>
+      <form {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.workflowForm)} onSubmit={(event) => { event.preventDefault(); void changePassword(); }}>
+        {error && <p role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.banner, cockpitStyles.bannerError)}>{error}</p>}
+        <Field label="Nuværende adgangskode"><Input type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} xstyle={[cockpitStyles.inputComposition]}/></Field>
+        <Field label="Ny adgangskode" help="Mindst 12 tegn. Andre enheder skal logge ind igen."><Input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} disabled={busy} xstyle={[cockpitStyles.inputComposition]}/></Field>
+        <Field label="Gentag ny adgangskode"><Input type="password" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={busy} xstyle={[cockpitStyles.inputComposition]}/></Field>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.modalActions)}>
+          <Button variant="secondary" onClick={closePassword} disabled={busy} xstyle={[cockpitStyles.buttonComposition]}>Annullér</Button>
+          <Button type="submit" busy={busy} disabled={!currentPassword || !newPassword || !confirmPassword} xstyle={[cockpitStyles.buttonComposition]}>Skift adgangskode</Button>
         </div>
       </form>
     </Dialog>}
-    {confirmation && <ConfirmDialog title={confirmation === "sign-out" ? "Log ud?" : confirmation === "all" ? "Log ud på alle enheder?" : "Afslut session?"} body={<p>{confirmation === "all" ? "Alle enheder skal logge ind igen." : confirmation === "sign-out" ? "Du bliver logget ud." : "Denne enhed skal logge ind igen."}{pendingChanges ? " Du har ændringer, som ikke er gemt, og de bliver kasseret." : ""}</p>} confirmLabel={typeof confirmation === "object" ? "Afslut session" : "Log ud"} confirmKind="danger" onClose={() => setConfirmation(null)} onConfirm={async () => { if (confirmation === "all") await revokeAll(); else if (confirmation === "sign-out") await signOut(true); else await revokeOne(confirmation); }} />}
-    {(notice ?? message) && <span role="status" className="account-message">{notice ?? message}</span>}
-    {error && !showPassword && <span role="alert" className="account-error">{error}</span>}
+    {confirmation && <ConfirmDialog title={confirmation === "sign-out" ? "Log ud?" : confirmation === "all" ? "Log ud på alle enheder?" : "Afslut session?"} body={<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{confirmation === "all" ? "Alle enheder skal logge ind igen." : confirmation === "sign-out" ? "Du bliver logget ud." : "Denne enhed skal logge ind igen."}{pendingChanges ? " Du har ændringer, som ikke er gemt, og de bliver kasseret." : ""}</p>} confirmLabel={typeof confirmation === "object" ? "Afslut session" : "Log ud"} confirmKind="danger" onClose={() => setConfirmation(null)} onConfirm={async () => { if (confirmation === "all")
+        await revokeAll();
+    else if (confirmation === "sign-out")
+        await signOut(true);
+    else
+        await revokeOne(confirmation); }}/>}
+    {(notice ?? message) && <span role="status" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>{notice ?? message}</span>}
+    {error && !showPassword && <span role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.accountError)}>{error}</span>}
   </div>;
 }

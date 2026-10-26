@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { AssetDisposalDialog } from "../components/AssetDisposalDialog";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { parseDanishAmount } from "../lib/format";
@@ -68,16 +69,16 @@ export function AssetsView() {
   const currency = data.company.currency || "DKK";
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Anlæg" actions={<><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Anlæg" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Anlæg
           </p>
@@ -85,97 +86,134 @@ export function AssetsView() {
 
       </PageHeader>
 
-      <p className="statement-asof muted">
+      <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>
         Anlægskartoteket — kapitaliserede aktiver, deres afskrivninger og
         straksafskrivninger. Alle beløb i {currency}.
       </p>
 
-      <div className="status-grid invoices-summary">
-        <div className="card status-card">
-          <h3>Bogført kostpris</h3>
-          <div className="status-figure">
+      <div {...stylex.props(cockpitStyles.statusGrid, cockpitStyles.invoicesSummary)}>
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.statusCardH3,
+						)}>Bogført kostpris</h3>
+          <div {...stylex.props(cockpitStyles.statusFigure)}>
             {formatKroner(data.totals.cost, currency)}
           </div>
-          <p className="muted status-note">
+          <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
             {data.totals.activeCount} aktive ·{" "}
             {data.totals.fullyDepreciatedCount} fuldt afskrevne
           </p>
         </div>
-        <div className="card status-card">
-          <h3>Restværdi (netto)</h3>
-          <div className="status-figure">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.statusCardH3,
+						)}>Restværdi (netto)</h3>
+          <div {...stylex.props(cockpitStyles.statusFigure)}>
             {formatKroner(data.totals.netBookValue, currency)}
           </div>
-          <p className="muted status-note">
+          <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
             Akkumuleret afskrevet{" "}
             {formatKroner(data.totals.accumulatedDepreciation, currency)}
           </p>
         </div>
-        <div className="card status-card">
-          <h3>Straksafskrivninger</h3>
-          <div className="status-figure">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.statusCardH3,
+						)}>Straksafskrivninger</h3>
+          <div {...stylex.props(cockpitStyles.statusFigure)}>
             {formatKroner(data.totals.writeOffTotal, currency)}
           </div>
-          <p className="muted status-note">
+          <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
             {data.totals.writeOffCount}{" "}
             {data.totals.writeOffCount === 1 ? "post" : "poster"}
           </p>
         </div>
       </div>
 
-      <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+      <div {...stylex.props(...[cockpitStyles.rowActions, viewStyles.site0])} >
         <Button requiredPermission="company.ledger.post"
           type="button"
-          className="btn"
+
           onClick={() => {
             setActionError(null);
             setRegisterOpen(true);
-          }}
+          }} xstyle={[cockpitStyles.statementBtnComposition]}
         >
           Registrér anlæg
         </Button>
         {data.writeOffAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
-          className="btn secondary"
+
           onClick={() => {
             setActionError(null);
             setWriteOffOpen(true);
-          }}
+          }} xstyle={[cockpitStyles.statementBtnComposition]}
         >
           Straksafskriv
         </Button>}
       </div>
 
       {actionError ? (
-        <div className="card archived-notice" role="alert">
-          <p className="muted">{actionError}</p>
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)} role="alert">
+          <p {...stylex.props(cockpitStyles.muted)}>{actionError}</p>
         </div>
       ) : null}
 
       <h3 {...stylex.props(viewStyles.site1)}>Kapitaliserede anlæg</h3>
       {data.assets.length === 0 ? (
-        <div className="card archived-notice">
-          <p className="muted">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+          <p {...stylex.props(cockpitStyles.muted)}>
             Der er ingen kapitaliserede anlæg endnu. Brug "Registrér anlæg" til
             at oprette et nyt aktiv ud fra et eksisterende bilag.
           </p>
         </div>
       ) : (
-        <div className="card statement-card table-scroll">
-          <table className="data statement-table">
-            <thead>
-              <tr>
-                <th>Navn</th>
-                <th>Kategori</th>
-                <th>Anskaffet</th>
-                <th className="num">Kostpris</th>
-                <th className="num">Akkumuleret afskrivning</th>
-                <th className="num">Restværdi</th>
-                <th>Status</th>
-                <th>Handling</th>
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+          <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+            <thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableThead,
+							)}>
+              <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Navn</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Kategori</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Anskaffet</th>
+                <th {...stylex.props(cockpitStyles.num)}>Kostpris</th>
+                <th {...stylex.props(cockpitStyles.num)}>Akkumuleret afskrivning</th>
+                <th {...stylex.props(cockpitStyles.num)}>Restværdi</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Status</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Handling</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTbody,
+							)}>
               {data.assets.map((row) => (
                 <AssetRowView
                   key={row.assetId}
@@ -186,21 +224,25 @@ export function AssetsView() {
                   onError={setActionError}
                 />
               ))}
-              <tr className="statement-result">
-                <td colSpan={3}>I alt</td>
-                <td className="num">
+              <tr {...stylex.props(...[cockpitStyles.statementResultTd])}>
+                <td colSpan={3} {...stylex.props(
+										cockpitStyles.statementTableScrollTableTdComposition8,
+									)}>I alt</td>
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(data.totals.cost, currency)}
                 </td>
-                <td className="num">
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(
                     data.totals.accumulatedDepreciation,
                     currency,
                   )}
                 </td>
-                <td className="num">
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(data.totals.netBookValue, currency)}
                 </td>
-                <td colSpan={2} />
+                <td colSpan={2} {...stylex.props(
+										cockpitStyles.statementTableScrollTableTdComposition8,
+									)} />
               </tr>
             </tbody>
           </table>
@@ -209,26 +251,50 @@ export function AssetsView() {
 
       <h3 {...stylex.props(viewStyles.site2)}>Straksafskrivninger</h3>
       {data.writeOffs.length === 0 ? (
-        <div className="card archived-notice">
-          <p className="muted">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+          <p {...stylex.props(cockpitStyles.muted)}>
             {data.writeOffAvailable === false ? "Straksafskrivning er endnu ikke tilgængelig." : 'Ingen straksafskrivninger endnu. Brug "Straksafskriv" når en småanskaffelse kan bogføres direkte som udgift.'}
           </p>
         </div>
       ) : (
-        <div className="card statement-card table-scroll">
-          <table className="data statement-table">
-            <thead>
-              <tr>
-                <th>Navn</th>
-                <th>Kategori</th>
-                <th>Anskaffet</th>
-                <th>Bogført</th>
-                <th className="num">Beløb</th>
-                <th>Konto</th>
-                <th>Hjemmel</th>
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+          <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+            <thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableThead,
+							)}>
+              <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Navn</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Kategori</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Anskaffet</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Bogført</th>
+                <th {...stylex.props(cockpitStyles.num)}>Beløb</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Konto</th>
+                <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition5,
+									)}>Hjemmel</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTbody,
+							)}>
               {data.writeOffs.map((row) => (
                 <WriteOffRow key={row.id} row={row} currency={currency} />
               ))}
@@ -237,7 +303,7 @@ export function AssetsView() {
         </div>
       )}
 
-      <p className="statement-check ok">
+      <p {...stylex.props(cockpitStyles.statementCheck)}>
         Afskrivninger bogføres med reference til købsbilaget og fremgår af regnskabet.
       </p>
 
@@ -316,30 +382,46 @@ function AssetRowView({
   }
 
   return (
-    <tr>
-      <td>{row.name}</td>
-      <td>{row.category}</td>
-      <td className="entry-date">{row.acquisitionDate}</td>
-      <td className="num">{formatKroner(row.cost, currency)}</td>
-      <td className="num">
+    <tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.name}</td>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.category}</td>
+      <td {...stylex.props(cockpitStyles.entryDate)}>{row.acquisitionDate}</td>
+      <td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.cost, currency)}</td>
+      <td {...stylex.props(cockpitStyles.num)}>
         {formatKroner(row.accumulatedDepreciation, currency)}
       </td>
-      <td className="num">{formatKroner(row.netBookValue, currency)}</td>
-      <td>
+      <td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.netBookValue, currency)}</td>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
         <span
-          className={`flag ${row.status === "active" ? "ok" : "neutral"}`}
+          {...stylex.props(...[cockpitStyles.flag, ...(row.status === "active" ? [cockpitStyles.flagOk] : [cockpitStyles.flagNeutral])])}
         >
           {row.status === "active"
             ? `${row.postedPeriods}/${row.usefulLifeMonths} afskrevet`
             : row.status === "disposed" ? "Afhændet" : "Fuldt afskrevet"}
         </span>
       </td>
-      <td>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
         {row.status === "disposed" ? <><p>Afhændet {row.disposalDate} · Postering {row.disposalJournalEntryNo ?? row.disposalJournalEntryId} · Ingen senere afskrivning</p><Button variant="secondary" onClick={() => setDisposalOpen(true)}>Hent afhændelseskvittering</Button></> : <Button requiredPermission="company.ledger.post" variant="secondary" onClick={() => setDisposalOpen(true)}>Afhænd {row.name}</Button>}
         {disposalOpen && <AssetDisposalDialog slug={slug} asset={row} currency={currency} onClose={() => setDisposalOpen(false)} onPosted={onPosted} />}
         <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
-          className="btn secondary"
+
           onClick={async () => {
             setBusy(true);
             try {
@@ -359,7 +441,10 @@ function AssetRowView({
           <ConfirmDialog
             title={`Bogfør afskrivning: ${row.name}`}
             body={
-              <p>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                 Bogfører periode {preview.nextPeriodIndex} af {preview.totalPeriods}: {formatKroner(preview.nextPeriodAmount ?? 0, currency)}. Posteringen
                 gemmes med købsbilaget og revisionsspor.
               </p>
@@ -386,14 +471,26 @@ function WriteOffRow({
   currency: string;
 }) {
   return (
-    <tr>
-      <td>{row.name}</td>
-      <td>{row.category}</td>
-      <td className="entry-date">{row.acquisitionDate}</td>
-      <td className="entry-date">{row.writeOffDate}</td>
-      <td className="num">{formatKroner(row.cost, currency)}</td>
-      <td className="account-no">{row.expenseAccountNo}</td>
-      <td>{row.thresholdRuleSource}</td>
+    <tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.name}</td>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.category}</td>
+      <td {...stylex.props(cockpitStyles.entryDate)}>{row.acquisitionDate}</td>
+      <td {...stylex.props(cockpitStyles.entryDate)}>{row.writeOffDate}</td>
+      <td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.cost, currency)}</td>
+      <td {...stylex.props(...[cockpitStyles.num])}>{row.expenseAccountNo}</td>
+      <td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.thresholdRuleSource}</td>
     </tr>
   );
 }
@@ -482,13 +579,13 @@ function RegisterAssetModal({
   const docRows: DocumentRow[] = docs.data?.documents ?? [];
 
   return (
-    <Dialog title="Registrér nyt anlæg" onClose={onClose} busy={busy}>
+    <Dialog title="Registrér nyt anlæg" onClose={onClose} busy={busy} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
 
         {nativeAccounts && <p>Bogfør først købet på anlægskontoen med købsbilaget via Ny postering. Registreringen her opretter afskrivningsplanen uden at bogføre købet igen.</p>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
           {nativeAccounts && <>
             {chart.error && <p role="alert">{chart.error}</p>}
             {([
@@ -498,85 +595,91 @@ function RegisterAssetModal({
             ] as const).map(([label,value,setValue,type,balance]) => <label key={label}>{label}<Select required disabled={outcome.blocked} value={value} onChange={(e) => setValue(e.target.value)}><option value="">Vælg konto</option>{(chart.data?.accounts ?? []).filter((a) => a.active !== false && a.type === type && a.normalBalance === balance).map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></label>)}
           </>}
 
-          <label>
-            <span>Navn</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Navn</span>
             <Input disabled={outcome.blocked}
               type="text"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Kategori</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kategori</span>
             <Input disabled={outcome.blocked}
               type="text"
               required
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Anskaffet (YYYY-MM-DD)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Anskaffet (YYYY-MM-DD)</span>
             <Input disabled={outcome.blocked}
               type="date"
               required
               value={acquisitionDate}
-              onChange={(e) => setAcquisitionDate(e.target.value)}
+              onChange={(e) => setAcquisitionDate(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Kostpris (kr.)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kostpris (kr.)</span>
             <MoneyInput disabled={outcome.blocked}
               required
               value={cost}
               onValueChange={(e) => setCost(e)}
             />
           </label>
-          <label>
-            <span>Levetid (måneder, lineær afskrivning)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Levetid (måneder, lineær afskrivning)</span>
             <Input disabled={outcome.blocked}
               type="number"
               step="1"
               min="1"
               required
               value={usefulLifeMonths}
-              onChange={(e) => setUsefulLifeMonths(e.target.value)}
+              onChange={(e) => setUsefulLifeMonths(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Bilag (købsdokument)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Bilag (købsdokument)</span>
             <Select disabled={outcome.blocked}
               required
               value={purchaseDocumentId}
-              onChange={(e) => setPurchaseDocumentId(e.target.value)}
+              onChange={(e) => setPurchaseDocumentId(e.target.value)} xstyle={[cockpitStyles.selectComposition]}
             >
-              <option value="">Vælg bilag…</option>
+              <option value="" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Vælg bilag…</option>
               {docRows.map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.id} value={d.id} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                   #{d.id} · {d.documentNo ?? "uden nr."} ·{" "}
                   {d.supplierName ?? "ukendt leverandør"}
                 </option>
               ))}
             </Select>
           </label>
-          <label>
-            <span>Note (valgfri)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Note (valgfri)</span>
             <Input disabled={outcome.blocked}
               type="text"
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <div className="row-actions">
-            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
+          <div {...stylex.props(cockpitStyles.rowActions)}>
+            <Button requiredPermission="company.ledger.post" type="submit"  disabled={outcome.blocked || (busy)}>
               {busy ? "Opretter…" : "Registrér anlæg"}
             </Button>
             <Button variant="secondary"
               type="button"
-              className="btn secondary"
+
               onClick={onClose}
-              disabled={busy}
+              disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
             >
               Annullér
             </Button>
@@ -699,10 +802,14 @@ function WriteOffModal({
   const docRows: DocumentRow[] = docs.data?.documents ?? [];
 
   return (
-    <Dialog title="Straksafskriv småanskaffelse" onClose={onClose} busy={busy}>
+    <Dialog title="Straksafskriv småanskaffelse" onClose={onClose} busy={busy} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
     {nativeAccounts && <>
-      <p>Betaling: virksomhedens aktuelt konfigurerede bankrolle. Mangler mappingen, afviser serveren: konfigurér bankrollen under Administrér før ny handling. Der vælges ingen standardkonto her.</p>
+      <p {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}>Betaling: virksomhedens aktuelt konfigurerede bankrolle. Mangler mappingen, afviser serveren: konfigurér bankrollen under Administrér før ny handling. Der vælges ingen standardkonto her.</p>
       {(docs.error || chart.error) && <p role="alert">{docs.error || chart.error}</p>}
       {sendLock.blocked && !review && <UnknownMutationNotice onRefresh={refreshNative} onRelease={sendLock.release} persistent={sendLock.persistent} verifyPersistence={sendLock.verifyPersistence} />}
       {receipt && <div role="status">Bogført: {receipt.entryNo} (#{receipt.entryId}) · Straksafskrivning #{receipt.writeOffId}<p>Journalhash: <code>{receipt.entryHash}</code></p></div>}
@@ -710,104 +817,110 @@ function WriteOffModal({
       {guard.confirmation}
 
 
-        <p className="muted">
+        <p {...stylex.props(cockpitStyles.muted)}>
           Straksafskrivning er en skattemæssig vurdering — du bekræfter med en
           eksplicit hjemmelshenvisning, og handlingen bogføres som en udgift
           direkte. Bilag og hjemmel arkiveres på audit-sporet.
         </p>
         <form onSubmit={handleSubmit} onChange={() => setReview(null)}>
           <fieldset disabled={nativeBlocked || !!review}>
-          <label>
-            <span>Navn</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Navn</span>
             <Input disabled={outcome.blocked}
               type="text"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Kategori</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kategori</span>
             <Input disabled={outcome.blocked}
               type="text"
               required
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Anskaffet (YYYY-MM-DD)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Anskaffet (YYYY-MM-DD)</span>
             <Input disabled={outcome.blocked}
               type="date"
               required
               value={acquisitionDate}
-              onChange={(e) => setAcquisitionDate(e.target.value)}
+              onChange={(e) => setAcquisitionDate(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Bogføringsdato</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Bogføringsdato</span>
             <Input disabled={outcome.blocked}
               type="date"
               required
               value={transactionDate}
-              onChange={(e) => setTransactionDate(e.target.value)}
+              onChange={(e) => setTransactionDate(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Beløb (kr.)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Beløb (kr.)</span>
             <MoneyInput disabled={outcome.blocked}
               required
               value={cost}
               onValueChange={(e) => setCost(e)}
             />
           </label>
-          <label>
-            <span>Bilag (købsdokument)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Bilag (købsdokument)</span>
             <Select disabled={outcome.blocked}
               required
               value={purchaseDocumentId}
-              onChange={(e) => setPurchaseDocumentId(e.target.value)}
+              onChange={(e) => setPurchaseDocumentId(e.target.value)} xstyle={[cockpitStyles.selectComposition]}
             >
-              <option value="">Vælg bilag…</option>
+              <option value="" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Vælg bilag…</option>
               {docRows.map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.id} value={d.id} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                   #{d.id} · {d.documentNo ?? "uden nr."} ·{" "}
                   {d.supplierName ?? "ukendt leverandør"}
                 </option>
               ))}
             </Select>
           </label>
-          <label>
-            <span>Udgiftskonto</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Udgiftskonto</span>
             {nativeAccounts ? <Select required value={expenseAccountNo} onChange={e => setExpenseAccountNo(e.target.value)}><option value="">Vælg aktiv udgiftskonto</option>{(chart.data?.accounts ?? []).filter(a => a.active === true && a.type === "expense" && a.normalBalance === "debit").map(a => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select> : <Input disabled={outcome.blocked} type="text" required value={expenseAccountNo} onChange={e => setExpenseAccountNo(e.target.value)} />}
           </label>
-          <label>
-            <span>Hjemmelshenvisning (tærskelregel)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Hjemmelshenvisning (tærskelregel)</span>
             <Input disabled={outcome.blocked}
               type="text"
               required
               value={thresholdRuleSource}
-              onChange={(e) => setThresholdRuleSource(e.target.value)}
+              onChange={(e) => setThresholdRuleSource(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
-            <span>Note (valgfri)</span>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Note (valgfri)</span>
             <Input disabled={outcome.blocked}
               type="text"
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value)} xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
           </fieldset>
-          <div className="row-actions">
-            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || busy || nativeBlocked || !!review}>
+          <div {...stylex.props(cockpitStyles.rowActions)}>
+            <Button requiredPermission="company.ledger.post" type="submit"  disabled={outcome.blocked || busy || nativeBlocked || !!review}>
               {busy ? "Bogfører…" : nativeAccounts ? "Gennemgå straksafskrivning" : "Straksafskriv"}
             </Button>
             <Button variant="secondary"
               type="button"
-              className="btn secondary"
+
               onClick={onClose}
-              disabled={busy}
+              disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
             >
               {receipt ? "Færdig" : "Annullér"}
             </Button>

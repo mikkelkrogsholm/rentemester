@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { parseDanishAmount } from "../lib/format";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
@@ -276,14 +277,18 @@ export function RecurringInvoiceTemplateModal({
   }
 
   return (
-    <Dialog title="Opret faktura-skabelon" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    <Dialog title="Opret faktura-skabelon" onClose={onClose} busy={busy} initialFocusRef={closeRef} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
 
 
-        <div className="modal-body">
-          <p>
+        <div {...stylex.props(cockpitStyles.modalBody)}>
+          <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.modalBodyP,
+					)}>
             Skabelonen genererer en faktura på fast interval. Du udsteder hver
             faktura med ét klik, når perioden er forfaldet — Rentemester
             beregner linjetotaler, netto, moms og brutto fra de tal du
@@ -294,7 +299,7 @@ export function RecurringInvoiceTemplateModal({
         {locked && <LockBanner message={locked} />}
         {error && <Banner kind="error">{error}</Banner>}
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Navn
           <Input
             type="text"
@@ -306,8 +311,8 @@ export function RecurringInvoiceTemplateModal({
           />
         </label>
 
-        <div className="modal-field-grid">
-          <label className="modal-field">
+        <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Interval
             <Select
               value={interval}
@@ -316,13 +321,16 @@ export function RecurringInvoiceTemplateModal({
               aria-label="Interval"
             >
               {INTERVAL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                   {opt.label}
                 </option>
               ))}
             </Select>
           </label>
-          <label className="modal-field">
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Gentag hver
             <Input
               type="number"
@@ -335,7 +343,7 @@ export function RecurringInvoiceTemplateModal({
               aria-label="Gentag hver"
             />
           </label>
-          <label className="modal-field">
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Første udstedelsesdato
             <Input
               type="date"
@@ -347,7 +355,7 @@ export function RecurringInvoiceTemplateModal({
           </label>
         </div>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Afsendelseskanal
           <Select
             value={deliveryChannel}
@@ -356,16 +364,19 @@ export function RecurringInvoiceTemplateModal({
             aria-label="Afsendelseskanal"
           >
             {DELIVERY_CHANNEL_OPTIONS.filter(opt=>!nativeRecurring||opt.value==="manual").map((opt) => (
-              <option key={opt.value} value={opt.value}>{nativeRecurring&&opt.value==="manual"?"Manuel udstedelse":opt.label}</option>
+              <option key={opt.value} value={opt.value} {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{nativeRecurring&&opt.value==="manual"?"Manuel udstedelse":opt.label}</option>
             ))}
           </Select>
-          <span className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+          <span {...stylex.props(...[cockpitStyles.muted, viewStyles.site0])} >
             {nativeRecurring ? "Fakturaen udstedes kun efter din bekræftelse. Hent PDF og bogfør særskilt på fakturasiden." : "Manuel opretter kun fakturaen. E-mail og e-faktura afsendes af den eksterne scheduler, når kanalen er konfigureret."}
           </span>
         </label>
 
-        <div className="modal-field-grid">
-          <label className="modal-field">
+        <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Betalingsfrist (dage)
             <Input
               type="number"
@@ -376,7 +387,7 @@ export function RecurringInvoiceTemplateModal({
               aria-label="Betalingsfrist i dage"
             />
           </label>
-          <label className="modal-field">
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Momssats (%)
             <Input
               type="number"
@@ -390,7 +401,7 @@ export function RecurringInvoiceTemplateModal({
           </label>
         </div>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Leveringsperiode
           <Select
             value={deliveryPeriodMode}
@@ -401,12 +412,15 @@ export function RecurringInvoiceTemplateModal({
             aria-label="Leveringsperiode"
           >
             {DELIVERY_MODE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
                 {opt.label}
               </option>
             ))}
           </Select>
-          <span className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
+          <span {...stylex.props(...[cockpitStyles.muted, viewStyles.site1])} >
             {
               DELIVERY_MODE_OPTIONS.find((opt) => opt.value === deliveryPeriodMode)
                 ?.hint
@@ -414,7 +428,7 @@ export function RecurringInvoiceTemplateModal({
           </span>
         </label>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Valuta
           <Input
             type="text"
@@ -427,7 +441,7 @@ export function RecurringInvoiceTemplateModal({
         </label>
 
         {customers.length > 0 && (
-          <label className="modal-field">
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Vælg kunde
             <Select
               value={selectedCustomerId}
@@ -435,9 +449,15 @@ export function RecurringInvoiceTemplateModal({
               disabled={outcome.blocked || (busy)}
               aria-label="Vælg kunde"
             >
-              <option value="">— Ny kunde (indtast nedenfor) —</option>
+              <option value="" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>— Ny kunde (indtast nedenfor) —</option>
               {customers.map((c) => (
-                <option key={c.id} value={String(c.id)}>
+                <option key={c.id} value={String(c.id)} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                   {c.name}
                   {c.vatOrCvr ? ` · ${c.vatOrCvr}` : ""}
                 </option>
@@ -446,8 +466,8 @@ export function RecurringInvoiceTemplateModal({
           </label>
         )}
 
-        <div className="modal-field-grid">
-          <label className="modal-field">
+        <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Kunde
             <Input
               type="text"
@@ -458,7 +478,7 @@ export function RecurringInvoiceTemplateModal({
               aria-label="Kundens navn"
             />
           </label>
-          <label className="modal-field">
+          <label {...stylex.props(cockpitStyles.modalField)}>
             Kunde CVR/moms
             <Input
               type="text"
@@ -469,7 +489,7 @@ export function RecurringInvoiceTemplateModal({
             />
           </label>
         </div>
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Kundeadresse
           <Input
             type="text"
@@ -480,11 +500,11 @@ export function RecurringInvoiceTemplateModal({
           />
         </label>
 
-        <fieldset className={["modal-field", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
-          <legend>Fakturalinjer</legend>
+        <fieldset {...stylex.props(...[cockpitStyles.modalField, viewStyles.site2])} >
+          <legend {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Fakturalinjer</legend>
           {lines.map((line, index) => (
-            <div key={index} className="invoice-line-row">
-              <label className="modal-field">
+            <div key={index} {...stylex.props(cockpitStyles.invoiceLineRow)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Beskrivelse
                 <Input
                   type="text"
@@ -496,7 +516,7 @@ export function RecurringInvoiceTemplateModal({
                   disabled={outcome.blocked || (busy)}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Antal
                 <Input
                   type="number"
@@ -509,7 +529,7 @@ export function RecurringInvoiceTemplateModal({
                   disabled={outcome.blocked || (busy)}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Enhedspris ekskl. moms
                 <MoneyInput
                   inputMode="decimal"
@@ -524,10 +544,10 @@ export function RecurringInvoiceTemplateModal({
               {lines.length > 1 && (
                 <Button variant="secondary"
                   type="button"
-                  className="btn secondary"
+
                   onClick={() => removeLine(index)}
                   disabled={busy}
-                  aria-label={`Fjern linje ${index + 1}`}
+                  aria-label={`Fjern linje ${index + 1}`} xstyle={[cockpitStyles.invoiceLineRowButtonComposition]}
                 >
                   Fjern
                 </Button>
@@ -536,15 +556,15 @@ export function RecurringInvoiceTemplateModal({
           ))}
           <Button variant="secondary"
             type="button"
-            className="btn secondary"
+
             onClick={addLine}
-            disabled={busy}
+            disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
           >
             Tilføj linje
           </Button>
         </fieldset>
 
-        <label className="modal-field">
+        <label {...stylex.props(cockpitStyles.modalField)}>
           Note (valgfri)
           <Input
             type="text"
@@ -556,19 +576,19 @@ export function RecurringInvoiceTemplateModal({
           />
         </label>
 
-        <div className="modal-actions">
+        <div {...stylex.props(cockpitStyles.modalActions)}>
           <Button variant="secondary"
             type="button"
-            className="btn secondary"
+
             ref={closeRef}
             onClick={onClose}
-            disabled={busy}
+            disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
           >
             Annullér
           </Button>
           <Button requiredPermission="company.draft.write"
             type="button"
-            className="btn"
+
             onClick={handleCreate}
             disabled={outcome.blocked || (busy)}
           >

@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
@@ -116,7 +118,7 @@ function Author({
               {formatKroner(review.plan.amount, review.plan.currency)} · {cadence(review.plan.frequency)}
             </p>
             <p>Planlægning alene. Opretter ingen kreditor, betaling eller bogføring.</p>
-            <table className="data">
+            <table {...stylex.props(...[cockpitStyles.tableData])}>
               <caption>Forventede betalinger i planens første 13 uger</caption>
               <thead>
                 <tr>
@@ -377,7 +379,7 @@ export function NativeLiquidityView({showCompanyNavigation=true}:{showCompanyNav
   const amount = (n: number | null) =>
     n === null ? "Ikke tilgængelig" : formatKroner(n, currency);
   return (
-    <section className="statement">
+    <section {...stylex.props(cockpitStyles.statement)}>
       <PageHeader
         title="Likviditet"
         actions={
@@ -417,7 +419,7 @@ export function NativeLiquidityView({showCompanyNavigation=true}:{showCompanyNav
       <p role="status">
         Ufuldstændig dækning — gennemgå kilder og manglende oplysninger før beslutninger.
       </p>
-      <table className="data" aria-label="13 ugers prognose">
+      <table {...stylex.props(...[cockpitStyles.tableData])} aria-label="13 ugers prognose">
         <thead>
           <tr>
             <th>Uge</th>
@@ -479,7 +481,7 @@ export function NativeLiquidityView({showCompanyNavigation=true}:{showCompanyNav
       {!data.commitments.length ? (
         <p>Ingen godkendte forpligtelser.</p>
       ) : (
-        <table className="data" aria-label="Leverandørforpligtelser">
+        <table {...stylex.props(...[cockpitStyles.tableData])} aria-label="Leverandørforpligtelser">
           <thead>
             <tr>
               <th>Reference</th>

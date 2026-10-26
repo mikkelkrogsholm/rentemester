@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import { useOptionalAuth } from "../lib/auth-context";
@@ -97,28 +99,66 @@ function CorrectionForm({ slug, payables, onApplied, onClose: onDismiss, native,
   const plan = reviewed?.plan;
   const sourceName = selected?.invoiceNo ?? selected?.documentNo ?? legacy?.invoiceNo ?? "";
   const accountName = plan?.summary?.expenseAccount.name ?? payables.expenseAccounts.find(row => row.accountNo === plan?.expenseAccountNo)?.name;
-  return <Dialog title="Ret direkte bankkøb" onClose={onClose} busy={busy}>
+  return <Dialog title="Ret direkte bankkøb" onClose={onClose} busy={busy} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}{guard.confirmation}
     <p>Korrektionen bevarer originalbilaget og den oprindelige postering. Den tilbagefører det direkte bankkøb, registrerer fakturaen på fakturadatoen og afregner på den faktiske bankdato. Der foretages ingen ny betaling eller mailafsendelse.</p>
     <Button variant="secondary" type="button" disabled={busy} onClick={onClose}>Luk</Button>
     {native && payables.directBankCorrectionCandidates === undefined && <p role="alert">Serveren har ikke leveret listen over direkte bankkøb. Almindelige uregistrerede bilag kan ikke bruges som erstatning. Genlæs kreditoroversigten.</p>}
-    {dedicated && candidates.length === 0 && payables.directBankCorrectionCandidates !== undefined && <p>Ingen direkte bankkøb er tilgængelige for korrektion.</p>}
-    <div className="form-grid">
-      <label>Bilag<Select aria-label="Bilag" disabled={disabled} value={choice} onChange={e => select(e.target.value)}>
+    {dedicated && candidates.length === 0 && payables.directBankCorrectionCandidates !== undefined && <p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>Ingen direkte bankkøb er tilgængelige for korrektion.</p>}
+    <div {...stylex.props(cockpitStyles.formGrid)}>
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Bilag<Select aria-label="Bilag" disabled={disabled} value={choice} onChange={e => select(e.target.value)}>
         {dedicated && <option value="">Vælg et bogført bankkøb</option>}
-        {dedicated ? candidates.map(row => <option key={`${row.documentId}:${row.bankTransactionId}`} value={`${row.documentId}:${row.bankTransactionId}`}>{row.invoiceNo ?? row.documentNo ?? `Bilag ${row.documentId}`} · {row.supplierName ?? "Leverandør ikke oplyst"} · bankpost {row.bankTransactionId}</option>) : payables.unregisteredDocuments.map(row => <option key={row.id} value={row.id}>{row.invoiceNo ?? row.documentNo ?? `Bilag ${row.id}`}</option>)}
+        {dedicated ? candidates.map(row => <option key={`${row.documentId}:${row.bankTransactionId}`} value={`${row.documentId}:${row.bankTransactionId}`}>{row.invoiceNo ?? row.documentNo ?? `Bilag ${row.documentId}`} · {row.supplierName ?? "Leverandør ikke oplyst"} · bankpost {row.bankTransactionId}</option>) : payables.unregisteredDocuments.map(row => <option key={row.id} value={row.id} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>{row.invoiceNo ?? row.documentNo ?? `Bilag ${row.id}`}</option>)}
       </Select></label>
-      <label>Banktransaktions-id<Input aria-label="Banktransaktions-id" disabled={disabled} readOnly={dedicated} inputMode="numeric" value={bankTransactionId} onChange={e => { invalidate(); setBankTransactionId(e.target.value); }} /></label>
-      <label>Fakturadato<Input aria-label="Fakturadato" disabled={disabled} type="date" value={billDate} readOnly aria-describedby="invoice-date-note" /></label>
-      <label>Forfaldsdato<Input aria-label="Forfaldsdato" disabled={disabled} type="date" value={dueDate} onChange={e => { invalidate(); setDueDate(e.target.value); }} /></label>
-      <label>Udgiftskonto<Select aria-label="Udgiftskonto" disabled={disabled} value={expenseAccountNo} onChange={e => { invalidate(); setExpenseAccountNo(e.target.value); }}>{dedicated && <option value="">Vælg udgiftskonto</option>}{payables.expenseAccounts.map(row => <option key={row.accountNo} value={row.accountNo}>{row.accountNo} · {row.name}</option>)}</Select></label>
-      {dedicated && <label>Momsbehandling<Select aria-label="Momsbehandling" disabled={disabled} value={vatTreatment} onChange={e => { invalidate(); setVatTreatment(e.target.value as Treatment | ""); }}><option value="">Vælg momsbehandling</option>{Object.entries(TREATMENTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>}
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Banktransaktions-id<Input aria-label="Banktransaktions-id" disabled={disabled} readOnly={dedicated} inputMode="numeric" value={bankTransactionId} onChange={e => { invalidate(); setBankTransactionId(e.target.value); }} /></label>
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Fakturadato<Input aria-label="Fakturadato" disabled={disabled} type="date" value={billDate} readOnly aria-describedby="invoice-date-note" /></label>
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Forfaldsdato<Input aria-label="Forfaldsdato" disabled={disabled} type="date" value={dueDate} onChange={e => { invalidate(); setDueDate(e.target.value); }} /></label>
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Udgiftskonto<Select aria-label="Udgiftskonto" disabled={disabled} value={expenseAccountNo} onChange={e => { invalidate(); setExpenseAccountNo(e.target.value); }}>{dedicated && <option value="">Vælg udgiftskonto</option>}{payables.expenseAccounts.map(row => <option key={row.accountNo} value={row.accountNo} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>{row.accountNo} · {row.name}</option>)}</Select></label>
+      {dedicated && <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Momsbehandling<Select aria-label="Momsbehandling" disabled={disabled} value={vatTreatment} onChange={e => { invalidate(); setVatTreatment(e.target.value as Treatment | ""); }}><option value="">Vælg momsbehandling</option>{Object.entries(TREATMENTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>}
       <label>Begrundelse<Input aria-label="Begrundelse" disabled={disabled} value={reason} onChange={e => { setReason(e.target.value); setConfirmed(false); }} /></label>
     </div>
-    <p id="invoice-date-note">Fakturadatoen kommer uændret fra bilaget {sourceName}.</p>
+    <p id="invoice-date-note" {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}>Fakturadatoen kommer uændret fra bilaget {sourceName}.</p>
     {selected && <p>Leverandør: {selected.supplierName ?? "Ikke oplyst"} · Bilagsbeløb: {selected.amountIncVat} {selected.currency} · Moms i bilaget: {selected.vatAmount ?? "Ikke oplyst"} · Bankdato: {selected.bankDate}</p>}
-    {error && <p role="alert">{error}</p>}
-    {plan && <section aria-label="Gennemgå korrektionen" className="card">
+    {error && <p role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{error}</p>}
+    {plan && <section aria-label="Gennemgå korrektionen" {...stylex.props(cockpitStyles.card)}>
       <h3>Kontrollér planen</h3>
       {plan.summary && <><p>Bilag: {plan.summary.document.invoiceNo ?? plan.summary.document.documentNo ?? plan.documentId} · {plan.summary.document.supplierName ?? "Leverandør ikke oplyst"}</p><p>Bilagsbeløb: {plan.summary.document.grossAmount} {plan.summary.document.currency} · Moms i bilaget: {plan.summary.document.vatAmount ?? "Ikke oplyst"}</p><p>Bankpost: {plan.summary.bank.text} · {plan.summary.bank.signedAmount} {plan.summary.bank.currency}</p></>}
       <p>Fakturadato {plan.billDate} · Forfaldsdato {plan.dueDate}</p>
@@ -132,7 +172,11 @@ function CorrectionForm({ slug, payables, onApplied, onClose: onDismiss, native,
       <details><summary>Fuld plan og kildebeviser</summary><pre>{JSON.stringify(plan, null, 2)}</pre></details>
       {native && <label><input type="checkbox" disabled={disabled} checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />Jeg har gennemgået bilaget, den oprindelige postering og korrektionen</label>}
     </section>}
-    {outcome.blocked && attempted.current && <p>Det uafklarede forsøg er låst til det viste bilag, bankpost, plan-hash og den oprindelige begrundelse. Genlæs kreditoroversigten og kontrollér bank og posteringer; der sendes ingen automatisk gentagelse.</p>}
-    <div className="row-actions"><Button variant="secondary" type="button" disabled={disabled || !documentId || !positive(Number(bankTransactionId)) || !billDate || !dueDate || !expenseAccountNo || !vatTreatment} onClick={() => void review()}>{busy ? "Arbejder…" : "Opret plan"}</Button><Button requiredPermission="company.ledger.post" variant="danger" type="button" disabled={disabled || !plan || !reason.trim() || (native && !confirmed)} onClick={() => void apply()}>Bekræft korrektion</Button></div>
+    {outcome.blocked && attempted.current && <p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>Det uafklarede forsøg er låst til det viste bilag, bankpost, plan-hash og den oprindelige begrundelse. Genlæs kreditoroversigten og kontrollér bank og posteringer; der sendes ingen automatisk gentagelse.</p>}
+    <div {...stylex.props(cockpitStyles.rowActions)}><Button variant="secondary" type="button" disabled={disabled || !documentId || !positive(Number(bankTransactionId)) || !billDate || !dueDate || !expenseAccountNo || !vatTreatment} onClick={() => void review()}>{busy ? "Arbejder…" : "Opret plan"}</Button><Button requiredPermission="company.ledger.post" variant="danger" type="button" disabled={disabled || !plan || !reason.trim() || (native && !confirmed)} onClick={() => void apply()}>Bekræft korrektion</Button></div>
   </Dialog>;
 }

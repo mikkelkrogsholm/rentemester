@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState, type FormEvent } from "react";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { Button, Input, Select, Textarea } from "../components/ui";
@@ -72,7 +74,7 @@ export function NativeConsolidationView() {
 		}
 	}
 	return (
-		<section className="card" aria-label="Konsolideret rapport">
+		<section {...stylex.props(cockpitStyles.card)} aria-label="Konsolideret rapport">
 			<h2>Konsolideret rapport</h2>
 			<p>
 				Et læselag over V1-gruppestrukturen med eksplicit kontomapping og

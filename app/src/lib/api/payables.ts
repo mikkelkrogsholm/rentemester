@@ -7,6 +7,8 @@ import type {
   PayablesResponse,
   DirectBankPayableCorrectionInput,
   DirectBankPayableCorrectionPlan,
+  LegacyPayableBackfillInput,
+  LegacyPayableBackfillPlan,
 } from "../types";
 import { request, type ReadRequestOptions } from "./_shared";
 
@@ -79,4 +81,6 @@ export const payablesApi = {
 
   applyDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput & { planHash:string; reason:string; idempotencyKey:string }) =>
     request<{ ok:true; correction:Record<string,unknown> }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/apply`, { method:"POST", headers:{"idempotency-key":input.idempotencyKey}, body:JSON.stringify({...input,confirm:true}) }).then((r)=>r.correction),
+  planLegacyPayableBackfill:(slug:string,input:LegacyPayableBackfillInput)=>request<{ok:true;plan:LegacyPayableBackfillPlan}>(`/api/companies/${encodeURIComponent(slug)}/payables/legacy-backfill/plan`,{method:"POST",body:JSON.stringify(input)}).then(r=>r.plan),
+  applyLegacyPayableBackfill:(slug:string,input:LegacyPayableBackfillInput&{planHash:string;idempotencyKey:string})=>request<{ok:true;backfill:Record<string,unknown>}>(`/api/companies/${encodeURIComponent(slug)}/payables/legacy-backfill/apply`,{method:"POST",headers:{"idempotency-key":input.idempotencyKey},body:JSON.stringify({...input,confirm:true})}).then(r=>r.backfill),
 };

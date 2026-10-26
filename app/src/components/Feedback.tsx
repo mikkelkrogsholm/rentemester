@@ -1,42 +1,46 @@
-import { Button } from "./ui";
-// Small shared presentational components for loading / error / empty states
-// and inline banners. Kept tiny and prop-driven so views stay declarative.
+import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
+// Compatibility adapters for older views. New pages use PageState directly.
+import { PageState } from "./CockpitPrimitives";
 
 export function Loading({ label = "Indlæser…" }: { label?: string }) {
-  return <div className="state-msg" role="status">{label}</div>;
+	return <PageState kind="loading" title={label} />;
 }
 
 export function ErrorState({
-  message,
-  onRetry,
+	message,
+	onRetry,
 }: {
-  message: string;
-  onRetry?: () => void;
+	message: string;
+	onRetry?: () => void;
 }) {
-  return (
-    <div className="state-msg">
-      <p className="banner error" role="alert">
-        {message}
-      </p>
-      {onRetry && (
-        <Button className="btn secondary" type="button" onClick={onRetry}>
-          Prøv igen
-        </Button>
-      )}
-    </div>
-  );
+	return (
+		<PageState kind="error" title="Siden kunne ikke hentes" onRetry={onRetry}>
+			{message}
+		</PageState>
+	);
 }
 
 export function Banner({
-  kind,
-  children,
+	kind,
+	children,
 }: {
-  kind: "error" | "success" | "warning";
-  children: React.ReactNode;
+	kind: "error" | "success" | "warning";
+	children: React.ReactNode;
 }) {
-  return (
-    <div className={`banner ${kind}`} role={kind === "error" ? "alert" : "status"}>
-      {children}
-    </div>
-  );
+	return (
+		<div
+			role={kind === "error" ? "alert" : "status"}
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.banner,
+				kind === "error" && cockpitStyles.bannerError,
+				kind === "success" && cockpitStyles.bannerSuccess,
+				kind === "warning" && cockpitStyles.bannerWarning,
+			)}
+		>
+			{children}
+		</div>
+	);
 }

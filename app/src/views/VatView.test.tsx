@@ -26,7 +26,7 @@ describe("VatView — Moms", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Moms", level: 1 }),
+      await screen.findByRole("heading", { name: "Moms og lukkeparathed", level: 1 }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Udgående moms før tab (kontrol)"),
@@ -59,10 +59,10 @@ describe("VatView — Moms", () => {
     // The foreign-trade rubrics the static figures lacked are now present.
     expect(screen.getByText("Salgsmoms")).toBeInTheDocument();
     expect(
-      screen.getByText(/Rubrik A — varer og ydelser købt i udlandet/),
+      screen.getByText(/Rubrik A — varer købt i EU/),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Rubrik B — varer og ydelser solgt til udlandet/),
+      screen.getByText(/Rubrik B — varer \/ EU-salg uden moms/),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/Rubrik C — øvrige momsfrie salg/),
@@ -73,7 +73,7 @@ describe("VatView — Moms", () => {
       ),
     ).toBeInTheDocument();
     // The momstilsvar row carries the filing figure.
-    const tilsvar = screen.getByText("Momstilsvar").closest("tr")!;
+    const tilsvar = screen.getByText("Moms i alt").closest("tr")!;
     expect(
       within(tilsvar as HTMLElement).getByText(/3\.371,00/),
     ).toBeInTheDocument();
@@ -270,7 +270,7 @@ describe("VatView — Moms", () => {
     const heading = await screen.findByText(
       /SKAT-rubrikker \(momsangivelse\)/i,
     );
-    const card = heading.closest(".statement-card") as HTMLElement;
+    const card = heading.closest('[data-ui="statement-card"]') as HTMLElement;
     expect(card).not.toBeNull();
     expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
     expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
@@ -285,7 +285,7 @@ describe("VatView — Moms", () => {
     const heading = await screen.findByText(
       /SKAT-rubrikker \(foreløbige — åben periode\)/i,
     );
-    const card = heading.closest(".statement-card") as HTMLElement;
+    const card = heading.closest('[data-ui="statement-card"]') as HTMLElement;
     expect(card).not.toBeNull();
     expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
     expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
@@ -448,7 +448,7 @@ describe("VatView — Moms", () => {
     const heading = await screen.findByText(
       /SKAT-rubrikker \(momsangivelse\)/i,
     );
-    const card = heading.closest(".statement-card") as HTMLElement;
+    const card = heading.closest('[data-ui="statement-card"]') as HTMLElement;
     const csvBtn = within(card).getByRole("button", {
       name: /Kopier alle som CSV/i,
     });
@@ -458,7 +458,7 @@ describe("VatView — Moms", () => {
     // Semicolon-separated label;beløb pairs, one per line — no thousand
     // separators, no "kr." suffix in the numeric column.
     expect(pasted).toMatch(/Salgsmoms;/);
-    expect(pasted).toMatch(/Momstilsvar;/);
+    expect(pasted).toMatch(/Moms i alt;/);
     expect(pasted).toMatch(/Rubrik A/);
     // No tusindtalsseparator-punktum and no "kr." anywhere in the CSV.
     expect(pasted).not.toMatch(/\./);
@@ -475,7 +475,7 @@ test("OSS panel appears only on the native VAT backend", async () => {
 });
 test("legacy VAT backend has no OSS report request or controls", async () => {
   mockFetch(route()); renderView();
-  await screen.findByRole("heading", { name: "Moms", level: 1 });
+  await screen.findByRole("heading", { name: "Moms og lukkeparathed", level: 1 });
   expect(screen.queryByRole("region", { name: "OSS-rapport" })).not.toBeInTheDocument();
 });
 
@@ -495,7 +495,7 @@ test("native VAT task consumes canonical readiness without submitting or reviewi
 
 test("legacy VAT adds no task readiness or period reads", async () => {
   mockFetch(route()); renderView();
-  await screen.findByRole("heading", { name: "Moms", level: 1 });
+  await screen.findByRole("heading", { name: "Moms og lukkeparathed", level: 1 });
   expect(screen.queryByRole("region", { name: "Momsopgave" })).not.toBeInTheDocument();
   const calls = (globalThis.fetch as unknown as { mock: { calls: [string, RequestInit?][] } }).mock.calls;
   expect(calls.some(([url]) => String(url).includes("/periods"))).toBe(false);

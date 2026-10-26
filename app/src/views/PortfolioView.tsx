@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import {useState} from "react";
 import { Button, ButtonLink, Input, PageHeader } from "../components/ui";
 // Portfolio overview — the workspace-level landing page.
@@ -54,13 +56,13 @@ function PortfolioOverview() {
   const { rollup } = portfolio;
 
   return (
-    <section>
-      <PageHeader title="Portefølje" actions={<><ButtonLink className="btn" to="/companies/new">
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <PageHeader title="Portefølje" actions={<><ButtonLink  to="/companies/new" xstyle={[cockpitStyles.aComposition]}>
           Tilføj virksomhed
         </ButtonLink></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {portfolio.companyCount} virksomhed
             {portfolio.companyCount === 1 ? "" : "er"} · {needAttention} kræver
             opmærksomhed · pr. {portfolio.asOf}
@@ -70,39 +72,37 @@ function PortfolioOverview() {
       </PageHeader>
 
       {rollup && (
-        <div className="rollup-strip" role="group" aria-label="Tværgående overblik">
+        <div {...stylex.props(cockpitStyles.rollupStrip)} role="group" aria-label="Tværgående overblik">
           <div
-            className={`rollup-cell ${rollup.resultat < 0 ? "neg" : "pos"}`}
+            {...stylex.props(...[cockpitStyles.rollupCell, ...(rollup.resultat < 0 ? [cockpitStyles.rollupCellNeg] : [cockpitStyles.rollupCellPos])])}
           >
-            <span className="rollup-label">Samlet resultat</span>
-            <span className="rollup-value">
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupLabel])}>Samlet resultat</span>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupValue])}>
               {formatKroner(rollup.resultat)}
             </span>
           </div>
-          <div className="rollup-cell">
-            <span className="rollup-label">Samlet likviditet</span>
-            <span className="rollup-value">
+          <div {...stylex.props(cockpitStyles.rollupCell)}>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupLabel])}>Samlet likviditet</span>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupValue])}>
               {formatKroner(rollup.liquidity)}
             </span>
           </div>
-          <div className="rollup-cell">
-            <span className="rollup-label">{rollup.vatPayable < 0 ? "Moms til gode" : "Moms at betale"}</span>
-            <span className="rollup-value">
+          <div {...stylex.props(cockpitStyles.rollupCell)}>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupLabel])}>{rollup.vatPayable < 0 ? "Moms til gode" : "Moms at betale"}</span>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupValue])}>
               {formatKroner(rollup.vatPayable)}
             </span>
           </div>
           <div
-            className={`rollup-cell ${
-              rollup.openTaskCount > 0 ? "warn" : ""
-            }`}
+            {...stylex.props(...[cockpitStyles.rollupCell, ...(rollup.openTaskCount > 0 ? [cockpitStyles.rollupCellWarn] : [])])}
           >
-            <span className="rollup-label">Åbne opgaver</span>
-            <span className="rollup-value">{rollup.openTaskCount}</span>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupLabel])}>Åbne opgaver</span>
+            <span {...stylex.props(...[cockpitStyles.rollupCellRollupValue])}>{rollup.openTaskCount}</span>
           </div>
         </div>
       )}
 
-      <div className="company-grid">
+      <div {...stylex.props(cockpitStyles.companyGrid)}>
         {ordered.map((c) => (
           <CompanyCard key={c.slug} company={c} />
         ))}
@@ -133,20 +133,20 @@ function NativePortfolioOverview(){
  const data=state.data!;
  const amount=(value:number|null)=>value===null?"Ikke tilgængelig":formatKroner(value,"DKK");
  const count=(value:number|null)=>value===null?"Ikke tilgængelig":String(value);
- return <section><PageHeader title="Portefølje" actions={<ButtonLink className="btn" to="/companies/new">Tilføj virksomhed</ButtonLink>}/>
-  <div className="row-actions"><label>Pr. dato<Input type="date" value={asOf||data.asOf} onChange={e=>setAsOf(e.target.value)}/></label><Button variant="secondary" onClick={state.reload}>Hent portefølje igen</Button></div>
-  <p>{data.companyCount} virksomheder · pr. {data.asOf}</p><p className="muted">Opgaver viser aktuel åben status for kilder til og med den valgte dato.</p><p className="muted">Overblik over virksomheder, du aktuelt har adgang til. Beløbene er ikke et konsolideret koncernregnskab.</p>
-  <div className="rollup-strip" role="group" aria-label="Tværgående overblik">
-   {[['Samlet resultat',amount(data.rollup.resultat)],['Samlet likviditet',amount(data.rollup.liquidity)],['Moms i aktuelle perioder',amount(data.rollup.vatPayable)],['Åbne opgaver',count(data.rollup.openTaskCount)]].map(([label,value])=><div className="rollup-cell" key={label}><span className="rollup-label">{label}</span><span className="rollup-value">{value}</span></div>)}
+ return <section><PageHeader title="Portefølje" actions={<ButtonLink  to="/companies/new">Tilføj virksomhed</ButtonLink>}/>
+  <div {...stylex.props(cockpitStyles.rowActions)}><label>Pr. dato<Input type="date" value={asOf||data.asOf} onChange={e=>setAsOf(e.target.value)}/></label><Button variant="secondary" onClick={state.reload}>Hent portefølje igen</Button></div>
+  <p>{data.companyCount} virksomheder · pr. {data.asOf}</p><p {...stylex.props(cockpitStyles.muted)}>Opgaver viser aktuel åben status for kilder til og med den valgte dato.</p><p {...stylex.props(cockpitStyles.muted)}>Overblik over virksomheder, du aktuelt har adgang til. Beløbene er ikke et konsolideret koncernregnskab.</p>
+  <div {...stylex.props(cockpitStyles.rollupStrip)} role="group" aria-label="Tværgående overblik">
+   {[['Samlet resultat',amount(data.rollup.resultat)],['Samlet likviditet',amount(data.rollup.liquidity)],['Moms i aktuelle perioder',amount(data.rollup.vatPayable)],['Åbne opgaver',count(data.rollup.openTaskCount)]].map(([label,value])=><div {...stylex.props(cockpitStyles.rollupCell)} key={label}><span {...stylex.props(...[cockpitStyles.rollupCellRollupLabel])}>{label}</span><span {...stylex.props(...[cockpitStyles.rollupCellRollupValue])}>{value}</span></div>)}
   </div>
   {!data.rollup.bankBalanceComplete&&<p role="status">Samlet banksaldo er ikke tilgængelig: {data.rollup.unknownBankCompanyCount} synlige virksomheder mangler et fuldt kendt kontoudtogsgrundlag.</p>}
-  {data.companies.length===0?<Onboarding onCreated={()=>state.reload()}/>:<div className="company-grid">{data.companies.map(company=><article className="card" key={company.slug} aria-label={company.name}><h2>{company.name}</h2><p>{company.fiscalYear??"Regnskabsår ikke tilgængeligt"} · {company.periodStart??"Ukendt start"} – {company.periodEnd??"Ukendt slut"}</p>
+  {data.companies.length===0?<Onboarding onCreated={()=>state.reload()}/>:<div {...stylex.props(cockpitStyles.companyGrid)}>{data.companies.map(company=><article {...stylex.props(cockpitStyles.card)} key={company.slug} aria-label={company.name}><h2>{company.name}</h2><p>{company.fiscalYear??"Regnskabsår ikke tilgængeligt"} · {company.periodStart??"Ukendt start"} – {company.periodEnd??"Ukendt slut"}</p>
    <dl>{[['Omsætning',amount(company.omsaetning)],['Resultat',amount(company.resultat)],['Banksaldo',amount(company.actualBankBalance)],['Moms i perioden',amount(company.vat?.payable??null)],['Åbne fakturaer',count(company.openInvoiceCount)],['Åbne opgaver',count(company.openTaskCount)]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-   {company.vat?.periodStart&&company.vat.periodEnd&&<p className="muted">Momsperiode {company.vat.periodStart} – {company.vat.periodEnd}, opgjort til {company.vat.cutoff??data.asOf}.</p>}
+   {company.vat?.periodStart&&company.vat.periodEnd&&<p {...stylex.props(cockpitStyles.muted)}>Momsperiode {company.vat.periodStart} – {company.vat.periodEnd}, opgjort til {company.vat.cutoff??data.asOf}.</p>}
    {Object.entries(company.availability).filter(([key,value])=>key!=="tasks"&&value.reason).map(([key,value])=><p key={key}>{availabilityMessage(value.reason??"unavailable")}</p>)}
    {company.taskGroups.length>0&&<ul>{company.taskGroups.map(group=><li key={group.type}>{group.link?<ButtonLink to={group.link}>{group.label} · {group.count}</ButtonLink>:<>{group.label} · {group.count}</>}</li>)}</ul>}
-   {company.limitations.map(message=><p className="muted" key={message}>{message}</p>)}<p>Ledgerkontrol: {company.audit.status==="verified"?"Kontrolleret journalhashkæde":"Ikke tilgængelig"}</p>
-   <div className="row-actions"><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink><ButtonLink to={`/companies/${company.slug}/likviditet`}>Se pengestrøm</ButtonLink></div>
+   {company.limitations.map(message=><p {...stylex.props(cockpitStyles.muted)} key={message}>{message}</p>)}<p>Ledgerkontrol: {company.audit.status==="verified"?"Kontrolleret journalhashkæde":"Ikke tilgængelig"}</p>
+   <div {...stylex.props(cockpitStyles.rowActions)}><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink><ButtonLink to={`/companies/${company.slug}/likviditet`}>Se pengestrøm</ButtonLink></div>
   </article>)}</div>}
  </section>;
 }

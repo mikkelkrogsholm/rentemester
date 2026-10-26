@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 // DocumentBookExpenseModal — the cockpit's one-click bogføring of an
 // "Ikke bogført" bilag against an unmatched outgoing bank transaction (#407).
 //
@@ -246,17 +248,24 @@ export function DocumentBookExpenseForm({
     options !== null && options.expenseAccounts.length === 0;
 
   return (
-    <Dialog title="Bogfør bilag" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef}>
-      <div className="workflow-form" onChange={() => setDirty(true)}>
+    <Dialog title="Bogfør bilag" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
+      <div {...stylex.props(cockpitStyles.workflowForm)} onChange={() => setDirty(true)}>
         {done ? (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalBodyP,
+								)}>
                 Bilaget blev bogført som journalpost{" "}
-                <strong>{done.entryId ?? "—"}</strong>.
+                <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{done.entryId ?? "—"}</strong>.
               </p>
               {done.grossAmount !== null && (
-                <p className="muted">
+                <p {...stylex.props(cockpitStyles.muted)}>
                   Bruttobeløb: {formatKroner(done.grossAmount, currency)} ·
                   {currency !== "DKK" && done.grossAmountDkk !== null && (
                     <> {formatKroner(done.grossAmountDkk, "DKK")} ·</>
@@ -273,12 +282,12 @@ export function DocumentBookExpenseForm({
                 </p>
               )}
             </div>
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button
                 type="button"
-                className="btn"
+
                 ref={closeRef}
-                onClick={guard.dismiss}
+                onClick={guard.dismiss} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Luk
               </Button>
@@ -286,9 +295,9 @@ export function DocumentBookExpenseForm({
           </>
         ) : (
           <>
-            <div className="modal-body">
+            <div {...stylex.props(cockpitStyles.modalBody)}>
               {options === null && !loadError && (
-                <p className="muted">Henter bogføringsdata…</p>
+                <p {...stylex.props(cockpitStyles.muted)}>Henter bogføringsdata…</p>
               )}
               {nativeInternalVoucher && <p role="status">Internt bilag: ekstern leverandørmoms valideres ikke. Serveren kontrollerer fortsat det bundne bankbilag, bankdatoen og momsfri behandling.</p>}
               {nativeInternalVoucher && !nativeBoundInternalVoucher && <p role="alert">Det bundne bankbilag er ikke tilgængeligt. Opdatér bilag og bank, før du bogfører.</p>}
@@ -297,8 +306,15 @@ export function DocumentBookExpenseForm({
               {providerBlock.blocked && !preflightBusy && !review && <UnknownMutationNotice onRefresh={() => setPreflightReload(n => n + 1)} onRelease={providerBlock.release} persistent={providerBlock.persistent} verifyPersistence={providerBlock.verifyPersistence} />}
               {doc && (
                 <>
-                  <p>
-                    <strong>
+                  <p {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalBodyP,
+										)}>
+                    <strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
                       {doc.documentType === "internal_voucher"
                         ? "Internt bilag"
                         : doc.supplierName ?? "Ukendt leverandør"}
@@ -310,7 +326,7 @@ export function DocumentBookExpenseForm({
                       : "—"}{" "}
                     inkl. moms
                   </p>
-                  <p className="muted">
+                  <p {...stylex.props(cockpitStyles.muted)}>
                     Vælg den udgiftskonto bilaget hører til. {doc.documentType === "internal_voucher"
                       ? "Banktransaktionen og den momsfrie behandling er låst til bilagets evidens. "
                       : "Vælg også den banktransaktion det betaler. "}Selve posteringen og bilagets
@@ -318,18 +334,18 @@ export function DocumentBookExpenseForm({
                     via kommandolinjen.
                   </p>
                   {(doc.supplierCountryCode || doc.supplierIdentifierKind || doc.supplierIdentityStatus) && (
-                    <p className="muted">
+                    <p {...stylex.props(cockpitStyles.muted)}>
                       Leverandøridentitet: {doc.supplierCountryCode ?? "—"} · {doc.supplierIdentifierKind ?? "—"} · {doc.supplierIdentityStatus ?? "—"}
                       {doc.supplierVatOrCvr ? ` · ${doc.supplierVatOrCvr}` : ""}
                     </p>
                   )}
                   {doc.purchaseVatLines && doc.purchaseVatLines.length > 0 && (
-                    <div className="muted" role="group" aria-label="Momsfordeling">
+                    <div {...stylex.props(cockpitStyles.muted)} role="group" aria-label="Momsfordeling">
                       Momsfordeling: {doc.purchaseVatLines.map((line) => `${line.classification}: ${formatKroner(line.netAmount, currency)} + ${formatKroner(line.vatAmount ?? 0, currency)}`).join(" · ")}
                     </div>
                   )}
                   {visiblePreflight && (
-                    <div className="muted" role="status">
+                    <div {...stylex.props(cockpitStyles.muted)} role="status">
                       Momsvalidering: {{ DK: "Danmark", EU: "EU", NON_EU: "Uden for EU", CONFLICT: "Modstridende landeoplysninger" }[visiblePreflight.derivedRegion]}
                       {visiblePreflight.requiredValidation ? ` · kræver ${visiblePreflight.requiredValidation}` : " · ingen ekstern validering kræves"}
                       {visiblePreflight.cache.freshUntil ? ` · evidens gyldig til ${visiblePreflight.cache.freshUntil}` : ""}.
@@ -338,7 +354,7 @@ export function DocumentBookExpenseForm({
                       {visiblePreflight.exception && <p>Undtagelse ({visiblePreflight.exception.status}): {visiblePreflight.exception.message} {visiblePreflight.exception.requiredAction}</p>}
                       {"evidence" in visiblePreflight && (visiblePreflight as NativeDocumentVatPreflight).evidence.map(row => <p key={row.id}>{row.event_type} · {row.provider_status} · {row.created_at}</p>)}
                       {visiblePreflight.applyWouldCallProvider && (
-                        <Button type="button" className="btn btn-secondary" disabled={busy || uncertain || preflightBusy || !allowed} requiredPermission="company.external-lookup" onClick={reviewPreflight}>
+                        <Button type="button"  disabled={busy || uncertain || preflightBusy || !allowed} requiredPermission="company.external-lookup" onClick={reviewPreflight}>
                           {preflightBusy ? "Validerer…" : "Hent momsvalidering"}
                         </Button>
                       )}
@@ -351,32 +367,63 @@ export function DocumentBookExpenseForm({
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
             {outcome.feedback}
-            {readBack && uncertain && <section className="card" role="status" aria-label="Bilagsstatus fra serveren">
-              <h2>Bilagsstatus fra serveren</h2>
-              {readBack.some(document => document.journalEntryId !== null) ? <><p>Serveren viser følgende tilknyttede posteringer. Kontrollér, at de svarer til din handling.</p><ul>{readBack.filter(document => document.journalEntryId !== null).map((document, index) => <li key={`${document.journalEntryId}:${index}`}>{document.journalEntryNo ?? `Journalpost ${document.journalEntryId}`} · {document.journalEntryText ?? "Ingen posteringstekst"}</li>)}</ul></> : <p>Serveren viser endnu ingen tilknyttede posteringer. Det afklarer ikke i sig selv den afbrudte handling.</p>}
-              <p>Bogføring er fortsat blokeret. Gennemgå bilagsdetaljerne og revisionssporet ved tvivl.</p>
+            {readBack && uncertain && <section {...stylex.props(cockpitStyles.card)} role="status" aria-label="Bilagsstatus fra serveren">
+              <h2 {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.h2,
+									)}>Bilagsstatus fra serveren</h2>
+              {readBack.some(document => document.journalEntryId !== null) ? <><p {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>Serveren viser følgende tilknyttede posteringer. Kontrollér, at de svarer til din handling.</p><ul {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{readBack.filter(document => document.journalEntryId !== null).map((document, index) => <li key={`${document.journalEntryId}:${index}`} {...stylex.props(
+															cockpitStyles.element,
+															cockpitStyles.focusVisible,
+														)}>{document.journalEntryNo ?? `Journalpost ${document.journalEntryId}`} · {document.journalEntryText ?? "Ingen posteringstekst"}</li>)}</ul></> : <p {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Serveren viser endnu ingen tilknyttede posteringer. Det afklarer ikke i sig selv den afbrudte handling.</p>}
+              <p {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Bogføring er fortsat blokeret. Gennemgå bilagsdetaljerne og revisionssporet ved tvivl.</p>
             </section>}
-            {loadError && <Banner kind="error">{loadError} <Button variant="secondary" onClick={optionsState.reload}>Prøv igen</Button></Banner>}
+            {loadError && <Banner kind="error">{loadError} <Button variant="secondary" onClick={optionsState.reload} xstyle={[cockpitStyles.buttonComposition]}>Prøv igen</Button></Banner>}
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Udgiftskonto
               {options === null ? (
-                <Select disabled>
-                  <option>Henter konti…</option>
+                <Select disabled xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}>
+                  <option {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Henter konti…</option>
                 </Select>
               ) : noAccounts ? (
-                <Select disabled>
-                  <option>Ingen udgiftskonti — kør først kontoplanen.</option>
+                <Select disabled xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}>
+                  <option {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Ingen udgiftskonti — kør først kontoplanen.</option>
                 </Select>
               ) : (
                 <Select
                   value={expenseAccountNo}
                   onChange={(e) => setExpenseAccountNo(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
                 >
-                  <option value="">— vælg konto —</option>
+                  <option value="" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>— vælg konto —</option>
                   {options.expenseAccounts.map((a) => (
-                    <option key={a.accountNo} value={a.accountNo}>
+                    <option key={a.accountNo} value={a.accountNo} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
                       {a.accountNo} · {a.name}
                     </option>
                   ))}
@@ -384,15 +431,21 @@ export function DocumentBookExpenseForm({
               )}
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Banktransaktion (uafstemt, udgående)
               {options === null ? (
-                <Select disabled>
-                  <option>Henter banktransaktioner…</option>
+                <Select disabled xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}>
+                  <option {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Henter banktransaktioner…</option>
                 </Select>
               ) : noneToMatch ? (
-                <Select disabled>
-                  <option>
+                <Select disabled xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}>
+                  <option {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>
                     Ingen uafstemte udgående banktransaktioner — importér først
                     bank-CSV.
                   </option>
@@ -406,11 +459,17 @@ export function DocumentBookExpenseForm({
                     const v = e.target.value;
                     setBankTransactionId(v === "" ? "" : Number(v));
                   }}
-                  disabled={busy || uncertain || doc?.documentType === "internal_voucher"}
+                  disabled={busy || uncertain || doc?.documentType === "internal_voucher"} xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
                 >
-                  <option value="">— vælg banktransaktion —</option>
+                  <option value="" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>— vælg banktransaktion —</option>
                   {options.unmatchedOutgoingBank.map((t) => (
-                    <option key={t.id} value={String(t.id)}>
+                    <option key={t.id} value={String(t.id)} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
                       {t.date} · {t.text} ·{" "}
                       {formatKroner(t.amount, t.currency)}
                     </option>
@@ -419,7 +478,7 @@ export function DocumentBookExpenseForm({
               )}
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Moms-behandling (valgfri — udledes ellers af kontoen)
               <Select
                 value={vatTreatment}
@@ -436,10 +495,16 @@ export function DocumentBookExpenseForm({
                   doc?.documentType === "internal_voucher"
                 }
               >
-                <option value="">— udled fra konto —</option>
+                <option value="" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>— udled fra konto —</option>
                 {(Object.keys(VAT_TREATMENT_LABELS) as ExpenseVatTreatment[]).map(
                   (k) => (
-                    <option key={k} value={k}>
+                    <option key={k} value={k} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>
                       {VAT_TREATMENT_LABELS[k]}
                     </option>
                   ),
@@ -447,10 +512,10 @@ export function DocumentBookExpenseForm({
               </Select>
             </label>
 
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button
                 type="button"
-                className="btn secondary"
+
                 onClick={guard.onClose}
                 disabled={busy || uncertain}
                 ref={closeRef}
@@ -459,7 +524,7 @@ export function DocumentBookExpenseForm({
               </Button>
               <Button
                 type="button"
-                className="btn"
+
                 requiredPermission="company.ledger.post" onClick={handleBook}
                 disabled={
                   busy || uncertain || visiblePreflight?.ok === false || preflightBusy || nativeValidationBlocked ||

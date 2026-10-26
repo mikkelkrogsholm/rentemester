@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
 // ArchivedBanner — the "Arkiveret regnskabsår — skrivebeskyttet" notice shown
 // above an archived year's data in the core views (Runde 3, iteration 10).
 //
@@ -8,24 +10,51 @@
 // class already used by the Arkiv view.
 
 export function ArchivedBanner({
-  year,
-  source,
+	year,
+	source,
 }: {
-  year: string;
-  /** The archive's source system, e.g. "dinero"; null when unknown. */
-  source: string | null;
+	year: string;
+	/** The archive's source system, e.g. "dinero"; null when unknown. */
+	source: string | null;
 }) {
-  return (
-    <div className="card archive-banner">
-      <span className="flag warning">Arkiveret</span>
-      <p>
-        <strong>Arkiveret regnskabsår {year} — skrivebeskyttet.</strong>{" "}
-        Tallene er importeret fra{" "}
-        {source
-          ? `virksomhedens tidligere ${source}-regnskab`
-          : "et tidligere regnskab"}{" "}
-        og ligger uden for den aktive bogføring. De kan ikke redigeres.
-      </p>
-    </div>
-  );
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.card,
+				cockpitStyles.archiveBanner,
+			)}
+		>
+			<span
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.flag,
+					cockpitStyles.flagWarning,
+					cockpitStyles.archiveBannerFlag,
+				)}
+			>
+				Arkiveret
+			</span>
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.archiveBannerP,
+				)}
+			>
+				<strong
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					Arkiveret regnskabsår {year} — skrivebeskyttet.
+				</strong>{" "}
+				Tallene er importeret fra{" "}
+				{source
+					? `virksomhedens tidligere ${source}-regnskab`
+					: "et tidligere regnskab"}{" "}
+				og ligger uden for den aktive bogføring. De kan ikke redigeres.
+			</p>
+		</div>
+	);
 }

@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { type FormEvent, useState } from "react";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { Button, Input, Select, Textarea } from "../components/ui";
@@ -37,8 +39,8 @@ export function CompanyKnowledgePanel({ slug }: { slug: string }) {
   catch { setResult("Værdi skal være gyldig JSON."); }
  }
  const disabled = busy || outcome.blocked || !confirmed;
- return <section className="card" aria-label="Virksomhedsviden">
-  <h3>Virksomhedskontekst</h3><p className="muted">Kildeunderbygget, dateret viden er rådgivende. Den ændrer aldrig bogføring automatisk. Nye erstatningsforslag skal reviewes. Identiske eksisterende erstatninger bevarer deres faktiske reviewstatus; se historikken.</p>
+ return <section {...stylex.props(cockpitStyles.card)} aria-label="Virksomhedsviden">
+  <h3>Virksomhedskontekst</h3><p {...stylex.props(cockpitStyles.muted)}>Kildeunderbygget, dateret viden er rådgivende. Den ændrer aldrig bogføring automatisk. Nye erstatningsforslag skal reviewes. Identiske eksisterende erstatninger bevarer deres faktiske reviewstatus; se historikken.</p>
   <label>Viden pr. dato <Input aria-label="Knowledge as-of" type="date" value={asOf} onChange={e => setAsOf(e.target.value)} /></label>
   <label><Input type="checkbox" checked={includeProposed} onChange={e => setIncludeProposed(e.target.checked)} /> Medtag forslag i kontekst</label>
   <Button variant="secondary" onClick={knowledge.reload}>Opdater viden</Button>

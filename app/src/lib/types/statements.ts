@@ -2,11 +2,8 @@
 // balance, multi-year overview and the read-only #197 archive.
 //
 // All money fields below are kroner (DKK with decimals) — use `formatKroner`.
-
-import type { FiscalYearEntry, StatementCompany, ReportMoney, ReportSourceMetadata } from "./common";
-
+import type { DataCoverage, FiscalYearEntry, StatementCompany, ReportMoney, ReportSourceMetadata } from "./common";
 // --- income statement (GET .../income-statement?year=) --------------------
-
 export type IncomeStatementLine = {
   accountNo: string;
   name: string;
@@ -14,7 +11,6 @@ export type IncomeStatementLine = {
   /** The same account's amount in the prior calendar year, kroner. */
   priorAmount: ReportMoney;
 };
-
 export type CompanyIncomeStatement = ReportSourceMetadata & {
   priorYearLabel?: string | null;
   slug: string;
@@ -33,15 +29,13 @@ export type CompanyIncomeStatement = ReportSourceMetadata & {
   priorTotalExpense: ReportMoney;
   result: ReportMoney;
   priorResult: ReportMoney;
+  coverage: DataCoverage;
 };
-
 export type IncomeStatementResponse = {
   ok: true;
   incomeStatement: CompanyIncomeStatement;
 };
-
 // --- balance sheet (GET .../balance?year=) --------------------------------
-
 export type BalanceLine = {
   accountNo: string;
   name: string;
@@ -53,14 +47,12 @@ export type BalanceLine = {
    */
   priorAmount: ReportMoney;
 };
-
 export type BalanceSection = {
   lines: BalanceLine[];
   total: ReportMoney;
   /** The section total one fiscal year earlier, kroner. `null` when none. */
   priorTotal: ReportMoney;
 };
-
 export type CompanyBalance = ReportSourceMetadata & {
   priorAsOfDate?: string | null;
   slug: string;
@@ -91,25 +83,26 @@ export type CompanyBalance = ReportSourceMetadata & {
    */
   priorTotalLiabilitiesAndEquity: ReportMoney;
   balanced: boolean | null;
+  coverage: DataCoverage;
 };
-
 export type BalanceResponse = {
   ok: true;
   balance: CompanyBalance;
 };
-
 // --- trial balance (GET .../trial-balance?year=) --------------------------
-
 export type TrialBalanceRow = {
   accountNo: string;
   name: string;
   type: string | null;
-  sourceRows?: Array<{lineNo:number;sourceAmount:string;amount:ReportMoney}>;
+  sourceRows?: Array<{
+    lineNo: number;
+    sourceAmount: string;
+    amount: ReportMoney;
+  }>;
   debit: ReportMoney;
   credit: ReportMoney;
   balance: ReportMoney;
 };
-
 export type CompanyTrialBalance = ReportSourceMetadata & {
   slug: string;
   selectedYear: string;
@@ -126,21 +119,17 @@ export type CompanyTrialBalance = ReportSourceMetadata & {
   totalCredit: ReportMoney;
   balanced: boolean | null;
 };
-
 export type TrialBalanceResponse = {
   ok: true;
   trialBalance: CompanyTrialBalance;
 };
-
 // --- archive / Arkiv (GET .../archive/:year) — cockpit-redesign it. 4 -------
-
 export type ArchiveBalanceRow = {
   accountNo: string;
   name: string;
   /** Closing balance, kroner, exactly as the Dinero export stored it. */
   amount: number;
 };
-
 export type CompanyArchiveYear = {
   slug: string;
   company: StatementCompany;
@@ -158,14 +147,11 @@ export type CompanyArchiveYear = {
     grossTotal: number;
   };
 };
-
 export type ArchiveResponse = {
   ok: true;
   archive: CompanyArchiveYear;
 };
-
 // --- multi-year / Flerårsoversigt (GET .../multi-year) — it. 4 --------------
-
 export type MultiYearRow = {
   periodStart?: string | null;
   periodEnd?: string | null;
@@ -188,18 +174,20 @@ export type MultiYearRow = {
   /** Egenkapitalandel — egenkapital ÷ balancesum, a 0–1 fraction; null when balancesum is 0. */
   egenkapitalandel: number | null;
 };
-
 export type CompanyMultiYear = {
   currentYear?: string | null;
   asOfDate?: string;
   archiveDetailsAvailable?: boolean;
-  unavailableYears?: Array<{ year: string; source: "archive"; reason: string }>;
+  unavailableYears?: Array<{
+    year: string;
+    source: "archive";
+    reason: string;
+  }>;
   slug: string;
   company: StatementCompany;
   /** Key figures per fiscal year, oldest→newest for charting a trend. */
   years: MultiYearRow[];
 };
-
 export type MultiYearResponse = {
   ok: true;
   multiYear: CompanyMultiYear;

@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { formatKroner, parseDanishAmount } from "../lib/format";
@@ -20,8 +22,8 @@ export function NativeReminderClaims({slug,id,onChanged,onClose}:{slug:string;id
  useEffect(()=>{if(status){setDate(d=>d||status.asOfDate);setPostDate(d=>d||status.asOfDate);setFee(f=>f||String(status.rules.maximumFeeAmount));}},[status]);
  const refresh=()=>{read.reload();onChanged();};
  const pending=status?.reminders.filter(r=>r.journalEntryId===null)??[], selected=pending.find(r=>r.reminderId===Number(reminder)), receipt=status?.incomingBankTransactions.find(r=>r.id===Number(bank));
- return <section className="card" aria-label="Rykkergebyrer og krav">
-  <h3>Rykkergebyrer og krav</h3><p className="muted">Registrering, særskilt bogføring og afstemning af en faktisk indbetaling. Der sendes ingen e-mail eller rykker automatisk. Fakturaens hovedstol skal være betalt før indbetaling på gebyrer, kompensation og renter. Hovedstolen vises i fakturaens valuta; gebyrer, kompensation og renter vises særskilt i DKK. Rentekorrektioner reducerer det bogførte krav.</p>
+ return <section {...stylex.props(cockpitStyles.card)} aria-label="Rykkergebyrer og krav">
+  <h3>Rykkergebyrer og krav</h3><p {...stylex.props(cockpitStyles.muted)}>Registrering, særskilt bogføring og afstemning af en faktisk indbetaling. Der sendes ingen e-mail eller rykker automatisk. Fakturaens hovedstol skal være betalt før indbetaling på gebyrer, kompensation og renter. Hovedstolen vises i fakturaens valuta; gebyrer, kompensation og renter vises særskilt i DKK. Rentekorrektioner reducerer det bogførte krav.</p>
   <Button type="button" variant="secondary" onClick={onClose}>Luk krav</Button>
   {error&&<Banner kind="error">{error}</Banner>}
   {!status&&!error&&<p>Henter aktuelle krav og kildebeviser…</p>}

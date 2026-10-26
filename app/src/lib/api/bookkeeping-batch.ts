@@ -32,3 +32,13 @@ export const bookkeepingBatchApi = {
   bookkeepingBatchStatus: (slug: string, runId: number, options?: ReadRequestOptions) =>
     request<BookkeepingBatchStatusResponse>(`${path(slug)}/runs/${runId}`, options),
 };
+
+// Compatibility names used by the Main workbench; keep a single native wire model.
+export type {
+  BookkeepingWorkbenchInput as WorkbenchInput,
+  BookkeepingWorkbenchResponse as WorkbenchResponse,
+  BookkeepingBatchPlanResponse as BatchPlanResponse,
+  BookkeepingBatchPersistResponse as BatchRunResponse,
+  BookkeepingBatchApproveResponse as BatchApprovalResponse,
+  BookkeepingBatchApplyResponse as BatchApplyResponse,
+} from "../types/bookkeeping-batch";

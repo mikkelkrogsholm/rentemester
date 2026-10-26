@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState, type FormEvent } from "react";
 import { PageHeader, Input, Button, ButtonLink, Select } from "../components/ui";
 import { useOptionalAuth } from "../lib/auth-context";
@@ -40,11 +42,19 @@ export function PostingRulesView() {
   }
   if (state.loading && !state.data) return <Loading label="Henter posteringsregler…" />;
   if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
-  return <section className="statement"><PageHeader title="Posteringsregler" actions={<ButtonLink to={`/companies/${slug}/batchbogfoering`}>Åbn bankens arbejdskø</ButtonLink>}><p className="muted">Selskabslokale forslag og godkendte versioner — adskilt fra Lovgrundlag.</p></PageHeader>
-    <p>En anden bruger med godkendelsesret skal godkende forslaget. Regler foreslår en konto ved præcist match på banktekst og DKK; hver bogføring kræver stadig en gennemgået kladde. Moms og andre vurderinger må ikke udledes af bankteksten.</p>
-    {native && <p>En indkøbsregel kræver et udtrykkeligt momsudfald for batchkøen. Leverandør- og bilagsfelter matches mod de faktiske kildefelter; manglende dokumentation blokerer stadig bogføring.</p>}
+  return <section {...stylex.props(cockpitStyles.statement)}><PageHeader title="Posteringsregler" actions={<ButtonLink to={`/companies/${slug}/batchbogfoering`}>Åbn bankens arbejdskø</ButtonLink>}><p {...stylex.props(cockpitStyles.muted)}>Selskabslokale forslag og godkendte versioner — adskilt fra Lovgrundlag.</p></PageHeader>
+    <p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>En anden bruger med godkendelsesret skal godkende forslaget. Regler foreslår en konto ved præcist match på banktekst og DKK; hver bogføring kræver stadig en gennemgået kladde. Moms og andre vurderinger må ikke udledes af bankteksten.</p>
+    {native && <p {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}>En indkøbsregel kræver et udtrykkeligt momsudfald for batchkøen. Leverandør- og bilagsfelter matches mod de faktiske kildefelter; manglende dokumentation blokerer stadig bogføring.</p>}
     {outcome.feedback}{error && <p role="alert">{error}</p>}{state.error && <p role="alert">{state.error}</p>}
-    <form className="card form-grid" onSubmit={propose}><h3>Foreslå regel</h3>
+    <form {...stylex.props(cockpitStyles.card, cockpitStyles.formGrid)} onSubmit={propose}><h3>Foreslå regel</h3>
       {native && <label>Regeltype<Select aria-label="Regeltype" value={purchase ? "purchase" : "hint"} onChange={e => setPurchase(e.target.value === "purchase")}><option value="hint">Banktekst som kontoforslag</option><option value="purchase">Indkøb med udtrykkelig momsbehandling</option></Select></label>}
       {native && purchase && <>
         <label>Leverandørens præcise navn<Input aria-label="Leverandørens præcise navn" value={supplier} onChange={e => setSupplier(e.target.value)} /></label>
@@ -61,7 +71,27 @@ export function PostingRulesView() {
       <label>Begrundelse<Input required value={reason} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
       <Button requiredPermission="company.review" type="submit" disabled={outcome.blocked}>Gennemgå forslag</Button>
     </form>
-    <div className="table-scroll"><table className="data"><thead><tr><th>Regel</th><th>Version</th><th>Proveniens</th><th>Evidens</th><th>Status og handling</th></tr></thead><tbody>{state.data!.length ? (state.data! as Rule[]).map(rule => <tr key={`${rule.ruleId}-${rule.version}`}><td>{rule.ruleId}<div>{rule.conditions?.attributes?.bankText} → {rule.outcome?.account}</div><p>{rule.rationale}</p>{native && <details><summary>Præcise betingelser og udfald</summary><pre>{JSON.stringify({conditions:rule.conditions,outcome:rule.outcome},null,2)}</pre></details>}</td><td>v{rule.version}</td><td>{rule.provenance}</td><td><code title={rule.payloadHash}>{rule.payloadHash.slice(0, 12)}…</code><div>Forfatter: {rule.createdBy}</div></td><td>{rule.state ?? "Status ikke oplyst"}{rule.state === "proposed" && <Button requiredPermission="company.review" disabled={outcome.blocked} onClick={() => setPending({ action: "approve", rule, slug })}>Godkend regel</Button>}{rule.state === "approved" && <Button requiredPermission="company.review" disabled={outcome.blocked} onClick={() => setPending({ action: "disable", rule, slug })}>Deaktivér regel</Button>}</td></tr>) : <tr><td colSpan={5} className="muted">Ingen posteringsregler endnu.</td></tr>}</tbody></table></div>
+    <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><thead {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.responsiveTableThead,
+						)}><tr {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTr,
+							)}><th>Regel</th><th>Version</th><th>Proveniens</th><th>Evidens</th><th>Status og handling</th></tr></thead><tbody {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.responsiveTableTbody,
+						)}>{state.data!.length ? (state.data! as Rule[]).map(rule => <tr key={`${rule.ruleId}-${rule.version}`} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}><td>{rule.ruleId}<div>{rule.conditions?.attributes?.bankText} → {rule.outcome?.account}</div><p>{rule.rationale}</p>{native && <details><summary>Præcise betingelser og udfald</summary><pre>{JSON.stringify({conditions:rule.conditions,outcome:rule.outcome},null,2)}</pre></details>}</td><td>v{rule.version}</td><td>{rule.provenance}</td><td><code title={rule.payloadHash}>{rule.payloadHash.slice(0, 12)}…</code><div>Forfatter: {rule.createdBy}</div></td><td>{rule.state ?? "Status ikke oplyst"}{rule.state === "proposed" && <Button requiredPermission="company.review" disabled={outcome.blocked} onClick={() => setPending({ action: "approve", rule, slug })}>Godkend regel</Button>}{rule.state === "approved" && <Button requiredPermission="company.review" disabled={outcome.blocked} onClick={() => setPending({ action: "disable", rule, slug })}>Deaktivér regel</Button>}</td></tr>) : <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}><td colSpan={5} {...stylex.props(cockpitStyles.muted)}>Ingen posteringsregler endnu.</td></tr>}</tbody></table></div>
     {pending && <ConfirmDialog title={pending.action === "propose" ? "Gem regelforslag" : pending.action === "approve" ? "Godkend præcis regelversion" : "Deaktivér regel"} body={<><p>{pending.action === "propose" ? `${bankText} → konto ${account}. ${reason}` : `${pending.rule!.ruleId} v${pending.rule!.version} · ${pending.rule!.payloadHash}`} Reglen bogfører ikke automatisk.</p>{pending.action === "propose" && native && <pre>{JSON.stringify(pending.proposal, null, 2)}</pre>}</>} confirmLabel="Bekræft" noteLabel={pending.action === "propose" ? undefined : "Begrundelse"} onConfirm={confirm} onClose={() => setPending(null)} onRefresh={state.reload} operationKey={`rule-${pending.rule?.payloadHash ?? ruleId}`} />}
   </section>;
 }

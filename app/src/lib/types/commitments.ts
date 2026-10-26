@@ -19,7 +19,11 @@ export type CommitmentProposal = CommitmentInput & {
   payloadHash: string;
   previousPayloadHash: string | null;
   vendorSnapshot: string;
-  schedule: Array<{ date: string; amount: number; currency: string }>;
+  schedule: Array<{
+    date: string;
+    amount: number;
+    currency: string;
+  }>;
   warnings: string[];
 };
 export type SupplierCommitmentRow = {
@@ -50,7 +54,10 @@ export type SupplierCommitmentsResponse = {
   ok: true;
   supplierCommitments: {
     slug: string;
-    company: { name: string; currency: string };
+    company: {
+      name: string;
+      currency: string;
+    };
     fiscalYears: Array<{
       label: string;
       start: string | null;
@@ -59,8 +66,15 @@ export type SupplierCommitmentsResponse = {
     }>;
     selectedYear: string;
     startDate: string;
-    vendors: Array<{ id: number; name: string }>;
-    documents: Array<{ id: number; documentNo: string | null; filename: string | null }>;
+    vendors: Array<{
+      id: number;
+      name: string;
+    }>;
+    documents: Array<{
+      id: number;
+      documentNo: string | null;
+      filename: string | null;
+    }>;
     evidenceOptions: CommitmentEvidence[];
     occurrences: Array<{
       commitmentId: string;
@@ -76,10 +90,17 @@ export type SupplierCommitmentsResponse = {
       createdAt: string;
       actor?: string;
       principal?: string;
-      payload: { reason?: string };
+      payload: {
+        reason?: string;
+      };
     }>;
     commitments: SupplierCommitmentRow[];
-    alerts: Array<{ commitmentId: string; kind: string; date: string; severity: string }>;
+    alerts: Array<{
+      commitmentId: string;
+      kind: string;
+      date: string;
+      severity: string;
+    }>;
     matches: Array<{
       commitmentId: string;
       occurrenceDate: string;
@@ -87,8 +108,12 @@ export type SupplierCommitmentsResponse = {
         amount: number | null;
         dateDays: number;
         late: boolean;
-        currency: { status: string };
-        party?: { status: string };
+        currency: {
+          status: string;
+        };
+        party?: {
+          status: string;
+        };
         documentation: string;
       };
     }>;
@@ -97,6 +122,7 @@ export type SupplierCommitmentsResponse = {
       openingCash: number | null;
       lowestPoint: number | null;
       currency: string;
+      openingBalanceVerified?: boolean;
       periods: Array<{
         weekStart: string;
         openingCash: number | null;
@@ -110,7 +136,12 @@ export type SupplierCommitmentsResponse = {
         intercompany: number;
         closingCash: number | null;
         scenarioClosingCash: number | null;
-        excluded: Array<{ source: string; amount: number; currency: string; reason?: string }>;
+        excluded: Array<{
+          source: string;
+          amount: number;
+          currency: string;
+          reason?: string;
+        }>;
         sources: Array<{
           source: string;
           amount: number;
@@ -119,7 +150,11 @@ export type SupplierCommitmentsResponse = {
           settlementStatus?: "unknown" | null;
         }>;
       }>;
-      completeness: { status?: string; included: string[]; excluded: string[] };
+      completeness: {
+        status?: string;
+        included: string[];
+        excluded: string[];
+      };
     };
   };
 };

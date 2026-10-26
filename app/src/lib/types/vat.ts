@@ -7,22 +7,24 @@ import type { FiscalYearEntry, StatementCompany } from "./common";
  * numbers an owner types into the momsangivelse. All amounts are kroner.
  */
 export type VatRubrikker = {
-  /** Salgsmoms — output VAT on domestic sales (net of bad-debt relief). */
   salgsmoms: number;
-  /** Moms af varekøb i udlandet — VAT on goods purchased abroad. */
-  momsAfVarekobUdland: number;
-  /** Moms af ydelseskøb i udlandet — reverse-charge VAT on foreign services. */
-  momsAfYdelseskobUdland: number;
-  /** Købsmoms — total deductible input VAT. */
   kobsmoms: number;
-  /** Momstilsvar — salgsmoms + udenlandsk moms − købsmoms; positive = owed. */
-  momstilsvar: number;
-  /** Rubrik A — value of goods/services bought abroad without Danish VAT. */
-  rubrikA: number;
-  /** Rubrik B — value of goods/services sold abroad without Danish VAT. */
-  rubrikB: number;
-  /** Rubrik C — value of other VAT-exempt sales. */
+  momsAfVarekobUdland: number;
+  momsAfYdelseskobUdland: number;
+  rubrikAVarer: number;
+  rubrikAYdelser: number;
+  rubrikBVarerEuSalesList: number;
+  rubrikBVarerIkkeEuSalesList: number;
+  rubrikBYdelser: number;
   rubrikC: number;
+  olieOgFlaskegasafgift: number;
+  elafgift: number;
+  naturgasOgBygasafgift: number;
+  kulafgift: number;
+  co2Afgift: number;
+  vandafgift: number;
+  momsIAlt: number;
+  wholeKronerDifferenceDkk: number;
 };
 
 /** Fields common to both registered and non-registered companies. */

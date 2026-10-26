@@ -1,15 +1,21 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
-import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { CompanyJournal } from "../lib/types";
 
 type Entry = CompanyJournal["entries"][number];
+const virtualStyles = stylex.create({
+  list: (height: number) => ({ height, position: "relative", display: "block" }),
+  row: (start: number) => ({ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${start}px)` }),
+});
 export const journalEntryKey = (entry: Entry) => entry.id ?? entry.sourceId!;
 export type VirtualJournalRowProps = {
   ref: (node: HTMLLIElement | null) => void;
   "data-index": number;
   "aria-posinset": number;
   "aria-setsize": number;
-  style: CSSProperties;
+  xstyle: stylex.StyleXStyles;
 };
 
 /** Only large journals use this measured window. Expanded rows retain their own
@@ -39,7 +45,7 @@ export function VirtualJournalList({ entries, renderEntry }: {
   useLayoutEffect(() => {
     const index = pendingFocus.current;
     if (index === null) return;
-    const button = viewport.current?.querySelector<HTMLButtonElement>(`[data-index="${index}"] .entry-summary`);
+    const button = viewport.current?.querySelector<HTMLButtonElement>(`[data-index="${index}"] [data-journal-summary]`);
     if (button) {
       pendingFocus.current = null;
       button.focus({ preventScroll: true });
@@ -47,7 +53,7 @@ export function VirtualJournalList({ entries, renderEntry }: {
   });
   // Filtering must start at a useful position, without remounting retained rows.
   useLayoutEffect(() => { virtualizer.scrollToOffset(0); }, [entries, virtualizer]);
-  return <div ref={viewport} className="journal-virtual-viewport" role="region" aria-label="Posteringer — brug pil op/ned, Page Up/Down, Home/End på en postering"
+  return <div ref={viewport} {...stylex.props(...[cockpitStyles.journalVirtualViewport])} role="region" aria-label="Posteringer — brug pil op/ned, Page Up/Down, Home/End på en postering"
     onFocusCapture={event => {
       const row = (event.target as HTMLElement).closest<HTMLElement>("[data-index]");
       if (row) setFocused(getItemKey(Number(row.dataset.index)));
@@ -56,7 +62,7 @@ export function VirtualJournalList({ entries, renderEntry }: {
       if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null);
     }}
     onKeyDown={event => {
-      if (!(event.target as HTMLElement).matches(".entry-summary")) return;
+      if (!(event.target as HTMLElement).matches("[data-journal-summary]")) return;
       const index = Number((event.target as HTMLElement).closest<HTMLElement>("[data-index]")?.dataset.index);
       const step = Math.max(1, Math.floor((viewport.current?.clientHeight ?? 540) / 54));
       const next = ({ ArrowDown: index + 1, ArrowUp: index - 1, PageDown: index + step, PageUp: index - step, Home: 0, End: entries.length - 1 } as Record<string, number>)[event.key];
@@ -67,11 +73,11 @@ export function VirtualJournalList({ entries, renderEntry }: {
       setFocused(getItemKey(target));
       virtualizer.scrollToIndex(target, { align: "auto" });
     }}>
-    <ul className="entry-list journal-virtual-list" style={{ height: virtualizer.getTotalSize() }}>
+    <ul {...stylex.props(cockpitStyles.entryList, virtualStyles.list(virtualizer.getTotalSize()))}>
       {items.map(item => renderEntry(entries[item.index]!, {
         ref: virtualizer.measureElement, "data-index": item.index,
         "aria-posinset": item.index + 1, "aria-setsize": entries.length,
-        style: { position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start}px)` },
+        xstyle: virtualStyles.row(item.start),
       }, open => setExpanded(previous => {
         const next = new Set(previous);
         const key = getItemKey(item.index);

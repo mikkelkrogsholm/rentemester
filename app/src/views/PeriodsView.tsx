@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
@@ -54,26 +56,26 @@ export function PeriodsView() {
   const data = state.data!;
 
   return (
-    <section className="periods-view">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Perioder og låsning" actions={<><div className="row-actions">
+    <section {...stylex.props(...[cockpitStyles.statement])}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Perioder og låsning" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           <Button requiredPermission="company.review"
             type="button"
-            className="btn primary"
+
             onClick={() => {
               setError(null);
               setOpenClose(true);
-            }}
+            }} xstyle={[cockpitStyles.periodsViewBtnComposition]}
           >
             Luk periode …
           </Button>
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · Periodelås
           </p>
@@ -81,81 +83,125 @@ export function PeriodsView() {
 
       </PageHeader>
 
-      <p className="muted">
+      <p {...stylex.props(cockpitStyles.muted)}>
         En lukket periode kan ikke modtage nye posteringer. En indberettet
         periode (sendt til SKAT / Erhvervsstyrelsen) kan ikke genåbnes.
         Genåbning af en lukket periode appendes til audit-log'en med en
         begrundelse.
       </p>
 
-      <section className="card">
-        <h3>Sammentælling</h3>
-        <div className="filter-bar">
-          <span className="pill">Åbne: {data.byStatus.open}</span>
-          <span className="pill warn">Lukkede: {data.byStatus.closed}</span>
-          <span className="pill">
+      <section {...stylex.props(cockpitStyles.card)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Sammentælling</h3>
+        <div {...stylex.props(cockpitStyles.filterBar)}>
+          <span {...stylex.props(...[cockpitStyles.statusChip])}>Åbne: {data.byStatus.open}</span>
+          <span {...stylex.props(...[cockpitStyles.statusChip, cockpitStyles.statusChipWarning])}>Lukkede: {data.byStatus.closed}</span>
+          <span {...stylex.props(...[cockpitStyles.statusChip])}>
             Indberettede: {data.byStatus.reported}
           </span>
         </div>
       </section>
 
       {error && (
-        <div className="callout danger" role="alert">
+        <div {...stylex.props(...[cockpitStyles.banner, cockpitStyles.bannerError])} role="alert">
           {error}
         </div>
       )}
 
-      <section className="card">
-        <h3>Perioder ({data.periods.length})</h3>
+      <section {...stylex.props(cockpitStyles.card)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Perioder ({data.periods.length})</h3>
         {data.periods.length === 0 ? (
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             Ingen lukkede perioder endnu. Lukninger fra CLI eller fra denne side
             vises her sammen med deres effective status.
           </p>
         ) : (
-          <div className="table-scroll"><table className="table">
-            <thead>
-              <tr>
-                <th>Start</th>
-                <th>Slut</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Lukket af</th>
-                <th>Reference</th>
-                <th>Handlinger</th>
+          <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}>
+            <thead {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableThead,
+								)}>
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Start</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Slut</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Type</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Status</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Lukket af</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Reference</th>
+                <th {...stylex.props(
+											cockpitStyles.periodsViewTableTableThComposition,
+										)}>Handlinger</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTbody,
+								)}>
               {data.periods.map((p) => (
-                <tr key={p.id}>
-                  <td className="entry-date">{p.periodStart}</td>
-                  <td className="entry-date">{p.periodEnd}</td>
-                  <td>{KIND_LABEL[p.kind] ?? p.kind}</td>
-                  <td>
-                    <span className={`pill status-${p.effectiveStatus}`}>
+                <tr key={p.id} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTr,
+										)}>
+                  <td {...stylex.props(cockpitStyles.entryDate)}>{p.periodStart}</td>
+                  <td {...stylex.props(cockpitStyles.entryDate)}>{p.periodEnd}</td>
+                  <td {...stylex.props(
+												cockpitStyles.periodsViewTableTableTdComposition2,
+											)}>{KIND_LABEL[p.kind] ?? p.kind}</td>
+                  <td {...stylex.props(
+												cockpitStyles.periodsViewTableTableTdComposition2,
+											)}>
+                    <span {...stylex.props(cockpitStyles.statusChip, p.effectiveStatus === "reported" ? cockpitStyles.statusChipSuccess : p.effectiveStatus === "closed" ? cockpitStyles.statusChipWarning : cockpitStyles.statusChipInfo)}>
                       {STATUS_LABEL[p.effectiveStatus] ?? p.effectiveStatus}
                     </span>
                   </td>
-                  <td className="muted">{p.closedBy ?? "—"}</td>
-                  <td className="muted">{p.reference ?? "—"}</td>
-                  <td>
+                  <td {...stylex.props(cockpitStyles.muted)}>{p.closedBy ?? "—"}</td>
+                  <td {...stylex.props(cockpitStyles.muted)}>{p.reference ?? "—"}</td>
+                  <td {...stylex.props(
+												cockpitStyles.periodsViewTableTableTdComposition2,
+											)}>
                     {data.reportingAvailable && p.effectiveStatus === "closed" && p.closePacketHash && (
                       <Button requiredPermission="company.review" variant="secondary" onClick={() => setReportTarget(p)}>Registrér indberetning</Button>
                     )}
                     {p.effectiveStatus === "closed" && (
                       <Button requiredPermission="company.review" variant="secondary"
                         type="button"
-                        className="btn small secondary"
+
                         onClick={() => {
                           setError(null);
                           setReopenTarget(p);
-                        }}
+                        }} xstyle={[cockpitStyles.periodsViewBtnComposition]}
                       >
                         Genåbn …
                       </Button>
                     )}
                     {p.effectiveStatus === "reported" && (
-                      <span className="muted">
+                      <span {...stylex.props(cockpitStyles.muted)}>
                         Indberettet — kan ikke genåbnes
                       </span>
                     )}
@@ -280,56 +326,68 @@ function ClosePeriodModal({
   };
 
   return (
-    <Dialog title="Luk periode" onClose={onClose} busy={submitting}>
+    <Dialog title="Luk periode" onClose={onClose} busy={submitting} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
 
-        <form onSubmit={submit}>
-          <label>
+        <form onSubmit={submit} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Start (YYYY-MM-DD)
             <Input disabled={outcome.blocked}
               type="date"
               value={periodStart}
               onChange={(e) => setPeriodStart(e.target.value)}
-              required
+              required xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
           {packet && <>
-            <p className="muted">Kontrolleret: {packet.blockers} blokeringer, {packet.warnings} advarsler. Gennemgå resultatet og vælg derefter “Gem review og luk”.</p>
+            <p {...stylex.props(cockpitStyles.muted)}>Kontrolleret: {packet.blockers} blokeringer, {packet.warnings} advarsler. Gennemgå resultatet og vælg derefter “Gem review og luk”.</p>
             {packet.blockers > 0 && <>
-              <div className="callout danger">Blokeringer: {packet.items.filter((item) => item.status === "blocked" || item.status === "unavailable").map((item) => item.code).join(", ")}</div>
-              {can("company.period.force-close") && <label className="confirm-ack"><Input disabled={outcome.blocked} type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} /> Anmod om force-lukning af alene fravigelige blokeringer</label>}
-              {force && <label>Begrundelse for force-lukning<Textarea disabled={outcome.blocked} value={forceReason} onChange={(e) => setForceReason(e.target.value)} required rows={2} /></label>}
+              <div {...stylex.props(...[cockpitStyles.banner, cockpitStyles.bannerError])}>Blokeringer: {packet.items.filter((item) => item.status === "blocked" || item.status === "unavailable").map((item) => item.code).join(", ")}</div>
+              {can("company.period.force-close") && <label {...stylex.props(...[cockpitStyles.modalCheckbox])}><Input disabled={outcome.blocked} type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} xstyle={[cockpitStyles.inputComposition]} /> Anmod om force-lukning af alene fravigelige blokeringer</label>}
+              {force && <label {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Begrundelse for force-lukning<Textarea disabled={outcome.blocked} value={forceReason} onChange={(e) => setForceReason(e.target.value)} required rows={2} xstyle={[cockpitStyles.textareaComposition]} /></label>}
             </>}
           </>}
-          <label>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Slut (YYYY-MM-DD)
             <Input disabled={outcome.blocked}
               type="date"
               value={periodEnd}
               onChange={(e) => setPeriodEnd(e.target.value)}
-              required
+              required xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
-          <label>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Type
             <Select aria-label="Type" disabled={outcome.blocked}
               value={kind}
               onChange={(e) => setKind(e.target.value as AccountingPeriodKind)}
             >
-              <option value="vat_period">Momsperiode</option>
-              <option value="fiscal_year">Regnskabsår</option>
-              <option value="custom">Andet</option>
+              <option value="vat_period" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Momsperiode</option>
+              <option value="fiscal_year" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Regnskabsår</option>
+              <option value="custom" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Andet</option>
             </Select>
           </label>
-          <label>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Reference (valgfri)
             <Input disabled={outcome.blocked}
               type="text"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              placeholder="fx Q1 2026 momsangivelse"
+              placeholder="fx Q1 2026 momsangivelse" xstyle={[cockpitStyles.inputComposition]}
             />
           </label>
           {/* #301: a future period-end means the period is not over yet. Warn
@@ -337,34 +395,37 @@ function ClosePeriodModal({
               close can go through. */}
           {periodEndsInFuture && (
             <>
-              <div className="callout danger" role="alert">
-                Perioden er <strong>ikke afsluttet endnu</strong> — slutdatoen{" "}
+              <div {...stylex.props(...[cockpitStyles.banner, cockpitStyles.bannerError])} role="alert">
+                Perioden er <strong {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>ikke afsluttet endnu</strong> — slutdatoen{" "}
                 {periodEnd} ligger i fremtiden. Lukker du nu, blokeres bogføring
                 med dato i perioden. Luk normalt først perioden, når den er
                 forbi. En periode lukket ved en fejl kan genåbnes herfra.
               </div>
-              <label className="confirm-ack">
+              <label {...stylex.props(...[cockpitStyles.modalCheckbox])}>
                 <Input disabled={outcome.blocked}
                   type="checkbox"
                   checked={futureEndAcknowledged}
-                  onChange={(e) => setFutureEndAcknowledged(e.target.checked)}
+                  onChange={(e) => setFutureEndAcknowledged(e.target.checked)} xstyle={[cockpitStyles.inputComposition]}
                 />
                 Jeg forstår at perioden ikke er afsluttet, og vil lukke den
                 alligevel.
               </label>
             </>
           )}
-          <div className="row-actions">
+          <div {...stylex.props(cockpitStyles.rowActions)}>
             <Button requiredPermission={force ? "company.period.force-close" : "company.review"}
               type="submit"
-              className="btn primary"
+
               disabled={
                 outcome.blocked || (submitting || (periodEndsInFuture && !futureEndAcknowledged) || (packet !== null && packet.blockers !== 0 && (!force || !forceReason.trim())))
               }
             >
               {submitting ? "Arbejder …" : packet ? "Gem review og luk" : "Kontrollér"}
             </Button>
-            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
+            <Button variant="secondary" type="button"  onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}>
               Annullér
             </Button>
           </div>
@@ -416,35 +477,35 @@ function ReopenPeriodModal({
   };
 
   return (
-    <Dialog title="Genåbn periode" onClose={onClose} busy={submitting}>
+    <Dialog title="Genåbn periode" onClose={onClose} busy={submitting} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
 
-        <p className="muted">
+        <p {...stylex.props(cockpitStyles.muted)}>
           {target.periodStart} – {target.periodEnd} ({KIND_LABEL[target.kind]})
           . Din begrundelse gemmes ordret i revisionssporet.
         </p>
-        <form onSubmit={submit}>
-          <label>
+        <form onSubmit={submit} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Begrundelse (påkrævet)
             <Textarea disabled={outcome.blocked}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               required
-              placeholder="fx 'Bilag indlæst for sent — postering skal korrigeres'"
+              placeholder="fx 'Bilag indlæst for sent — postering skal korrigeres'" xstyle={[cockpitStyles.textareaComposition]}
             />
           </label>
-          <div className="row-actions">
+          <div {...stylex.props(cockpitStyles.rowActions)}>
             <Button requiredPermission="company.review"
               type="submit"
-              className="btn primary"
+
               disabled={outcome.blocked || (submitting || !reason.trim())}
             >
               {submitting ? "Genåbner …" : "Genåbn periode"}
             </Button>
-            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
+            <Button variant="secondary" type="button"  onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}>
               Annullér
             </Button>
           </div>

@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import * as stylex from "@stylexjs/stylex";
 import { PageHeader } from "../components/ui";
 // First-run onboarding. Shown when the workspace has no companies yet — it
@@ -12,19 +13,19 @@ export function Onboarding({
   onCreated: (slug: string) => void;
 }) {
   return (
-    <section>
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
       <PageHeader title="Velkommen til Rentemester">
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>
             Du har endnu ikke oprettet nogen virksomheder. Opret din første for
             at komme i gang.
           </p>
         </div>
       </PageHeader>
 
-      <div className={["card", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-        <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
+      <div {...stylex.props(cockpitStyles.card, viewStyles.site0)} >
+        <p {...stylex.props(cockpitStyles.muted, viewStyles.site1)} >
           Cockpittet er dit kontrolpanel: du opretter og overvåger virksomheder
           her. Du kan også bogføre direkte i cockpittet — udstede fakturaer,
           importere bankudtog (CSV) og indlæse bilag. I Rust-appen finder du
@@ -35,7 +36,7 @@ export function Onboarding({
           kræver ikke kommandolinjen. Lønhåndtering håndteres stadig via
           kommandolinjen.
         </p>
-        <p className="muted">
+        <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>
           Efter eksport kontrollerer du filen i desktopappens menu Backup →
           Kontrollér eksporteret backup… med en separat betroet offentlig nøgle.
           Vejledningen under Hent workspace-backup forklarer lokal nøglelagring

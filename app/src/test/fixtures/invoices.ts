@@ -55,6 +55,7 @@ export function invoices(
     totalGross: 18750,
     totalOpen: 6250,
     overdueCount: 1,
+    coverage: { kind: "current", label: "Aktuel bogføring", asOfDate: "2026-06-30", comparison: "available", provenance: "native", details: [] },
     ...over,
   };
 }

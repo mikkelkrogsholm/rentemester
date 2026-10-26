@@ -1,3 +1,4 @@
+import { COMPANY_ROUTE_REGISTRY, COMPANY_TASK_AREAS } from "../company-route-registry";
 import { expect, test, vi } from "bun:test";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -21,7 +22,7 @@ async function mount(query: string) {
   return result;
 }
 const reports = [
-  ["Overblik", ""], ["Posteringer", "/posteringer"],
+  ["Status", ""], ["Posteringer", "/posteringer"],
   ["Saldobalance", "/saldobalance"], ["Resultatopgørelse", "/resultatopgorelse"], ["Balance", "/balance"],
 ];
 
@@ -32,7 +33,7 @@ test("actual shell retains archive source for all five reports and clicked colli
     expect(within(nav).getByRole("link", { name: label, hidden: true }))
       .toHaveAttribute("href", `/companies/synthetic${segment}?year=2024&source=archive`);
   }
-  await userEvent.click(within(nav).getByText("Rapporter og planlægning", { exact: true }));
+  await userEvent.click(within(nav).getByText("Sider i Rapporter", { exact: true }));
   await userEvent.click(within(nav).getByRole("link", { name: "Balance" }));
   expect(screen.getByTestId("location")).toHaveTextContent("/companies/synthetic/balance?year=2024&source=archive");
 });
@@ -51,7 +52,7 @@ test("native cashflow exposes the registered shifted fiscal selector in the actu
     {label:"2025/26",start:"2025-07-01",end:"2026-06-30",source:"live" as const,selectable:true},
     {label:"2026/27",start:"2026-07-01",end:"2027-06-30",source:"live" as const,selectable:true},
   ];
-  renderAt(<AuthProvider hosted={false} backend="rust"><CompanyNavigationShell><CockpitLayout>
+  renderAt(<AuthProvider hosted={false} backend="rust"><CompanyNavigationShell navigation={{routes: COMPANY_ROUTE_REGISTRY, areas: COMPANY_TASK_AREAS}} rendersNavigation><CockpitLayout>
     <CompanyNav slug="synthetic" years={years} selectedYear="2025/26" onYearChange={()=>{}}/><Location/>
   </CockpitLayout></CompanyNavigationShell></AuthProvider>,{route:"/companies/synthetic/likviditet?year=2025%2F26&source=live",path:"*"});
   const selector=await screen.findByLabelText("Vælg regnskabsår");

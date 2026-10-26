@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
@@ -19,6 +21,6 @@ export function BankExpenseModal({ slug, transaction, onReconciled, onClose }: B
     {documents.loading && <Loading />}
     {documents.error && <ErrorState message={documents.error} />}
     {documents.data && <><label htmlFor="bank-expense-document">Bilag</label><Select id="bank-expense-document" value={selected} onChange={event => setSelected(event.target.value)}><option value="">Vælg bilag…</option>{available.map(document => <option key={document.id} value={document.id}>{document.invoiceNo ?? document.documentNo ?? `Bilag ${document.id}`} · {document.supplierName ?? document.filename ?? "Bilag"} · {document.amountIncVat === null ? "Beløb mangler" : formatKroner(document.amountIncVat, document.currency)}</option>)}</Select>{!available.length && <p>Der er ingen ubogførte købsbilag. Indlæs bilaget under Bilag først.</p>}</>}
-    <div className="row-actions"><Button variant="secondary" onClick={onClose}>Luk</Button><Button disabled={!selected} onClick={() => setReviewing(true)}>Gennemgå bilag</Button></div>
+    <div {...stylex.props(cockpitStyles.rowActions)}><Button variant="secondary" onClick={onClose}>Luk</Button><Button disabled={!selected} onClick={() => setReviewing(true)}>Gennemgå bilag</Button></div>
   </Dialog>;
 }

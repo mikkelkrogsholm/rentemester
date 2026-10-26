@@ -23,3 +23,11 @@ if (process.argv.includes("--check")) {
     throw new Error("Browser fixtures are stale. Run bun scripts/browser-fixtures.ts");
   }
 } else await Bun.write(path, output);
+
+await import("../src/test/stylex");
+const { COMPANY_ROUTE_DEFINITIONS } = await import("../src/company-route-registry");
+const routes = JSON.stringify(COMPANY_ROUTE_DEFINITIONS.map(({ element: _element, ...descriptor }) => descriptor), null, 2) + "\n";
+const routesPath = new URL("../e2e/data/routes.json", import.meta.url);
+if (process.argv.includes("--check")) {
+  if (!(await Bun.file(routesPath).exists()) || await Bun.file(routesPath).text() !== routes) throw new Error("Browser routes are stale. Run bun scripts/browser-fixtures.ts");
+} else await Bun.write(routesPath, routes);

@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Resultatopgørelse — the per-company income statement (cockpit-redesign it. 2).
@@ -40,33 +42,33 @@ export function IncomeStatementView() {
   const positive = !moneyNegative(s.result);
 
   return (
-    <section className="statement">
-      <PageHeader title="Resultatopgørelse" actions={<><div className="row-actions">
+    <section {...stylex.props(cockpitStyles.statement)}>
+      <PageHeader title="Resultatopgørelse" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           {/* #372 — CSV-eksport til Excel/Numbers/Sheets.
               #463 — PDF-eksport, ren printbar uden cockpit-chrome. */}
           {s.completeness && s.completeness.status !== "ready" ? <p>CSV og PDF kræver et fuldstændigt rapportgrundlag.</p> : <>
           <a
-            className="btn secondary"
+            {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
             href={api.statementCsvUrl(slug, "income-statement", s.selectedYear, selectedSource)}
             download
           >
             Hent CSV
           </a>
           <a
-            className="btn secondary"
+            {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
             href={api.statementPdfUrl(slug, "income-statement", s.selectedYear, selectedSource)}
             download
           >
             Hent PDF
           </a>
           </>}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {s.company.cvr ? `CVR ${s.company.cvr} · ` : ""}
             {s.company.country} · {currency} · Resultatopgørelse
           </p>
@@ -86,14 +88,24 @@ export function IncomeStatementView() {
       {s.archived && (
         <ArchivedBanner year={s.selectedYear} source={s.archivedSource} />
       )}
-      <div className="card statement-card">
-        <div className="table-scroll"><table className="data statement-table">
-          <thead>
-            <tr>
-              <th>Konto</th>
-              <th>Navn</th>
-              <th className="num">{s.selectedYear}</th>
-              <th className="num">{priorYear}</th>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard)}>
+        <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+          <thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+            <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition,
+									)}>Konto</th>
+              <th {...stylex.props(
+										cockpitStyles.statementTableScrollTableThComposition,
+									)}>Navn</th>
+              <th {...stylex.props(cockpitStyles.num)}>{s.selectedYear}</th>
+              <th {...stylex.props(cockpitStyles.num)}>{priorYear}</th>
             </tr>
           </thead>
           <StatementSection
@@ -118,11 +130,16 @@ export function IncomeStatementView() {
             year={s.selectedYear}
             source={selectedSource}
           />
-          <tbody>
-            <tr className={`statement-result ${s.result === null ? "" : positive ? "positive" : "negative"}`}>
-              <td colSpan={2}>Årets resultat</td>
-              <td className="num">{formatKroner(s.result, currency)}</td>
-              <td className="num">
+          <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+            <tr {...stylex.props(...[cockpitStyles.statementResultTd, ...(s.result === null ? [] : (positive ? [cockpitStyles.amountPositive] : [cockpitStyles.amountNegative]))])}>
+              <td colSpan={2} {...stylex.props(
+										cockpitStyles.statementTableScrollTableTdComposition10,
+									)}>Årets resultat</td>
+              <td {...stylex.props(cockpitStyles.num)}>{formatKroner(s.result, currency)}</td>
+              <td {...stylex.props(cockpitStyles.num)}>
                 {formatKroner(s.priorResult, currency)}
               </td>
             </tr>
@@ -155,39 +172,39 @@ function StatementSection({
   source?: "live" | "archive";
 }) {
   return (
-    <tbody>
-      <tr className="statement-section-head">
-        <th colSpan={4}>{heading}</th>
+    <tbody {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <tr {...stylex.props(...[cockpitStyles.statementSubhead])}>
+        <th colSpan={4} {...stylex.props(cockpitStyles.statementSectionHeadThComposition)}>{heading}</th>
       </tr>
       {lines.length === 0 ? (
-        <tr>
-          <td colSpan={4} className="empty-inline">
+        <tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+          <td colSpan={4} {...stylex.props(cockpitStyles.emptyInline)}>
             Ingen posteringer i året.
           </td>
         </tr>
       ) : (
         lines.map((line) => (
-          <tr key={line.accountNo} className="account-row">
-            <td className="account-no">
+          <tr key={line.accountNo} {...stylex.props(...[cockpitStyles.trAccountRowHover])}>
+            <td {...stylex.props(...[cockpitStyles.num])}>
               <Link
-                className="account-link"
+                {...stylex.props(...[cockpitStyles.aComposition])}
                 to={accountPostingsTo(slug, year, line.accountNo, source)}
               >
                 {line.accountNo}
               </Link>
             </td>
-            <td>{line.name}</td>
-            <td className="num">{formatKroner(line.amount, currency)}</td>
-            <td className="num muted">
+            <td {...stylex.props(cockpitStyles.tableStatementTableTdComposition4)}>{line.name}</td>
+            <td {...stylex.props(cockpitStyles.num)}>{formatKroner(line.amount, currency)}</td>
+            <td {...stylex.props(cockpitStyles.num, cockpitStyles.muted)}>
               {formatKroner(line.priorAmount, currency)}
             </td>
           </tr>
         ))
       )}
-      <tr className="statement-subtotal">
-        <td colSpan={2}>{totalLabel}</td>
-        <td className="num">{formatKroner(total, currency)}</td>
-        <td className="num muted">{formatKroner(priorTotal, currency)}</td>
+      <tr {...stylex.props(...[cockpitStyles.statementSubtotalTd])}>
+        <td colSpan={2} {...stylex.props(cockpitStyles.statementSubtotalTdComposition)}>{totalLabel}</td>
+        <td {...stylex.props(cockpitStyles.num)}>{formatKroner(total, currency)}</td>
+        <td {...stylex.props(cockpitStyles.num, cockpitStyles.muted)}>{formatKroner(priorTotal, currency)}</td>
       </tr>
     </tbody>
   );

@@ -11,6 +11,8 @@ let consoleProblems: string[] = [];
 
 beforeEach(() => {
   consoleProblems = [];
+  localStorage.clear();
+  sessionStorage.clear();
   vi.spyOn(console, "warn").mockImplementation((...args) => {
     consoleProblems.push(args.map(String).join(" "));
   });

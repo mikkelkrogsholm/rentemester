@@ -3,9 +3,10 @@ import { stylexConfig } from "../stylex.config";
 import { rm, mkdir, copyFile, readFile, writeFile, rename } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const appRoot = resolve(import.meta.dir, "..");
-const outdir = resolve(appRoot, "dist");
+const outdir = resolve(process.env.SGD_BUILD_DIR ?? appRoot, process.env.SGD_BUILD_DIR ? "app-dist" : "dist");
 
 await rm(outdir, { recursive: true, force: true });
 const result = await Bun.build({
@@ -38,5 +39,5 @@ await writeFile(htmlPath, html.replace("</head>", `<link rel="stylesheet" href="
 const fontLicenseDirectory = resolve(outdir, "licenses");
 await mkdir(fontLicenseDirectory, { recursive: true });
 for (const font of ["ibm-plex-sans", "ibm-plex-mono", "source-serif-4"]) {
-  await copyFile(resolve(appRoot, "../node_modules/@fontsource", font, "LICENSE"), resolve(fontLicenseDirectory, `${font}.txt`));
+  await copyFile(resolve(fileURLToPath(import.meta.resolve(`@fontsource/${font}/package.json`)), "..", "LICENSE"), resolve(fontLicenseDirectory, `${font}.txt`));
 }

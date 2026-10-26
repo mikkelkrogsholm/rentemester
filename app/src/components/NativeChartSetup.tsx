@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import type { AccountRole, CompanyAccounts } from "../lib/types";
@@ -35,14 +37,14 @@ export function NativeChartSetup({ slug, data, onSaved }: { slug: string; data: 
     catch (cause) { setError(cause instanceof Error ? cause.message : "Ændringen kunne ikke gemmes."); }
     finally { setBusy(false); }
   }
-  return <section className="card" aria-labelledby="chart-setup-heading">
+  return <section {...stylex.props(cockpitStyles.card)} aria-labelledby="chart-setup-heading">
     <h3 id="chart-setup-heading">Tilpas kontoplan</h3>
     {outcome.feedback}
-    {error && <p role="alert" className="warning">{error}</p>}
+    {error && <p role="alert" {...stylex.props(...[cockpitStyles.bannerWarning])}>{error}</p>}
     <fieldset disabled={busy || outcome.blocked}>
       <legend>Opret konto</legend>
       <form aria-label="Opret konto" onSubmit={e => { e.preventDefault(); void save(() => api.createAccount(slug, { accountNo: accountNo.trim(), name: name.trim(), type, normalBalance, defaultVatCode: vatCode.trim() || null })); }}>
-        <div className="modal-field-grid">
+        <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
           <label>Kontonummer<Input required maxLength={64} value={accountNo} onChange={e => setAccountNo(e.target.value)} /></label>
           <label>Kontonavn<Input required maxLength={256} value={name} onChange={e => setName(e.target.value)} /></label>
           <Field label="Kontotype"><Select value={type} onChange={e => setType(e.target.value)}>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></Field>
@@ -54,9 +56,9 @@ export function NativeChartSetup({ slug, data, onSaved }: { slug: string; data: 
     </fieldset>
     <fieldset disabled={busy || outcome.blocked}>
       <legend>Bekræft kontorolle</legend>
-      <p className="muted">Vælg hvilken konto bogføringen skal bruge til rollen. Kun aktive konti med passende type og normal saldo vises.</p>
+      <p {...stylex.props(cockpitStyles.muted)}>Vælg hvilken konto bogføringen skal bruge til rollen. Kun aktive konti med passende type og normal saldo vises.</p>
       <form aria-label="Bekræft kontorolle" onSubmit={e => { e.preventDefault(); void save(() => api.confirmAccountRole(slug, role, roleAccount)); }}>
-        <div className="modal-field-grid">
+        <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
           <Field label="Kontorolle"><Select value={role} onChange={e => { setRole(e.target.value as AccountRole); setRoleAccount(""); }}>{Object.entries(roles).map(([value, [label]]) => <option key={value} value={value}>{label}</option>)}</Select></Field>
           <Field label="Konto til rollen"><Select required value={roleAccount} onChange={e => setRoleAccount(e.target.value)}><option value="">Vælg konto</option>{compatible.map(a => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} — {a.name}</option>)}</Select></Field>
         </div>

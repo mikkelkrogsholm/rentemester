@@ -1,86 +1,155 @@
 import type { BankAccountsResponse, BankJournalLinkPlan, BankResponse } from "../types";
 import { type ReadRequestOptions, request } from "./_shared";
-
 export const bankApi = {
   /**
    * #345 — Bankkonti + CSV-mapping-profiler (read).
    */
-  bankAccounts: (slug: string, options?: ReadRequestOptions) =>
-    request<BankAccountsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/bank-accounts`,
-      options,
-    ).then((r) => r.bankAccounts),
-
+  bankAccounts: (slug: string, options?: ReadRequestOptions) => request<BankAccountsResponse>(`/api/companies/${encodeURIComponent(slug)}/bank-accounts`, options).then(r => r.bankAccounts),
   /**
    * #345 — Opretter en bankkonto.
    */
-  createBankAccount: (
-    slug: string,
-    body: {
-      name: string;
-      slug?: string;
-      bankName?: string;
-      registrationNo?: string;
-      accountNo?: string;
-      iban?: string;
-      currency?: string;
-      ledgerAccountNo?: string;
+  createBankAccount: (slug: string, body: {
+    name: string;
+    slug?: string;
+    bankName?: string;
+    registrationNo?: string;
+    accountNo?: string;
+    iban?: string;
+    currency?: string;
+    ledgerAccountNo?: string;
+  }) => request<{
+    ok: true;
+    bankAccount: {
+      id: number;
+      slug: string;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank-accounts`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
     },
-  ) =>
-    request<{ ok: true; bankAccount: { id: number; slug: string } }>(
-      `/api/companies/${encodeURIComponent(slug)}/bank-accounts`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      },
-    ).then((r) => r.bankAccount),
-
-  bank: (slug: string, year?: string, options?: ReadRequestOptions) =>
-    request<BankResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/bank${
-        year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
-      options,
-    ).then((r) => r.bank),
-
-  bankReconciliationCandidates: (slug: string, id: number, options?: ReadRequestOptions) =>
-    request<{ok:true;reconciliationCandidates:{plans:BankJournalLinkPlan[];note:string}}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-candidates?bankTransactionId=${id}`, options).then(r=>r.reconciliationCandidates),
-  linkBankJournal: (slug: string, input: {bankTransactionId:number;journalEntryId:number;planHash:string;note:string;confirm:true}) =>
-    request<{ok:true;reconciliation:{id:number;journalEntryNo:string;effect:string}}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-link`,{method:"POST",body:JSON.stringify(input)}).then(r=>r.reconciliation),
-  correctionPlan: (slug:string, bankTransactionId:number, replacementJournalEntryId:number, options?: ReadRequestOptions) =>
-    request<{ok:true;plan:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction-plan?bankTransactionId=${bankTransactionId}&replacementJournalEntryId=${replacementJournalEntryId}`, options).then(r=>r.plan),
-
-  applyCorrection: (slug:string, input:{bankTransactionId:number;replacementJournalEntryId:number;expectedReconciliationId:string;planHash:string;reason:string;idempotencyKey:string}) =>
-    request<{ok:true;correction:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction`,{method:"POST",body:JSON.stringify({...input,confirm:true})}).then(r=>r.correction),
-
+    body: JSON.stringify(body)
+  }).then(r => r.bankAccount),
+  bank: (slug: string, year?: string, options?: ReadRequestOptions) => request<BankResponse>(`/api/companies/${encodeURIComponent(slug)}/bank${year ? `?year=${encodeURIComponent(year)}` : ""}`, options).then(r => r.bank),
+  bankReconciliationCandidates: (slug: string, id: number, options?: ReadRequestOptions) => request<{
+    ok: true;
+    reconciliationCandidates: {
+      plans: BankJournalLinkPlan[];
+      note: string;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-candidates?bankTransactionId=${id}`, options).then(r => r.reconciliationCandidates),
+  linkBankJournal: (slug: string, input: {
+    bankTransactionId: number;
+    journalEntryId: number;
+    planHash: string;
+    note: string;
+    confirm: true;
+  }) => request<{
+    ok: true;
+    reconciliation: {
+      id: number;
+      journalEntryNo: string;
+      effect: string;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-link`, {
+    method: "POST",
+    body: JSON.stringify(input)
+  }).then(r => r.reconciliation),
+  correctionPlan: (slug: string, bankTransactionId: number, replacementJournalEntryId: number, options?: ReadRequestOptions) => request<{
+    ok: true;
+    plan: unknown;
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction-plan?bankTransactionId=${bankTransactionId}&replacementJournalEntryId=${replacementJournalEntryId}`, options).then(r => r.plan),
+  applyCorrection: (slug: string, input: {
+    bankTransactionId: number;
+    replacementJournalEntryId: number;
+    expectedReconciliationId: string;
+    planHash: string;
+    reason: string;
+    idempotencyKey: string;
+  }) => request<{
+    ok: true;
+    correction: unknown;
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...input,
+      confirm: true
+    })
+  }).then(r => r.correction),
+  planLegacyBinding: (slug: string, input: {
+    bankAccountId: number;
+    ledgerAccountNo: string;
+    cutoff: string;
+  }) => request<{
+    ok: true;
+    plan: {
+      planHash: string;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/legacy-binding/plan`, {
+    method: "POST",
+    body: JSON.stringify(input)
+  }).then(r => r.plan),
+  applyLegacyBinding: (slug: string, input: {
+    bankAccountId: number;
+    ledgerAccountNo: string;
+    cutoff: string;
+    planHash: string;
+    idempotencyKey: string;
+  }) => request<{
+    ok: true;
+    binding: unknown;
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/legacy-binding/apply`, {
+    method: "POST",
+    headers: {
+      "idempotency-key": input.idempotencyKey
+    },
+    body: JSON.stringify({
+      ...input,
+      confirm: true
+    })
+  }).then(r => r.binding),
   /**
    * Imports a bank-statement CSV (#213, slice 2). The browser reads the file
    * and passes its original bytes as `csvBase64`; existing text callers may
    * pass `csvContent`. The server decodes the selected format. The body
    * carries `confirm: true`.
    */
-  importBank: (slug: string, input: BankImportInput) =>
-    request<{ ok: true; import: BankImportSummary }>(
-      `/api/companies/${encodeURIComponent(slug)}/bank/import`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          ...("csvBase64" in input ? {csvBase64: input.csvBase64} : {csvContent: input.csvContent}),
-          ...(input.account ? { account: input.account } : {}),
-          ...(input.profile ? { profile: input.profile } : {}),
-          confirm: true,
-        }),
-      },
-    ).then((r) => r.import),
+  importBank: (slug: string, input: BankImportInput) => request<{
+    ok: true;
+    import: BankImportSummary;
+  }>(`/api/companies/${encodeURIComponent(slug)}/bank/import`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...("csvBase64" in input ? {
+        csvBase64: input.csvBase64
+      } : {
+        csvContent: input.csvContent
+      }),
+      ...(input.account ? {
+        account: input.account
+      } : {}),
+      ...(input.profile ? {
+        profile: input.profile
+      } : {}),
+      ...(input.statementOrder ? {
+        statementOrder: input.statementOrder
+      } : {}),
+      confirm: true
+    })
+  }).then(r => r.import)
 };
-
 /** Exactly one raw-byte or compatible text source; no client encoding inference. */
-export type BankImportInput = { account?: string; profile?: string } & (
-  | { csvBase64: string; csvContent?: never }
-  | { csvContent: string; csvBase64?: never }
-);
-
+export type BankImportInput = {
+  account?: string;
+  profile?: string;
+  statementOrder?: "ascending" | "descending";
+} & ({
+  csvBase64: string;
+  csvContent?: never;
+} | {
+  csvContent: string;
+  csvBase64?: never;
+});
 /** The bank-import result the server echoes back. */
 export type BankImportSummary = {
   importBatchId?: string;

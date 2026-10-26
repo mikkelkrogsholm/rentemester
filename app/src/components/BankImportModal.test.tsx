@@ -87,6 +87,18 @@ describe("BankImportModal", () => {
     expect(onImported).toHaveBeenCalled();
   });
 
+  test("sends explicitly selected generic statement order", async () => {
+    mockFetch(importRoute());
+    render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />);
+    await userEvent.upload(screen.getByLabelText("CSV-fil"), csvFile());
+    await userEvent.selectOptions(screen.getByLabelText("Rækkefølge i kontoudtoget (valgfri)"), "descending");
+    await userEvent.click(screen.getByRole("button", { name: "Importér" }));
+    await waitFor(() => {
+      const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find((c) => String(c[0]).includes("/bank/import"));
+      expect(JSON.parse(String((call![1] as RequestInit).body)).statementOrder).toBe("descending");
+    });
+  });
+
   test("shows a receipt with the imported count after success", async () => {
     mockFetch(importRoute({ imported: 3, exceptionsCreated: 2 }));
     render(

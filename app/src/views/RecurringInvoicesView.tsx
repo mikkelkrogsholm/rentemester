@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useOptionalAuth } from "../lib/auth-context";
 import { ScheduledRecurringView } from "./ScheduledRecurringView";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -90,25 +91,25 @@ export function RecurringInvoicesView() {
     fiscalYears.find((y) => y.label === selectedYear)?.source === "archive";
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Faktura-skabeloner" actions={<><div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Faktura-skabeloner" actions={<><div {...stylex.props(...[cockpitStyles.rowActions, viewStyles.site0])} >
           {!selectedYearArchived && (
             <Button requiredPermission="company.draft.write"
               type="button"
-              className="btn"
-              onClick={() => setCreateOpen(true)}
+
+              onClick={() => setCreateOpen(true)} xstyle={[cockpitStyles.statementBtnComposition]}
             >
               Opret skabelon
             </Button>
           )}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+          <ButtonLink  to={`/companies/${slug}/fakturaer`}>
             Tilbage til fakturaer
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             Gentagne fakturaer — den næste i hver række kan udstedes med ét
             klik. Generering er idempotent: et nyt klik på samme periode
             udsteder ikke en ny faktura.
@@ -127,24 +128,29 @@ export function RecurringInvoicesView() {
       {auth?.backend === "rust" && !selectedYearArchived && <ScheduledRecurringView key={slug} slug={slug} templates={r.templates} />}
 
       {r.templates.length === 0 ? (
-        <div className="card archived-notice">
-          <h3>Ingen skabeloner endnu</h3>
-          <p className="muted">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.archivedNoticeH3,
+						)}>Ingen skabeloner endnu</h3>
+          <p {...stylex.props(cockpitStyles.muted)}>
             Der er ikke oprettet nogen faktura-skabeloner for denne
             virksomhed. Når du har en gentagen faktura — fx et månedligt
             abonnement eller en kvartalsvis ydelse — opretter du en skabelon,
             og cockpittet udsteder den næste faktura med ét klik.
           </p>
           {selectedYearArchived ? (
-            <p className="muted">
+            <p {...stylex.props(cockpitStyles.muted)}>
               Regnskabsåret er arkiveret. Skift til et aktivt år for at oprette
               en skabelon.
             </p>
           ) : (
             <Button requiredPermission="company.draft.write"
               type="button"
-              className="btn"
-              onClick={() => setCreateOpen(true)}
+
+              onClick={() => setCreateOpen(true)} xstyle={[cockpitStyles.statementBtnComposition]}
             >
               Opret skabelon
             </Button>
@@ -153,8 +159,13 @@ export function RecurringInvoicesView() {
       ) : (
         <>
           {active.length > 0 && (
-            <div className="section">
-              <h3>Aktive ({active.length})</h3>
+            <div {...stylex.props(cockpitStyles.section)}>
+              <h3 {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h3,
+									cockpitStyles.sectionH3,
+								)}>Aktive ({active.length})</h3>
               {active.map((t) => (
                 <TemplateCard
                   key={t.id}
@@ -167,8 +178,13 @@ export function RecurringInvoicesView() {
             </div>
           )}
           {retired.length > 0 && (
-            <div className="section">
-              <h3>Tilbagetrukne ({retired.length})</h3>
+            <div {...stylex.props(cockpitStyles.section)}>
+              <h3 {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h3,
+									cockpitStyles.sectionH3,
+								)}>Tilbagetrukne ({retired.length})</h3>
               {retired.map((t) => (
                 <TemplateCard
                   key={t.id}
@@ -275,13 +291,13 @@ function TemplateCard({
   }
 
   return (
-    <div className={["card", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
+    <div {...stylex.props(...[cockpitStyles.card, viewStyles.site1])} >
     {outcome.feedback}
       <h4 {...stylex.props(viewStyles.site2)}>
         {template.name}{" "}
-        {!template.active && <span className="muted">(tilbagetrukken)</span>}
+        {!template.active && <span {...stylex.props(cockpitStyles.muted)}>(tilbagetrukken)</span>}
       </h4>
-      <p className="muted">
+      <p {...stylex.props(cockpitStyles.muted)}>
         {(template.intervalCount ?? 1) > 1 ? `hver ${template.intervalCount}. ` : ""}{INTERVAL_LABELS[template.interval]} · {nativeRecurring && (template.deliveryChannel??"manual")==="manual" ? "manuel udstedelse" : CHANNEL_LABELS[template.deliveryChannel ?? "manual"]} · næste udstedelse{" "}
         {template.nextIssueDate} · betalingsfrist {template.paymentTermsDays}{" "}
         dage
@@ -289,8 +305,8 @@ function TemplateCard({
       </p>
 
       {template.active && (!nativeRecurring || (template.deliveryChannel??"manual")==="manual") && (
-        <div className={["row-actions", stylex.props(viewStyles.site3).className].filter(Boolean).join(" ")} >
-          <label>
+        <div {...stylex.props(...[cockpitStyles.rowActions, viewStyles.site3])} >
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             Udsted som af
             <Input
               type="date"
@@ -301,7 +317,7 @@ function TemplateCard({
             />
           </label>
           <Button requiredPermission="company.draft.write"
-            className="btn"
+
             onClick={nativeRecurring?()=>setGenerating(true):generate}
             disabled={outcome.blocked || (busy || retireBusy || asOfDate.length !== 10)}
             type="button"
@@ -309,11 +325,11 @@ function TemplateCard({
             {busy ? "Genererer…" : "Generér"}
           </Button>
           <Button requiredPermission="company.draft.write" variant="secondary"
-            className="btn secondary"
+
             onClick={() => setRetiring(true)}
             disabled={outcome.blocked || busy || retireBusy}
             type="button"
-            aria-label={`Deaktivér skabelonen ${template.name}`}
+            aria-label={`Deaktivér skabelonen ${template.name}`} xstyle={[cockpitStyles.buttonComposition]}
           >
             {retireBusy ? "Deaktiverer…" : "Deaktivér"}
           </Button>
@@ -321,7 +337,7 @@ function TemplateCard({
       )}
 
       {!template.active && (
-        <p className={["muted", stylex.props(viewStyles.site4).className].filter(Boolean).join(" ")} >
+        <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site4])} >
           Skabelonen er deaktiveret og kan ikke længere generere fakturaer.
           Tidligere genererede fakturaer (nedenfor) er bevaret uændret.
         </p>
@@ -336,7 +352,10 @@ function TemplateCard({
       />}
       {retiring && <ConfirmDialog
         title={`Deaktivér skabelonen ${template.name}?`}
-        body={<p>Skabelonen kan ikke genaktiveres og kan ikke generere flere fakturaer. Tidligere fakturaer og revisionshistorik bevares. Opret en ny skabelon, hvis beløb eller frekvens skal ændres.</p>}
+        body={<p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Skabelonen kan ikke genaktiveres og kan ikke generere flere fakturaer. Tidligere fakturaer og revisionshistorik bevares. Opret en ny skabelon, hvis beløb eller frekvens skal ændres.</p>}
         confirmLabel="Deaktivér skabelon"
         confirmKind="danger"
         noteLabel="Årsag (valgfri)"
@@ -348,23 +367,49 @@ function TemplateCard({
       {notice && <Banner kind="success">{notice}</Banner>}
 
       {template.generations.length > 0 && (
-        <div className={["table-scroll", stylex.props(viewStyles.site5).className].filter(Boolean).join(" ")} >
-          <table className="data statement-table">
-            <thead>
-              <tr>
-                <th>Periode</th>
-                <th>Fakturanr.</th>
-                <th>Udstedt</th>
-                <th>Leveringsperiode</th>
+        <div {...stylex.props(...[cockpitStyles.tableScroll, viewStyles.site5])} >
+          <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+            <thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableThead,
+							)}>
+              <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}>
+                <th {...stylex.props(
+										cockpitStyles.tableStatementTableThComposition,
+									)}>Periode</th>
+                <th {...stylex.props(
+										cockpitStyles.tableStatementTableThComposition,
+									)}>Fakturanr.</th>
+                <th {...stylex.props(
+										cockpitStyles.tableStatementTableThComposition,
+									)}>Udstedt</th>
+                <th {...stylex.props(
+										cockpitStyles.tableStatementTableThComposition,
+									)}>Leveringsperiode</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTbody,
+							)}>
               {template.generations.map((g) => (
-                <tr key={g.id}>
-                  <td className="account-no">#{g.periodIndex}</td>
-                  <td className="account-no"><ButtonLink to={`/companies/${slug}/fakturaer`}>{g.invoiceNumber}</ButtonLink></td>
-                  <td className="entry-date">{g.issueDate}</td>
-                  <td>
+                <tr key={g.id} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}>
+                  <td {...stylex.props(...[cockpitStyles.num])}>#{g.periodIndex}</td>
+                  <td {...stylex.props(...[cockpitStyles.num])}><ButtonLink to={`/companies/${slug}/fakturaer`}>{g.invoiceNumber}</ButtonLink></td>
+                  <td {...stylex.props(cockpitStyles.entryDate)}>{g.issueDate}</td>
+                  <td {...stylex.props(
+											cockpitStyles.tableStatementTableTdComposition6,
+										)}>
                     {g.deliveryPeriodStart && g.deliveryPeriodEnd
                       ? `${g.deliveryPeriodStart} → ${g.deliveryPeriodEnd}`
                       : "—"}

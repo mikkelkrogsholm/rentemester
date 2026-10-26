@@ -1,6 +1,9 @@
-import { useMutationOutcome } from "../lib/useMutationOutcome";
+import * as stylex from "@stylexjs/stylex";
+import { ErrorState, Loading } from "../components/Feedback";
+import { Button, ButtonLink, Dialog, Input, PageHeader, } from "../components/ui";
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
-import { ButtonLink, Dialog, Button, Input, PageHeader } from "../components/ui";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 // Bankkonti + CSV-mapping-profiler (#345).
 //
 // Per-virksomhed liste over registrerede bankkonti + de indbyggede
@@ -10,306 +13,525 @@ import { ButtonLink, Dialog, Button, Input, PageHeader } from "../components/ui"
 // Note: pr.-konto mapping-override + sample-CSV-preview er parkeret som
 // follow-up — read-side + create-flow er nu fuld. CSV-import ad hoc
 // foregår fortsat via BankImportModal som genbruger profilerne.
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { api, ApiError } from "../lib/api";
-import { useAsync } from "../lib/useAsync";
+import { ResponsiveTable } from "../components/CockpitPrimitives";
+import { LegacyBankBindingModal } from "../components/LegacyBankBindingModal";
+import { ApiError, api } from "../lib/api";
 import type { BankAccount, CompanyBankAccounts } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
-
+import { useAsync } from "../lib/useAsync";
 export function BankAccountsView() {
-  const { slug = "" } = useParams();
-  const [openCreate, setOpenCreate] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const { slug = "" } = useParams();
+    const [openCreate, setOpenCreate] = useState(false);
+    const [legacyBinding, setLegacyBinding] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const state = useAsync<CompanyBankAccounts>((signal) => api.bankAccounts(slug, { signal }), [slug]);
+    if (state.loading && !state.data)
+        return <Loading />;
+    if (state.error && !state.data)
+        return <ErrorState message={state.error} onRetry={state.reload}/>;
+    const data = state.data!;
+    return (<section data-cockpit-page="bank-accounts" data-evidence-issue="655" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+			{state.error && (<div role="alert" {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.banner,
+						cockpitStyles.bannerWarning,
+					)}>
+					Status kunne ikke opdateres. Din formular er bevaret; oplysningerne
+					bag den er fra den seneste gennemførte læsning.
+				</div>)}
+			<PageHeader title="Bankkonti" actions={<>
+						<div {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.rowActions,
+							)}>
+							<Button requiredPermission="company.admin" type="button" onClick={() => {
+                setError(null);
+                setOpenCreate(true);
+            }} xstyle={[cockpitStyles.bankAccountsViewBtnComposition]}>
+								Opret bankkonto …
+							</Button>
+							<ButtonLink to={`/companies/${slug}/manage`} variant={"secondary"} xstyle={[cockpitStyles.bankAccountsViewBtnComposition2]}>
+								Administrér
+							</ButtonLink>
+						</div>
+					</>}>
+				<div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					<p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>
+						{data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
+						{data.company.country} · Bankkonti
+					</p>
+				</div>
+			</PageHeader>
 
-  const state = useAsync<CompanyBankAccounts>(
-    (signal) => api.bankAccounts(slug, { signal }),
-    [slug],
-  );
+			{error && (<div role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					{error}
+				</div>)}
+			{legacyBinding && (<LegacyBankBindingModal slug={slug} accounts={data.accounts} onApplied={state.reload} onClose={() => setLegacyBinding(false)}/>)}
 
-  if (state.loading && !state.data) return <Loading />;
-  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
-  const data = state.data!;
+			<section {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}>
+				<h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>
+					Bankkonti til den daglige bogføring
+				</h3>
+				<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Registrér den konto, du bruger til at hente og afstemme
+					bankbevægelser.
+				</p>
+			</section>
 
-  return (
-    <section className="bank-accounts-view">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Bankkonti" actions={<><div className="row-actions">
-          <Button requiredPermission="company.admin"
-            type="button"
-            className="btn primary"
-            onClick={() => {
-              setError(null);
-              setOpenCreate(true);
-            }}
-          >
-            Opret bankkonto …
-          </Button>
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </ButtonLink>
-        </div></>}>
-        <div>
+			<section {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}>
+				<h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>
+					Registrerede bankkonti ({data.accounts.length})
+				</h3>
+				{data.accounts.length === 0 ? (<p {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}>
+						Ingen bankkonti endnu. Opret én for at kunne importere bank-CSV via{" "}
+						<code {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.code,
+							)}>
+							BankImportModal
+						</code>{" "}
+						eller CLI'ens{" "}
+						<code {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.code,
+							)}>
+							bank import
+						</code>
+						.
+					</p>) : (<ResponsiveTable label="Registrerede bankkonti" xstyle={[cockpitStyles.tableDataComposition]}>
+						<thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableThead,
+							)}>
+							<tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Navn
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Bank
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Reg.nr.
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Konto-nr.
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									IBAN
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									SWIFT/BIC
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Kontoejer / kundenr.
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Valuta
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Ledger-konto
+								</th>
+								<th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTh,
+										cockpitStyles.responsiveTableThLastChild,
+										cockpitStyles.tableDataTh,
+									)}>
+									Status
+								</th>
+							</tr>
+						</thead>
+						<tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTbody,
+							)}>
+							{data.accounts.map((a) => (<BankAccountRow key={a.id} account={a}/>))}
+						</tbody>
+					</ResponsiveTable>)}
+			</section>
 
-          <p className="muted">
-            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
-            {data.company.country} · Bankkonti
-          </p>
-        </div>
-
-      </PageHeader>
-
-      {error && (
-        <div className="callout danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      <section className="card">
-        <h3>Registrerede bankkonti ({data.accounts.length})</h3>
-        {data.accounts.length === 0 ? (
-          <p className="muted">
-            Ingen bankkonti endnu. Opret én for at kunne importere bank-CSV via{" "}
-            <code>BankImportModal</code> eller CLI'ens <code>bank import</code>.
-          </p>
-        ) : (
-          <div className="table-scroll"><table className="table">
-            <thead>
-              <tr>
-                <th>Navn</th>
-                <th>Bank</th>
-                <th>Reg.nr.</th>
-                <th>Konto-nr.</th>
-                <th>IBAN</th>
-                <th>SWIFT/BIC</th>
-                <th>Kontoejer / kundenr.</th>
-                <th>Valuta</th>
-                <th>Ledger-konto</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.accounts.map((a) => (
-                <BankAccountRow key={a.id} account={a} />
-              ))}
-            </tbody>
-          </table></div>
-        )}
-      </section>
-
-      <section className="card">
-        <h3>Indbyggede CSV-mapping-profiler ({data.profiles.length})</h3>
-        <p className="muted">
+      <section>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Indbyggede CSV-mapping-profiler ({data.profiles.length})</h3>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}>
           Brug profilnavnet i Importér kontoudtog. Profilen angiver filens
           kolonner, separator og datoformat.
         </p>
-        <div className="table-scroll"><table className="table">
-          <thead>
-            <tr>
-              <th>Profil-navn</th>
-              <th>Bank</th>
-              <th>Separator</th>
-              <th>Encoding</th>
-              <th>Dato-format</th>
+        <div><table>
+          <thead {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.responsiveTableThead,
+						)}>
+            <tr {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTr,
+							)}>
+              <th {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTh,
+									cockpitStyles.responsiveTableThLastChild,
+									cockpitStyles.tableDataTh,
+								)}>Profil-navn</th>
+              <th {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTh,
+									cockpitStyles.responsiveTableThLastChild,
+									cockpitStyles.tableDataTh,
+								)}>Bank</th>
+              <th {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTh,
+									cockpitStyles.responsiveTableThLastChild,
+									cockpitStyles.tableDataTh,
+								)}>Separator</th>
+              <th {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTh,
+									cockpitStyles.responsiveTableThLastChild,
+									cockpitStyles.tableDataTh,
+								)}>Encoding</th>
+              <th {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTh,
+									cockpitStyles.responsiveTableThLastChild,
+									cockpitStyles.tableDataTh,
+								)}>Dato-format</th>
             </tr>
           </thead>
-          <tbody>
-            {data.profiles.map((p) => (
-              <tr key={p.name}>
-                <td>
-                  <code>{p.name}</code>
+          <tbody {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.responsiveTableTbody,
+						)}>
+            {data.profiles.map((p) => (<tr key={p.name} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}>
+                <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>
+                  <code {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.code,
+										)}>{p.name}</code>
                 </td>
-                <td>{p.label ?? p.bankName ?? "—"}</td>
-                <td>
-                  <code>{p.delimiter ?? p.separator ?? "—"}</code>
+                <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>{p.label ?? p.bankName ?? "—"}</td>
+                <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>
+                  <code {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.code,
+										)}>{p.delimiter ?? p.separator ?? "—"}</code>
                 </td>
-                <td>{p.encoding ?? "—"}</td>
-                <td>{p.dateOrder ?? "—"}</td>
-              </tr>
-            ))}
+                <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>{p.encoding ?? "—"}</td>
+                <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>{p.dateOrder ?? "—"}</td>
+              </tr>))}
           </tbody>
         </table></div>
       </section>
 
-      {openCreate && (
-        <CreateBankAccountModal
-          slug={slug}
-          onClose={() => setOpenCreate(false)}
-          onRefresh={state.reload}
-          onDone={() => {
-            setOpenCreate(false);
-            state.reload();
-          }}
-          onError={(msg) => setError(msg)}
-        />
-      )}
-    </section>
-  );
+			{openCreate && (<CreateBankAccountModal slug={slug} onClose={() => setOpenCreate(false)} onRefresh={state.reload} onDone={() => {
+                setOpenCreate(false);
+                state.reload();
+            }} onError={(msg) => setError(msg)}/>)}
+		</section>);
 }
-
-function BankAccountRow({ account }: { account: BankAccount }) {
-  return (
-    <tr>
-      <td>{account.name}</td>
-      <td>{account.bankName ?? "—"}</td>
-      <td>{account.registrationNo ?? "—"}</td>
-      <td>{account.accountNo ?? "—"}</td>
-      <td>{account.iban ?? "—"}</td>
-      <td>{account.bic ?? "—"}</td>
-      <td>{[account.accountOwner, account.customerNo].filter(Boolean).join(" / ") || "—"}</td>
-      <td>{account.currency}</td>
-      <td>{account.ledgerAccountNo ?? "—"}</td>
-      <td>
-        <span className={`pill ${account.active ? "ok" : "warn"}`}>
-          {account.active ? "Aktiv" : "Inaktiv"}
-        </span>
-      </td>
-    </tr>
-  );
-}
-
-function CreateBankAccountModal({
-  slug,
-  onClose: onDismiss,
-  onRefresh,
-  onDone,
-  onError,
-}: {
-  slug: string;
-  onClose: () => void;
-  onRefresh: () => void;
-  onDone: () => void;
-  onError: (msg: string) => void;
+function BankAccountRow({ account }: {
+    account: BankAccount;
 }) {
-  const [name, setName] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [registrationNo, setRegistrationNo] = useState("");
-  const [accountNo, setAccountNo] = useState("");
-  const [iban, setIban] = useState("");
-  const [bic, setBic] = useState("");
-  const [accountOwner, setAccountOwner] = useState("");
-  const [customerNo, setCustomerNo] = useState("");
-  const [currency, setCurrency] = useState("DKK");
-  const [ledgerAccountNo, setLedgerAccountNo] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+    return (<tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.name}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.bankName ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.registrationNo ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.accountNo ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.iban ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.bic ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{[account.accountOwner, account.customerNo]
+            .filter(Boolean)
+            .join(" / ") || "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.currency}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				{account.ledgerAccountNo ?? "—"}
+			</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				<span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					{account.active ? "Aktiv" : "Inaktiv"}
+				</span>
+			</td>
+		</tr>);
+}
+function CreateBankAccountModal({ slug, onClose: onDismiss, onRefresh, onDone, onError, }: {
+    slug: string;
+    onClose: () => void;
+    onRefresh: () => void;
+    onDone: () => void;
+    onError: (msg: string) => void;
+}) {
+    const [name, setName] = useState("");
+    const [bankName, setBankName] = useState("");
+    const [registrationNo, setRegistrationNo] = useState("");
+    const [accountNo, setAccountNo] = useState("");
+    const [iban, setIban] = useState("");
+    const [bic, setBic] = useState("");
+    const [accountOwner, setAccountOwner] = useState("");
+    const [customerNo, setCustomerNo] = useState("");
+    const [currency, setCurrency] = useState("DKK");
+    const [ledgerAccountNo, setLedgerAccountNo] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const outcome = useMutationOutcome(onRefresh);
+    const guard = useDiscardGuard(Boolean(name ||
+        bankName ||
+        registrationNo ||
+        accountNo ||
+        iban ||
+        bic ||
+        accountOwner ||
+        customerNo ||
+        ledgerAccountNo), onDismiss);
+    const { onClose } = guard;
+    const submit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (outcome.isBlocked())
+            return;
+        setSubmitting(true);
+        try {
+            await outcome.run(() => api.createBankAccount(slug, {
+                name,
+                ...(bankName ? { bankName } : {}),
+                ...(registrationNo ? { registrationNo } : {}),
+                ...(accountNo ? { accountNo } : {}),
+                ...(iban ? { iban } : {}),
+                ...(bic ? { bic } : {}),
+                ...(accountOwner ? { accountOwner } : {}),
+                ...(customerNo ? { customerNo } : {}),
+                ...(currency ? { currency } : {}),
+                ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
+            }));
+            guard.dismiss();
+            onDone();
+        }
+        catch (err) {
+            onError(err instanceof ApiError ? err.message : "Oprettelse fejlede.");
+            setSubmitting(false);
+        }
+    };
+    return (<Dialog title="Opret bankkonto" onClose={onClose} busy={submitting} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
+			{outcome.feedback}
+			{guard.confirmation}
 
-  const outcome = useMutationOutcome(onRefresh);
-  const guard = useDiscardGuard(Boolean(name || bankName || registrationNo || accountNo || iban || bic || accountOwner || customerNo || ledgerAccountNo), onDismiss);
-  const { onClose } = guard;
-
-  const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
-    setSubmitting(true);
-    try {
-      await api.createBankAccount(slug, {
-        name,
-        ...(bankName ? { bankName } : {}),
-        ...(registrationNo ? { registrationNo } : {}),
-        ...(accountNo ? { accountNo } : {}),
-        ...(iban ? { iban } : {}),
-        ...(bic ? { bic } : {}),
-        ...(accountOwner ? { accountOwner } : {}),
-        ...(customerNo ? { customerNo } : {}),
-        ...(currency ? { currency } : {}),
-        ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
-      }).catch(outcome.reject);
-      guard.dismiss();
-      onDone();
-    } catch (err) {
-      onError(
-        err instanceof ApiError ? err.message : "Oprettelse fejlede.",
-      );
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog title="Opret bankkonto" onClose={onClose} busy={submitting}>
-    {outcome.feedback}
-      {guard.confirmation}
-
-
-        <form onSubmit={submit}>
-          <label>
-            Navn (påkrævet)
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="fx 'Lunar driftskonto'"
-            />
-          </label>
-          <label>
-            Bank-navn
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              placeholder="fx 'Lunar Bank'"
-            />
-          </label>
-          <label>
-            Reg.nr.
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={registrationNo}
-              onChange={(e) => setRegistrationNo(e.target.value)}
-              placeholder="4-cifret"
-            />
-          </label>
-          <label>
-            Konto-nr.
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={accountNo}
-              onChange={(e) => setAccountNo(e.target.value)}
-            />
-          </label>
-          <label>
-            IBAN
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={iban}
-              onChange={(e) => setIban(e.target.value)}
-              placeholder="DK…"
-            />
-          </label>
-          <label>SWIFT/BIC<Input disabled={outcome.blocked} type="text" value={bic} onChange={(e) => setBic(e.target.value)} /></label>
-          <label>Kontoejer<Input disabled={outcome.blocked} type="text" value={accountOwner} onChange={(e) => setAccountOwner(e.target.value)} /></label>
-          <label>Bank-kundenr.<Input disabled={outcome.blocked} type="text" value={customerNo} onChange={(e) => setCustomerNo(e.target.value)} /></label>
-          <label>
-            Valuta
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-              maxLength={3}
-            />
-          </label>
-          <label>
-            Ledger-konto (valgfri)
-            <Input disabled={outcome.blocked}
-              type="text"
-              value={ledgerAccountNo}
-              onChange={(e) => setLedgerAccountNo(e.target.value)}
-              placeholder="fx 2000 (Bank)"
-            />
-          </label>
-          <div className="row-actions">
-            <Button requiredPermission="company.admin"
-              type="submit"
-              className="btn primary"
-              disabled={outcome.blocked || (submitting || !name.trim())}
-            >
-              {submitting ? "Opretter …" : "Opret bankkonto"}
-            </Button>
-            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
-              Annullér
-            </Button>
-          </div>
-        </form>
-
-    </Dialog>
-  );
+			<form onSubmit={submit} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Navn (påkrævet)
+					<Input disabled={outcome.blocked} type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="fx 'Lunar driftskonto'" xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Bank-navn
+					<Input disabled={outcome.blocked} type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="fx 'Lunar Bank'" xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Reg.nr.
+					<Input disabled={outcome.blocked} type="text" value={registrationNo} onChange={(e) => setRegistrationNo(e.target.value)} placeholder="4-cifret" xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Konto-nr.
+					<Input disabled={outcome.blocked} type="text" value={accountNo} onChange={(e) => setAccountNo(e.target.value)} xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					IBAN
+					<Input disabled={outcome.blocked} type="text" value={iban} onChange={(e) => setIban(e.target.value)} placeholder="DK…" xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					SWIFT/BIC
+					<Input disabled={outcome.blocked} type="text" value={bic} onChange={(e) => setBic(e.target.value)} xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Kontoejer
+					<Input disabled={outcome.blocked} type="text" value={accountOwner} onChange={(e) => setAccountOwner(e.target.value)} xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Bank-kundenr.
+					<Input disabled={outcome.blocked} type="text" value={customerNo} onChange={(e) => setCustomerNo(e.target.value)} xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Valuta
+					<Input disabled={outcome.blocked} type="text" value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={3} xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Ledger-konto (valgfri)
+					<Input disabled={outcome.blocked} type="text" value={ledgerAccountNo} onChange={(e) => setLedgerAccountNo(e.target.value)} placeholder="fx 2000 (Bank)" xstyle={[cockpitStyles.inputComposition]}/>
+				</label>
+				<div {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.rowActions,
+					)}>
+					<Button requiredPermission="company.admin" type="submit" disabled={outcome.blocked || submitting || !name.trim()} xstyle={[cockpitStyles.buttonComposition]}>
+						{submitting ? "Opretter …" : "Opret bankkonto"}
+					</Button>
+					<Button variant="secondary" type="button" onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}>
+						Annullér
+					</Button>
+				</div>
+			</form>
+		</Dialog>);
 }

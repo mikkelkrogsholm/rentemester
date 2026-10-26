@@ -576,12 +576,15 @@
     "resultat": 13234.82,
     "omsaetning": 17829.02,
     "actualBankBalance": 23654.75,
+    "bankStatementStatus": "known",
+    "bankStatementDiagnostics": [],
     "vat": {
       "payable": 3371.2,
       "deadline": "2026-09-01",
       "daysRemaining": 103
     },
     "openTaskCount": 0,
+    "attentionStatus": "clear",
     "taskGroups": [],
     "auditChainOk": true,
     "openInvoiceCount": 0,
@@ -778,6 +781,10 @@
       "daysRemaining": 103,
       "periodStatus": "open"
     },
+    "attention": {
+      "count": 0,
+      "status": "clear"
+    },
     "exceptions": {
       "count": 0,
       "rows": [],
@@ -902,7 +909,15 @@
     ],
     "totalGross": 18750,
     "totalOpen": 6250,
-    "overdueCount": 1
+    "overdueCount": 1,
+    "coverage": {
+      "kind": "current",
+      "label": "Aktuel bogføring",
+      "asOfDate": "2026-06-30",
+      "comparison": "available",
+      "provenance": "native",
+      "details": []
+    }
   },
   "mileage": {
     "slug": "acme-aps",
@@ -1286,7 +1301,15 @@
     "totalAssets": 41388.03,
     "totalLiabilitiesAndEquity": 41388.03,
     "priorTotalLiabilitiesAndEquity": 32000,
-    "balanced": true
+    "balanced": true,
+    "coverage": {
+      "kind": "current",
+      "label": "Aktuel bogføring",
+      "asOfDate": "2026-06-30",
+      "comparison": "available",
+      "provenance": "native",
+      "details": []
+    }
   },
   "incomeStatement": {
     "slug": "acme-aps",
@@ -1336,7 +1359,15 @@
     "priorTotalIncome": 0,
     "priorTotalExpense": 0,
     "result": 13234.82,
-    "priorResult": 0
+    "priorResult": 0,
+    "coverage": {
+      "kind": "current",
+      "label": "Aktuel bogføring",
+      "asOfDate": "2026-06-30",
+      "comparison": "available",
+      "provenance": "native",
+      "details": []
+    }
   },
   "journal": {
     "slug": "acme-aps",
@@ -1502,10 +1533,20 @@
       "momsAfVarekobUdland": 0,
       "momsAfYdelseskobUdland": 250,
       "kobsmoms": 1086,
-      "momstilsvar": 3371,
-      "rubrikA": 1000,
-      "rubrikB": 0,
-      "rubrikC": 0
+      "rubrikAVarer": 0,
+      "rubrikAYdelser": 1000,
+      "rubrikBVarerEuSalesList": 0,
+      "rubrikBVarerIkkeEuSalesList": 0,
+      "rubrikBYdelser": 0,
+      "rubrikC": 0,
+      "olieOgFlaskegasafgift": 0,
+      "elafgift": 0,
+      "naturgasOgBygasafgift": 0,
+      "kulafgift": 0,
+      "co2Afgift": 0,
+      "vandafgift": 0,
+      "momsIAlt": 3371,
+      "wholeKronerDifferenceDkk": 0
     }
   },
   "company": {

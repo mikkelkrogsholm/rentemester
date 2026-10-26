@@ -79,8 +79,10 @@ describe("InvoicesView — Fakturaer", () => {
     const select = await screen.findByLabelText("Vælg regnskabsår");
     await userEvent.selectOptions(select, "2025");
     const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
-    const lastUrl = String(calls[calls.length - 1]![0]);
-    expect(lastUrl).toContain("year=2025");
+    await waitFor(() => expect(calls.some(call => {
+      const url = new URL(call[0] instanceof Request ? call[0].url : String(call[0]), "http://localhost");
+      return url.pathname === "/api/companies/acme-aps/invoices" && url.searchParams.get("year") === "2025";
+    })).toBe(true));
   });
 
   test("an archived year shows an honest 'not available' state", async () => {
@@ -927,10 +929,10 @@ describe("InvoicesView — currency accuracy", () => {
 describe("InvoicesView — uncertain delivery recovery", () => {
   test("read-only status refresh never repeats an interrupted invoice email", async () => {
     const row = { ...invoices().invoices[0]!, customerEmail: "kunde@example.test" };
-    mockFetch(route({ invoices: [row] }));
+    mockFetch({ ...route({ invoices: [row] }), "POST /api/companies/acme-aps/invoices/send-email": { ok: true } });
     const originalFetch = globalThis.fetch;
     const fetchSpy = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-      if (String(input).endsWith("/invoices/send-email")) return Promise.reject(new TypeError("connection lost"));
+      if (new URL(input instanceof Request ? input.url : String(input), "http://localhost").pathname.endsWith("/invoices/send-email")) return Promise.reject(new TypeError("connection lost"));
       return originalFetch(input, init);
     });
     stubGlobal("fetch", fetchSpy);
@@ -942,7 +944,7 @@ describe("InvoicesView — uncertain delivery recovery", () => {
     expect(within(dialog).getByRole("button", { name: "Send faktura" })).toBeDisabled();
     await userEvent.click(within(dialog).getByRole("button", { name: "Kontrollér status" }));
     await waitFor(() => expect(fetchSpy.mock.calls.filter((call) => String(call[0]).includes("/invoices") && !String(call[0]).includes("send-email"))).toHaveLength(2));
-    expect(fetchSpy.mock.calls.filter((call) => String(call[0]).endsWith("/invoices/send-email"))).toHaveLength(1);
+    expect(fetchSpy.mock.calls.filter((call) => new URL(call[0] instanceof Request ? call[0].url : String(call[0]), "http://localhost").pathname.endsWith("/invoices/send-email"))).toHaveLength(1);
   });
 });
 
@@ -980,6 +982,6 @@ test("public setup API sends only confirmed registration and reads no credential
 test("native EUR-only invoices keep original rows and explicitly DKK summary totals",async()=>{
  const base=invoices();const row={...base.invoices[0]!,currency:"EUR",grossAmount:100,openBalance:100,grossAmountDkk:745,openBalanceDkk:745,fxRateToDkk:7.45};
  mockFetch(route({invoices:[row],totalGross:745,totalOpen:745,totalsCurrency:"DKK",totalGrossDkk:745,totalOpenDkk:745}));renderView();await screen.findByRole("heading",{name:"Fakturaer"});
- const gross=screen.getByRole("heading",{name:"Faktureret i alt"}).closest(".card")!;expect(gross.textContent).toContain("745,00");expect(gross.textContent).not.toContain("EUR");
+ const gross=screen.getByRole("heading",{name:"Faktureret i alt"}).parentElement!;expect(gross.textContent).toContain("745,00");expect(gross.textContent).not.toContain("EUR");
  expect(screen.getByText(/Bogført: 745,00/)).toBeInTheDocument();expect(screen.getByText(/745,00 kr. · kurs 7.45/)).toBeInTheDocument();
 });

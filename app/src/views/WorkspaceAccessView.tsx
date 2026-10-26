@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ServicePrincipalsPanel } from "../components/ServicePrincipalsPanel";
 import type { ServicePrincipal } from "../lib/api/service-principals";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -57,7 +59,7 @@ export function WorkspaceAccessView() {
     event.preventDefault();
     if (outcome.isBlocked()) return; setBusy(true); setError(null); setMessage(null);
     try {
-      await api.createWorkspaceInvitation(input).catch(outcome.reject);
+      await outcome.run(() => api.createWorkspaceInvitation(input));
       setInput((current) => ({ ...current, email: "" }));
       setMessage("Invitationen er sendt."); reload();
     } catch { setError("Invitationen kunne ikke sendes."); }
@@ -68,7 +70,7 @@ export function WorkspaceAccessView() {
     if (outcome.isBlocked()) return;
     setBusy(true); setError(null); setMessage(null);
     try {
-      await api.cancelWorkspaceInvitation(invitationId).catch(outcome.reject);
+      await outcome.run(() => api.cancelWorkspaceInvitation(invitationId));
       setMessage("Invitationen er annulleret."); reload();
     } catch { setError("Invitationen kunne ikke annulleres."); }
     finally { setBusy(false); }
@@ -77,72 +79,72 @@ export function WorkspaceAccessView() {
   async function applyPending() {
     if (!pending || outcome.isBlocked()) return;
     if (pending.kind === "workspace-role") {
-      await api.updateWorkspaceMemberAccess({
+      await outcome.run(() => api.updateWorkspaceMemberAccess({
         action: "set-role", userId: pending.userId, workspaceRole: pending.role,
-      }).catch(outcome.reject);
+      }));
     } else if (pending.kind === "disable") {
-      await api.updateWorkspaceMemberAccess({ action: "disable", userId: pending.userId }).catch(outcome.reject);
+      await outcome.run(() => api.updateWorkspaceMemberAccess({ action: "disable", userId: pending.userId }));
     } else if (pending.kind === "company-role") {
-      await api.updateWorkspaceMemberCompany({
+      await outcome.run(() => api.updateWorkspaceMemberCompany({
         action: "grant", userId: pending.userId,
         companySlug: pending.companySlug, role: pending.role,
-      }).catch(outcome.reject);
+      }));
     } else {
-      await api.updateWorkspaceMemberCompany({
+      await outcome.run(() => api.updateWorkspaceMemberCompany({
         action: "revoke", userId: pending.userId, companySlug: pending.companySlug,
-      }).catch(outcome.reject);
+      }));
     }
     setMessage("Adgangen er opdateret."); setError(null); reload();
   }
 
-  return <section>
+  return <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
     {outcome.feedback}
     {(invitationState.error || memberState.error) && <Banner kind="warning">Status kunne ikke opdateres. Formularen er bevaret; de tidligere hentede adgangsoplysninger vises fortsat.</Banner>}
-    <PageHeader title="Brugere og adgang"><div><p className="muted">Invitér og administrér kun de virksomheder, hvor du selv er ejer. Adgang kræver verificeret e-mail og MFA.</p></div></PageHeader>
+    <PageHeader title="Brugere og adgang"><div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>Invitér og administrér kun de virksomheder, hvor du selv er ejer. Adgang kræver verificeret e-mail og MFA.</p></div></PageHeader>
     {message && <Banner kind="success">{message}</Banner>}
     {error && <Banner kind="error">{error}</Banner>}
-    <section className="card">
-      <h3>Aktive brugere</h3>
-      {members.length === 0 ? <p className="muted">Ingen aktive brugere.</p> : <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>Bruger</th><th>Workspace</th><th>Virksomhedsadgang</th><th>Sikkerhed</th></tr></thead><tbody>{members.map((member) => <tr key={member.userId}><td>{member.name}<br /><span className="muted">{member.email}</span></td><td>{member.workspaceRole === "workspace_owner" ? "Ejer" : "Medlem"}</td><td>{member.memberships.length === 0 ? "—" : member.memberships.map((membership) => `${membership.companyName}: ${roleLabels[membership.role]}`).join(", ")}</td><td>{servicePrincipals.some(p => p.serviceAccountId === member.userId) ? "Servicekonto · særskilt nøgleadgang" : member.accessReady ? "Klar" : "Afventer e-mail/MFA"}</td></tr>)}</tbody></table></div></div>}
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.card)}>
+      <h3 {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.h3)}>Aktive brugere</h3>
+      {members.length === 0 ? <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>Ingen aktive brugere.</p> : <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableWrap)}><div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableScroll)}><table {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><thead {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Bruger</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Workspace</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Virksomhedsadgang</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Sikkerhed</th></tr></thead><tbody {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{members.map((member) => <tr key={member.userId} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{member.name}<br {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)} /><span {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>{member.email}</span></td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{member.workspaceRole === "workspace_owner" ? "Ejer" : "Medlem"}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{member.memberships.length === 0 ? "—" : member.memberships.map((membership) => `${membership.companyName}: ${roleLabels[membership.role]}`).join(", ")}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{servicePrincipals.some(p => p.serviceAccountId === member.userId) ? "Servicekonto · særskilt nøgleadgang" : member.accessReady ? "Klar" : "Afventer e-mail/MFA"}</td></tr>)}</tbody></table></div></div>}
     </section>
-    <section className="card">
-      <h3>Ændr adgang</h3>
-      <p className="muted">Vælg én bruger og én ændring ad gangen. Sidste aktive ejer kan ikke fjernes.</p>
-      <label>Bruger<Select disabled={outcome.blocked} value={selectedUserId} onChange={(event) => {
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.card)}>
+      <h3 {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.h3)}>Ændr adgang</h3>
+      <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>Vælg én bruger og én ændring ad gangen. Sidste aktive ejer kan ikke fjernes.</p>
+      <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Bruger<Select disabled={outcome.blocked} value={selectedUserId} onChange={(event) => {
         const userId = event.target.value; setSelectedUserId(userId);
         const member = members.find((candidate) => candidate.userId === userId);
         if (member) setWorkspaceRole(member.workspaceRole);
-      }}><option value="">Vælg bruger</option>{members.map((member) => <option key={member.userId} value={member.userId}>{member.name} — {member.email}</option>)}</Select></label>
+      }} xstyle={[cockpitStyles.selectComposition]}><option value="" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Vælg bruger</option>{members.map((member) => <option key={member.userId} value={member.userId} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{member.name} — {member.email}</option>)}</Select></label>
       {selectedMember && <>
-        <label>Workspace-rolle<Select disabled={outcome.blocked} value={workspaceRole} onChange={(event) => setWorkspaceRole(event.target.value as WorkspaceMember["workspaceRole"])}><option value="member">Medlem</option><option value="workspace_owner">Ejer</option></Select></label>
-        <div className="modal-actions"><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="secondary" type="button" className="btn secondary" onClick={() => setPending({ kind: "workspace-role", userId: selectedMember.userId, role: workspaceRole })}>Gem workspace-rolle</Button><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="danger" type="button" className="btn danger" onClick={() => setPending({ kind: "disable", userId: selectedMember.userId })}>Deaktivér bruger</Button></div>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Workspace-rolle<Select disabled={outcome.blocked} value={workspaceRole} onChange={(event) => setWorkspaceRole(event.target.value as WorkspaceMember["workspaceRole"])} xstyle={[cockpitStyles.selectComposition]}><option value="member" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Medlem</option><option value="workspace_owner" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Ejer</option></Select></label>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.modalActions)}><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="secondary" type="button" xstyle={[cockpitStyles.buttonComposition]} onClick={() => setPending({ kind: "workspace-role", userId: selectedMember.userId, role: workspaceRole })}>Gem workspace-rolle</Button><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="danger" type="button" xstyle={[cockpitStyles.buttonComposition]} onClick={() => setPending({ kind: "disable", userId: selectedMember.userId })}>Deaktivér bruger</Button></div>
         {ownedCompanies.length > 0 && <>
-          <label>Virksomhed<Select disabled={outcome.blocked} value={selectedCompanySlug} onChange={(event) => setSelectedCompanySlug(event.target.value)}>{ownedCompanies.map((company) => <option key={company.slug} value={company.slug}>{company.name}</option>)}</Select></label>
-          <label>Virksomhedsrolle<Select disabled={outcome.blocked} value={companyRole} onChange={(event) => setCompanyRole(event.target.value as WorkspaceInvitationInput["companyRole"])}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>
-          <div className="modal-actions"><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="secondary" type="button" className="btn secondary" onClick={() => setPending({ kind: "company-role", userId: selectedMember.userId, companySlug: selectedCompanySlug, role: companyRole })}>Gem virksomhedsrolle</Button><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="danger" type="button" className="btn danger" onClick={() => setPending({ kind: "company-revoke", userId: selectedMember.userId, companySlug: selectedCompanySlug })}>Fjern virksomhedsadgang</Button></div>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Virksomhed<Select disabled={outcome.blocked} value={selectedCompanySlug} onChange={(event) => setSelectedCompanySlug(event.target.value)} xstyle={[cockpitStyles.selectComposition]}>{ownedCompanies.map((company) => <option key={company.slug} value={company.slug} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{company.name}</option>)}</Select></label>
+          <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Virksomhedsrolle<Select disabled={outcome.blocked} value={companyRole} onChange={(event) => setCompanyRole(event.target.value as WorkspaceInvitationInput["companyRole"])} xstyle={[cockpitStyles.selectComposition]}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{label}</option>)}</Select></label>
+          <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.modalActions)}><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="secondary" type="button" xstyle={[cockpitStyles.buttonComposition]} onClick={() => setPending({ kind: "company-role", userId: selectedMember.userId, companySlug: selectedCompanySlug, role: companyRole })}>Gem virksomhedsrolle</Button><Button disabled={outcome.blocked} requiredPermission="workspace.members.manage" variant="danger" type="button" xstyle={[cockpitStyles.buttonComposition]} onClick={() => setPending({ kind: "company-revoke", userId: selectedMember.userId, companySlug: selectedCompanySlug })}>Fjern virksomhedsadgang</Button></div>
         </>}
       </>}
     </section>
     {backend === "rust" && context?.workspaceRole === "workspace_owner" && <ServicePrincipalsPanel onChanged={rows => { setServicePrincipals(rows); memberState.reload(); }} />}
-    <section className="card">
-      <h3>Ny invitation</h3>
-      <form onSubmit={submit}>
-        <label>E-mail<Input disabled={outcome.blocked} type="email" autoComplete="email" value={input.email} onChange={(event) => setInput({ ...input, email: event.target.value })} required /></label>
-        <label>Virksomhed<Select disabled={outcome.blocked} value={input.companySlug} onChange={(event) => setInput({ ...input, companySlug: event.target.value })} required>{ownedCompanies.map((company) => <option key={company.slug} value={company.slug}>{company.name}</option>)}</Select></label>
-        <label>Rolle<Select disabled={outcome.blocked} value={input.companyRole} onChange={(event) => {
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.card)}>
+      <h3 {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.h3)}>Ny invitation</h3>
+      <form onSubmit={submit} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>E-mail<Input disabled={outcome.blocked} type="email" autoComplete="email" value={input.email} onChange={(event) => setInput({ ...input, email: event.target.value })} required xstyle={[cockpitStyles.inputComposition]} /></label>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Virksomhed<Select disabled={outcome.blocked} value={input.companySlug} onChange={(event) => setInput({ ...input, companySlug: event.target.value })} required xstyle={[cockpitStyles.selectComposition]}>{ownedCompanies.map((company) => <option key={company.slug} value={company.slug} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{company.name}</option>)}</Select></label>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Rolle<Select disabled={outcome.blocked} value={input.companyRole} onChange={(event) => {
           const selectedRole = event.target.value as WorkspaceInvitationInput["companyRole"];
           setInput({ ...input, companyRole: selectedRole, workspaceRole: selectedRole === "owner" ? "workspace_owner" : "member" });
-        }}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select></label>
-        <Button requiredPermission="workspace.members.manage" className="btn" type="submit" disabled={outcome.blocked || (busy || !input.companySlug)}>Send invitation</Button>
+        }} xstyle={[cockpitStyles.selectComposition]}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{label}</option>)}</Select></label>
+        <Button requiredPermission="workspace.members.manage" xstyle={[cockpitStyles.buttonComposition]} type="submit" disabled={outcome.blocked || (busy || !input.companySlug)}>Send invitation</Button>
       </form>
     </section>
-    <section className="card">
-      <h3>Invitationer</h3>
-      {invitationState.data!.length === 0 ? <p className="muted">Ingen invitationer endnu.</p> : <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>E-mail</th><th>Virksomhed</th><th>Rolle</th><th>Udløber</th><th>Status</th><th></th></tr></thead><tbody>{invitationState.data!.map((invitation) => <tr key={invitation.invitationId}><td>{invitation.email}</td><td>{invitation.companySlug}</td><td>{roleLabels[invitation.companyRole]}</td><td>{new Date(invitation.expiresAt).toLocaleDateString("da-DK")}</td><td>{invitation.status}</td><td>{(invitation.status === "issued" || invitation.status === "delivery_confirmed") && <Button requiredPermission="workspace.members.manage" variant="secondary" className="btn secondary" type="button" disabled={outcome.blocked || (busy)} onClick={() => void cancel(invitation.invitationId)}>Annullér</Button>}</td></tr>)}</tbody></table></div></div>}
+    <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.card)}>
+      <h3 {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.h3)}>Invitationer</h3>
+      {invitationState.data!.length === 0 ? <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.muted)}>Ingen invitationer endnu.</p> : <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableWrap)}><div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableScroll)}><table {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><thead {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>E-mail</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Virksomhed</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Rolle</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Udløber</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}>Status</th><th {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTh)}></th></tr></thead><tbody {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{invitationState.data!.map((invitation) => <tr key={invitation.invitationId} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{invitation.email}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{invitation.companySlug}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{roleLabels[invitation.companyRole]}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{new Date(invitation.expiresAt).toLocaleDateString("da-DK")}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{invitation.status}</td><td {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.tableDataTd)}>{(invitation.status === "issued" || invitation.status === "delivery_confirmed") && <Button requiredPermission="workspace.members.manage" variant="secondary" xstyle={[cockpitStyles.buttonComposition]} type="button" disabled={outcome.blocked || (busy)} onClick={() => void cancel(invitation.invitationId)}>Annullér</Button>}</td></tr>)}</tbody></table></div></div>}
     </section>
     {pending && <ConfirmDialog
       title="Bekræft adgangsændring"
-      body={<p>Ændringen registreres i det append-only revisionsspor og træder i kraft med det samme.</p>}
+      body={<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Ændringen registreres i det append-only revisionsspor og træder i kraft med det samme.</p>}
       confirmLabel="Gennemfør ændring"
       confirmKind={pending.kind === "disable" || pending.kind === "company-revoke" ? "danger" : "primary"}
       onConfirm={applyPending}

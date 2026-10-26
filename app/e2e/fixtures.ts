@@ -1,3 +1,4 @@
+import { syntheticTasksView } from "../src/test/fixtures/tasks";
 import { expect, type Page, type Route } from "@playwright/test";
 import core from "./data/core.json" with { type: "json" };
 import type { CompanyRole } from "../../src/core/workspace-access";
@@ -12,7 +13,7 @@ const companyEntries = [
 const user = { id: "synthetic-owner", name: "Testbruger", email: "owner@example.invalid", emailVerified: true, twoFactorEnabled: true };
 const { assets, bank, budget, budgetDimensionActuals, budgetVsActual, cashflow, archive, companySettings, fiscalYears, multiYear, contacts, overview, documents, invoices, mileage, obligations, payables, balance, incomeStatement, journal, trialBalance, vat } = Object.fromEntries(Object.entries(core).map(([key, value]) => [key, () => value])) as { [K in keyof typeof core]: () => (typeof core)[K] };
 const STATEMENT_COMPANY = core.company;
-const summary = (overrides: Partial<CompanySummary> = {}): CompanySummary => ({ ...core.summary, ...overrides });
+const summary = (overrides: Partial<CompanySummary> = {}): CompanySummary => ({ ...(core.summary as CompanySummary), ...overrides });
 
 export type MockResponse = { body: unknown; status?: number; contentType?: string; delayMs?: number };
 export type FixtureOptions = {
@@ -64,6 +65,13 @@ function fixtureFor(url: URL, options: FixtureOptions): MockResponse | undefined
   const wrap = (key: string, value: unknown): MockResponse => ({ body: envelope(key, value, url) });
   const company = { slug: COMPANY_SLUG, company: STATEMENT_COMPANY };
   switch (path) {
+    case "/api/tasks": {
+      const view = syntheticTasksView({ companies: options.companyAccess === false ? [] : companyEntries.map(company => ({ ...company, canWrite: options.role !== "reader", canManage: !options.role || options.role === "owner" || options.role === "bookkeeper" })), canManageWorkspace: options.workspaceRole !== "member" });
+      const selected = url.searchParams.getAll("companySlug");
+      view.tasks = options.companyAccess === false ? [] : view.tasks.filter(task => !selected.length || (task.scope.kind === "company" ? selected.includes(task.scope.companySlug) : task.scope.companySlugs.some(slug => selected.includes(slug))));
+      view.count = view.tasks.length;
+      return { body: { ok: true, ...view } };
+    }
     case "/api/health": return { body: { ok: true, deploymentProfile: options.profile ?? "local", workspace: "synthetic-browser-workspace", version: "browser-fixture", companyCount: 2 } };
     case "/api/companies": return { body: { ok: true, workspace: "synthetic-browser-workspace", count: options.companyAccess === false ? 0 : companyEntries.length, companies: options.companyAccess === false ? [] : companyEntries } };
     case "/api/portfolio": return wrap("portfolio", {
@@ -89,6 +97,17 @@ function fixtureFor(url: URL, options: FixtureOptions): MockResponse | undefined
     case "/api/group-eliminations": return { body: { ok: true, scope: "consolidation-eliminations", asOf: url.searchParams.get("asOf"), rows: [] } };
     case "/api/group-report-profiles": return { body: { ok: true, scope: "consolidation-report-profiles", asOf: url.searchParams.get("asOf"), profiles: [] } };
     case "/api/cfo-analytics": return { body: { ok: true, schemaVersion: "1", scope: "company", status: "ready", asOf: url.searchParams.get("to"), from: url.searchParams.get("from"), to: url.searchParams.get("to"), companies: [COMPANY_SLUG], partial: false, mode: "legal-company", aggregate: "none", limitations: [], rows: [], page: { limit: 50, nextCursor: null }, freshness: [], evidenceCompleteness: [], reconciliation: { rowCount: 0, sourceHashes: [], method: "source-linked" } } };
+    case "changes-since": return { body: { ok: true, changes: { events: [], cursor: 0 } } };
+    case "attention": return wrap("attention", { ...company, scope: { from: "2026-01-01", to: "2026-12-31" }, items: [], count: 0, status: "clear" });
+    case "accounting-approval-policy": return { body: { ok: true, policy: null } };
+    case "purchase-overview": return { body: { ok: true, overview: { basis: { canonical: { postedCaseCount: 0, unpostedCaseCount: 0, economicEffect: { expense: 0, result: 0, basis: "posted_ledger" } }, provisional: { unresolvedDocumentationCount: 0, economicEffect: { expense: 0, expectedVat: 0, status: "projection_not_filing_ready", effects: [] } } }, groups: [] } } };
+    case "purchase-cases": return { body: { ok: true, purchaseCases: [] } };
+    case "party-hub": return { body: { ok: true, rows: [] } };
+    case "documents/party-coverage": return { body: { ok: true, rows: [], totals: { linked: 0, unresolved: 0, internal_no_external_party: 0, unresolved_external: 0, source_observed: 0 }, populationHash: "a".repeat(64), planHash: "b".repeat(64) } };
+    case "imported-receivables": return { body: { ok: true, importedReceivables: { asOfDate: "2026-05-20", boundary: "imported_receivables", count: 0, totalOpen: 0, rows: [] } } };
+    case "annual-report": return wrap("annualReport", { ...company, fiscalYearStart: "2025-01-01", fiscalYearEnd: "2025-12-31", readiness: { status: "Ikke klar", items: [{ label: "Regnskabsåret er ikke låst", ok: false, destination: "periods" }] }, report: { ok: false, company: STATEMENT_COMPANY, fiscalYearStart: "2025-01-01", fiscalYearEnd: "2025-12-31", errors: ["Regnskabsåret er ikke låst"] } });
+    case "bookkeeping-workbench": return { body: { ok: true, workbench: { state: "zero", counts: { ready: 0, suggestedMatch: 0, missingDocument: 0, partyUnresolved: 0, accountingDecisionRequired: 0, vatEvidenceRequired: 0, dimensionEvidenceRequired: 0, stalePlan: 0, applyFailed: 0 }, population: { total: 0, ready: 0, blockers: 0 }, selection: { total: 0, ready: 0, blockers: 0 }, page: { cursor: 0, limit: 25, total: 0, nextCursor: null }, completeness: { state: "zero", reasonCode: "no_bank_transactions", nextAction: "Importér kontoudtog" }, rows: [], periodClose: null, plan: null } } };
+    case "bookkeeping-batch": return { body: { ok: true, dryRun: true, plan: { planHash: "a".repeat(64), candidateSetHash: "b".repeat(64), scope: { companyId: 1, accountingFrom: "2026-01-01", accountingTo: "2026-12-31", bankFrom: "2026-01-01", bankTo: "2026-12-31" }, items: [] } } };
     case "overview": return wrap("overview", overview());
     case "fiscal-years": return wrap("fiscalYears", fiscalYears());
     case "income-statement": return wrap("incomeStatement", incomeStatement());
@@ -120,6 +139,7 @@ function fixtureFor(url: URL, options: FixtureOptions): MockResponse | undefined
     case "posting-rules": return { body: { ok: true, postingRules: [] } };
     case "agent-suggestions": return wrap("agentSuggestions", { ...company, rows: [], count: 0, bySeverity: { high: 0, medium: 0, low: 0 } });
     case "exceptions": return wrap("exceptions", { ...company, status: "open", rows: [], count: 0, bySeverity: { high: 0, medium: 0, low: 0 } });
+    case "dimensions/1": return { body: { ok: true, assignments: [] } };
     case "dimensions": return { body: { ok: true, definitions: [] } };
     case "dimensions/members": return { body: { ok: true, members: [] } };
     case "workspace-parties": return { body: { ok: true, rows: [], count: 0 } };

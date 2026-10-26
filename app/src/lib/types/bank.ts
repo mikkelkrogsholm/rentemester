@@ -1,10 +1,7 @@
 // Bank wire types: per-year Bank view, cash-flow view, and the read-only
 // Bankkonti + CSV-mapping-profile registry (#345).
-
 import type { FiscalYearEntry, StatementCompany } from "./common";
-
 // --- bank / Bank (GET .../bank?year=) -------------------------------------
-
 export type BankAccountInfo = {
   id: number;
   name: string;
@@ -12,7 +9,6 @@ export type BankAccountInfo = {
   accountNo: string | null;
   ledgerAccountNo: string | null;
 };
-
 export type BankTransactionRow = {
   id: number;
   date: string;
@@ -27,9 +23,13 @@ export type BankTransactionRow = {
   reconciliationNote?: string | null;
   reconciliationActor?: string | null;
   reconciliationProof?: string | null;
-  reconciliationHistory?: Array<{kind:string;id:number;[key:string]:unknown}>;
+  reconciliationHistory?: Array<{
+    kind: string;
+    id: number;
+    [key: string]: unknown;
+  }>;
+  partyId?: string | null;
 };
-
 export type CompanyBank = {
   manualReconciliationAvailable?: boolean;
   reconciliationCorrectionAvailable?: boolean;
@@ -54,20 +54,26 @@ export type CompanyBank = {
    *    no balance column, so the bank saldo is unknown (NOT "not imported");
    *  - `none`              — no bank statement has been imported at all.
    */
-  bankStatementStatus: "known" | "no-balance-column" | "none" | "unavailable";
+  bankStatementStatus: "known" | "no-balance-column" | "none" | "unavailable" | "ambiguous";
   bankStatementProblem?: string | null;
+  /** Source row(s) establishing the exact statement closing balance. */
+  actualBalanceProvenance?: Array<{
+    bankAccountId: number | null;
+    transactionId: number;
+    transactionDate: string;
+    sourceOrder: "ascending" | "descending" | "single-row";
+  }>;
+  /** Fail-closed explanation when source order or balances cannot be proven. */
+  bankStatementDiagnostics?: string[];
   transactions: BankTransactionRow[];
   matchedCount: number;
   unmatchedCount: number;
 };
-
 export type BankResponse = {
   ok: true;
   bank: CompanyBank;
 };
-
 // --- cash flow / Likviditet (GET .../cashflow?year=) ----------------------
-
 export type CashflowMonth = {
   /** 1–12. */
   month: number;
@@ -79,13 +85,11 @@ export type CashflowMonth = {
   /** indbetalinger − udbetalinger, kroner. */
   netto: number;
 };
-
 export type CashflowBalancePoint = {
   date: string;
   /** The imported running balance at this point, kroner. */
   balance: number;
 };
-
 export type CompanyCashflow = {
   slug: string;
   selectedYear: string;
@@ -103,21 +107,20 @@ export type CompanyCashflow = {
   openingBalance: number | null;
   /** Actual balance at the year end, kroner; null when unknown. */
   closingBalance: number | null;
+  bankStatementStatus?: "known" | "no-balance-column" | "none" | "ambiguous";
+  bankStatementDiagnostics?: string[];
   /** Total money in across the year, kroner. */
   totalIn: number;
   /** Total money out across the year, kroner. */
   totalOut: number;
 };
-
 export type CashflowResponse = {
   ok: true;
   cashflow: CompanyCashflow;
 };
-
 // ---------------------------------------------------------------------------
 // #345 — Bankkonti + CSV-mapping-profiler.
 // ---------------------------------------------------------------------------
-
 export type BankAccount = {
   id: number;
   slug: string;
@@ -134,7 +137,6 @@ export type BankAccount = {
   active: boolean;
   createdAt: string;
 };
-
 export type BankImportProfile = {
   name: string;
   label?: string;
@@ -145,7 +147,6 @@ export type BankImportProfile = {
   dateOrder?: "dmy" | "mdy" | "ymd" | "iso";
   columns?: Record<string, string>;
 };
-
 export type CompanyBankAccounts = {
   slug: string;
   company: {
@@ -157,17 +158,29 @@ export type CompanyBankAccounts = {
   accounts: BankAccount[];
   profiles: BankImportProfile[];
 };
-
 export type BankAccountsResponse = {
   ok: true;
   bankAccounts: CompanyBankAccounts;
 };
-
 export type BankJournalLinkPlan = {
-  bankTransactionId: number; bankDate: string; bankText: string; bankCurrency: string;
-  bankAmount: number; bankAmountDkk: number; bankAccountNo: string;
-  sourceHash: string; transactionHash: string; journalEntryId: number;
-  journalEntryNo: string; journalHash: string; journalDate: string;
-  journalBankMovement: number; document: { id: number; sha256: string } | null;
-  planHash: string; effect: "link_only_no_posting";
+  bankTransactionId: number;
+  bankDate: string;
+  bankText: string;
+  bankCurrency: string;
+  bankAmount: number;
+  bankAmountDkk: number;
+  bankAccountNo: string;
+  sourceHash: string;
+  transactionHash: string;
+  journalEntryId: number;
+  journalEntryNo: string;
+  journalHash: string;
+  journalDate: string;
+  journalBankMovement: number;
+  document: {
+    id: number;
+    sha256: string;
+  } | null;
+  planHash: string;
+  effect: "link_only_no_posting";
 };

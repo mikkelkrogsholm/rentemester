@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, Input, Select, FilterBar, Pagination, PageHeader } from "../components/ui";
 // Kontakter — the per-company customers and vendors (cockpit-redesign it. 5).
@@ -133,37 +134,37 @@ export function ContactsView() {
   }
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Kontakter" actions={<><div className="row-actions">
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Kontakter" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           <Button requiredPermission="company.master-data"
             type="button"
-            className="btn"
-            onClick={() => openCreate("customer")}
+
+            onClick={() => openCreate("customer")} xstyle={[cockpitStyles.statementBtnComposition]}
           >
             Tilføj kunde
           </Button>
           <Button requiredPermission="company.master-data"
             type="button"
-            className="btn"
-            onClick={() => openCreate("vendor")}
+
+            onClick={() => openCreate("vendor")} xstyle={[cockpitStyles.statementBtnComposition]}
           >
             Tilføj leverandør
           </Button>
           <Button requiredPermission="company.ledger.post" variant="secondary"
             type="button"
-            className="btn secondary"
-            onClick={() => setImporting(true)}
+
+            onClick={() => setImporting(true)} xstyle={[cockpitStyles.statementBtnComposition]}
           >
             Importér
           </Button>
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {c.company.cvr ? `CVR ${c.company.cvr} · ` : ""}
             {c.company.country} · {currency} · Kontakter
           </p>
@@ -206,17 +207,23 @@ export function ContactsView() {
           }
           body={
             <>
-              <p>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                 {pendingDelete.kind === "customer"
                   ? "Kunden fjernes fra dine fremtidige fakturaer og dropdowns."
                   : "Leverandøren fjernes fra dine fremtidige bilag og dropdowns."}
               </p>
-              <p>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
                 Allerede bogførte fakturaer og posteringer beholder
                 navnet som det var på bogføringstidspunktet — historikken
                 og revisor-eksporten er ikke påvirket.
               </p>
-              <p className="muted">
+              <p {...stylex.props(cockpitStyles.muted)}>
                 {pendingDelete.kind === "customer"
                   ? "Hvis kunden er i brug på en åben (ikke-betalt) faktura, bliver sletningen blokeret med et henvisning til fakturanummeret."
                   : "Hvis leverandøren har en åben gæld der ikke er betalt endnu, bliver sletningen blokeret med en henvisning til regningen."}
@@ -239,31 +246,45 @@ export function ContactsView() {
       )}
 
       <FilterBar activeCount={Number(Boolean(query)) + Number(kindFilter !== "all")} onReset={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("kind"); next.delete("page"); setParams(next, { replace: true }); }}>
-        <label>Søg kontakter<Input type="search" value={query} onChange={event => setContactFilter("q", event.target.value)} placeholder="Navn, CVR eller e-mail" /></label>
-        <label>Kontakttype<Select value={kindFilter} onChange={event => setContactFilter("kind", event.target.value)}><option value="all">Alle kontakter</option><option value="customers">Kunder</option><option value="vendors">Leverandører</option></Select></label>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Søg kontakter<Input type="search" value={query} onChange={event => setContactFilter("q", event.target.value)} placeholder="Navn, CVR eller e-mail" /></label>
+        <label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kontakttype<Select value={kindFilter} onChange={event => setContactFilter("kind", event.target.value)}><option value="all" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Alle kontakter</option><option value="customers" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Kunder</option><option value="vendors" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Leverandører</option></Select></label>
       </FilterBar>
-      {total > 0 && filteredTotal === 0 && <p role="status">Ingen kontakter matcher filtrene.</p>}
+      {total > 0 && filteredTotal === 0 && <p role="status" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Ingen kontakter matcher filtrene.</p>}
       {total === 0 ? (
-        <div className="card archived-notice">
-          <h3>Ingen kontakter endnu</h3>
-          <p className="muted">
+        <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.archivedNoticeH3,
+						)}>Ingen kontakter endnu</h3>
+          <p {...stylex.props(cockpitStyles.muted)}>
             Der er ingen registrerede kunder eller leverandører for denne
             virksomhed. Brug «Tilføj kunde» eller «Tilføj leverandør» ovenfor
             for at oprette stamdata — eller «Importér» til at hente kontakter
             fra et tidligere bogføringssystem.
           </p>
-          <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+          <div {...stylex.props(...[cockpitStyles.rowActions, viewStyles.site0])} >
             <Button requiredPermission="company.master-data"
               type="button"
-              className="btn"
-              onClick={() => openCreate("customer")}
+
+              onClick={() => openCreate("customer")} xstyle={[cockpitStyles.statementBtnComposition]}
             >
               Tilføj kunde
             </Button>
             <Button requiredPermission="company.master-data"
               type="button"
-              className="btn"
-              onClick={() => openCreate("vendor")}
+
+              onClick={() => openCreate("vendor")} xstyle={[cockpitStyles.statementBtnComposition]}
             >
               Tilføj leverandør
             </Button>
@@ -271,25 +292,35 @@ export function ContactsView() {
         </div>
       ) : (
         <>
-          <p className="statement-asof muted">
+          <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>
             {c.customers.length}{" "}
             {c.customers.length === 1 ? "kunde" : "kunder"} ·{" "}
             {c.vendors.length}{" "}
             {c.vendors.length === 1 ? "leverandør" : "leverandører"}
           </p>
 
-          <div className="section">
-            <h3>Kunder</h3>
-            {pageCustomers.length === 0 && customers.length > 0 ? <p className="muted">Kunderne vises på en anden side.</p> : <CustomerTable
+          <div {...stylex.props(cockpitStyles.section)}>
+            <h3 {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.h3,
+								cockpitStyles.sectionH3,
+							)}>Kunder</h3>
+            {pageCustomers.length === 0 && customers.length > 0 ? <p {...stylex.props(cockpitStyles.muted)}>Kunderne vises på en anden side.</p> : <CustomerTable
               customers={pageCustomers}
               onEdit={openEditCustomer}
               onDelete={openDeleteCustomer}
             />}
           </div>
 
-          <div className="section">
-            <h3>Leverandører</h3>
-            {pageVendors.length === 0 && vendors.length > 0 ? <p className="muted">Leverandørerne vises på en anden side.</p> : <VendorTable
+          <div {...stylex.props(cockpitStyles.section)}>
+            <h3 {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.h3,
+								cockpitStyles.sectionH3,
+							)}>Leverandører</h3>
+            {pageVendors.length === 0 && vendors.length > 0 ? <p {...stylex.props(cockpitStyles.muted)}>Leverandørerne vises på en anden side.</p> : <VendorTable
               vendors={pageVendors}
               onEdit={openEditVendor}
               onDelete={openDeleteVendor}
@@ -312,50 +343,48 @@ function CustomerTable({
   onDelete: (row: ContactCustomerRow) => void;
 }) {
   return (
-    <div className="card statement-card table-scroll daily-list">
-      <table role="table" className="data statement-table">
-        <thead>
-          <tr role="row">
-            <th role="columnheader">Navn</th>
-            <th role="columnheader">CVR / moms-nr.</th>
-            <th role="columnheader">E-mail</th>
-            <th role="columnheader">Valuta</th>
-            <th role="columnheader" className="num">Betalingsfrist</th>
-            <th role="columnheader" className="num">Udestående</th>
-            <th aria-label="Handlinger" />
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+      <table role="table" {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+        <thead {...stylex.props(cockpitStyles.dailyListTheadComposition)}>
+          <tr role="row" {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>Navn</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>CVR / moms-nr.</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>E-mail</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>Valuta</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.num)}>Betalingsfrist</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.num)}>Udestående</th>
+            <th aria-label="Handlinger" {...stylex.props(cockpitStyles.tableStatementTableThComposition)} />
           </tr>
         </thead>
-        <tbody>
+        <tbody {...stylex.props(cockpitStyles.dailyListTbodyComposition)}>
           {customers.length === 0 ? (
-            <tr role="row">
-              <td role="cell" colSpan={7} className="empty-inline">
+            <tr role="row" {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+              <td role="cell" colSpan={7} {...stylex.props(cockpitStyles.emptyInline)}>
                 Ingen kunder registreret.
               </td>
             </tr>
           ) : (
             customers.map((row) => (
-              <tr role="row" key={row.id}>
-                <td data-label="Navn" role="cell">{row.name}</td>
-                <td data-label="CVR / moms-nr." role="cell" className="account-no">{row.vatOrCvr ?? "—"}</td>
-                <td data-label="E-mail" role="cell">{row.email ?? "—"}</td>
-                <td data-label="Valuta" role="cell">{row.defaultCurrency}</td>
-                <td data-label="Betalingsfrist" role="cell" className="num">{row.paymentTermsDays} dage</td>
-                <td data-label="Udestående" role="cell" className="num">
+              <tr role="row" key={row.id} {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+                <td data-label="Navn" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition2)}>{row.name}</td>
+                <td data-label="CVR / moms-nr." role="cell" {...stylex.props(...[cockpitStyles.num])}>{row.vatOrCvr ?? "—"}</td>
+                <td data-label="E-mail" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition2)}>{row.email ?? "—"}</td>
+                <td data-label="Valuta" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition2)}>{row.defaultCurrency}</td>
+                <td data-label="Betalingsfrist" role="cell" {...stylex.props(cockpitStyles.num)}>{row.paymentTermsDays} dage</td>
+                <td data-label="Udestående" role="cell" {...stylex.props(cockpitStyles.num)}>
                   {row.openInvoiceCount === 0 ? (
-                    <span className="muted">—</span>
+                    <span {...stylex.props(cockpitStyles.muted)}>—</span>
                   ) : (
                     <>
                       <span
-                        className={
-                          row.overdueCount > 0 ? "status-alert" : undefined
-                        }
+                        {...stylex.props(...(row.overdueCount > 0 ? [cockpitStyles.statusFigureStatusAlert] : []))}
                       >
                         {formatKroner(row.openBalance, row.defaultCurrency)}
                       </span>
                       {row.overdueCount > 0 && (
                         <>
                           {" "}
-                          <span className="flag critical">
+                          <span {...stylex.props(cockpitStyles.flag)}>
                             {row.overdueCount} forfalden
                             {row.overdueCount === 1 ? "" : "e"}
                           </span>
@@ -364,10 +393,10 @@ function CustomerTable({
                     </>
                   )}
                 </td>
-                <td data-label="Oplysning" role="cell" className="num row-actions">
+                <td data-label="Oplysning" role="cell" {...stylex.props(cockpitStyles.num, cockpitStyles.rowActions)}>
                   <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
-                    className="btn secondary"
+
                     disabled={row.gdprErased}
                     title={row.gdprErased ? "Anonymiserede identiteter kan ikke redigeres." : undefined}
                     onClick={() => onEdit(row)}
@@ -377,9 +406,9 @@ function CustomerTable({
                   </Button>
                   <Button requiredPermission="company.master-data" variant="danger"
                     type="button"
-                    className="btn danger"
+
                     onClick={() => onDelete(row)}
-                    aria-label={`Slet ${row.name}`}
+                    aria-label={`Slet ${row.name}`} xstyle={[cockpitStyles.buttonComposition]}
                   >
                     Slet
                   </Button>
@@ -403,42 +432,42 @@ function VendorTable({
   onDelete: (row: ContactVendorRow) => void;
 }) {
   return (
-    <div className="card statement-card table-scroll daily-list">
-      <table role="table" className="data statement-table">
-        <thead>
-          <tr role="row">
-            <th role="columnheader">Navn</th>
-            <th role="columnheader">CVR / moms-nr.</th>
-            <th role="columnheader">Standard udgiftskonto</th>
-            <th role="columnheader">Momsbehandling</th>
-            <th aria-label="Handlinger" />
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+      <table role="table" {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+        <thead {...stylex.props(cockpitStyles.dailyListTheadComposition)}>
+          <tr role="row" {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>Navn</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>CVR / moms-nr.</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>Standard udgiftskonto</th>
+            <th role="columnheader" {...stylex.props(cockpitStyles.tableStatementTableThComposition)}>Momsbehandling</th>
+            <th aria-label="Handlinger" {...stylex.props(cockpitStyles.tableStatementTableThComposition)} />
           </tr>
         </thead>
-        <tbody>
+        <tbody {...stylex.props(cockpitStyles.dailyListTbodyComposition)}>
           {vendors.length === 0 ? (
-            <tr role="row">
-              <td role="cell" colSpan={5} className="empty-inline">
+            <tr role="row" {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+              <td role="cell" colSpan={5} {...stylex.props(cockpitStyles.emptyInline)}>
                 Ingen leverandører registreret.
               </td>
             </tr>
           ) : (
             vendors.map((row) => (
-              <tr role="row" key={row.id}>
-                <td data-label="Navn" role="cell">{row.name}</td>
-                <td data-label="CVR / moms-nr." role="cell" className="account-no">{row.vatOrCvr ?? "—"}</td>
-                <td data-label="Standard udgiftskonto" role="cell" className="account-no">
+              <tr role="row" key={row.id} {...stylex.props(cockpitStyles.dailyListTrComposition)}>
+                <td data-label="Navn" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition2)}>{row.name}</td>
+                <td data-label="CVR / moms-nr." role="cell" {...stylex.props(...[cockpitStyles.num])}>{row.vatOrCvr ?? "—"}</td>
+                <td data-label="Standard udgiftskonto" role="cell" {...stylex.props(...[cockpitStyles.num])}>
                   {row.defaultExpenseAccount ?? "—"}
                 </td>
-                <td data-label="Momsbehandling" role="cell">
+                <td data-label="Momsbehandling" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition2)}>
                   {row.defaultVatTreatment
                     ? VAT_TREATMENT_LABELS[row.defaultVatTreatment] ??
                       row.defaultVatTreatment
                     : "—"}
                 </td>
-                <td data-label="Oplysning" role="cell" className="num row-actions">
+                <td data-label="Oplysning" role="cell" {...stylex.props(cockpitStyles.num, cockpitStyles.rowActions)}>
                   <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
-                    className="btn secondary"
+
                     disabled={row.gdprErased}
                     title={row.gdprErased ? "Anonymiserede identiteter kan ikke redigeres." : undefined}
                     onClick={() => onEdit(row)}
@@ -448,9 +477,9 @@ function VendorTable({
                   </Button>
                   <Button requiredPermission="company.master-data" variant="danger"
                     type="button"
-                    className="btn danger"
+
                     onClick={() => onDelete(row)}
-                    aria-label={`Slet ${row.name}`}
+                    aria-label={`Slet ${row.name}`} xstyle={[cockpitStyles.buttonComposition]}
                   >
                     Slet
                   </Button>

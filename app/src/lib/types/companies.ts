@@ -46,10 +46,13 @@ export type CompanySummary = {
   omsaetning: number;
   /** Actual bank balance from the imported statement, kroner; null if unknown. */
   actualBankBalance: number | null;
+  bankStatementStatus: "known" | "no-balance-column" | "none" | "ambiguous";
+  bankStatementDiagnostics: string[];
   /** Current registered VAT-period position + deadline; null when unknown. */
   vat: CompanyVatSummary | null;
   /** Open tasks across the company. */
   openTaskCount: number;
+  attentionStatus: "clear" | "requires-attention";
   /** The open tasks grouped into Danish summary lines. */
   taskGroups: ExceptionGroup[];
   auditChainOk: boolean;
@@ -69,7 +72,8 @@ export type PortfolioOverview = {
   /** Workspace-wide roll-up — how the whole portfolio is doing. */
   rollup: {
     resultat: number;
-    liquidity: number;
+    liquidity: number | null;
+    liquidityComplete: boolean;
     vatPayable: number;
     openTaskCount: number;
   };

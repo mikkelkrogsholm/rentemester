@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { ApiError, request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -31,7 +33,7 @@ export function NativeBackupDestinations(){
  function next(){if(!placement?.verified)return;localStorage.removeItem(key(workspace));setPending(null);setPlacement(null);setError("");}
  return <section aria-label="Backupdestinationer">
   <h4>Placér backup på en konfigureret destination</h4>
-  <p className="muted">Serverens administrator vælger mapper og registrerer oplysninger om opbevaringen. Kontrol af en synkroniseret mappe beviser ikke, at filen er nået til skyen.</p>
+  <p {...stylex.props(cockpitStyles.muted)}>Serverens administrator vælger mapper og registrerer oplysninger om opbevaringen. Kontrol af en synkroniseret mappe beviser ikke, at filen er nået til skyen.</p>
   <Button type="button" disabled={busy} onClick={()=>void load()}>Vis backupdestinationer</Button>
   {destinations!==null&&(destinations.length===0?<p>Ingen backupdestinationer er konfigureret.</p>:<>
    <label>Backupdestination<select aria-label="Backupdestination" value={selected} disabled={busy||!!pending} onChange={e=>setSelected(e.target.value)}>{destinations.map(d=><option key={d.id} value={d.id}>{d.label}</option>)}</select></label>

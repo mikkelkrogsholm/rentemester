@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -85,7 +87,7 @@ export function NativeBackupRemote({ workspace, destination, placementOperationI
   }
   return <section aria-label="Kontrol af Google Drive-kopi">
     <h4>Kontrollér kopien i Google Drive</h4>
-    <p className="muted">Når backupfilen er kopieret til den konfigurerede Drive-mappe, kan serveren genlæse den og sammenligne de præcise bytes. Kontrollen uploader ingen fil.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Når backupfilen er kopieret til den konfigurerede Drive-mappe, kan serveren genlæse den og sammenligne de præcise bytes. Kontrollen uploader ingen fil.</p>
     {!enabled && <p>Ny Drive-kontrol er deaktiveret på serveren. Du kan stadig hente gemte kvitteringer.</p>}
     {!pending && <label>Drive-filens id<input aria-label="Drive-filens id" value={remoteObjectId} disabled={busy || !enabled} onChange={event => setRemoteObjectId(event.target.value)} /></label>}
     {!pending && !id(placementOperationId) && <p>Placér eller kontrollér først backupfilen ovenfor.</p>}

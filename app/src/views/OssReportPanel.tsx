@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState, type FormEvent } from "react";
 import { api } from "../lib/api";
 import { todayIso, formatKroner } from "../lib/format";
@@ -19,10 +21,10 @@ export function OssReportPanel({ slug }: { slug: string }) {
     if (period?.from === from && period.to === to) state.reload();
     else setPeriod({ from, to });
   }
-  return <section className="card statement-card" aria-label="OSS-rapport">
+  return <section {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard)} aria-label="OSS-rapport">
     <h2>OSS-salg til EU-forbrugere</h2>
-    <p className="muted">Kun salgsgrundlag i DKK fra eksplicit klassificerede posteringer. Rapporten beregner ikke moms pr. land eller sats og indberetter ikke noget.</p>
-    <form className="row-actions" onSubmit={show}>
+    <p {...stylex.props(cockpitStyles.muted)}>Kun salgsgrundlag i DKK fra eksplicit klassificerede posteringer. Rapporten beregner ikke moms pr. land eller sats og indberetter ikke noget.</p>
+    <form {...stylex.props(cockpitStyles.rowActions)} onSubmit={show}>
       <Field label="OSS fra"><Input type="date" required value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
       <Field label="OSS til"><Input type="date" required min={from} value={to} onChange={(event) => setTo(event.target.value)} /></Field>
       <Button type="submit">Vis OSS-rapport</Button>

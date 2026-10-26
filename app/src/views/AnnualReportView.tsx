@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Årsrapport-builder UI (#338).
 //
@@ -42,15 +44,15 @@ export function AnnualReportView() {
   };
 
   return (
-    <section className="annual-report-view">
-      <PageHeader title="Årsrapport" actions={<><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+    <section {...stylex.props(...[cockpitStyles.statement])}>
+      <PageHeader title="Årsrapport" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             Forbereder en årsrapport for et lukket regnskabsår. Rentemester
             samler resultatopgørelse, balance og noter. Ejer eller revisor
             gennemgår materialet og er ansvarlig for indberetning.
@@ -59,9 +61,13 @@ export function AnnualReportView() {
 
       </PageHeader>
 
-      <section className="card">
-        <h3>Vælg regnskabsår</h3>
-        <form onSubmit={build} className="filter-bar">
+      <section {...stylex.props(cockpitStyles.card)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Vælg regnskabsår</h3>
+        <form onSubmit={build} {...stylex.props(cockpitStyles.filterBar)}>
           <label>
             Start (YYYY-MM-DD)
             <Input
@@ -80,14 +86,14 @@ export function AnnualReportView() {
               required
             />
           </label>
-          <Button type="submit" className="btn primary" disabled={loading}>
+          <Button type="submit"  disabled={loading}>
             {loading ? "Bygger …" : "Byg årsrapport"}
           </Button>
         </form>
       </section>
 
       {error && (
-        <div className="callout danger" role="alert">
+        <div {...stylex.props(...[cockpitStyles.banner, cockpitStyles.bannerError])} role="alert">
           {error}
         </div>
       )}
@@ -100,16 +106,23 @@ export function AnnualReportView() {
 function ReportPanel({ report }: { report: AnnualReport }) {
   if (!report.ok) {
     return (
-      <section className="card">
-        <h3>Forudsætninger mangler</h3>
-        <p className="muted">
+      <section {...stylex.props(cockpitStyles.card)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Forudsætninger mangler</h3>
+        <p {...stylex.props(cockpitStyles.muted)}>
           For at en årsrapport kan dannes skal: virksomhedens CVR være
           registreret under <Link to="../manage">Administrér</Link>, regnskabsåret være lukket under{" "}
           <Link to="../periodelas">Periodelås</Link>, og bøgerne skal balancere.
         </p>
-        <ul className="audit-errors">
+        <ul {...stylex.props(...[cockpitStyles.bannerError])}>
           {report.errors.map((err, i) => (
-            <li key={i}>{err}</li>
+            <li key={i} {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{err}</li>
           ))}
         </ul>
       </section>
@@ -118,52 +131,107 @@ function ReportPanel({ report }: { report: AnnualReport }) {
   const currency = report.company.currency || "DKK";
   return (
     <>
-      <section className="card">
-        <h3>
+      <section {...stylex.props(cockpitStyles.card)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>
           Stamdata pr. {report.fiscalYearStart} — {report.fiscalYearEnd}
         </h3>
-        <div className="table-scroll"><table className="table">
-          <tbody>
-            <tr>
-              <th>Virksomhed</th>
-              <td>{report.company.name}</td>
+        <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}>
+          <tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+            <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <th {...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Virksomhed</th>
+              <td {...stylex.props(
+										cockpitStyles.tableDataTd,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{report.company.name}</td>
             </tr>
-            <tr>
-              <th>CVR</th>
-              <td>{report.company.cvr ?? "—"}</td>
+            <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <th {...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>CVR</th>
+              <td {...stylex.props(
+										cockpitStyles.tableDataTd,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{report.company.cvr ?? "—"}</td>
             </tr>
-            <tr>
-              <th>Land</th>
-              <td>{report.company.country}</td>
+            <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <th {...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Land</th>
+              <td {...stylex.props(
+										cockpitStyles.tableDataTd,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{report.company.country}</td>
             </tr>
-            <tr>
-              <th>Valuta</th>
-              <td>{report.company.currency}</td>
+            <tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <th {...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Valuta</th>
+              <td {...stylex.props(
+										cockpitStyles.tableDataTd,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{report.company.currency}</td>
             </tr>
           </tbody>
         </table></div>
       </section>
 
       {report.profitAndLoss && (
-        <section className="card">
-          <h3>Resultatopgørelse</h3>
-          <div className="table-scroll"><table className="table">
+        <section {...stylex.props(cockpitStyles.card)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+						)}>Resultatopgørelse</h3>
+          <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}>
             <tbody>
               <tr>
                 <th>Indtægter i alt</th>
-                <td className="num">
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(report.profitAndLoss.income.total, currency)}
                 </td>
               </tr>
               <tr>
                 <th>Omkostninger i alt</th>
-                <td className="num">
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(report.profitAndLoss.expense.total, currency)}
                 </td>
               </tr>
-              <tr className="statement-result">
+              <tr {...stylex.props(...[cockpitStyles.statementResultTd])}>
                 <th>Årets resultat</th>
-                <td className="num">
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(report.profitAndLoss.result, currency)}
                 </td>
               </tr>
@@ -173,28 +241,52 @@ function ReportPanel({ report }: { report: AnnualReport }) {
       )}
 
       {report.balanceSheet && (
-        <section className="card">
+        <section {...stylex.props(cockpitStyles.card)}>
           <h3>Balance ultimo {report.fiscalYearEnd}</h3>
-          <div className="table-scroll"><table className="table">
-            <tbody>
-              <tr>
-                <th>Aktiver i alt</th>
-                <td className="num">
+          <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}>
+            <tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                <th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Aktiver i alt</th>
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(report.balanceSheet.assets.total, currency)}
                 </td>
               </tr>
-              <tr>
-                <th>Gæld i alt</th>
-                <td className="num">
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                <th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Gæld i alt</th>
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(
                     report.balanceSheet.liabilities.total,
                     currency,
                   )}
                 </td>
               </tr>
-              <tr>
-                <th>Egenkapital i alt</th>
-                <td className="num">
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                <th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Egenkapital i alt</th>
+                <td {...stylex.props(cockpitStyles.num)}>
                   {formatKroner(report.balanceSheet.equity.total, currency)}
                 </td>
               </tr>
@@ -204,32 +296,73 @@ function ReportPanel({ report }: { report: AnnualReport }) {
       )}
 
       {report.comparison && (
-        <section className="card">
-          <h3>Sammenligningstal {report.comparison.fiscalYearStart} — {report.comparison.fiscalYearEnd}</h3>
-          {!report.comparison.available ? <p className="muted">{report.comparison.reason === "prior_range_precedes_explicit_cutover"
+        <section {...stylex.props(cockpitStyles.card)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+						)}>Sammenligningstal {report.comparison.fiscalYearStart} — {report.comparison.fiscalYearEnd}</h3>
+          {!report.comparison.available ? <p {...stylex.props(cockpitStyles.muted)}>{report.comparison.reason === "prior_range_precedes_explicit_cutover"
             ? "Sammenligningstal er ikke tilgængelige: den foregående periode starter før den eksplicitte overtagelsesdato. Arkivbeløb indgår ikke automatisk."
             : "Ingen sammenligningstal — ingen saldi i den foregående periode."}</p> : (
-            <div className="table-scroll"><table className="table"><tbody>
-              <tr><th>Indtægter i alt</th><td className="num">{formatKroner(report.comparison.totalIncome, currency)}</td></tr>
-              <tr><th>Omkostninger i alt</th><td className="num">{formatKroner(report.comparison.totalExpense, currency)}</td></tr>
-              <tr><th>Årets resultat</th><td className="num">{formatKroner(report.comparison.aretsResultat, currency)}</td></tr>
-              <tr><th>Aktiver i alt</th><td className="num">{formatKroner(report.comparison.totalAssets, currency)}</td></tr>
-              <tr><th>Egenkapital i alt</th><td className="num">{formatKroner(report.comparison.equity, currency)}</td></tr>
+            <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}><th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Indtægter i alt</th><td {...stylex.props(cockpitStyles.num)}>{formatKroner(report.comparison.totalIncome, currency)}</td></tr>
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}><th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Omkostninger i alt</th><td {...stylex.props(cockpitStyles.num)}>{formatKroner(report.comparison.totalExpense, currency)}</td></tr>
+              <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}><th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>Årets resultat</th><td {...stylex.props(cockpitStyles.num)}>{formatKroner(report.comparison.aretsResultat, currency)}</td></tr>
+              <tr><th>Aktiver i alt</th><td {...stylex.props(cockpitStyles.num)}>{formatKroner(report.comparison.totalAssets, currency)}</td></tr>
+              <tr><th>Egenkapital i alt</th><td {...stylex.props(cockpitStyles.num)}>{formatKroner(report.comparison.equity, currency)}</td></tr>
             </tbody></table></div>
           )}
         </section>
       )}
-      {report.disclaimer && <p className="callout">{report.disclaimer}</p>}
+      {report.disclaimer && <p {...stylex.props(...[cockpitStyles.banner])}>{report.disclaimer}</p>}
 
       {report.notes && report.notes.length > 0 && (
-        <section className="card">
-          <h3>Noter</h3>
-          <ul>
+        <section {...stylex.props(cockpitStyles.card)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+						)}>Noter</h3>
+          <ul {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
             {report.notes.map((n) => (
-              <li key={n.id}>
-                <strong>{n.title}</strong>
-                <p>{n.body}</p>
-                {n.placeholder && <span className="muted">Udfyldes og gennemgås af ejer eller revisor.</span>}
+              <li key={n.id} {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+                <strong {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{n.title}</strong>
+                <p {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{n.body}</p>
+                {n.placeholder && <span {...stylex.props(cockpitStyles.muted)}>Udfyldes og gennemgås af ejer eller revisor.</span>}
               </li>
             ))}
           </ul>
@@ -237,10 +370,14 @@ function ReportPanel({ report }: { report: AnnualReport }) {
       )}
 
       {report.ledelsespategning && (
-        <section className="card">
-          <h3>Ledelsespåtegning</h3>
-          {report.ledelsespategning.placeholder && <p className="muted">Skabelon — udfyld dato, sted og underskrifter inden indberetning.</p>}
-          <p>{report.ledelsespategning.text}</p>
+        <section {...stylex.props(cockpitStyles.card)}>
+          <h3 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+						)}>Ledelsespåtegning</h3>
+          {report.ledelsespategning.placeholder && <p {...stylex.props(cockpitStyles.muted)}>Skabelon — udfyld dato, sted og underskrifter inden indberetning.</p>}
+          <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{report.ledelsespategning.text}</p>
         </section>
       )}
     </>

@@ -36,6 +36,7 @@ export type JournalEntry = {
   documentId: number | null;
   /** The linked document's `document_no` for display next to the link. */
   documentNo: string | null;
+  partyId?: string | null;
 };
 
 export type NativePostingOptions = { ruleVersion: string; accounts: Array<{ accountNo: string; name: string; type?: string; active: boolean; allowDirectPosting: boolean }> };

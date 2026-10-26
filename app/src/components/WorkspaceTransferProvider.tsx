@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOptionalAuth } from "../lib/auth-context";
@@ -53,7 +55,7 @@ export function WorkspaceTransferBanner() {
   const lifecycle = useWorkspaceTransfer();
   if (!lifecycle?.enabled || lifecycle.writable) return null;
   const mode = lifecycle.transfer?.mode;
-  return <aside role="status" className="banner">
+  return <aside role="status" {...stylex.props(cockpitStyles.banner)}>
     <strong>{mode === "moved" ? "Denne kilde er permanent skrivebeskyttet." : mode === "staged" ? "Målet er klargjort og endnu ikke aktivt." : mode === "frozen" ? "Workspace er frosset til flytning." : "Workspace-tilstanden kontrolleres."}</strong>
     <p>Rapporter og autoriserede læsninger er fortsat tilgængelige. Nye ændringer og automatisk kørsel er blokeret.</p>
     {mode === "moved" && <p>Frigivelsen autoriserer ét bestemt mål. Den beviser ikke, at målet er aktiveret.</p>}
@@ -67,7 +69,7 @@ export function WorkspaceReadOnlyGuard({ children }: { children: ReactNode }) {
   if (!lifecycle?.enabled) return <>{children}</>;
   const blocked = !lifecycle.writable && pathname !== "/flytning";
   // Stable parent and child slots preserve open reviews and outcome handlers.
-  return <fieldset disabled={blocked} aria-label={blocked ? "Skrivebeskyttet workspace" : undefined} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+  return <fieldset disabled={blocked} aria-label={blocked ? "Skrivebeskyttet workspace" : undefined} {...stylex.props(cockpitStyles.workspaceFieldset)}>
     {blocked && <legend>Workspace er skrivebeskyttet. Rapportlinks kan fortsat åbnes.</legend>}
     {children}
   </fieldset>;

@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 // InvoiceIssueModal — the human invoice-issue action for the Cockpit (#213,
 // slice 4).
 //
@@ -420,49 +422,88 @@ export function InvoiceIssueForm({
   }
 
   return (
-    <Dialog title="Udsted faktura" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef}>
-      <div className="workflow-form" ref={formRef} onChange={() => { setDirty(true); setPreviewUrl(null); }}>
+    <Dialog title="Udsted faktura" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
+      <div {...stylex.props(cockpitStyles.workflowForm)} ref={formRef} onChange={() => { setDirty(true); setPreviewUrl(null); }}>
         {done ? (
           // After a successful issue the modal becomes a short receipt that
           // shows the human exactly what Rentemester computed.
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalBodyP,
+								)}>
                 {done.invoiceType === "simplified" ? "Forenklet faktura" : "Faktura"}{" "}
-                {done.invoiceNumber ? <strong>{done.invoiceNumber}</strong> : ""}{" "}
+                {done.invoiceNumber ? <strong {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{done.invoiceNumber}</strong> : ""}{" "}
                 udstedt.
               </p>
             </div>
-            <table className="data">
-              <tbody>
-                <tr>
-                  <td>Netto</td>
-                  <td className="num">
+            <table {...stylex.props(...[cockpitStyles.tableData])}>
+              <tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>
+                <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+										)}>Netto</td>
+                  <td {...stylex.props(cockpitStyles.num)}>
                     {formatKroner(done.netAmount, currency)}
                   </td>
                 </tr>
-                <tr>
-                  <td>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"Omvendt betalingspligt":typeof done.vatRate==="number"?`Moms (${Math.round(done.vatRate*100)}%)`:"Moms (pr. linje)"}</td>
-                  <td className="num">
+                <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+										)}>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"Omvendt betalingspligt":typeof done.vatRate==="number"?`Moms (${Math.round(done.vatRate*100)}%)`:"Moms (pr. linje)"}</td>
+                  <td {...stylex.props(cockpitStyles.num)}>
                     {done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"Køber afregner moms":typeof done.vatAmount==="number"?formatKroner(done.vatAmount,currency):"Ikke oplyst af serveren"}
                   </td>
                 </tr>
-                <tr>
-                  <td>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"I alt — uden opkrævet moms":"I alt inkl. moms"}</td>
-                  <td className="num">
-                    <strong>{formatKroner(done.grossAmount, currency)}</strong>
+                <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+                  <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+										)}>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"I alt — uden opkrævet moms":"I alt inkl. moms"}</td>
+                  <td {...stylex.props(cockpitStyles.num)}>
+                    <strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{formatKroner(done.grossAmount, currency)}</strong>
                   </td>
                 </tr>
               </tbody>
             </table>
             {native&&typeof done.grossAmountDkk==="number"&&<p>Bogføring i DKK: netto {typeof done.netAmountDkk==="number"?formatKroner(done.netAmountDkk,"DKK"):"Ikke oplyst"} · moms {typeof done.vatAmountDkk==="number"?formatKroner(done.vatAmountDkk,"DKK"):"Ikke oplyst"} · i alt {formatKroner(done.grossAmountDkk,"DKK")} · kurs {done.fxRateToDkk}</p>}
-            {native&&done.lines.some(line=>line.taxClassification)&&<table className="data" aria-label="Udstedte linjers moms">
+            {native&&done.lines.some(line=>line.taxClassification)&&<table {...stylex.props(...[cockpitStyles.tableData])} aria-label="Udstedte linjers moms">
               <thead><tr><th>Linje</th><th>Momstype</th><th>Moms</th></tr></thead>
-              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?(done.vatTreatment==="foreign_reverse_charge"?"Udenlandsk omvendt betalingspligt":"Dansk omvendt betalingspligt"):"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
+              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?(done.vatTreatment==="foreign_reverse_charge"?"Udenlandsk omvendt betalingspligt":"Dansk omvendt betalingspligt"):"Ikke oplyst"}{line.reverseChargeBasis&&<div {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.workflowForm2,
+								cockpitStyles.modalActions,
+							)}>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
             </table>}
             {done.reverseChargeNote&&<p>{done.reverseChargeNote}</p>}
             {done.reverseChargeBasis&&<p>Lovgrundlag: {done.reverseChargeBasis}</p>}
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               {/* #378: the owner just registered the invoice — the next thing
                   she needs is the file to send to the customer. Surfaced
                   immediately here so she does not have to find the row in the
@@ -471,14 +512,14 @@ export function InvoiceIssueForm({
               {done.documentId !== null && (
                 <>
                   <a
-                    className="btn secondary"
+                    {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
                     href={api.invoicePdfUrl(slug, done.documentId)}
                     download={`faktura-${done.documentId}.pdf`}
                   >
                     Hent PDF
                   </a>
                   <a
-                    className="btn secondary"
+                    {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])}
                     href={api.invoicePdfUrl(slug, done.documentId)}
                     target="_blank"
                     rel="noopener"
@@ -489,9 +530,9 @@ export function InvoiceIssueForm({
               )}
               <Button
                 type="button"
-                className="btn"
+
                 ref={closeRef}
-                onClick={guard.dismiss}
+                onClick={guard.dismiss} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Luk
               </Button>
@@ -499,8 +540,12 @@ export function InvoiceIssueForm({
           </>
         ) : (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalBodyP,
+								)}>
                 Indtast kunden og fakturalinjerne. Rentemester beregner
                 linjetotaler, netto, moms og bruttobeløb — du skal aldrig selv
                 regne på en faktura.
@@ -510,13 +555,29 @@ export function InvoiceIssueForm({
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
             {outcome.feedback}
-            {readBack && uncertain && <section className="card" role="status" aria-label="Fakturastatus fra serveren">
-              <h2>Seneste fakturaer fra serveren</h2>
-              <p>Regnskabsår {readBack.selectedYear}: {readBack.invoices.length} fakturaer. Sammenhold dato, kunde og beløb med din handling. Listen afgør ikke automatisk, om den afbrudte udstedelse blev gennemført.</p>
-              <ul>{[...readBack.invoices].sort((a, b) => b.documentId - a.documentId).slice(0, 5).map(invoice => <li key={invoice.documentId}>{invoice.invoiceNo} · {invoice.invoiceDate ?? "Dato ukendt"} · {invoice.customerName ?? "Kunde ukendt"} · {formatKroner(invoice.grossAmount, invoice.currency)}</li>)}</ul>
-              <p>Ved tvivl: gennemgå den fulde fakturaoversigt og revisionssporet. Udstedelse er fortsat blokeret.</p>
+            {readBack && uncertain && <section {...stylex.props(cockpitStyles.card)} role="status" aria-label="Fakturastatus fra serveren">
+              <h2 {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.h2,
+									)}>Seneste fakturaer fra serveren</h2>
+              <p {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Regnskabsår {readBack.selectedYear}: {readBack.invoices.length} fakturaer. Sammenhold dato, kunde og beløb med din handling. Listen afgør ikke automatisk, om den afbrudte udstedelse blev gennemført.</p>
+              <ul {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>{[...readBack.invoices].sort((a, b) => b.documentId - a.documentId).slice(0, 5).map(invoice => <li key={invoice.documentId} {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>{invoice.invoiceNo} · {invoice.invoiceDate ?? "Dato ukendt"} · {invoice.customerName ?? "Kunde ukendt"} · {formatKroner(invoice.grossAmount, invoice.currency)}</li>)}</ul>
+              <p {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Ved tvivl: gennemgå den fulde fakturaoversigt og revisionssporet. Udstedelse er fortsat blokeret.</p>
             </section>}
-            {previewUrl && <p className="muted">Forhåndsvisningen er klar. <a href={previewUrl} target="_blank" rel="noopener">Åbn forhåndsvisning</a> eller <a href={previewUrl} download="faktura-forhaandsvisning.pdf">Gem forhåndsvisning</a>.</p>}
+            {previewUrl && <p {...stylex.props(cockpitStyles.muted)}>Forhåndsvisningen er klar. <a href={previewUrl} target="_blank" rel="noopener" {...stylex.props(cockpitStyles.aComposition)}>Åbn forhåndsvisning</a> eller <a href={previewUrl} download="faktura-forhaandsvisning.pdf">Gem forhåndsvisning</a>.</p>}
             {missingPayment && (
               <Banner kind="warning">
                 Virksomheden har ingen bankkonto registreret — fakturaen
@@ -525,14 +586,14 @@ export function InvoiceIssueForm({
               </Banner>
             )}
 
-            {native && <label className="modal-field">Fakturatype
+            {native && <label {...stylex.props(cockpitStyles.modalField)}>Fakturatype
               <Select aria-label="Fakturatype" value={invoiceType} onChange={e => changeInvoiceType(e.target.value as typeof invoiceType)} disabled={busy || uncertain}>
                 <option value="full">Fuld faktura</option><option value="simplified">Forenklet faktura</option>
               </Select>
             </label>}
-            {simplified && <p className="muted">Maks. 3.000,00 kr. inkl. moms, omregnet til DKK. Rentemester beregner den indeholdte moms på 25 %. Køberoplysninger er valgfrie.</p>}
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            {simplified && <p {...stylex.props(cockpitStyles.muted)}>Maks. 3.000,00 kr. inkl. moms, omregnet til DKK. Rentemester beregner den indeholdte moms på 25 %. Køberoplysninger er valgfrie.</p>}
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Fakturadato
                 <Input
                   type="date"
@@ -540,38 +601,38 @@ export function InvoiceIssueForm({
                   aria-invalid={error === "Angiv en fakturadato."}
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Forfaldsdato (valgfri)
                 <Input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
             </div>
 
-            <fieldset disabled={busy || uncertain} className="modal-body">
+            <fieldset disabled={busy || uncertain} {...stylex.props(cockpitStyles.modalBody)}>
               <legend>Levering og enheder</legend>
-              <label className="modal-field">Levering
+              <label {...stylex.props(cockpitStyles.modalField)}>Levering
                 <Select aria-label="Levering" value={deliveryMode} onChange={e => setDeliveryMode(e.target.value as typeof deliveryMode)}>
                   <option value="none">Ikke angivet</option><option value="date">Leveringsdato</option><option value="period">Leveringsperiode</option>
                 </Select>
               </label>
-              {deliveryMode === "date" && <label className="modal-field">Leveringsdato<Input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)}/></label>}
-              {deliveryMode === "period" && <div className="modal-field-grid">
-                <label className="modal-field">Leveringsperiode fra<Input type="date" value={deliveryPeriodStart} onChange={e => setDeliveryPeriodStart(e.target.value)}/></label>
-                <label className="modal-field">Leveringsperiode til<Input type="date" value={deliveryPeriodEnd} onChange={e => setDeliveryPeriodEnd(e.target.value)}/></label>
+              {deliveryMode === "date" && <label {...stylex.props(cockpitStyles.modalField)}>Leveringsdato<Input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)}/></label>}
+              {deliveryMode === "period" && <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+                <label {...stylex.props(cockpitStyles.modalField)}>Leveringsperiode fra<Input type="date" value={deliveryPeriodStart} onChange={e => setDeliveryPeriodStart(e.target.value)}/></label>
+                <label {...stylex.props(cockpitStyles.modalField)}>Leveringsperiode til<Input type="date" value={deliveryPeriodEnd} onChange={e => setDeliveryPeriodEnd(e.target.value)}/></label>
               </div>}
-              <label className="modal-field">Enhedskode (valgfri)<Input value={unitCode} maxLength={32} onChange={e => setUnitCode(e.target.value)}/></label>
+              <label {...stylex.props(cockpitStyles.modalField)}>Enhedskode (valgfri)<Input value={unitCode} maxLength={32} onChange={e => setUnitCode(e.target.value)}/></label>
             </fieldset>
 
-            {native&&!simplified&&<fieldset disabled={busy||uncertain} className="modal-body">
+            {native&&!simplified&&<fieldset disabled={busy||uncertain} {...stylex.props(cockpitStyles.modalBody)}>
               <legend>Moms på fakturaen</legend>
-              <label className="modal-field">Momsbehandling
+              <label {...stylex.props(cockpitStyles.modalField)}>Momsbehandling
                 <Select aria-label="Momsbehandling" value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
                   <option value="standard">Almindelig dansk faktura</option>
                   <option value="domestic_reverse_charge">Dansk omvendt betalingspligt</option>
@@ -579,13 +640,13 @@ export function InvoiceIssueForm({
                 </Select>
               </label>
               {vatTreatment==="standard"?<label><input type="checkbox" checked={lineTaxes} onChange={e=>setLineTaxes(e.target.checked)}/> Specificér moms pr. linje</label>:<>
-                {!foreign&&<label className="modal-field">Dansk lovgrundlag<Select aria-label="Dansk lovgrundlag" value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
+                {!foreign&&<label {...stylex.props(cockpitStyles.modalField)}>Dansk lovgrundlag<Select aria-label="Dansk lovgrundlag" value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
                   <option value="">Vælg lovgrundlag</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
                 </Select></label>}
                 {foreign&&<>
-                  <label className="modal-field">Udenlandsk lovgrundlag<Select aria-label="Udenlandsk lovgrundlag" value={foreignBasis} onChange={e=>setForeignBasis(e.target.value as ForeignReverseChargeBasis)}>
+                  <label {...stylex.props(cockpitStyles.modalField)}>Udenlandsk lovgrundlag<Select aria-label="Udenlandsk lovgrundlag" value={foreignBasis} onChange={e=>setForeignBasis(e.target.value as ForeignReverseChargeBasis)}>
                     <option value="EU_B2B_SERVICES">EU B2B-ydelser</option>
                     <option value="DK_MOMSLOVEN_§46_STK_1_NR_3">Momsloven § 46, stk. 1, nr. 3</option>
                     <option value="EU_MOMSDIREKTIV_ART_196">EU-momsdirektivet artikel 196</option>
@@ -593,12 +654,12 @@ export function InvoiceIssueForm({
                   </Select></label>
                   <p>Køber afregner moms. Vælg det afklarede lovgrundlag, og verificér købers momsnummer nedenfor.</p>
                 </>}
-                <label className="modal-field">Note om omvendt betalingspligt<Input value={reverseChargeNote} onChange={e=>setReverseChargeNote(e.target.value)}/></label>
+                <label {...stylex.props(cockpitStyles.modalField)}>Note om omvendt betalingspligt<Input value={reverseChargeNote} onChange={e=>setReverseChargeNote(e.target.value)}/></label>
               </>}
-              <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; EU B2B-ydelser kræver en gyldig, aktuel VIES-kontrol, som serveren knytter til fakturaen.</p>
+              <p {...stylex.props(cockpitStyles.muted)}>Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; EU B2B-ydelser kræver en gyldig, aktuel VIES-kontrol, som serveren knytter til fakturaen.</p>
             </fieldset>}
-            <div className="modal-field-grid">
-              {!explicitTaxes&&!simplified&&<label className="modal-field">
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              {!explicitTaxes&&!simplified&&<label {...stylex.props(cockpitStyles.modalField)}>
                 Momssats (%)
                 <Input
                   type="text"
@@ -606,64 +667,70 @@ export function InvoiceIssueForm({
                   ref={vatRef}
                   value={vatRatePercent}
                   onChange={(e) => setVatRatePercent(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>}
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Valuta
                 <Input
                   type="text"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
             </div>
 
-            {native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"&&<label className="modal-field">Valutakurs — DKK pr. {currency.trim().toUpperCase()}<Input aria-label="Valutakurs i DKK" inputMode="decimal" value={fxRate} onChange={e=>setFxRate(e.target.value)} disabled={busy||uncertain}/><span className="muted">Angiv den dokumenterede kurs på fakturadatoen. Linjebeløb er i {currency.trim().toUpperCase()}; bogføringen er i DKK.</span></label>}
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            {native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"&&<label {...stylex.props(cockpitStyles.modalField)}>Valutakurs — DKK pr. {currency.trim().toUpperCase()}<Input aria-label="Valutakurs i DKK" inputMode="decimal" value={fxRate} onChange={e=>setFxRate(e.target.value)} disabled={busy||uncertain}/><span {...stylex.props(cockpitStyles.muted)}>Angiv den dokumenterede kurs på fakturadatoen. Linjebeløb er i {currency.trim().toUpperCase()}; bogføringen er i DKK.</span></label>}
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Sælger
                 <Input
                   type="text"
                   value={sellerName}
                   placeholder="Navn"
                   onChange={(e) => setSellerName(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Sælger CVR/moms
                 <Input
                   type="text"
                   value={sellerVat}
                   onChange={(e) => setSellerVat(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
             </div>
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Sælgeradresse
               <Input
                 type="text"
                 value={sellerAddress}
                 onChange={(e) => setSellerAddress(e.target.value)}
-                disabled={busy || uncertain}
+                disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
               />
             </label>
 
             {customers.length > 0 && (
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 Vælg kunde
                 <Select
                   value={selectedCustomerId}
                   onChange={(e) => selectCustomer(e.target.value)}
                   disabled={busy || uncertain}
-                  aria-label="Vælg kunde"
+                  aria-label="Vælg kunde" xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
                 >
-                  <option value="">— Ny kunde (indtast nedenfor) —</option>
+                  <option value="" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>— Ny kunde (indtast nedenfor) —</option>
                   {customers.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
+                    <option key={c.id} value={String(c.id)} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>
                       {c.name}
                       {c.vatOrCvr ? ` · ${c.vatOrCvr}` : ""}
                     </option>
@@ -672,59 +739,62 @@ export function InvoiceIssueForm({
               </label>
             )}
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
+            <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 {simplified ? "Kunde (valgfrit)" : "Kunde"}
                 <Input
                   type="text"
                   value={buyerName}
                   placeholder="Navn"
                   onChange={(e) => setBuyerName(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
-              <label className="modal-field">
+              <label {...stylex.props(cockpitStyles.modalField)}>
                 {native && vatTreatment === "standard" ? "Kunde CVR/moms (valgfrit)" : "Kunde CVR/moms"}
                 <Input
                   type="text"
                   value={buyerVat}
                   onChange={(e) => setBuyerVat(e.target.value)}
-                  disabled={busy || uncertain}
+                  disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                 />
               </label>
             </div>
-            {foreign&&<div className="modal-body"><Button type="button" className="btn secondary" disabled={busy||uncertain||checkingVat||!buyerVat.trim()} onClick={async()=>{const vat=buyerVat.trim();setCheckingVat(true);setViesError(null);try{const result=await api.viesValidate(slug,vat);setVies({vat, ...result.validation});}catch(e){setVies(null);setViesError((e as Error).message);}finally{setCheckingVat(false);}}}>{checkingVat?"Kontrollerer…":"Verificér EU-momsnummer"}</Button>{vies&&vies.vat===buyerVat.trim()&&<p role="status">{vies.valid?"Gyldigt EU-momsnummer":"Momsnummeret er ikke gyldigt"} · Kontrolleret {vies.validatedAt} · Udløber {vies.expiresAt}{vies.name?` · ${vies.name}`:""}</p>}{viesError&&<p role="alert">{viesError}</p>}</div>}
-            <label className="modal-field">
+            {foreign&&<div {...stylex.props(cockpitStyles.modalBody)}><Button type="button"  disabled={busy||uncertain||checkingVat||!buyerVat.trim()} onClick={async()=>{const vat=buyerVat.trim();setCheckingVat(true);setViesError(null);try{const result=await api.viesValidate(slug,vat);setVies({vat, ...result.validation});}catch(e){setVies(null);setViesError((e as Error).message);}finally{setCheckingVat(false);}}}>{checkingVat?"Kontrollerer…":"Verificér EU-momsnummer"}</Button>{vies&&vies.vat===buyerVat.trim()&&<p role="status">{vies.valid?"Gyldigt EU-momsnummer":"Momsnummeret er ikke gyldigt"} · Kontrolleret {vies.validatedAt} · Udløber {vies.expiresAt}{vies.name?` · ${vies.name}`:""}</p>}{viesError&&<p role="alert">{viesError}</p>}</div>}
+            <label {...stylex.props(cockpitStyles.modalField)}>
               {simplified ? "Kundeadresse (valgfri)" : "Kundeadresse"}
               <Input
                 type="text"
                 value={buyerAddress}
                 onChange={(e) => setBuyerAddress(e.target.value)}
-                disabled={busy || uncertain}
+                disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
               />
             </label>
 
-            {native&&!simplified&&<fieldset className="modal-field">
-              <legend>E-faktura til offentlig modtager</legend>
-              <label className="modal-field">EAN-nummer<Input aria-label="EAN-nummer" value={buyerEan} maxLength={64} onChange={e=>{setBuyerEan(e.target.value);setPublicRecipient(Boolean(e.target.value.trim()));}} disabled={busy||uncertain}/></label>
+            {native&&!simplified&&<fieldset {...stylex.props(cockpitStyles.modalField)}>
+              <legend {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>E-faktura til offentlig modtager</legend>
+              <label {...stylex.props(cockpitStyles.modalField)}>EAN-nummer<Input aria-label="EAN-nummer" value={buyerEan} maxLength={64} onChange={e=>{setBuyerEan(e.target.value);setPublicRecipient(Boolean(e.target.value.trim()));}} disabled={busy||uncertain}/></label>
               <label><input type="checkbox" checked={publicRecipient} onChange={e=>setPublicRecipient(e.target.checked)} disabled={busy||uncertain}/> Offentlig modtager</label>
-              <div className="modal-field-grid">
-                <label className="modal-field">Købers reference<Input aria-label="Købers reference" value={buyerReference} maxLength={1024} onChange={e=>setBuyerReference(e.target.value)} disabled={busy||uncertain}/></label>
-                <label className="modal-field">Ordrenummer<Input aria-label="Ordrenummer" value={orderReference} maxLength={1024} onChange={e=>setOrderReference(e.target.value)} disabled={busy||uncertain}/></label>
+              <div {...stylex.props(cockpitStyles.modalFieldGrid)}>
+                <label {...stylex.props(cockpitStyles.modalField)}>Købers reference<Input aria-label="Købers reference" value={buyerReference} maxLength={1024} onChange={e=>setBuyerReference(e.target.value)} disabled={busy||uncertain}/></label>
+                <label {...stylex.props(cockpitStyles.modalField)}>Ordrenummer<Input aria-label="Ordrenummer" value={orderReference} maxLength={1024} onChange={e=>setOrderReference(e.target.value)} disabled={busy||uncertain}/></label>
               </div>
-              <p className="muted">Et gyldigt EAN behandles som offentlig modtager. EAN og referencer gemmes på fakturaen. Udstedelse sender ikke fakturaen.</p>
-              {selectedCustomerId&&customers.find(c=>String(c.id)===selectedCustomerId)?.eanNumber&&<p className="muted">EAN fra den valgte kunde bruges, hvis feltet er tomt.</p>}
+              <p {...stylex.props(cockpitStyles.muted)}>Et gyldigt EAN behandles som offentlig modtager. EAN og referencer gemmes på fakturaen. Udstedelse sender ikke fakturaen.</p>
+              {selectedCustomerId&&customers.find(c=>String(c.id)===selectedCustomerId)?.eanNumber&&<p {...stylex.props(cockpitStyles.muted)}>EAN fra den valgte kunde bruges, hvis feltet er tomt.</p>}
             </fieldset>}
 
-            {simplified ? <fieldset className="modal-field invoice-lines">
+            {simplified ? <fieldset {...stylex.props(cockpitStyles.modalField, cockpitStyles.invoiceLines)}>
               <legend>Forenklet faktura</legend>
-              <label className="modal-field">Beskrivelse<Input aria-label="Beskrivelse" value={simplifiedDescription} onChange={e => setSimplifiedDescription(e.target.value)} disabled={busy || uncertain}/></label>
-              <label className="modal-field">Beløb inkl. moms<Input aria-label="Beløb inkl. moms" inputMode="decimal" value={grossAmount} onChange={e => setGrossAmount(e.target.value)} disabled={busy || uncertain}/></label>
-            </fieldset> : <fieldset className="modal-field invoice-lines">
+              <label {...stylex.props(cockpitStyles.modalField)}>Beskrivelse<Input aria-label="Beskrivelse" value={simplifiedDescription} onChange={e => setSimplifiedDescription(e.target.value)} disabled={busy || uncertain}/></label>
+              <label {...stylex.props(cockpitStyles.modalField)}>Beløb inkl. moms<Input aria-label="Beløb inkl. moms" inputMode="decimal" value={grossAmount} onChange={e => setGrossAmount(e.target.value)} disabled={busy || uncertain}/></label>
+            </fieldset> : <fieldset {...stylex.props(cockpitStyles.modalField, cockpitStyles.invoiceLines)}>
               <legend>Fakturalinjer</legend>
               {lines.map((line, index) => (
-                <div key={index} className="invoice-line-row">
-                  <label className="modal-field">
+                <div key={index} {...stylex.props(cockpitStyles.invoiceLineRow)}>
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Beskrivelse
                     <Input
                       type="text"
@@ -733,10 +803,10 @@ export function InvoiceIssueForm({
                       onChange={(e) =>
                         updateLine(index, { description: e.target.value })
                       }
-                      disabled={busy || uncertain}
+                      disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                     />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Antal
                     <Input
                       type="text"
@@ -746,10 +816,10 @@ export function InvoiceIssueForm({
                       onChange={(e) =>
                         updateLine(index, { quantity: e.target.value })
                       }
-                      disabled={busy || uncertain}
+                      disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                     />
                   </label>
-                  <label className="modal-field">
+                  <label {...stylex.props(cockpitStyles.modalField)}>
                     Enhedspris ekskl. moms
                     <Input
                       type="text"
@@ -759,24 +829,24 @@ export function InvoiceIssueForm({
                       onChange={(e) =>
                         updateLine(index, { unitPriceExVat: e.target.value })
                       }
-                      disabled={busy || uncertain}
+                      disabled={busy || uncertain} xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
                     />
                   </label>
-                  <label className="modal-field">{`Linje ${index + 1} enhedskode (valgfri)`}
+                  <label {...stylex.props(cockpitStyles.modalField)}>{`Linje ${index + 1} enhedskode (valgfri)`}
                     <Input aria-label={`Linje ${index + 1} enhedskode (valgfri)`} value={line.unitCode} maxLength={32} onChange={e => updateLine(index, {unitCode: e.target.value})} disabled={busy || uncertain}/>
                   </label>
                   {explicitTaxes&&vatTreatment==="standard"&&<>
-                    <label className="modal-field">Momstype<Select aria-label={`Linje ${index+1} momstype`} value={line.taxClassification} disabled={busy||uncertain} onChange={e=>updateLine(index,{taxClassification:e.target.value as InvoiceTaxClassification})}>
+                    <label {...stylex.props(cockpitStyles.modalField)}>Momstype<Select aria-label={`Linje ${index+1} momstype`} value={line.taxClassification} disabled={busy||uncertain} onChange={e=>updateLine(index,{taxClassification:e.target.value as InvoiceTaxClassification})}>
                       <option value="taxable">Momspligtig — 25 %</option><option value="exempt">Momsfritaget</option><option value="reverse_charge">Dansk omvendt betalingspligt</option>
                     </Select></label>
-                    {line.taxClassification==="reverse_charge"&&<label className="modal-field">Lovgrundlag<Select aria-label={`Linje ${index+1} lovgrundlag`} value={line.reverseChargeBasis} disabled={busy||uncertain} onChange={e=>updateLine(index,{reverseChargeBasis:e.target.value as DomesticReverseChargeBasis})}>
+                    {line.taxClassification==="reverse_charge"&&<label {...stylex.props(cockpitStyles.modalField)}>Lovgrundlag<Select aria-label={`Linje ${index+1} lovgrundlag`} value={line.reverseChargeBasis} disabled={busy||uncertain} onChange={e=>updateLine(index,{reverseChargeBasis:e.target.value as DomesticReverseChargeBasis})}>
                       <option value="">Vælg lovgrundlag</option><option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option><option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
                     </Select></label>}
                   </>}
                   {lines.length > 1 && (
                     <Button
                       type="button"
-                      className="btn secondary"
+
                       onClick={() => removeLine(index)}
                       disabled={busy || uncertain}
                       aria-label={`Fjern linje ${index + 1}`}
@@ -788,7 +858,7 @@ export function InvoiceIssueForm({
               ))}
               <Button
                 type="button"
-                className="btn secondary"
+
                 onClick={addLine}
                 disabled={busy || uncertain}
               >
@@ -796,10 +866,10 @@ export function InvoiceIssueForm({
               </Button>
             </fieldset>}
 
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button
                 type="button"
-                className="btn secondary"
+
                 onClick={guard.onClose}
                 disabled={busy || uncertain}
               >
@@ -811,7 +881,7 @@ export function InvoiceIssueForm({
                   amounts BEFORE clicking Udsted. */}
               <Button
                 type="button"
-                className="btn secondary"
+
                 onClick={handlePreview}
                 disabled={busy || uncertain}
               >
@@ -821,9 +891,9 @@ export function InvoiceIssueForm({
               </Button>
               <Button
                 type="button"
-                className="btn"
+
                 requiredPermission="company.draft.write" onClick={handleIssue}
-                disabled={busy || uncertain}
+                disabled={busy || uncertain} xstyle={[cockpitStyles.buttonComposition]}
               >
                 {pending === "issue" ? "Udsteder…" : "Udsted faktura"}
               </Button>

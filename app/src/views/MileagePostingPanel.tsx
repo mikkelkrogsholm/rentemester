@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -28,7 +30,7 @@ function Panel({ slug, entries }: Props) {
   const [version, setVersion] = useState("");
   const [doc, setDoc] = useState("");
   const rate = state.data?.rateVersions.find(r => r.version === version);
-  return <section aria-label="Kørselsbogføring" className="card"><h2>Kørselsbogføring</h2>
+  return <section aria-label="Kørselsbogføring" {...stylex.props(cockpitStyles.card)}><h2>Kørselsbogføring</h2>
     <p>Registrering er kun dokumentation indtil særskilt bogføring efter serverens forhåndsvisning. Konfigureret takst er ikke skatteberettigelse eller automatisk udbetaling. Ingen moms eller betaling oprettes.</p>
     <Button onClick={refresh}>Opdatér bogføringsstatus</Button>
     {state.loading ? <Loading /> : state.error ? <ErrorState message={state.error} onRetry={refresh} /> : state.data && <>

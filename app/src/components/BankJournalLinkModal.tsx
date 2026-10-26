@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
@@ -70,7 +72,7 @@ export function BankJournalLinkModal({
         <ErrorState message={state.error} onRetry={state.reload} />
       ) : (
         <>
-          <p className="muted">{state.data?.note}</p>
+          <p {...stylex.props(cockpitStyles.muted)}>{state.data?.note}</p>
           {!state.data?.plans.length ? (
             <p>
               Ingen egnede, uafstemte posteringer med samme konto og beløb. Kontrollér kontomapping
@@ -112,9 +114,9 @@ export function BankJournalLinkModal({
                   Bank {plan.bankDate} · journal {plan.journalDate}
                 </dd>
               </dl>
-              <p className="muted">Bankkildens SHA-256: {plan.sourceHash}</p>
-              <p className="muted">Journalens hash: {plan.journalHash}</p>
-              <p className="muted">Review-hash: {plan.planHash}</p>
+              <p {...stylex.props(cockpitStyles.muted)}>Bankkildens SHA-256: {plan.sourceHash}</p>
+              <p {...stylex.props(cockpitStyles.muted)}>Journalens hash: {plan.journalHash}</p>
+              <p {...stylex.props(cockpitStyles.muted)}>Review-hash: {plan.planHash}</p>
               {plan.document && (
                 <a
                   href={`/api/companies/${encodeURIComponent(slug)}/documents/${plan.document.id}/file`}

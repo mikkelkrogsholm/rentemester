@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
 import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
@@ -132,40 +134,162 @@ export function AccountingDraftsView() {
   if (state.loading && !state.data) return <Loading label="Henter bogføringskladder…" />;
   if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
 
-  return <section className="statement accounting-drafts-view">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+  return <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
     {outcome.feedback}
-    <PageHeader title="Bogføringskladder" actions={<><ButtonLink className="btn secondary" to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</ButtonLink><ButtonLink to={`/companies/${slug}/batchbogfoering`}>Vælg bankpost til kladde</ButtonLink></>}><div><p className="muted">Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div></PageHeader>
-    <p className="muted">Den indsendte version låses med en SHA-256-identitet. Godkenderen skal være en anden bruger end forfatteren og indsenderen.</p>
-    {actionError && <div className="card archived-notice" role="alert"><p>{actionError}</p></div>}
+    <PageHeader title="Bogføringskladder" actions={<><ButtonLink  to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</ButtonLink><ButtonLink to={`/companies/${slug}/batchbogfoering`}>Vælg bankpost til kladde</ButtonLink></>}><div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><p {...stylex.props(cockpitStyles.muted)}>Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div></PageHeader>
+    <p {...stylex.props(cockpitStyles.muted)}>Den indsendte version låses med en SHA-256-identitet. Godkenderen skal være en anden bruger end forfatteren og indsenderen.</p>
+    {actionError && <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)} role="alert"><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{actionError}</p></div>}
 
-    <form className="card accounting-draft-form" onSubmit={create}>
-      <h3>{editing ? `Ny version af ${editing.id}` : "Ny kladde"}</h3>
-      <div className="form-grid">
-        <label>Kladde-id<Input required disabled={outcome.blocked || (editing !== null)} pattern="[a-z][a-z0-9-]{0,63}" value={draftId} onChange={(event) => setDraftId(event.target.value.toLowerCase())} placeholder="fx bank-2026-08-001" /></label>
-        <label>Dato<Input disabled={outcome.blocked} required type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
-        <label className="full-width">Tekst<Input disabled={outcome.blocked} required value={text} onChange={(event) => setText(event.target.value)} /></label>
-        <label>Bilags-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={documentId} onChange={(event) => setDocumentId(event.target.value)} /></label>
-        <label>Bankpost-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={bankId} onChange={(event) => setBankId(event.target.value)} /></label>
+    <form {...stylex.props(cockpitStyles.card)} onSubmit={create}>
+      <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>{editing ? `Ny version af ${editing.id}` : "Ny kladde"}</h3>
+      <div {...stylex.props(cockpitStyles.formGrid)}>
+        <label {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.formGridLabel,
+						)}>Kladde-id<Input required disabled={outcome.blocked || (editing !== null)} pattern="[a-z][a-z0-9-]{0,63}" value={draftId} onChange={(event) => setDraftId(event.target.value.toLowerCase())} placeholder="fx bank-2026-08-001" /></label>
+        <label {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.formGridLabel,
+						)}>Dato<Input disabled={outcome.blocked} required type="date" value={date} onChange={(event) => setDate(event.target.value)} xstyle={[cockpitStyles.statementInputComposition]} /></label>
+        <label {...stylex.props(cockpitStyles.fullWidth)}>Tekst<Input disabled={outcome.blocked} required value={text} onChange={(event) => setText(event.target.value)} xstyle={[cockpitStyles.statementInputComposition]} /></label>
+        <label {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.formGridLabel,
+						)}>Bilags-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={documentId} onChange={(event) => setDocumentId(event.target.value)} xstyle={[cockpitStyles.statementInputComposition]} /></label>
+        <label {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.formGridLabel,
+						)}>Bankpost-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={bankId} onChange={(event) => setBankId(event.target.value)} xstyle={[cockpitStyles.statementInputComposition]} /></label>
       </div>
-      <div className="table-scroll"><table className="data"><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th><th>Momskode</th><th>Linjetekst</th><th /></tr></thead><tbody>{lines.map((line, index) => <tr key={index}>
-        <td><Input disabled={outcome.blocked} aria-label={`Konto linje ${index + 1}`} value={line.accountNo} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, accountNo: event.target.value } : item))} /></td>
-        <td><Input disabled={outcome.blocked} aria-label={`Debet linje ${index + 1}`} inputMode="decimal" value={line.debitAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, debitAmount: event.target.value, creditAmount: event.target.value ? "" : item.creditAmount } : item))} /></td>
-        <td><Input disabled={outcome.blocked} aria-label={`Kredit linje ${index + 1}`} inputMode="decimal" value={line.creditAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, creditAmount: event.target.value, debitAmount: event.target.value ? "" : item.debitAmount } : item))} /></td>
-        <td><Input disabled={outcome.blocked} aria-label={`Momskode linje ${index + 1}`} value={line.vatCode} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, vatCode: event.target.value } : item))} /></td>
-        <td><Input disabled={outcome.blocked} aria-label={`Tekst linje ${index + 1}`} value={line.text} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, text: event.target.value } : item))} /></td>
-        <td><Button variant="secondary" type="button" className="btn secondary" disabled={lines.length <= 2} onClick={() => setLines((current) => current.filter((_, i) => i !== index))}>Fjern</Button></td>
+      <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}><tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)}>Konto</th><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)}>Debet</th><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)}>Kredit</th><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)}>Momskode</th><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)}>Linjetekst</th><th {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.tableDataTh,
+										cockpitStyles.statementTableScrollTableThLastChild,
+									)} /></tr></thead><tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{lines.map((line, index) => <tr key={index} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Input disabled={outcome.blocked} aria-label={`Konto linje ${index + 1}`} value={line.accountNo} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, accountNo: event.target.value } : item))} /></td>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Input disabled={outcome.blocked} aria-label={`Debet linje ${index + 1}`} inputMode="decimal" value={line.debitAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, debitAmount: event.target.value, creditAmount: event.target.value ? "" : item.creditAmount } : item))} /></td>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Input disabled={outcome.blocked} aria-label={`Kredit linje ${index + 1}`} inputMode="decimal" value={line.creditAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, creditAmount: event.target.value, debitAmount: event.target.value ? "" : item.debitAmount } : item))} /></td>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Input disabled={outcome.blocked} aria-label={`Momskode linje ${index + 1}`} value={line.vatCode} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, vatCode: event.target.value } : item))} /></td>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Input disabled={outcome.blocked} aria-label={`Tekst linje ${index + 1}`} value={line.text} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, text: event.target.value } : item))} /></td>
+        <td {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.tableDataTd,
+											cockpitStyles.statementTableScrollTableTdLastChild,
+										)}><Button variant="secondary" type="button"  disabled={lines.length <= 2} onClick={() => setLines((current) => current.filter((_, i) => i !== index))}>Fjern</Button></td>
       </tr>)}</tbody></table></div>
-      <div className="row-actions"><Button variant="secondary" type="button" className="btn secondary" onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}>Tilføj linje</Button>{editing && <Button variant="secondary" type="button" className="btn secondary" onClick={() => { setEditing(null); setDraftId(""); setText(""); setDocumentId(""); setBankId(""); setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]); }}>Annullér revision</Button>}<Button requiredPermission="company.draft.write" className="btn" type="submit" disabled={outcome.blocked || (busy)}>{busy ? "Gemmer…" : editing ? "Gem ny version" : "Opret kladde"}</Button></div>
+      <div {...stylex.props(cockpitStyles.rowActions)}><Button variant="secondary" type="button"  onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])} xstyle={[cockpitStyles.statementBtnComposition]}>Tilføj linje</Button>{editing && <Button variant="secondary" type="button"  onClick={() => { setEditing(null); setDraftId(""); setText(""); setDocumentId(""); setBankId(""); setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]); }} xstyle={[cockpitStyles.statementBtnComposition]}>Annullér revision</Button>}<Button requiredPermission="company.draft.write"  type="submit" disabled={outcome.blocked || (busy)}>{busy ? "Gemmer…" : editing ? "Gem ny version" : "Opret kladde"}</Button></div>
     </form>
 
-    <section className="card"><h3>Kladder ({state.data!.length})</h3>{state.data!.length === 0 ? <p className="muted">Ingen kladder endnu.</p> : <div className="table-scroll"><table className="data"><thead><tr><th>Id / version</th><th>Status</th><th>Dato og tekst</th><th>Beløb</th><th>Evidens</th><th>Handling</th></tr></thead><tbody>{state.data!.map((draft) => <tr key={draft.id}>
-      <td><strong>{draft.id}</strong><div className="muted">v{draft.version}</div></td><td><span className={`pill ${draft.status === "approved_posted" ? "ok" : draft.status === "rejected" ? "warn" : ""}`}>{STATUS_LABEL[draft.status]}</span>{draft.reason && <div className="muted">{draft.reason}</div>}</td>
-      <td>{draft.payload.transactionDate}<div className="muted">{draft.payload.text}</div><details><summary>Gennemgå præcise linjer og kilder</summary><p>Bankpost: {draft.payload.sourceBankTransactionId ?? "Ingen"} · Bilag: {draft.payload.documentId ?? "Intet"}</p><table className="data"><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th><th>Moms</th></tr></thead><tbody>{draft.payload.lines.map((line, index) => <tr key={index}><td>{line.accountNo}</td><td>{line.debitAmount ?? "—"}</td><td>{line.creditAmount ?? "—"}</td><td>{line.vatCode ?? "—"}</td></tr>)}</tbody></table><p>Forfatter eller seneste indsender: {draft.actorId}</p><code>{draft.payloadHash}</code></details></td><td className="num">{formatKroner(draft.payload.lines.reduce((sum, line) => sum + (line.debitAmount ?? 0), 0))}</td>
-      <td><code title={draft.eventHash}>{draft.eventHash.slice(0, 12)}…</code>{draft.journalEntryId && <div className="muted">Journal #{draft.journalEntryId}</div>}</td>
-      <td><div className="row-actions">{(draft.status === "created" || draft.status === "revised") && <><Button disabled={outcome.blocked} requiredPermission="company.draft.write" className="btn" type="button" onClick={() => setPending({ kind: "submit", draft })}>Indsend</Button><Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary" className="btn secondary" type="button" onClick={() => edit(draft)}>Redigér ny version</Button></>}{draft.status === "rejected" && <Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary" className="btn secondary" type="button" onClick={() => edit(draft)}>Ret og opret ny version</Button>}{draft.status === "submitted" && <><Button disabled={outcome.blocked} requiredPermission="company.review" className="btn" type="button" onClick={() => setPending({ kind: "approve", draft })}>Godkend og bogfør</Button><Button disabled={outcome.blocked} requiredPermission="company.review" variant="secondary" className="btn secondary" type="button" onClick={() => setPending({ kind: "reject", draft })}>Afvis</Button></>}</div></td>
+    <section {...stylex.props(cockpitStyles.card)}><h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Kladder ({state.data!.length})</h3>{state.data!.length === 0 ? <p {...stylex.props(cockpitStyles.muted)}>Ingen kladder endnu.</p> : <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><thead {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableThead,
+							)}><tr {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTr,
+								)}><th>Id / version</th><th>Status</th><th>Dato og tekst</th><th>Beløb</th><th>Evidens</th><th>Handling</th></tr></thead><tbody {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.responsiveTableTbody,
+							)}>{state.data!.map((draft) => <tr key={draft.id} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}>
+      <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}><strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{draft.id}</strong><div {...stylex.props(cockpitStyles.muted)}>v{draft.version}</div></td><td {...stylex.props(cockpitStyles.tableDataTdComposition2)}><span {...stylex.props(...[cockpitStyles.statusChip, ...(draft.status === "approved_posted" ? [cockpitStyles.statusChipSuccess] : (draft.status === "rejected" ? [cockpitStyles.statusChipWarning] : []))])}>{STATUS_LABEL[draft.status]}</span>{draft.reason && <div {...stylex.props(cockpitStyles.muted)}>{draft.reason}</div>}</td>
+      <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>{draft.payload.transactionDate}<div {...stylex.props(cockpitStyles.muted)}>{draft.payload.text}</div><details><summary>Gennemgå præcise linjer og kilder</summary><p>Bankpost: {draft.payload.sourceBankTransactionId ?? "Ingen"} · Bilag: {draft.payload.documentId ?? "Intet"}</p><table {...stylex.props(...[cockpitStyles.tableData])}><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th><th>Moms</th></tr></thead><tbody>{draft.payload.lines.map((line, index) => <tr key={index}><td {...stylex.props(cockpitStyles.tableDataTdNumComposition11)}>{line.accountNo}</td><td {...stylex.props(cockpitStyles.tableDataTdComposition2)}>{line.debitAmount ?? "—"}</td><td>{line.creditAmount ?? "—"}</td><td>{line.vatCode ?? "—"}</td></tr>)}</tbody></table><p>Forfatter eller seneste indsender: {draft.actorId}</p><code>{draft.payloadHash}</code></details></td><td {...stylex.props(cockpitStyles.num)}>{formatKroner(draft.payload.lines.reduce((sum, line) => sum + (line.debitAmount ?? 0), 0))}</td>
+      <td><code title={draft.eventHash} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+												cockpitStyles.code,
+											)}>{draft.eventHash.slice(0, 12)}…</code>{draft.journalEntryId && <div {...stylex.props(cockpitStyles.muted)}>Journal #{draft.journalEntryId}</div>}</td>
+      <td {...stylex.props(cockpitStyles.tableDataTdComposition2)}><div {...stylex.props(cockpitStyles.rowActions)}>{(draft.status === "created" || draft.status === "revised") && <><Button disabled={outcome.blocked} requiredPermission="company.draft.write"  type="button" onClick={() => setPending({ kind: "submit", draft })} xstyle={[cockpitStyles.statementBtnComposition]}>Indsend</Button><Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary"  type="button" onClick={() => edit(draft)} xstyle={[cockpitStyles.statementBtnComposition]}>Redigér ny version</Button></>}{draft.status === "rejected" && <Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary"  type="button" onClick={() => edit(draft)} xstyle={[cockpitStyles.statementBtnComposition]}>Ret og opret ny version</Button>}{draft.status === "submitted" && <><Button disabled={outcome.blocked} requiredPermission="company.review"  type="button" onClick={() => setPending({ kind: "approve", draft })} xstyle={[cockpitStyles.statementBtnComposition]}>Godkend og bogfør</Button><Button disabled={outcome.blocked} requiredPermission="company.review" variant="secondary"  type="button" onClick={() => setPending({ kind: "reject", draft })} xstyle={[cockpitStyles.statementBtnComposition]}>Afvis</Button></>}</div></td>
     </tr>)}</tbody></table></div>}</section>
 
-    {pending && <ConfirmDialog title={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis kladde" : "Indsend kladde"} body={<p>{pending.kind === "approve" ? "Den præcise indsendte version bogføres irreversibelt og audit-logges." : pending.kind === "reject" ? "Kladdeversionen afvises; skriv hvorfor." : "Den aktuelle version låses til uafhængigt review."}</p>} confirmLabel={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis" : "Indsend"} confirmKind={pending.kind === "reject" ? "danger" : "primary"} noteLabel={pending.kind === "reject" ? "Begrundelse" : undefined} onConfirm={(note) => action(pending.kind, pending.draft, note)} onClose={() => setPending(null)} onRefresh={state.reload} />}
+    {pending && <ConfirmDialog title={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis kladde" : "Indsend kladde"} body={<p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{pending.kind === "approve" ? "Den præcise indsendte version bogføres irreversibelt og audit-logges." : pending.kind === "reject" ? "Kladdeversionen afvises; skriv hvorfor." : "Den aktuelle version låses til uafhængigt review."}</p>} confirmLabel={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis" : "Indsend"} confirmKind={pending.kind === "reject" ? "danger" : "primary"} noteLabel={pending.kind === "reject" ? "Begrundelse" : undefined} onConfirm={(note) => action(pending.kind, pending.draft, note)} onClose={() => setPending(null)} onRefresh={state.reload} />}
   </section>;
 }

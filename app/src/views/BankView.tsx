@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { Button, ButtonLink, FilterBar, Input, PageHeader, Pagination, Select } from "../components/ui";
 // Bank — the per-company bank transactions (cockpit-redesign iteration 3).
 //
@@ -180,27 +182,27 @@ export function BankView() {
   const currency = b.company.currency || "DKK";
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Bank" actions={<><div className="row-actions">
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Bank" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           {/* The bank-import write action — hidden for an archived (read-only)
               year, where no live ledger is available to import into. */}
           {!b.archived && (
             <Button requiredPermission="company.ledger.post"
               type="button"
-              className="btn"
+
               onClick={() => setImporting(true)}
             >
               Importér kontoudtog
             </Button>
           )}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
             {b.company.country} · {currency} · Bank
           </p>
@@ -235,7 +237,7 @@ export function BankView() {
       {linking && <BankJournalLinkModal slug={slug} transaction={linking} onApplied={state.reload} onClose={() => setLinking(null)} />}
       {correcting && <BankCorrectionModal slug={slug} transaction={correcting} year={b.selectedYear} onApplied={state.reload} onClose={() => setCorrecting(null)} />}
 
-      {b.reconciliationCorrectionAvailable === false && <p className="muted">Manuelle links opretter ingen bogføring. Korrektion af et eksisterende link kræver tilbageførsel og en gennemgået erstatningspostering; linkkorrektion understøttes endnu ikke her.</p>}
+      {b.reconciliationCorrectionAvailable === false && <p {...stylex.props(cockpitStyles.muted)}>Manuelle links opretter ingen bogføring. Korrektion af et eksisterende link kræver tilbageførsel og en gennemgået erstatningspostering; linkkorrektion understøttes endnu ikke her.</p>}
       {b.archived ? (
         <ArchivedBankView
           bank={b}
@@ -257,15 +259,15 @@ export function BankView() {
         <>
           <BankDifferenceBanner bank={b} currency={currency} />
 
-          <div className="status-grid bank-summary">
-            <div className="card status-card">
+          <div {...stylex.props(cockpitStyles.statusGrid)}>
+            <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
               <h3>Faktisk saldo</h3>
-              <div className="status-figure">
+              <div {...stylex.props(cockpitStyles.statusFigure)}>
                 {b.actualBalance === null
                   ? "—"
                   : formatKroner(b.actualBalance, currency)}
               </div>
-              <p className="muted status-note">
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
                 {/* #305: distinguish "no statement imported" from "a
                     statement was imported but its CSV had no balance column".
                     Saying "intet kontoudtog importeret" for the second case
@@ -279,12 +281,12 @@ export function BankView() {
                     : "Intet kontoudtog importeret"}
               </p>
             </div>
-            <div className="card status-card">
+            <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
               <h3>Bogført saldo</h3>
-              <div className="status-figure">
+              <div {...stylex.props(cockpitStyles.statusFigure)}>
                 {formatKroner(b.bookedBalance, currency)}
               </div>
-              <p className="muted status-note">
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
                 {b.accounts.length > 0
                   ? b.accounts
                       .map((a) =>
@@ -294,12 +296,12 @@ export function BankView() {
                   : "Bank- og kassekonti"}
               </p>
             </div>
-            <div className="card status-card">
+            <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
               <h3>Afstemning</h3>
-              <div className="status-figure">
+              <div {...stylex.props(cockpitStyles.statusFigure)}>
                 {b.matchedCount} / {b.transactions.length}
               </div>
-              <p className="muted status-note">
+              <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
                 {b.matchedCount} afstemt ·{" "}
                 {b.unmatchedCount} uafstemte transaktioner
               </p>
@@ -322,39 +324,61 @@ export function BankView() {
             hasActiveFilter={hasActiveFilter}
           />
 
-          <div className="card statement-card table-scroll daily-list">
-            <table role="table" className="data statement-table">
-              <thead>
-                <tr role="row">
-                  <th role="columnheader" scope="col" aria-sort={ariaSort("date")}>
+          <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+            <table role="table" {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+              <thead {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.dailyListThead,
+								)}>
+                <tr role="row" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.dailyListTr,
+									)}>
+                  <th role="columnheader" scope="col" aria-sort={ariaSort("date")} {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>
                     <Button
                       type="button"
-                      className="th-sort"
+
                       onClick={() => toggleSort("date")}
-                      aria-label="Sortér efter dato"
+                      aria-label="Sortér efter dato" xstyle={[cockpitStyles.statementButtonComposition]}
                     >
                       Dato{sortIndicator("date")}
                     </Button>
                   </th>
-                  <th role="columnheader" scope="col">Tekst</th>
-                  <th role="columnheader" className="num" scope="col" aria-sort={ariaSort("amount")}>
+                  <th role="columnheader" scope="col" {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Tekst</th>
+                  <th role="columnheader" {...stylex.props(cockpitStyles.num)} scope="col" aria-sort={ariaSort("amount")}>
                     <Button
                       type="button"
-                      className="th-sort"
+
                       onClick={() => toggleSort("amount")}
-                      aria-label="Sortér efter beløb"
+                      aria-label="Sortér efter beløb" xstyle={[cockpitStyles.statementButtonComposition]}
                     >
                       Beløb{sortIndicator("amount")}
                     </Button>
                   </th>
-                  <th role="columnheader" className="num" scope="col">Saldo</th>
-                  <th role="columnheader" scope="col">Afstemning</th>
+                  <th role="columnheader" {...stylex.props(cockpitStyles.num)} scope="col">Saldo</th>
+                  <th role="columnheader" scope="col" {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}>Afstemning</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.dailyListTbody,
+								)}>
                 {sortedTransactions.length === 0 ? (
-                  <tr role="row">
-                    <td role="cell" colSpan={5} className="empty-inline">
+                  <tr role="row" {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.dailyListTr,
+										)}>
+                    <td role="cell" colSpan={5} {...stylex.props(cockpitStyles.emptyInline)}>
                       {hasActiveFilter
                         ? "Ingen transaktioner matcher filtrene."
                         : "Ingen banktransaktioner i året."}
@@ -362,29 +386,33 @@ export function BankView() {
                   </tr>
                 ) : (
                   pageTransactions.map((tx) => (
-                    <tr role="row" key={tx.id}>
-                      <td data-label="Dato" role="cell" className="entry-date">{tx.date}</td>
-                      <td data-label="Tekst" role="cell">{tx.text}</td>
-                      <td data-label="Beløb" role="cell" className="num">
+                    <tr role="row" key={tx.id} {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+												cockpitStyles.dailyListTr,
+											)}>
+                      <td data-label="Dato" role="cell" {...stylex.props(cockpitStyles.entryDate)}>{tx.date}</td>
+                      <td data-label="Tekst" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition8)}>{tx.text}</td>
+                      <td data-label="Beløb" role="cell" {...stylex.props(cockpitStyles.num)}>
                         {formatKroner(tx.amount, currency)}
                       </td>
-                      <td data-label="Saldo" role="cell" className="num">
+                      <td data-label="Saldo" role="cell" {...stylex.props(cockpitStyles.num)}>
                         {tx.runningBalance === null
                           ? "—"
                           : formatKroner(tx.runningBalance, currency)}
                       </td>
-                      <td data-label="Afstemning" role="cell">
+                      <td data-label="Afstemning" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition8)}>
                         {tx.reconciliationStatus === "matched" ? (
-                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span>{b.reconciliationCorrectionAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button>}{tx.reconciliationHistory?.length ? <details><summary>Afstemningshistorik</summary><ol>{tx.reconciliationHistory.map(event=><li key={`${event.kind}:${event.id}`}><strong>{event.kind === "correction" ? "Linkkorrektion" : event.kind === "append-only" ? "Manuelt afstemningslink" : "Oprindelig bankpostering"}</strong> · {String(event.entryNo ?? `${event.oldEntryNo ?? ""} → ${event.replacementEntryNo ?? ""}`)}<p>{String(event.note ?? event.reason ?? "")}</p><p className="muted">{String(event.actor ?? "")} · {String(event.createdAt ?? "")}</p></li>)}</ol></details> : null}{tx.reconciliationNote && <details><summary>Afstemningsbevis</summary><p>{tx.reconciliationNote}</p><p>{tx.reconciliationActor}</p><p className="muted">{tx.reconciliationProof}</p></details>}</div>
+                          <div {...stylex.props(cockpitStyles.rowActions)}><span {...stylex.props(cockpitStyles.flag)}>Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span>{b.reconciliationCorrectionAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary" type="button"  onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button>}{tx.reconciliationHistory?.length ? <details><summary>Afstemningshistorik</summary><ol>{tx.reconciliationHistory.map(event=><li key={`${event.kind}:${event.id}`}><strong>{event.kind === "correction" ? "Linkkorrektion" : event.kind === "append-only" ? "Manuelt afstemningslink" : "Oprindelig bankpostering"}</strong> · {String(event.entryNo ?? `${event.oldEntryNo ?? ""} → ${event.replacementEntryNo ?? ""}`)}<p>{String(event.note ?? event.reason ?? "")}</p><p {...stylex.props(cockpitStyles.muted)}>{String(event.actor ?? "")} · {String(event.createdAt ?? "")}</p></li>)}</ol></details> : null}{tx.reconciliationNote && <details><summary>Afstemningsbevis</summary><p>{tx.reconciliationNote}</p><p>{tx.reconciliationActor}</p><p {...stylex.props(cockpitStyles.muted)}>{tx.reconciliationProof}</p></details>}</div>
                         ) : (
-                          <div className="row-actions">
-                            <span className="flag warning">Uafstemt</span>
+                          <div {...stylex.props(cockpitStyles.rowActions)}>
+                            <span {...stylex.props(cockpitStyles.flag)}>Uafstemt</span>
                             <Button variant="secondary" type="button" onClick={() => setSuggesting({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Matchforslag</Button>
-                            {tx.reconciliationProblem ? <><span className="muted">{tx.reconciliationProblem}</span>{b.reconciliationCorrectionAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setCorrecting({id:tx.id,text:tx.text,journalEntryNo:tx.journalEntryNo})}>Ret</Button>}</> : <>
+                            {tx.reconciliationProblem ? <><span {...stylex.props(cockpitStyles.muted)}>{tx.reconciliationProblem}</span>{b.reconciliationCorrectionAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setCorrecting({id:tx.id,text:tx.text,journalEntryNo:tx.journalEntryNo})}>Ret</Button>}</> : <>
                             {b.manualReconciliationAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setLinking({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Afstem eksisterende postering</Button>}
                             <Button requiredPermission="company.ledger.post" variant="secondary"
                               type="button"
-                              className="btn secondary"
+
                               onClick={() =>
                                 setReconciling({
                                   id: tx.id,
@@ -393,7 +421,7 @@ export function BankView() {
                                   amount: tx.amount,
                                   currency,
                                 })
-                              }
+                              } xstyle={[cockpitStyles.statementBtnComposition]}
                             >
                               Bogfør
                             </Button></>}
@@ -441,42 +469,51 @@ function BankFilterBar({
   showStatusFilter?: boolean;
 }) {
   return (
-    <FilterBar activeCount={[q, fromDate, toDate, status !== "all" ? status : ""].filter(Boolean).length} onReset={clearAllFilters}><div className="journal-filter-bar" role="search">
-      <label className="journal-filter-field journal-filter-field--search">
-        <span className="muted">Søg</span>
+    <FilterBar activeCount={[q, fromDate, toDate, status !== "all" ? status : ""].filter(Boolean).length} onReset={clearAllFilters}><div {...stylex.props(...[cockpitStyles.filterBar])} role="search">
+      <label {...stylex.props(...[cockpitStyles.formField, cockpitStyles.fullWidth])}>
+        <span {...stylex.props(cockpitStyles.muted)}>Søg</span>
         <Input
           type="search"
           value={q}
           placeholder="Søg på tekst eller posteringsnr…"
-          onChange={(e) => setFilter("q", e.target.value)}
+          onChange={(e) => setFilter("q", e.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition]}
         />
       </label>
-      <label className="journal-filter-field">
-        <span className="muted">Fra</span>
+      <label {...stylex.props(...[cockpitStyles.formField])}>
+        <span {...stylex.props(cockpitStyles.muted)}>Fra</span>
         <Input
           type="date"
           value={fromDate}
-          onChange={(e) => setFilter("from", e.target.value)}
+          onChange={(e) => setFilter("from", e.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition]}
         />
       </label>
-      <label className="journal-filter-field">
-        <span className="muted">Til</span>
+      <label {...stylex.props(...[cockpitStyles.formField])}>
+        <span {...stylex.props(cockpitStyles.muted)}>Til</span>
         <Input
           type="date"
           value={toDate}
-          onChange={(e) => setFilter("to", e.target.value)}
+          onChange={(e) => setFilter("to", e.target.value)} xstyle={[cockpitStyles.journalFilterFieldInputComposition]}
         />
       </label>
       {showStatusFilter && (
-        <label className="journal-filter-field">
-          <span className="muted">Status</span>
+        <label {...stylex.props(...[cockpitStyles.formField])}>
+          <span {...stylex.props(cockpitStyles.muted)}>Status</span>
           <Select
             value={status}
-            onChange={(e) => setFilter("status", e.target.value)}
+            onChange={(e) => setFilter("status", e.target.value)} xstyle={[cockpitStyles.journalFilterFieldSelectComposition]}
           >
-            <option value="all">Alle</option>
-            <option value="matched">Kun afstemte</option>
-            <option value="unmatched">Kun uafstemte</option>
+            <option value="all" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Alle</option>
+            <option value="matched" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Kun afstemte</option>
+            <option value="unmatched" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Kun uafstemte</option>
           </Select>
         </label>
       )}
@@ -504,7 +541,7 @@ function BankFilterSummary({
   ).length;
   const unmatched = matchCount - matched;
   return (
-    <p className="statement-asof muted">
+    <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>
       {hasActiveFilter
         ? `${matchCount} af ${total} transaktioner matcher`
         : `${total} transaktioner`}
@@ -529,9 +566,13 @@ function BankDifferenceBanner({
     // same as no statement at all — the wording must reflect which it is.
     const noBalanceColumn = bank.bankStatementStatus === "no-balance-column";
     return (
-      <div className="card bank-diff-banner neutral">
-        <span className="flag">Bank</span>
-        <p>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.bankDiffBanner)}>
+        <span {...stylex.props(cockpitStyles.flag)}>Bank</span>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.bankDiffBannerP,
+					)}>
           {bank.bankStatementProblem ? <>{bank.bankStatementProblem} Den faktiske saldo kan endnu ikke sammenlignes med bogføringen.</> : noBalanceColumn ? (
             <>
               Kontoudtoget for {bank.selectedYear} indeholder ingen
@@ -554,9 +595,13 @@ function BankDifferenceBanner({
   const reconciled = Math.abs(bank.difference) < 0.005;
   if (reconciled) {
     return (
-      <div className="card bank-diff-banner ok">
-        <span className="flag ok">Afstemt</span>
-        <p>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.bankDiffBanner)}>
+        <span {...stylex.props(cockpitStyles.flag)}>Afstemt</span>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.bankDiffBannerP,
+					)}>
           Kontoudtog og bogført saldo stemmer:{" "}
           {formatKroner(bank.actualBalance, currency)}.
         </p>
@@ -565,13 +610,17 @@ function BankDifferenceBanner({
   }
 
   return (
-    <div className="card bank-diff-banner alert">
-      <span className="flag warning">Difference</span>
-      <div>
-        <div className="bank-diff-figure">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.bankDiffBanner)}>
+      <span {...stylex.props(cockpitStyles.flag)}>Difference</span>
+      <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+        <div {...stylex.props(cockpitStyles.bankDiffFigure)}>
           {formatKroner(bank.difference, currency)}
         </div>
-        <p>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.bankDiffBannerP,
+					)}>
           Bogført saldo {formatKroner(bank.bookedBalance, currency)} mod faktisk
           saldo på kontoudtoget {formatKroner(bank.actualBalance, currency)} —
           {bank.unmatchedCount > 0
@@ -635,9 +684,13 @@ function ArchivedBankView({
   const closingBalance = lastTx?.runningBalance ?? null;
   return (
     <>
-      <div className="card bank-diff-banner neutral">
-        <span className="flag">Arkiveret år</span>
-        <p>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.bankDiffBanner)}>
+        <span {...stylex.props(cockpitStyles.flag)}>Arkiveret år</span>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.bankDiffBannerP,
+					)}>
           {bank.selectedYear} er et arkiveret regnskabsår fra et tidligere
           bogføringssystem. Banktransaktionerne fra det importerede kontoudtog
           vises herunder. Selve bogføringen og afstemningen for arkiverede år
@@ -646,13 +699,18 @@ function ArchivedBankView({
       </div>
 
       {lastTx && closingBalance !== null && (
-        <div className="status-grid bank-summary">
-          <div className="card status-card">
-            <h3>Saldo på kontoudtoget</h3>
-            <div className="status-figure">
+        <div {...stylex.props(cockpitStyles.statusGrid)}>
+          <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+            <h3 {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.h3,
+								cockpitStyles.statusCardH3,
+							)}>Saldo på kontoudtoget</h3>
+            <div {...stylex.props(cockpitStyles.statusFigure)}>
               {formatKroner(closingBalance, currency)}
             </div>
-            <p className="muted status-note">
+            <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
               Efter seneste postering den {formatDateDa(lastTx.date)}
             </p>
           </div>
@@ -676,38 +734,58 @@ function ArchivedBankView({
         hasActiveFilter={hasActiveFilter}
       />
 
-      <div className="card statement-card table-scroll daily-list">
-        <table role="table" className="data statement-table">
-          <thead>
-            <tr role="row">
-              <th role="columnheader" scope="col" aria-sort={ariaSort("date")}>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+        <table role="table" {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+          <thead {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.dailyListThead,
+						)}>
+            <tr role="row" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.dailyListTr,
+							)}>
+              <th role="columnheader" scope="col" aria-sort={ariaSort("date")} {...stylex.props(
+									cockpitStyles.tableStatementTableThComposition3,
+								)}>
                 <Button
                   type="button"
-                  className="th-sort"
+
                   onClick={() => toggleSort("date")}
-                  aria-label="Sortér efter dato"
+                  aria-label="Sortér efter dato" xstyle={[cockpitStyles.buttonComposition]}
                 >
                   Dato{sortIndicator("date")}
                 </Button>
               </th>
-              <th role="columnheader" scope="col">Tekst</th>
-              <th role="columnheader" className="num" scope="col" aria-sort={ariaSort("amount")}>
+              <th role="columnheader" scope="col" {...stylex.props(
+									cockpitStyles.tableStatementTableThComposition3,
+								)}>Tekst</th>
+              <th role="columnheader" {...stylex.props(cockpitStyles.num)} scope="col" aria-sort={ariaSort("amount")}>
                 <Button
                   type="button"
-                  className="th-sort"
+
                   onClick={() => toggleSort("amount")}
-                  aria-label="Sortér efter beløb"
+                  aria-label="Sortér efter beløb" xstyle={[cockpitStyles.buttonComposition]}
                 >
                   Beløb{sortIndicator("amount")}
                 </Button>
               </th>
-              <th role="columnheader" className="num" scope="col">Saldo</th>
+              <th role="columnheader" {...stylex.props(cockpitStyles.num)} scope="col">Saldo</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.dailyListTbody,
+						)}>
             {sortedTransactions.length === 0 ? (
-              <tr role="row">
-                <td role="cell" colSpan={4} className="empty-inline">
+              <tr role="row" {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.dailyListTr,
+								)}>
+                <td role="cell" colSpan={4} {...stylex.props(cockpitStyles.emptyInline)}>
                   {hasActiveFilter
                     ? "Ingen transaktioner matcher filtrene."
                     : `Ingen banktransaktioner importeret for ${bank.selectedYear}.`}
@@ -715,11 +793,15 @@ function ArchivedBankView({
               </tr>
             ) : (
               pageTransactions.map((tx) => (
-                <tr role="row" key={tx.id}>
-                  <td data-label="Dato" role="cell" className="entry-date">{tx.date}</td>
-                  <td data-label="Tekst" role="cell">{tx.text}</td>
-                  <td data-label="Beløb" role="cell" className="num">{formatKroner(tx.amount, currency)}</td>
-                  <td data-label="Saldo" role="cell" className="num">
+                <tr role="row" key={tx.id} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.dailyListTr,
+									)}>
+                  <td data-label="Dato" role="cell" {...stylex.props(cockpitStyles.entryDate)}>{tx.date}</td>
+                  <td data-label="Tekst" role="cell" {...stylex.props(cockpitStyles.dailyListTdComposition12)}>{tx.text}</td>
+                  <td data-label="Beløb" role="cell" {...stylex.props(cockpitStyles.num)}>{formatKroner(tx.amount, currency)}</td>
+                  <td data-label="Saldo" role="cell" {...stylex.props(cockpitStyles.num)}>
                     {tx.runningBalance === null
                       ? "—"
                       : formatKroner(tx.runningBalance, currency)}

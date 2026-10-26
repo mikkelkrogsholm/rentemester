@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ApiError } from "../lib/api/_shared";
@@ -83,12 +85,12 @@ function Pane({scope,defaultAsOf}:{scope:string;defaultAsOf:string}){
  const stale=Boolean(status?.exceptions.some(e=>e.kind==="stale_or_reversed_journal"));
  const self=current?.events[0]?.principal_kind==="user"&&current.events[0].principal_id===auth?.session?.id;
  const candidates=status?.journalCandidates;const canLink=Boolean(current&&["approved","partly_posted"].includes(current.status)&&!stale);
- return <section aria-label="Intercompany dispositioner" className="statement"><h3>Intercompany dispositioner</h3>
+ return <section aria-label="Intercompany dispositioner" {...stylex.props(cockpitStyles.statement)}><h3>Intercompany dispositioner</h3>
   <p>Dokumentér dispositionen og tilknyt de faktiske posteringer fra hvert selskab. Denne rude bogfører, betaler og eliminerer aldrig. Begge posteringer skal oprettes gennem selskabernes normale bogføring før tilknytning.</p>
   {error&&!review&&<p role="alert">{error}</p>}
   {marker.blocked&&!review&&<UnknownMutationNotice onRefresh={()=>load()} onRelease={()=>{marker.release();attempted.current=null;setReview(null);setPlan(null);setConfirmed(false);}} persistent={marker.persistent} verifyPersistence={marker.verifyPersistence}/>}
   <form onSubmit={e=>{e.preventDefault();void load(lookup);}}><label>Disposition-ID<Input aria-label="Disposition-ID" value={lookup} disabled={marker.blocked||busy} onChange={e=>{setLookup(e.target.value);setCurrent(null);setPlan(null);setReview(null);}} required/></label><label>Status pr. dato<Input aria-label="Status pr. dato" type="date" value={asOf} disabled={blocked} onChange={e=>setAsOf(e.target.value)}/></label><Button type="submit" disabled={busy||!lookup}>Vis status</Button></form>
-  <details><summary>Opret ny disposition</summary><form className="form-grid" onSubmit={e=>{e.preventDefault();void makePlan();}}>
+  <details><summary>Opret ny disposition</summary><form {...stylex.props(cockpitStyles.formGrid)} onSubmit={e=>{e.preventDefault();void makePlan();}}>
    <label>Nyt dispositions-ID (valgfrit)<Input aria-label="Nyt dispositions-ID (valgfrit)" value={form.id} disabled={blocked} maxLength={80} onChange={e=>change({id:e.target.value})}/></label>
    <label>Dispositionstype<Select aria-label="Dispositionstype" value={form.type} disabled={blocked} onChange={e=>change({type:e.target.value})} required><option value="">Vælg type</option>{Object.entries(TYPES).map(([id,name])=><option key={id} value={id}>{name}</option>)}</Select></label>
    <label>Økonomisk dato<Input aria-label="Økonomisk dato" type="date" value={form.date} disabled={blocked} onChange={e=>change({date:e.target.value})} required/></label><label>Beløb<Input aria-label="Beløb" inputMode="decimal" value={form.amount} disabled={blocked} onChange={e=>change({amount:e.target.value})} required/></label><label>Valuta<Input aria-label="Valuta" value={form.currency} disabled={blocked} onChange={e=>change({currency:e.target.value})} required/></label><label>Afviklingsfrist (valgfri)<Input aria-label="Afviklingsfrist (valgfri)" type="date" value={form.due} disabled={blocked} onChange={e=>change({due:e.target.value})}/></label>

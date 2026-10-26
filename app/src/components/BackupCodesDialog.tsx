@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { authClient } from "../lib/auth-client";
 import { Button, Dialog, Field, Input } from "./ui";
@@ -111,13 +113,13 @@ export function BackupCodesDialog({
       busy={busy}
       returnFocusRef={returnFocusRef}
     >
-      <div className="account-panel">
+      <div {...stylex.props(...[cockpitStyles.card])}>
         <p>
           Hver kode kan bruges én gang i stedet for en kode fra din
           autentifikator-app. Opbevar dem et sikkert sted.
         </p>
         {error && (
-          <p role="alert" className="banner error">
+          <p role="alert" {...stylex.props(cockpitStyles.banner)}>
             {error}
           </p>
         )}
@@ -141,7 +143,7 @@ export function BackupCodesDialog({
           </>
         ) : (
           <form
-            className="workflow-form"
+            {...stylex.props(cockpitStyles.workflowForm)}
             onSubmit={(event) => {
               event.preventDefault();
               void request("view");
@@ -160,7 +162,7 @@ export function BackupCodesDialog({
                 disabled={busy}
               />
             </Field>
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button type="submit" busy={busy} disabled={!password}>
                 Vis resterende koder
               </Button>
@@ -175,7 +177,7 @@ export function BackupCodesDialog({
             </div>
           </form>
         )}
-        <div className="modal-actions">
+        <div {...stylex.props(cockpitStyles.modalActions)}>
           <Button variant="secondary" disabled={busy} onClick={onClose}>
             Luk og skjul
           </Button>

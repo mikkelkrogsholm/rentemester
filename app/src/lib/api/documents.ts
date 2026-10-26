@@ -1,123 +1,227 @@
 import type { DocumentsResponse } from "../types";
 import { ApiError, request, type ReadRequestOptions } from "./_shared";
-
 export const documentsApi = {
-  documents: (slug: string, options?: ReadRequestOptions) =>
-    request<DocumentsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/documents`,
-      options,
-    ).then((r) => r.documents),
-
+  documents: (slug: string, options?: ReadRequestOptions) => request<DocumentsResponse>(`/api/companies/${encodeURIComponent(slug)}/documents`, options).then(r => r.documents),
   /** #588: review-only party-link state, kept separate from invoice facts. */
-  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "internal_no_external_party" | "unresolved", options?: ReadRequestOptions) =>
-    request<{ ok: true; links: Array<{ id: number; document_no: string | null; linked: 0 | 1; resolution_state: "resolved" | "internal_no_external_party" | "unresolved" }> }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/party-links${status ? `?status=${status}` : ""}`,
-      options,
-    ).then((r) => r.links),
-
-  documentPartyLinkHistory: (slug: string, documentId: number, options?: ReadRequestOptions) =>
-    request<{ ok: true; links: Array<Record<string, unknown>> }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/party-links`,
-      options,
-    ).then((r) => r.links),
-
-  searchCanonicalParties: (slug: string, query: string, options?: ReadRequestOptions) =>
-    request<{ ok: true; rows: Array<{ partyId: string; name: string }>; count: number }>(
-      `/api/companies/${encodeURIComponent(slug)}/workspace-parties?query=${encodeURIComponent(query)}`,
-      options,
-    ),
-
-  planDocumentPartyLink: (slug: string, input: Record<string, unknown>, options?: ReadRequestOptions) =>
-    request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input), readOnly: true, signal: options?.signal }),
-
-  applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
-    request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
-
-  confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) =>
-    request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/internal-no-external-party`, { method: "POST", body: JSON.stringify(input) }),
-
+  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved", options?: ReadRequestOptions) => request<{
+    ok: true;
+    links: Array<{
+      id: number;
+      document_no: string | null;
+      linked: 0 | 1;
+      resolution_state: "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved";
+    }>;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links${status ? `?status=${status}` : ""}`, options).then(r => r.links),
+  documentPartyLinkHistory: (slug: string, documentId: number, options?: ReadRequestOptions) => request<{
+    ok: true;
+    links: Array<Record<string, unknown>>;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/party-links`, options).then(r => r.links),
+  searchCanonicalParties: (slug: string, query: string, options?: ReadRequestOptions) => request<{
+    ok: true;
+    rows: Array<{
+      partyId: string;
+      name: string;
+    }>;
+    count: number;
+  }>(`/api/companies/${encodeURIComponent(slug)}/workspace-parties?query=${encodeURIComponent(query)}`, options),
+  planDocumentPartyLink: (slug: string, input: Record<string, unknown>, options?: ReadRequestOptions) => request<{
+    ok: boolean;
+    plan?: {
+      planHash: string;
+    };
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, {
+    method: "POST",
+    body: JSON.stringify(input),
+    readOnly: true,
+    signal: options?.signal
+  }),
+  applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) => request<{
+    ok: boolean;
+    id?: number;
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, {
+    method: "POST",
+    body: JSON.stringify(input)
+  }),
+  partyCoverage: (slug: string, options?: ReadRequestOptions) => request<{
+    ok: true;
+    rows: Array<{
+      bankTransactionId: number;
+      transactionHash: string;
+      documentId: number | null;
+      documentHash?: string | null;
+      status: "linked" | "source_observed" | "unresolved_external_party" | "resolved_no_external_party" | "exact_candidate" | "ambiguous" | "missing_source";
+      candidate: null | {
+        partyId?: string;
+        role?: string;
+        provenance?: string;
+        candidates?: Array<{
+          partyId: string;
+          role?: string;
+          provenance: string;
+        }>;
+      };
+      currentDecision?: {
+        id: number;
+        decisionHash: string;
+        provenance?: string;
+      };
+      reason: string;
+      nextAction: string | null;
+    }>;
+    totals: Record<"linked" | "source_observed" | "unresolved_external_party" | "resolved_no_external_party" | "exact_candidate" | "ambiguous" | "missing_source", number>;
+    populationHash: string;
+    planHash: string;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`, options),
+  planPartyCoverage: (slug: string, decisions?: Array<Record<string, unknown>>, options?: ReadRequestOptions) => request<{
+    ok: true;
+    plan: {
+      planHash: string;
+      operations: Array<Record<string, unknown>>;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`, {
+    method: "POST",
+    body: JSON.stringify({
+      decisions
+    }),
+    readOnly: true,
+    signal: options?.signal
+  }),
+  applyPartyCoverage: (slug: string, input: {
+    planHash: string;
+    idempotencyKey: string;
+    confirm: true;
+    decisions?: Array<Record<string, unknown>>;
+  }) => request<{
+    ok: boolean;
+    applied: number;
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/apply`, {
+    method: "POST",
+    body: JSON.stringify(input)
+  }),
+  confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) => request<{
+    ok: boolean;
+    id?: number;
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/internal-no-external-party`, {
+    method: "POST",
+    body: JSON.stringify(input)
+  }),
+  /** #618: audited attribution separate from the source invoice and VAT gate. */
+  setDocumentCompanyContext: (slug: string, input: {
+    documentId: number;
+    sourceReference: string;
+    businessUseReason: string;
+  }) => request<{
+    ok: boolean;
+    applied?: boolean;
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/company-context`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...input,
+      confirm: true
+    })
+  }),
+  reviewPurchaseVatEvidence: (slug: string, input: {
+    documentId: number;
+    bankTransactionId: number;
+    businessEvidenceReference: string;
+    businessEvidenceSha256: string;
+    rationale: string;
+  }) => request<{
+    ok: boolean;
+    applied?: boolean;
+    errors?: string[];
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/purchase-vat-evidence-review`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...input,
+      confirm: true
+    })
+  }),
   /**
    * URL of a stored bilag file — opened directly in a new browser tab, so it
    * is a plain URL builder rather than a fetch. The server serves the file
    * inline with its recorded MIME type.
    */
-  documentFileUrl: (slug: string, id: number) =>
-    `/api/companies/${encodeURIComponent(slug)}/documents/${id}/file`,
-
+  documentFileUrl: (slug: string, id: number) => `/api/companies/${encodeURIComponent(slug)}/documents/${id}/file`,
   /**
    * Imports an export file from another accounting system. The browser reads
    * the chosen file and passes its text as `content`; the server recognises
    * which system the file came from and routes it to the matching importer.
    * Destructive (it appends master data), so the body carries `confirm: true`.
    */
-  importData: (slug: string, input: DataImportInput) =>
-    request<{ ok: true; import: DataImportSummary }>(
-      `/api/companies/${encodeURIComponent(slug)}/import`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          fileName: input.fileName,
-          content: input.content,
-          enrichCvr: input.enrichCvr === true,
-          confirm: true,
-        }),
-      },
-    ).then((r) => r.import),
-
+  importData: (slug: string, input: DataImportInput) => request<{
+    ok: true;
+    import: DataImportSummary;
+  }>(`/api/companies/${encodeURIComponent(slug)}/import`, {
+    method: "POST",
+    body: JSON.stringify({
+      fileName: input.fileName,
+      content: input.content,
+      enrichCvr: input.enrichCvr === true,
+      confirm: true
+    })
+  }).then(r => r.import),
   /**
    * Ingests a document/voucher (bilag) (#213, slice 3). The browser reads the
    * (possibly binary) file and passes it base64-encoded; the server decodes it
    * to a temp file and calls the same core ingest the CLI/MCP use. Destructive,
    * so the body carries `confirm: true`.
    */
-  ingestDocument: (slug: string, input: DocumentIngestInput) =>
-    request<{
-      ok: true;
-      document: { id: number | null; documentNo: string | null };
-    }>(`/api/companies/${encodeURIComponent(slug)}/documents/ingest`, {
-      method: "POST",
-      body: JSON.stringify({
-        fileName: input.fileName,
-        fileBase64: input.fileBase64,
-        metadata: input.metadata,
-        ...(input.vendorId ? { vendorId: input.vendorId } : {}),
-        ...(input.force ? { force: true } : {}),
-        confirm: true,
-      }),
-    }).then((r) => r.document),
-
+  ingestDocument: (slug: string, input: DocumentIngestInput) => request<{
+    ok: true;
+    document: {
+      id: number | null;
+      documentNo: string | null;
+    };
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/ingest`, {
+    method: "POST",
+    body: JSON.stringify({
+      fileName: input.fileName,
+      fileBase64: input.fileBase64,
+      metadata: input.metadata,
+      ...(input.vendorId ? {
+        vendorId: input.vendorId
+      } : {}),
+      ...(input.force ? {
+        force: true
+      } : {}),
+      confirm: true
+    })
+  }).then(r => r.document),
   /**
    * #407 — read-side data backing the Bogfør-bilag modal: the bilag's fields
    * to prefill, the bookable expense accounts and the unmatched outgoing
    * bank transactions the owner can pair the bilag with.
    */
-  documentBookingOptions: (slug: string, documentId: number, options?: ReadRequestOptions) =>
-    request<{ ok: true; options: DocumentBookingOptions }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/booking-options`,
-      options,
-    ).then((r) => r.options),
-
+  documentBookingOptions: (slug: string, documentId: number, options?: ReadRequestOptions) => request<{
+    ok: true;
+    options: DocumentBookingOptions;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/booking-options`, options).then(r => r.options),
   /** Read-only preflight: no provider call and no state change. */
-  documentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) =>
-    request<{ ok: true; preflight: DocumentVatPreflight }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight`,
-      options,
-    ).then((r) => r.preflight),
-
+  documentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) => request<{
+    ok: true;
+    preflight: DocumentVatPreflight;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight`, options).then(r => r.preflight),
   /** Native source snapshot: HTTP 200 domain refusals are reviewable, not transport success claims. */
-  nativeDocumentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) =>
-    nativePreflight(slug, documentId, undefined, options),
-
-  applyNativeDocumentVatPreflight: (slug: string, documentId: number, confirmation: { confirm: true }) =>
-    confirmation?.confirm === true ? nativePreflight(slug, documentId, confirmation) : Promise.reject(new Error("Bekræft momsvalideringen først.")),
-
+  nativeDocumentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) => nativePreflight(slug, documentId, undefined, options),
+  applyNativeDocumentVatPreflight: (slug: string, documentId: number, confirmation: {
+    confirm: true;
+  }) => confirmation?.confirm === true ? nativePreflight(slug, documentId, confirmation) : Promise.reject(new Error("Bekræft momsvalideringen først.")),
   /** Actor-attributed provider call, gated by the same mutation boundary as posting. */
-  applyDocumentVatPreflight: (slug: string, documentId: number) =>
-    request<{ ok: true; preflight: DocumentVatPreflight }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight/apply`,
-      { method: "POST", body: JSON.stringify({ confirm: true }) },
-    ).then((r) => r.preflight),
-
+  applyDocumentVatPreflight: (slug: string, documentId: number) => request<{
+    ok: true;
+    preflight: DocumentVatPreflight;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight/apply`, {
+    method: "POST",
+    body: JSON.stringify({
+      confirm: true
+    })
+  }).then(r => r.preflight),
   /**
    * #407 — books an ingested purchase document (bilag) as an expense against
    * an unmatched outgoing bank transaction. Third caller of the SAME
@@ -126,46 +230,56 @@ export const documentsApi = {
    * the document and the bank transaction), so the body carries
    * `confirm: true`.
    */
-  bookDocumentExpense: (slug: string, input: DocumentBookExpenseInput) =>
-    request<{ ok: true; booking: DocumentBookExpenseSummary }>(
-      `/api/companies/${encodeURIComponent(slug)}/documents/book-expense`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          documentId: input.documentId,
-          bankTransactionId: input.bankTransactionId,
-          expenseAccountNo: input.expenseAccountNo,
-          ...(input.vatTreatment ? { vatTreatment: input.vatTreatment } : {}),
-          ...(input.paymentAccountNo
-            ? { paymentAccountNo: input.paymentAccountNo }
-            : {}),
-          ...(input.transactionDate
-            ? { transactionDate: input.transactionDate }
-            : {}),
-          ...(input.text ? { text: input.text } : {}),
-          confirm: true,
-        }),
-      },
-    ).then((r) => r.booking),
+  bookDocumentExpense: (slug: string, input: DocumentBookExpenseInput) => request<{
+    ok: true;
+    booking: DocumentBookExpenseSummary;
+  }>(`/api/companies/${encodeURIComponent(slug)}/documents/book-expense`, {
+    method: "POST",
+    body: JSON.stringify({
+      documentId: input.documentId,
+      bankTransactionId: input.bankTransactionId,
+      expenseAccountNo: input.expenseAccountNo,
+      ...(input.vatTreatment ? {
+        vatTreatment: input.vatTreatment
+      } : {}),
+      ...(input.paymentAccountNo ? {
+        paymentAccountNo: input.paymentAccountNo
+      } : {}),
+      ...(input.transactionDate ? {
+        transactionDate: input.transactionDate
+      } : {}),
+      ...(input.text ? {
+        text: input.text
+      } : {}),
+      confirm: true
+    })
+  }).then(r => r.booking)
 };
-
 /** Wire type for one bookable expense account (#407). */
 export type ExpenseAccountOption = {
   accountNo: string;
   name: string;
   defaultVatCode: string | null;
 };
-
 export type DocumentVatPreflight = {
   ok: boolean;
   derivedRegion: "DK" | "EU" | "NON_EU" | "CONFLICT";
   requiredValidation: string | null;
-  cache: { reused: boolean; freshUntil: string | null };
+  cache: {
+    reused: boolean;
+    freshUntil: string | null;
+  };
   applyWouldCallProvider: boolean;
   errors: string[];
-  exception: { id: number; status: string; severity: string; message: string; requiredAction: string | null; createdAt: string } | null;
+  exception: {
+    id: number;
+    status: string;
+    severity: string;
+    message: string;
+    requiredAction: string | null;
+    createdAt: string;
+  } | null;
 };
-
 /** Wire type for one unmatched outgoing bank transaction (#407). */
 export type UnmatchedBankOption = {
   id: number;
@@ -177,7 +291,6 @@ export type UnmatchedBankOption = {
   fxRateToDkk: number | null;
   reference: string | null;
 };
-
 /** Wire type for the bilag fields the modal prefills its form from (#407). */
 export type DocumentBookingOptionsDocument = {
   id: number;
@@ -191,27 +304,23 @@ export type DocumentBookingOptionsDocument = {
   supplierCountryCode: string | null;
   supplierIdentifierKind: string | null;
   supplierIdentityStatus: string | null;
-  purchaseVatLines: Array<{ classification: string; netAmount: number; vatAmount?: number }> | null;
+  purchaseVatLines: Array<{
+    classification: string;
+    netAmount: number;
+    vatAmount?: number;
+  }> | null;
   amountIncVat: number | null;
   vatAmount: number | null;
   currency: string;
 };
-
 /** Combined read-side response for the Bogfør-bilag modal (#407). */
 export type DocumentBookingOptions = {
   document: DocumentBookingOptionsDocument;
   expenseAccounts: ExpenseAccountOption[];
   unmatchedOutgoingBank: UnmatchedBankOption[];
 };
-
 /** Allowed VAT treatments for an expense booking (#407). */
-export type ExpenseVatTreatment =
-  | "standard"
-  | "reverse_charge"
-  | "representation"
-  | "exempt"
-  | "non_deductible";
-
+export type ExpenseVatTreatment = "standard" | "reverse_charge" | "representation" | "exempt" | "non_deductible";
 /** Input for `api.bookDocumentExpense` (#407). */
 export type DocumentBookExpenseInput = {
   documentId: number;
@@ -222,7 +331,6 @@ export type DocumentBookExpenseInput = {
   transactionDate?: string;
   text?: string;
 };
-
 /** The booking result the server echoes back (#407). */
 export type DocumentBookExpenseSummary = {
   entryId: number | null;
@@ -238,14 +346,12 @@ export type DocumentBookExpenseSummary = {
   vatAmountDkk: number | null;
   fxRateToDkk: number | null;
 };
-
 /** Input for `api.importData` — the file name + text, plus the CVR-enrich opt-in. */
 export type DataImportInput = {
   fileName: string;
   content: string;
   enrichCvr?: boolean;
 };
-
 /** The source system + data type the server recognised an imported file as. */
 export type DataImportDetected = {
   id: string;
@@ -253,7 +359,6 @@ export type DataImportDetected = {
   system: string;
   dataType: string;
 };
-
 /** The contact-import counts the server echoes back. */
 export type DataImportCounts = {
   parsed: number;
@@ -263,35 +368,61 @@ export type DataImportCounts = {
   enriched: number;
   enrichmentFailures: number;
 };
-
 /** The file-import result the server echoes back. */
 export type DataImportSummary = {
   detected: DataImportDetected | null;
   summary: DataImportCounts;
   errors: string[];
 };
-
 /** Document metadata for `api.ingestDocument` — amounts are kroner (decimal DKK). */
 export type DocumentIngestMetadata = {
   source: string;
-  documentType?: "purchase_sale" | "cash_register_receipt" | "internal_voucher";
+  documentType?: "purchase_sale" | "cash_register_receipt" | "internal_voucher" | "external_accounting_evidence";
+  internalVoucherKind?: "bank_evidenced" | "non_cash_balance_correction";
   issueDate?: string;
   invoiceNo?: string;
   deliveryDescription?: string;
   amountIncVat?: number;
   currency?: string;
-  sender?: { name?: string; address?: string; vatOrCvr?: string; countryCode?: string; identifierKind?: "dk_cvr" | "eu_vat" | "non_eu" };
-  recipient?: { name?: string; address?: string; vatOrCvr?: string };
+  sender?: {
+    name?: string;
+    address?: string;
+    vatOrCvr?: string;
+    countryCode?: string;
+    identifierKind?: "dk_cvr" | "eu_vat" | "non_eu";
+  };
+  recipient?: {
+    name?: string;
+    address?: string;
+    vatOrCvr?: string;
+  };
   vatAmount?: number;
-  purchaseVatLines?: Array<{ classification: "dk_purchase_25" | "exempt"; netAmount: number; vatAmount?: number }>;
+  purchaseVatLines?: Array<{
+    classification: "dk_purchase_25" | "exempt";
+    netAmount: number;
+    vatAmount?: number;
+  }>;
   reverseChargeWordingConfirmed?: boolean;
+  reverseChargeWordingEvidence?: {
+    excerpt: string;
+    location: string;
+  };
   /** Source fact only; company identity is recorded separately and never copied into recipient. */
   danishSimplifiedPurchaseInvoice?: boolean;
+  incompleteStandardPurchaseInvoice?: boolean;
   paymentDetails?: string;
   sourceBankTransactionId?: number;
   accountingRationale?: string;
+  externalAccountingEvidence?: {
+    category: "payroll";
+    accountingPeriod: string;
+    externalReference: string;
+    totals: {
+      debitAmount: number;
+      creditAmount: number;
+    };
+  };
 };
-
 /** Input for `api.ingestDocument` — the base64 file plus its metadata. */
 export type DocumentIngestInput = {
   fileName: string;
@@ -300,7 +431,6 @@ export type DocumentIngestInput = {
   vendorId?: number;
   force?: boolean;
 };
-
 /** Exact safe source wire; never expose private provider payloads through this binding. */
 export type NativeDocumentVatPreflight = DocumentVatPreflight & {
   documentId: number;
@@ -308,7 +438,15 @@ export type NativeDocumentVatPreflight = DocumentVatPreflight & {
   cached: boolean;
   evidenceExpiresAt: string | null;
   wouldCallProvider: boolean;
-  evidence: Array<{ id: number; event_type: string; classification: DocumentVatPreflight["derivedRegion"]; provider_status: string; evidence_expires_at: string | null; created_at: string; actor: string | null }>;
+  evidence: Array<{
+    id: number;
+    event_type: string;
+    classification: DocumentVatPreflight["derivedRegion"];
+    provider_status: string;
+    evidence_expires_at: string | null;
+    created_at: string;
+    actor: string | null;
+  }>;
 };
 const preflightObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const preflightKeys = (v: Record<string, unknown>, keys: string) => {
@@ -319,24 +457,25 @@ const preflightId = (v: unknown): v is number => typeof v === "number" && Number
 const preflightNullableString = (v: unknown) => v === null || typeof v === "string";
 const preflightRegion = (v: unknown) => typeof v === "string" && ["DK", "EU", "NON_EU", "CONFLICT"].includes(v);
 function validNativePreflight(v: unknown, id: number): v is NativeDocumentVatPreflight {
-  if (!preflightObject(v) || !preflightKeys(v, "ok,documentId,classification,cached,evidenceExpiresAt,wouldCallProvider,errors,derivedRegion,requiredValidation,cache,applyWouldCallProvider,evidence,exception")
-    || !preflightId(v.documentId) || v.documentId !== id || !preflightRegion(v.classification) || v.derivedRegion !== v.classification
-    || typeof v.ok !== "boolean" || !Array.isArray(v.errors) || !v.errors.every(e => typeof e === "string") || v.ok !== (v.errors.length === 0)
-    || typeof v.cached !== "boolean" || !preflightNullableString(v.evidenceExpiresAt) || v.cached !== (v.evidenceExpiresAt !== null)
-    || typeof v.wouldCallProvider !== "boolean" || v.applyWouldCallProvider !== v.wouldCallProvider || v.wouldCallProvider !== (v.classification === "EU" && !v.cached)
-    || !preflightNullableString(v.requiredValidation) || !preflightObject(v.cache) || !preflightKeys(v.cache, "reused,freshUntil") || v.cache.reused !== v.cached || v.cache.freshUntil !== v.evidenceExpiresAt
-    || (v.classification === "CONFLICT" && v.cached) || v.ok !== (v.classification !== "CONFLICT" && (v.classification !== "EU" || v.cached))
-    || !Array.isArray(v.evidence) || v.evidence.length > 20 || !v.evidence.every(row => preflightObject(row) && preflightKeys(row, "id,event_type,classification,provider_status,evidence_expires_at,created_at,actor")
-      && preflightId(row.id) && typeof row.event_type === "string" && preflightRegion(row.classification) && typeof row.provider_status === "string" && preflightNullableString(row.evidence_expires_at) && typeof row.created_at === "string" && preflightNullableString(row.actor))) return false;
+  if (!preflightObject(v) || !preflightKeys(v, "ok,documentId,classification,cached,evidenceExpiresAt,wouldCallProvider,errors,derivedRegion,requiredValidation,cache,applyWouldCallProvider,evidence,exception") || !preflightId(v.documentId) || v.documentId !== id || !preflightRegion(v.classification) || v.derivedRegion !== v.classification || typeof v.ok !== "boolean" || !Array.isArray(v.errors) || !v.errors.every(e => typeof e === "string") || v.ok !== (v.errors.length === 0) || typeof v.cached !== "boolean" || !preflightNullableString(v.evidenceExpiresAt) || v.cached !== (v.evidenceExpiresAt !== null) || typeof v.wouldCallProvider !== "boolean" || v.applyWouldCallProvider !== v.wouldCallProvider || v.wouldCallProvider !== (v.classification === "EU" && !v.cached) || !preflightNullableString(v.requiredValidation) || !preflightObject(v.cache) || !preflightKeys(v.cache, "reused,freshUntil") || v.cache.reused !== v.cached || v.cache.freshUntil !== v.evidenceExpiresAt || v.classification === "CONFLICT" && v.cached || v.ok !== (v.classification !== "CONFLICT" && (v.classification !== "EU" || v.cached)) || !Array.isArray(v.evidence) || v.evidence.length > 20 || !v.evidence.every(row => preflightObject(row) && preflightKeys(row, "id,event_type,classification,provider_status,evidence_expires_at,created_at,actor") && preflightId(row.id) && typeof row.event_type === "string" && preflightRegion(row.classification) && typeof row.provider_status === "string" && preflightNullableString(row.evidence_expires_at) && typeof row.created_at === "string" && preflightNullableString(row.actor))) return false;
   const e = v.exception;
-  return e === null || (preflightObject(e) && preflightKeys(e, "id,status,severity,message,requiredAction,createdAt") && preflightId(e.id) && typeof e.status === "string" && typeof e.severity === "string" && typeof e.message === "string" && preflightNullableString(e.requiredAction) && typeof e.createdAt === "string");
+  return e === null || preflightObject(e) && preflightKeys(e, "id,status,severity,message,requiredAction,createdAt") && preflightId(e.id) && typeof e.status === "string" && typeof e.severity === "string" && typeof e.message === "string" && preflightNullableString(e.requiredAction) && typeof e.createdAt === "string";
 }
-async function nativePreflight(slug: string, id: number, confirmation?: { confirm: true }, options?: ReadRequestOptions): Promise<NativeDocumentVatPreflight> {
+async function nativePreflight(slug: string, id: number, confirmation?: {
+  confirm: true;
+}, options?: ReadRequestOptions): Promise<NativeDocumentVatPreflight> {
   if (!preflightId(id)) throw new Error("Ugyldigt bilags-ID.");
   if (confirmation !== undefined && (!preflightObject(confirmation) || !preflightKeys(confirmation, "confirm") || confirmation.confirm !== true)) throw new Error("Bekræft momsvalideringen først.");
   const value = await request<unknown>(`/api/companies/${encodeURIComponent(slug)}/expense/original/vat-preflight/${id}`, {
-    ...(confirmation === undefined ? { signal: options?.signal } : { method: "POST", body: JSON.stringify({ confirm: true }) }),
-    acceptDomainFalse: body => validNativePreflight(body, id),
+    ...(confirmation === undefined ? {
+      signal: options?.signal
+    } : {
+      method: "POST",
+      body: JSON.stringify({
+        confirm: true
+      })
+    }),
+    acceptDomainFalse: body => validNativePreflight(body, id)
   });
   if (!validNativePreflight(value, id)) throw new ApiError("internal", "Momsvalideringens resultat kunne ikke bekræftes. Kontrollér evidens og revisionsspor før en ny handling.", 0);
   return value;

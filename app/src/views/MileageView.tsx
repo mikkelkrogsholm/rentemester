@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { MileagePostingPanel } from "./MileagePostingPanel";
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, PageHeader } from "../components/ui";
@@ -46,25 +47,25 @@ export function MileageView() {
   const hasEntries = m.entries.length > 0;
 
   return (
-    <section className="statement">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
-      <PageHeader title="Kørsel" actions={<><div className="row-actions">
+    <section {...stylex.props(cockpitStyles.statement)}>
+      {state.error && <div {...stylex.props(cockpitStyles.banner)} role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Kørsel" actions={<><div {...stylex.props(cockpitStyles.rowActions)}>
           {!archived && (
             <Button requiredPermission="company.ledger.post"
               type="button"
-              className="btn"
-              onClick={() => setRegistering(true)}
+
+              onClick={() => setRegistering(true)} xstyle={[cockpitStyles.statementBtnComposition]}
             >
               Registrér kørsel
             </Button>
           )}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink  to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
-        <div>
+        <div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
 
-          <p className="muted">
+          <p {...stylex.props(cockpitStyles.muted)}>
             {m.company.cvr ? `CVR ${m.company.cvr} · ` : ""}
             {m.company.country} · {currency} · Kørsel
           </p>
@@ -88,7 +89,7 @@ export function MileageView() {
         />
       ) : (
         <>
-          <p className="statement-asof muted">
+          <p {...stylex.props(cockpitStyles.statementAsof, cockpitStyles.muted)}>
             Kørselsregister — regnskabsår {m.selectedYear}
           </p>
 
@@ -96,42 +97,74 @@ export function MileageView() {
 
           <MonthlyBreakdown mileage={m} currency={currency} />
 
-          <div className="card statement-card table-scroll">
-            <table className="data statement-table">
-              <thead>
-                <tr>
-                  <th>Bilag</th>
-                  <th>Dato</th>
-                  <th>Formål</th>
-                  <th>Fra → Til</th>
-                  <th className="num">Km</th>
-                  <th className="num">Takst</th>
-                  <th className="num">Grundlag</th>
-                  <th>Takst-basis</th>
+          <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
+            <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+              <thead {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableThead,
+								)}>
+                <tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition5,
+										)}>Bilag</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition5,
+										)}>Dato</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition5,
+										)}>Formål</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition5,
+										)}>Fra → Til</th>
+                  <th {...stylex.props(cockpitStyles.num)}>Km</th>
+                  <th {...stylex.props(cockpitStyles.num)}>Takst</th>
+                  <th {...stylex.props(cockpitStyles.num)}>Grundlag</th>
+                  <th {...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition5,
+										)}>Takst-basis</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTbody,
+								)}>
                 {m.entries.map((row) => (
-                  <tr key={row.id}>
-                    <td className="account-no">{row.entryNo}</td>
-                    <td className="entry-date">{row.tripDate}</td>
-                    <td>{row.purpose}</td>
-                    <td>
+                  <tr key={row.id} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTr,
+										)}>
+                    <td {...stylex.props(...[cockpitStyles.num])}>{row.entryNo}</td>
+                    <td {...stylex.props(cockpitStyles.entryDate)}>{row.tripDate}</td>
+                    <td {...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition7,
+											)}>{row.purpose}</td>
+                    <td {...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition7,
+											)}>
                       {row.fromLocation} → {row.toLocation}
                     </td>
-                    <td className="num">{row.kilometers}</td>
-                    <td className="num">
+                    <td {...stylex.props(cockpitStyles.num)}>{row.kilometers}</td>
+                    <td {...stylex.props(cockpitStyles.num)}>
                       {formatKroner(row.ratePerKm, currency)}/km
                     </td>
-                    <td className="num">
+                    <td {...stylex.props(cockpitStyles.num)}>
                       {formatKroner(row.amountBasis, currency)}
                     </td>
-                    <td>
+                    <td {...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition7,
+											)}>
                       {row.rateSource ? (
                         <a
                           href={row.rateSource}
                           target="_blank"
-                          rel="noreferrer noopener"
+                          rel="noreferrer noopener" {...stylex.props(cockpitStyles.aComposition)}
                         >
                           {row.rateBasis}
                         </a>
@@ -141,19 +174,23 @@ export function MileageView() {
                     </td>
                   </tr>
                 ))}
-                <tr className="statement-result">
-                  <td colSpan={4}>I alt — {m.selectedYear}</td>
-                  <td className="num">{m.totalKilometers}</td>
-                  <td className="num">—</td>
-                  <td className="num">
+                <tr {...stylex.props(...[cockpitStyles.statementResultTd])}>
+                  <td colSpan={4} {...stylex.props(
+											cockpitStyles.statementTableScrollTableTdComposition8,
+										)}>I alt — {m.selectedYear}</td>
+                  <td {...stylex.props(cockpitStyles.num)}>{m.totalKilometers}</td>
+                  <td {...stylex.props(cockpitStyles.num)}>—</td>
+                  <td {...stylex.props(cockpitStyles.num)}>
                     {formatKroner(m.totalAmountBasis, currency)}
                   </td>
-                  <td />
+                  <td {...stylex.props(
+											cockpitStyles.statementTableScrollTableTdComposition8,
+										)} />
                 </tr>
               </tbody>
             </table>
           </div>
-          <p className="statement-check ok">
+          <p {...stylex.props(cockpitStyles.statementCheck)}>
             Kørselsregisteret er dokumentation. Registrering bogfører aldrig
             kørselsgodtgørelse automatisk — vurdér med din rådgiver om turen er
             fradragsberettiget, og brug fx en udlægspostering hvis du vil
@@ -161,7 +198,7 @@ export function MileageView() {
             <a
               href="https://skat.dk/erhverv/moms/regler-og-satser/satser-for-erhvervsmaessig-koersel"
               target="_blank"
-              rel="noreferrer noopener"
+              rel="noreferrer noopener" {...stylex.props(cockpitStyles.aComposition)}
             >
               skat.dk
             </a>
@@ -193,26 +230,41 @@ function SummaryCards({
   currency: string;
 }) {
   return (
-    <div className="status-grid invoices-summary">
-      <div className="card status-card">
-        <h3>Antal ture</h3>
-        <div className="status-figure">{mileage.tripCount}</div>
-        <p className="muted status-note">
+    <div {...stylex.props(cockpitStyles.statusGrid, cockpitStyles.invoicesSummary)}>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+						cockpitStyles.statusCardH3,
+					)}>Antal ture</h3>
+        <div {...stylex.props(cockpitStyles.statusFigure)}>{mileage.tripCount}</div>
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>
           {mileage.tripCount === 1 ? "kørsel" : "kørsler"} i{" "}
           {mileage.selectedYear}
         </p>
       </div>
-      <div className="card status-card">
-        <h3>Samlet km</h3>
-        <div className="status-figure">{mileage.totalKilometers}</div>
-        <p className="muted status-note">km i regnskabsåret</p>
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+						cockpitStyles.statusCardH3,
+					)}>Samlet km</h3>
+        <div {...stylex.props(cockpitStyles.statusFigure)}>{mileage.totalKilometers}</div>
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>km i regnskabsåret</p>
       </div>
-      <div className="card status-card">
-        <h3>Godtgørelsesgrundlag</h3>
-        <div className="status-figure">
+      <div {...stylex.props(cockpitStyles.card, cockpitStyles.statusCard)}>
+        <h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+						cockpitStyles.statusCardH3,
+					)}>Godtgørelsesgrundlag</h3>
+        <div {...stylex.props(cockpitStyles.statusFigure)}>
           {formatKroner(mileage.totalAmountBasis, currency)}
         </div>
-        <p className="muted status-note">km × takst — dokumentation</p>
+        <p {...stylex.props(cockpitStyles.muted, cockpitStyles.statusNote)}>km × takst — dokumentation</p>
       </div>
     </div>
   );
@@ -229,24 +281,29 @@ function MonthlyBreakdown({
   // it is just twelve rows of zero, which the summary card already conveys.
   if (mileage.months.every((m) => m.tripCount === 0)) return null;
   return (
-    <div className="card statement-card table-scroll">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard, cockpitStyles.tableScroll)}>
       <h3 {...stylex.props(viewStyles.site0)}>Sum pr. måned</h3>
-      <table className="data statement-table">
-        <thead>
-          <tr>
-            <th>Måned</th>
-            <th className="num">Ture</th>
-            <th className="num">Km</th>
-            <th className="num">Grundlag</th>
+      <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
+        <thead {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+          <tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+            <th {...stylex.props(cockpitStyles.tableStatementTableThComposition3)}>Måned</th>
+            <th {...stylex.props(cockpitStyles.num)}>Ture</th>
+            <th {...stylex.props(cockpitStyles.num)}>Km</th>
+            <th {...stylex.props(cockpitStyles.num)}>Grundlag</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
           {mileage.months.map((row) => (
-            <tr key={row.month}>
-              <td>{row.label}</td>
-              <td className="num">{row.tripCount}</td>
-              <td className="num">{row.kilometers}</td>
-              <td className="num">
+            <tr key={row.month} {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>
+              <td {...stylex.props(
+									cockpitStyles.tableStatementTableTdComposition2,
+								)}>{row.label}</td>
+              <td {...stylex.props(cockpitStyles.num)}>{row.tripCount}</td>
+              <td {...stylex.props(cockpitStyles.num)}>{row.kilometers}</td>
+              <td {...stylex.props(cockpitStyles.num)}>
                 {row.amountBasis > 0
                   ? formatKroner(row.amountBasis, currency)
                   : "—"}
@@ -267,16 +324,21 @@ function EmptyState({
   onRegister: () => void;
 }) {
   return (
-    <div className="card archived-notice">
-      <h3>Ingen kørsler registreret i {year}</h3>
-      <p className="muted">
-        Klik på <strong>Registrér kørsel</strong> for at logge en tur — dato,
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+      <h3 {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					cockpitStyles.archivedNoticeH3,
+				)}>Ingen kørsler registreret i {year}</h3>
+      <p {...stylex.props(cockpitStyles.muted)}>
+        Klik på <strong {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Registrér kørsel</strong> for at logge en tur — dato,
         formål, fra/til, antal km og den officielle takst du har slået op.
         Rentemester gemmer registret som dokumentation og udregner aldrig en
         skattesats for dig.
       </p>
-      <div className={["row-actions", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
-        <Button requiredPermission="company.ledger.post" type="button" className="btn" onClick={onRegister}>
+      <div {...stylex.props(...[cockpitStyles.rowActions, viewStyles.site1])} >
+        <Button requiredPermission="company.ledger.post" type="button"  onClick={onRegister}>
           Registrér første kørsel
         </Button>
       </div>
@@ -286,9 +348,14 @@ function EmptyState({
 
 function ArchivedNotice({ year }: { year: string }) {
   return (
-    <div className="card archived-notice">
-      <h3>Kørsel er ikke tilgængelig for {year}</h3>
-      <p className="muted">
+    <div {...stylex.props(cockpitStyles.card, cockpitStyles.archivedNotice)}>
+      <h3 {...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					cockpitStyles.archivedNoticeH3,
+				)}>Kørsel er ikke tilgængelig for {year}</h3>
+      <p {...stylex.props(cockpitStyles.muted)}>
         {year} er et arkiveret regnskabsår. Kørselsregisteret findes kun for
         den aktive ledger; arkiverede år vises som read-only historik på de
         øvrige skærmbilleder (Resultatopgørelse, Balance osv.).

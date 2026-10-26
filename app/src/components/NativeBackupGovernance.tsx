@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -39,9 +41,9 @@ export function NativeBackupGovernance({ slug }: { slug: string }) {
     catch (cause) { setError(cause instanceof Error ? cause.message : "Samlet backupstatus kunne ikke hentes."); }
     finally { sending.current = false; setBusy(false); }
   }
-  return <section className="card" aria-label="Samlet backupstatus">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Samlet backupstatus">
     <h3>Samlet backupstatus</h3>
-    <p className="muted">Sammenhold den gemte backup med kvitteringer for præcis samme fil. En tidligere kontrol af en ekstern kopi beviser ikke, at kopien stadig er tilgængelig.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Sammenhold den gemte backup med kvitteringer for præcis samme fil. En tidligere kontrol af en ekstern kopi beviser ikke, at kopien stadig er tilgængelig.</p>
     <Button type="button" disabled={busy} onClick={() => void load()}>Hent samlet backupstatus</Button>
     {value && <>
       <dl>
@@ -59,7 +61,7 @@ export function NativeBackupGovernance({ slug }: { slug: string }) {
       </div>)}
       {value.governance.destinations.length === 0 && <p>Bed serverens administrator konfigurere en backupdestination.</p>}
       {!value.governance.latestBackupExternalCopyObserved && <p>Placér den aktuelle backup og kontrollér dens eksterne kopi ovenfor.</p>}
-      <p className="muted">En afprøvet gendannelse og opbevaringsstedets øvrige forhold er ikke verificeret i denne visning.</p>
+      <p {...stylex.props(cockpitStyles.muted)}>En afprøvet gendannelse og opbevaringsstedets øvrige forhold er ikke verificeret i denne visning.</p>
       {[...value.backup.errors, ...value.governance.errors].map((message, index) => <p role="alert" key={`${index}:${message}`}>{message}</p>)}
     </>}
     {error && <p role="alert">{error}</p>}

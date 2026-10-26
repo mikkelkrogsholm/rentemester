@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ErrorState, Loading } from "../components/Feedback";
@@ -36,9 +38,9 @@ export function NativeBudgetDimensions({
   );
   const data = state.data;
   return (
-    <section className="card statement-card" aria-label="Dimensionssammenligning">
+    <section {...stylex.props(cockpitStyles.card, cockpitStyles.statementCard)} aria-label="Dimensionssammenligning">
       <h3>Dimensioner mod konto-budget</h3>
-      <p className="muted">
+      <p {...stylex.props(cockpitStyles.muted)}>
         Konto-budgettet gælder hele kontoen. Dimensionsbudget og variance er ukendte uden en
         reviewet budgetfordeling, der stemmer med seneste konto-budget. Ufordelt er kontoens
         faktiske beløb uden en aktuel tildeling til den valgte dimension; andre medlemmer vises
@@ -74,12 +76,12 @@ export function NativeBudgetDimensions({
         data && (
           <>
             {data.notes?.map((note) => (
-              <p className="muted" key={note}>
+              <p {...stylex.props(cockpitStyles.muted)} key={note}>
                 {note}
               </p>
             ))}
-            <div className="table-scroll">
-              <table className="data statement-table">
+            <div {...stylex.props(cockpitStyles.tableScroll)}>
+              <table {...stylex.props(...[cockpitStyles.tableData, cockpitStyles.tableStatementTable])}>
                 <thead>
                   <tr>
                     <th>Konto</th>

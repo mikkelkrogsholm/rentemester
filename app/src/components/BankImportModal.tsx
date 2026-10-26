@@ -1,7 +1,8 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import * as stylex from "@stylexjs/stylex";
-import { Button, Dialog, Input } from "./ui";
+import { Select, Button, Dialog, Input } from "./ui";
 // BankImportModal — the human bank-CSV-import action for the Cockpit (#213, slice 2).
 //
 // A person opens this from the Bank view, picks a bank-statement CSV file, and
@@ -53,6 +54,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
   const [csvBase64, setCsvBase64] = useState<string | null>(null);
   const [account, setAccount] = useState("");
   const [profile, setProfile] = useState("");
+  const [statementOrder, setStatementOrder] = useState<"" | "ascending" | "descending">("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
 
 
   const outcome = useMutationOutcome(onImported);
-  const guard = useDiscardGuard(!done && Boolean(csvBase64 || account || profile), onDismiss);
+  const guard = useDiscardGuard(!done && Boolean(csvBase64 || account || profile || statementOrder), onDismiss);
   const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -110,6 +112,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
         csvBase64,
         account: account.trim() || undefined,
         profile: profile.trim() || undefined,
+        statementOrder: profile.trim() ? undefined : statementOrder || undefined,
       }).catch(outcome.reject);
       setDone(summary);
       onImported();
@@ -131,11 +134,16 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
 
 
 
+        {!done && <label>Rækkefølge i kontoudtoget (valgfri)<Select aria-label="Rækkefølge i kontoudtoget (valgfri)" value={statementOrder} onChange={e => setStatementOrder(e.target.value as "" | "ascending" | "descending")} disabled={outcome.blocked || busy || Boolean(profile.trim())}><option value="">Udled fra kontoudtog</option><option value="ascending">Ældste først</option><option value="descending">Nyeste først</option></Select></label>}
         {done ? (
           // After a successful import the modal becomes a short receipt.
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}>
                 {done.imported}{" "}
                 {done.imported === 1 ? "transaktion" : "transaktioner"}{" "}
                 importeret
@@ -157,12 +165,12 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 {done.balanceWarnings.join(" ")}
               </Banner>
             )}
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button
                 type="button"
-                className="btn"
+
                 ref={closeRef}
-                onClick={onClose}
+                onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Luk
               </Button>
@@ -170,29 +178,43 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
           </>
         ) : (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}>
                 Vælg en bank-CSV. Banktransaktionerne indlæses til afstemning;
                 importen bogfører ikke. Kendte dubletter springes over.
               </p>
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+              <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site0])} >
                 Filens originale bytes bevares. Maks. 25 MiB. Standard-CSV bruger
                 UTF-8 og understøtter komma, semikolon og tabulator.{" "}
                 <a
                   href="https://rentemester.dk/docs/bank-import"
                   target="_blank"
-                  rel="noreferrer noopener"
+                  rel="noreferrer noopener" {...stylex.props(cockpitStyles.aComposition)}
                 >
                   Læs mere om CSV-formatet
                 </a>
                 .
               </p>
-              <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
-                <strong>Understøttede bankprofiler:</strong>{" "}
+              <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site1])} >
+                <strong {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}>Understøttede bankprofiler:</strong>{" "}
                 {SUPPORTED_BANK_PROFILES.map((p, i) => (
-                  <span key={p.name}>
+                  <span key={p.name} {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>
                     {i > 0 ? ", " : ""}
-                    <code>{p.name}</code> ({p.label})
+                    <code {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.code,
+										)}>{p.name}</code> ({p.label})
                   </span>
                 ))}
                 . Uden profil skal filen følge standard-CSV-formatet.
@@ -202,7 +224,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               CSV-fil
               <Input
                 type="file"
@@ -212,12 +234,12 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
               />
             </label>
             {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
+              <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site2])} >
                 Valgt: {fileName}
               </p>
             )}
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Bankkonto (valgfri)
               <Input
                 type="text"
@@ -226,14 +248,14 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 onChange={(e) => setAccount(e.target.value)}
                 disabled={outcome.blocked || (busy)}
               />
-              <span className="field-hint">
+              <span {...stylex.props(cockpitStyles.fieldHint)}>
                 Kun nødvendigt hvis virksomheden har flere bankkonti og du vil
                 styre præcis hvilken konto transaktionerne lægges på. Lad
                 feltet stå tomt for at bruge standardkontoen.
               </span>
             </label>
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Bankformat (valgfri)
               <Input
                 type="text"
@@ -242,25 +264,25 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 onChange={(e) => setProfile(e.target.value)}
                 disabled={outcome.blocked || (busy)}
               />
-              <span className="field-hint">
+              <span {...stylex.props(cockpitStyles.fieldHint)}>
                 Uden profil bruges standard-CSV; tvetydige datoer afvises.
                 Angiv danske-bank for Danske Banks semikolon-CSV med
                 dag-måned-år i UTF-8 eller Windows-1252.
               </span>
             </label>
 
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button variant="secondary"
                 type="button"
-                className="btn secondary"
+
                 onClick={onClose}
-                disabled={busy}
+                disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Annullér
               </Button>
               <Button requiredPermission="company.ledger.post"
                 type="button"
-                className="btn"
+
                 onClick={handleImport}
                 disabled={outcome.blocked || (busy || reading || !csvBase64)}
               >

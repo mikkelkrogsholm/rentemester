@@ -1,8 +1,6 @@
 // Dashboard + Overblik wire types.
-
 import type { ExceptionRow } from "./exceptions";
 import type { FiscalYearEntry, ReportMoney, ReportSourceMetadata } from "./common";
-
 export type InvoiceRow = {
   invoiceNumber: string;
   customerName?: string;
@@ -12,14 +10,12 @@ export type InvoiceRow = {
   openBalance: number;
   [key: string]: unknown;
 };
-
 export type AuditLogRow = {
   occurredAt?: string;
   action?: string;
   summary?: string;
   [key: string]: unknown;
 };
-
 export type CompanyDashboard = {
   slug: string;
   asOf: string;
@@ -31,10 +27,22 @@ export type CompanyDashboard = {
     fiscalYearStartMonth: number | string;
     fiscalYearLabelStrategy: string;
   };
-  invoices: { count: number; openTotal: number; rows: InvoiceRow[] };
-  overdueInvoices: { count: number; rows: InvoiceRow[] };
-  unlinkedBank: { count: number };
-  exceptions: { count: number; rows: ExceptionRow[] };
+  invoices: {
+    count: number;
+    openTotal: number;
+    rows: InvoiceRow[];
+  };
+  overdueInvoices: {
+    count: number;
+    rows: InvoiceRow[];
+  };
+  unlinkedBank: {
+    count: number;
+  };
+  exceptions: {
+    count: number;
+    rows: ExceptionRow[];
+  };
   vat: {
     periodStart: string | null;
     periodEnd: string | null;
@@ -51,24 +59,24 @@ export type CompanyDashboard = {
     daysSinceLatestBackup: number | null;
     hasActivitySinceBackup: boolean;
   };
-  audit: { ok: boolean; entryCount: number; firstError: unknown };
+  audit: {
+    ok: boolean;
+    entryCount: number;
+    firstError: unknown;
+  };
   recentActivity: AuditLogRow[];
 };
-
 export type DashboardResponse = {
   ok: true;
   dashboard: CompanyDashboard;
 };
-
 // --- overview (GET /api/companies/:slug/overview?year=) -------------------
-
 export type OverviewMonth = {
   month: number;
   label: string;
   income: number;
   expense: number;
 };
-
 export type OverviewExceptionRow = {
   id: number;
   type: string;
@@ -81,7 +89,6 @@ export type OverviewExceptionRow = {
    */
   requiredAction: string | null;
 };
-
 /**
  * One grouped exception line for the "Opgaver" card — every open exception of
  * one `type` collapsed into a single Danish, actionable summary line.
@@ -95,16 +102,15 @@ export type OverviewExceptionGroup = {
   /** The cockpit sub-view this group links to (e.g. "bank"); null when none. */
   link: string | null;
 };
-
 export type OverviewRecentEntry = {
   id: number | null;
-  sourceId?: string; sourceAmount?: string;
+  sourceId?: string;
+  sourceAmount?: string;
   entryNo: string;
   date: string;
   text: string;
   amount: ReportMoney;
 };
-
 /**
  * The "Overblik" payload. All money fields are kroner (DKK with decimals) —
  * use `formatKroner`, not `formatCurrency` (which expects minor units).
@@ -134,9 +140,13 @@ export type OverviewVat = {
   periodStatus: "open" | "closed" | "reported";
   errors?: string[];
 };
-
-export type ArchiveOverviewMonth = {month:string;label:string;income:ReportMoney;expense:ReportMoney;status:"ready"|"incomplete"};
-
+export type ArchiveOverviewMonth = {
+  month: string;
+  label: string;
+  income: ReportMoney;
+  expense: ReportMoney;
+  status: "ready" | "incomplete";
+};
 export type CompanyOverview = ReportSourceMetadata & {
   slug: string;
   selectedYear: string;
@@ -167,8 +177,9 @@ export type CompanyOverview = ReportSourceMetadata & {
     /** balance − actualBalance; the unreconciled gap, kroner; null when unknown. */
     difference: ReportMoney;
     status?: "unavailable";
-    bankStatementStatus?: "known" | "no-balance-column" | "none" | "unavailable";
+    bankStatementStatus?: "known" | "no-balance-column" | "none" | "unavailable" | "ambiguous";
     bankStatementProblem?: string | null;
+    bankStatementDiagnostics?: string[];
   };
   /** Money owed TO the company — open issued-invoice balances at year end. */
   receivables: {
@@ -180,18 +191,38 @@ export type CompanyOverview = ReportSourceMetadata & {
     asOfDate?: string;
     basis?: "current";
   } | null;
-  payables?: { openCount: number; openTotal: ReportMoney; asOfDate: string };
-  documents?: { linkedCount: number; unlinkedCount: number; basis: "current" };
-  availability?: { exceptionReview: boolean; accountantExport: boolean; historicalReceivables: boolean };
+  payables?: {
+    openCount: number;
+    openTotal: ReportMoney;
+    asOfDate: string;
+  };
+  documents?: {
+    linkedCount: number;
+    unlinkedCount: number;
+    basis: "current";
+  };
+  availability?: {
+    exceptionReview: boolean;
+    accountantExport: boolean;
+    historicalReceivables: boolean;
+  };
   /** The half-yearly VAT position; null for an archived year. */
   vat: OverviewVat | null;
+  /** Canonical count from the same attention projection as the task inbox. */
+  attention: {
+    count: number;
+    status: "clear" | "requires-attention";
+  };
   exceptions: {
     count: number | null;
     status?: "unavailable";
     rows: OverviewExceptionRow[];
     groups: OverviewExceptionGroup[];
   };
-  activity?: {status:"ready"|"incomplete";unclassifiedAccounts: import("./common").ArchiveAccountEvidence[]};
+  activity?: {
+    status: "ready" | "incomplete";
+    unclassifiedAccounts: import("./common").ArchiveAccountEvidence[];
+  };
   operationalState?: "unavailable";
   recentEntries: OverviewRecentEntry[];
   /** Transaction date of the most recent posted entry; null when none. */
@@ -204,8 +235,23 @@ export type CompanyOverview = ReportSourceMetadata & {
     egenkapitalandel: number | null;
   };
 };
-
 export type OverviewResponse = {
   ok: true;
   overview: CompanyOverview;
+};
+export type ChangesSince = {
+  events: Array<{
+    id: number;
+    eventType: string;
+    entityType: string;
+    entityId: string | null;
+    message: string;
+    actor: string;
+    createdAt: string;
+  }>;
+  cursor: number;
+};
+export type ChangesSinceResponse = {
+  ok: true;
+  changes: ChangesSince;
 };

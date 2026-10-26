@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { NativeEliminationsPanel } from "./NativeEliminationsPanel";
 import { useState, type FormEvent } from "react";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
@@ -64,7 +66,7 @@ export function NativeIntercompanyView() {
 		}
 	}
 	return (
-		<section className="page">
+		<section {...stylex.props(...[cockpitStyles.statement])}>
 			<PageHeader title="Mellemregningsafstemning" />
 			<p>
 				Vælg eksplicitte medlemskaber og kontomappings. Selskabernes posteringer
@@ -92,7 +94,7 @@ export function NativeIntercompanyView() {
 				<>
 					<p>{report.data.rows.length} synlige aktive mappings</p>
 					{report.data.rows.map((r) => (
-						<article className="card" key={r.mappingId}>
+						<article {...stylex.props(cockpitStyles.card)} key={r.mappingId}>
 							<h3>{r.mappingId}</h3>
 							<p>
 								Status: {r.status} · {r.reason}
@@ -117,7 +119,7 @@ export function NativeIntercompanyView() {
 					))}
 				</>
 			)}
-			<section className="card">
+			<section {...stylex.props(cockpitStyles.card)}>
 				<h3>Struktur og godkendte mappings</h3>
 				<p>
 					Ændringer kræver aktuel administratoradgang til alle berørte

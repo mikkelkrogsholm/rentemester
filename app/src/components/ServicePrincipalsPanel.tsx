@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ApiError } from "../lib/api/_shared";
@@ -75,7 +77,7 @@ export function ServicePrincipalsPanel({ onChanged }: { onChanged: (principals: 
       current.reload();
     } finally { sending.current = false; setBusy(false); }
   }
-  return <section className="card" aria-label="Servicekonti">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Servicekonti">
     <h3>Servicekonti</h3>
     <p>Opret en særskilt konto til serverens planlagte fakturaer. Aktivér workspace-adgang og tildel kun den nødvendige virksomhedsrolle. Nøglen gives til serveroperatøren; den gemmes ikke i browseren.</p>
     {current.loading && !current.data && <Loading label="Henter servicekonti…" />}

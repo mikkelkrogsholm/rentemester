@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import type { CompanyVat, CompanyVatRegistered } from "../lib/types";
@@ -27,7 +29,7 @@ export function VatTaskPanel(props: Props) {
 }
 
 function TaskNotice({ state, children, onRefresh }: { state: string; children: React.ReactNode; onRefresh?: () => void }) {
-  return <section className="card" aria-label="Momsopgave" data-state={state}>
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Momsopgave" data-state={state}>
     <h3>Momsopgave</h3><p>{children}</p><p>Rentemester sender ikke til SKAT.</p>
     {onRefresh && <Button variant="secondary" onClick={onRefresh}>Opdatér momsopgave</Button>}
   </section>;
@@ -57,7 +59,7 @@ function VerifiedTask({ slug, vat: v, onRefresh }: Props & { vat: CompanyVatRegi
   }
   const to = (path: string) => `/companies/${encodeURIComponent(slug)}/${path}?year=${encodeURIComponent(v.selectedYear)}`;
   const refresh = () => { proof.reload(); onRefresh(); };
-  return <section className="card" aria-label="Momsopgave" data-state={state}>
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Momsopgave" data-state={state}>
     <h3>Momsopgave</h3>
     <p>{v.periodLabel} · {v.periodStart} – {v.periodEnd} · Frist: {v.deadline}</p>
     <p>Grundlag: bogførte momskonti og bilag i den valgte periode.</p>

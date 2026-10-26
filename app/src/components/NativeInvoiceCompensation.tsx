@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import { api } from "../lib/api";
 import type { NativeInvoiceCompensationCalculate, NativeInvoiceCompensationResult, NativeReminderClaimStatus } from "../lib/api/invoices";
@@ -29,7 +31,7 @@ export function NativeInvoiceCompensation({slug,id,asOfDate,accounts,onChanged}:
  const posted=result?.postedJournalEntryId!==null&&result?.postedJournalEntryId!==undefined;
  return <section aria-label="Kompensationskrav">
   <h4>Kompensationskrav</h4>
-  <p className="muted">Beregn først, om fakturaen kan bære et kompensationskrav. Registrering opretter kun kravet; bogføring sker i et særskilt trin. Der sendes ingen e-mail.</p>
+  <p {...stylex.props(cockpitStyles.muted)}>Beregn først, om fakturaen kan bære et kompensationskrav. Registrering opretter kun kravet; bogføring sker i et særskilt trin. Der sendes ingen e-mail.</p>
   <label>Opgørelsesdato for kompensation<Input type="date" value={date} disabled={busy} onChange={e=>{setDate(e.target.value);setResult(null);}}/></label>
   <label>Kompensation i DKK<Input inputMode="decimal" value={amount} disabled={busy} placeholder="Brug serverens regel" onChange={e=>{setAmount(e.target.value);setResult(null);}}/></label>
   <Button type="button" variant="secondary" disabled={busy} onClick={()=>void calculate()}>{busy?"Henter kompensation…":"Beregn kompensation"}</Button>
@@ -46,7 +48,7 @@ export function NativeInvoiceCompensation({slug,id,asOfDate,accounts,onChanged}:
     <label>Konto til kompensationsindtægt<select aria-label="Konto til kompensationsindtægt" value={income} onChange={e=>setIncome(e.target.value)}><option value="">Vælg indtægtskonto</option>{accounts.filter(a=>a.type==="income"&&a.normalBalance==="credit").map(a=><option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</select></label>
     <Button type="button" disabled={!receivable||!income||!postDate} onClick={()=>setAction("post")}>Gennemgå bogføring af kompensation</Button>
    </div>}
-   {existing&&<p className="muted">En faktisk indbetaling på kravet afstemmes i DKK i «Faktisk indbetaling på gebyrkrav», efter at hovedstolen er betalt og alle krav er bogført.</p>}
+   {existing&&<p {...stylex.props(cockpitStyles.muted)}>En faktisk indbetaling på kravet afstemmes i DKK i «Faktisk indbetaling på gebyrkrav», efter at hovedstolen er betalt og alle krav er bogført.</p>}
   </>}
   {action&&result&&<ConfirmDialog key={`${id}:${action}`} operationKey={`compensation:${slug}:${id}:${action}`}
    title={action==="register"?"Registrér kompensationskrav":"Bogfør kompensationskrav"}

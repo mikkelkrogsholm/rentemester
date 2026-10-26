@@ -99,16 +99,17 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
     await userEvent.click(screen.getByRole("button",{name:"Ret direkte bankkøb"}));
     const dialog=screen.getByRole("dialog",{name:"Ret direkte bankkøb"});
     await userEvent.type(within(dialog).getByLabelText("Banktransaktions-id"),"777");
+    await userEvent.type(within(dialog).getByLabelText("Begrundelse"), "Ret dokumenteret direkte bankkøb til kreditorforløb");
     await userEvent.click(within(dialog).getByRole("button",{name:"Opret plan"}));
     expect(await within(dialog).findByText(/Bankdato 2026-05-03/)).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole("button",{name:"Bekræft korrektion"}));
     await waitFor(()=>{
       const calls=(globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
-      const apply=calls.find(call=>String(call[0]).endsWith("/direct-bank-correction/apply"));
+      const apply=calls.find(call=>(call[0] instanceof Request ? call[0].url : String(call[0])).endsWith("/direct-bank-correction/apply"));
       expect(apply).toBeTruthy();
       const init=apply![1] as {body:string;headers:Record<string,string>};
       expect(JSON.parse(init.body)).toMatchObject({documentId:201,bankTransactionId:777,planHash:"a".repeat(64),confirm:true});
-      expect(init.headers["idempotency-key"]).toBeTruthy();
+      expect(new Headers(init.headers).get("idempotency-key")).toBeTruthy();
     });
   });
 

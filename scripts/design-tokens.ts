@@ -26,8 +26,6 @@ function resolved(node: TokenTree): TokenTree {
 const all = resolved(tokens);
 const colors = all.colors as Record<string, string>;
 const typography = all.typography as Record<string, string>;
-const spacing = all.spacing as Record<string, string>;
-const rounded = all.rounded as Record<string, string>;
 const groups = ['colors', 'typography', 'spacing', 'rounded', 'layout', 'controls'] as const;
 const header = '// Generated from DESIGN.md by scripts/design-tokens.ts. Do not edit.\n';
 const raw = header + `export const designTokens = ${JSON.stringify(all, null, 2)} as const;\n`;
@@ -35,15 +33,6 @@ const raw = header + `export const designTokens = ${JSON.stringify(all, null, 2)
 // Raw chart/document tokens retain the plain name; CSS tokens include fallbacks.
 const cssTypography = Object.fromEntries(Object.entries(typography).map(([key, value]) => [key, key.endsWith('Family') ? `${JSON.stringify(value)}, ${key === 'headlineFamily' ? 'Georgia, serif' : key === 'monoFamily' ? 'monospace' : 'sans-serif'}` : value]));
 const stylex = header + `import * as stylex from '@stylexjs/stylex';\n` + groups.map((group) => `export const ${group} = stylex.defineVars(${JSON.stringify(group === 'typography' ? cssTypography : all[group], null, 2)});\n`).join('');
-const declarations: string[] = [];
-for (const [name, value] of Object.entries(colors)) declarations.push(`  --color-${name.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}: ${value};`);
-for (const [name, value] of Object.entries(spacing)) declarations.push(`  --space-${name}: ${value};`);
-for (const [name, value] of Object.entries(rounded)) declarations.push(`  --radius-${name}: ${value};`);
-for (const key of ['headline', 'body', 'mono']) declarations.push(`  --font-${key}: "${typography[key + 'Family']}", ${key === 'headline' ? 'Georgia, serif' : key === 'mono' ? 'monospace' : 'sans-serif'};`);
-for (const key of ['xs', 'sm', 'md', 'lg', 'xl', '2xl']) declarations.push(`  --text-size-${key}: ${typography['size' + key[0]!.toUpperCase() + key.slice(1)] ?? typography['size' + key] ?? '16px'};`);
-
-declarations.push(`  --text-size-body: ${typography.bodySize};`, `  --text-line-height: ${typography.bodyLineHeight};`, `  --layout-max-width: ${(all.layout as Record<string, string>).maxWidth};`);
-const css = `/* Generated from DESIGN.md. */\n:root {\n${declarations.join('\n')}\n}\n`;
 const rustName = (name: string) => name.replace(/[A-Z]/g, (c) => '_' + c).toUpperCase();
 const native = header + '#![allow(dead_code)]\n' + Object.entries(colors).map(([name, value]) =>
   `pub const ${rustName(name)}: u32 = 0x${value.slice(1)};\n`).join('') +
@@ -51,7 +40,6 @@ const native = header + '#![allow(dead_code)]\n' + Object.entries(colors).map(([
 const outputs = new Map([
   ['src/design/tokens.ts', raw],
   ['app/src/design/tokens.stylex.ts', stylex],
-  ['app/src/design/tokens.css', css],
   ['crates/rentemester-desktop/src/design_tokens.rs', native],
 ]);
 for (const [path, output] of outputs) {

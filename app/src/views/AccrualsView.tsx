@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { Button, ButtonLink, PageHeader } from "../components/ui";
 import { useState } from "react";
 import { RegisterAccrualModal, RecognizeAccrualModal } from "./AccrualModal";
@@ -30,19 +32,19 @@ export function AccrualsView() {
 	const currency = data.company.currency || "DKK";
 
 	return (
-		<section className="accruals-view">
+		<section {...stylex.props(...[cockpitStyles.statement])}>
 			<PageHeader
 				title="Periodisering"
 				actions={
 					<>
-						<div className="row-actions">
+						<div {...stylex.props(cockpitStyles.rowActions)}>
 							{data.nativeAccruals && (
 								<Button onClick={() => setRegister(true)}>
 									Ny periodisering
 								</Button>
 							)}
 							<ButtonLink
-								className="btn secondary"
+
 								to={`/companies/${slug}/manage`}
 							>
 								Administrér
@@ -51,58 +53,132 @@ export function AccrualsView() {
 					</>
 				}
 			>
-				<div>
-					<p className="muted">
+				<div {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					<p {...stylex.props(cockpitStyles.muted)}>
 						{data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
 						{data.company.country} · {currency} · Periodisering
 					</p>
 				</div>
 			</PageHeader>
 
-			<p className="muted">
+			<p {...stylex.props(cockpitStyles.muted)}>
 				Periodeafgrænsningsposter (PAP): forudbetalte omkostninger, skyldige
 				omkostninger og udskudt omsætning. Beløb rulles ud lineært over de
 				aftalte perioder. Registrering bogfører hele grundbeløbet; hver periode
 				bogføres særskilt efter din bekræftelse.
 			</p>
 
-			<section className="card">
-				<h3>Portfolio</h3>
-				<div className="filter-bar">
-					<span className="pill">
+			<section {...stylex.props(cockpitStyles.card)}>
+				<h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Portfolio</h3>
+				<div {...stylex.props(cockpitStyles.filterBar)}>
+					<span {...stylex.props(...[cockpitStyles.statusChip])}>
 						I alt: {formatKroner(r.totals.totalAmount, currency)}
 					</span>
-					<span className="pill ok">
+					<span {...stylex.props(...[cockpitStyles.statusChip, cockpitStyles.statusChipSuccess])}>
 						Realiseret: {formatKroner(r.totals.recognizedAmount, currency)}
 					</span>
-					<span className="pill warn">
+					<span {...stylex.props(...[cockpitStyles.statusChip, cockpitStyles.statusChipWarning])}>
 						Tilbage: {formatKroner(r.totals.remainingAmount, currency)}
 					</span>
 				</div>
 			</section>
 
-			<section className="card">
-				<h3>Accruals ({r.accruals.length})</h3>
+			<section {...stylex.props(cockpitStyles.card)}>
+				<h3 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}>Accruals ({r.accruals.length})</h3>
 				{r.accruals.length === 0 ? (
-					<p className="muted">Ingen accruals registreret.</p>
+					<p {...stylex.props(cockpitStyles.muted)}>Ingen accruals registreret.</p>
 				) : (
-					<div className="table-scroll">
-						<table className="table">
-							<thead>
-								<tr>
-									<th>Type</th>
-									<th>Beskrivelse</th>
-									<th>Total</th>
-									<th>Realiseret</th>
-									<th>Tilbage</th>
-									<th>Perioder</th>
-									<th>Første dato</th>
-									<th>Balance / Result</th>
-									<th>Status</th>
+					<div {...stylex.props(cockpitStyles.tableScroll)}>
+						<table {...stylex.props(...[cockpitStyles.tableData])}>
+							<thead {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableThead,
+								)}>
+								<tr {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.responsiveTableTr,
+									)}>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Type</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Beskrivelse</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Total</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Realiseret</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Tilbage</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Perioder</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Første dato</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Balance / Result</th>
+									<th {...stylex.props(
+											cockpitStyles.tableDataTh,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTh,
+											cockpitStyles.responsiveTableThLastChild,
+										)}>Status</th>
 									<th>Handling</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.responsiveTableTbody,
+								)}>
 								{r.accruals.map((a) => (
 									<AccrualRow
 										key={a.accrualId}
@@ -153,25 +229,53 @@ function AccrualRow({
 	onRecognize?: () => void;
 }) {
 	return (
-		<tr>
-			<td>{TYPE_LABEL[row.accrualType]}</td>
-			<td>{row.description}</td>
-			<td className="num">{formatKroner(row.totalAmount, currency)}</td>
-			<td className="num">{formatKroner(row.recognizedAmount, currency)}</td>
-			<td className="num">{formatKroner(row.remainingAmount, currency)}</td>
-			<td>
+		<tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{TYPE_LABEL[row.accrualType]}</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>{row.description}</td>
+			<td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.totalAmount, currency)}</td>
+			<td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.recognizedAmount, currency)}</td>
+			<td {...stylex.props(cockpitStyles.num)}>{formatKroner(row.remainingAmount, currency)}</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
 				{row.recognizedPeriods}/{row.recognitionPeriods} ×{" "}
 				{row.periodStepMonths} mdr
 			</td>
-			<td className="entry-date">{row.firstRecognitionDate}</td>
-			<td>
-				<code>{row.balanceAccountNo}</code> / <code>{row.resultAccountNo}</code>
+			<td {...stylex.props(cockpitStyles.entryDate)}>{row.firstRecognitionDate}</td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
+				<code {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.code,
+					)}>{row.balanceAccountNo}</code> / <code {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.code,
+					)}>{row.resultAccountNo}</code>
 			</td>
-			<td>
+			<td {...stylex.props(
+					cockpitStyles.tableDataTd,
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+				)}>
 				{row.fullyRecognized ? (
-					<span className="pill ok">Fuldt realiseret</span>
+					<span {...stylex.props(...[cockpitStyles.statusChip, cockpitStyles.statusChipSuccess])}>Fuldt realiseret</span>
 				) : (
-					<span className="pill">Aktiv</span>
+					<span {...stylex.props(...[cockpitStyles.statusChip])}>Aktiv</span>
 				)}
 			</td>
 			<td>

@@ -1,6 +1,6 @@
 {
   "name": "rentemester-cockpit",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "private": true,
   "engines": {
     "bun": "1.4.0"
@@ -25,9 +25,7 @@
     "@stylexjs/stylex": "^0.19.1",
     "@tanstack/react-virtual": "3.14.22",
     "better-auth": "1.7.1",
-    "chart.js": "^4.5.1",
     "react": "^18.3.1",
-    "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "7.18.2"
   },

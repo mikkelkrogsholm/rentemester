@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { HostedScheduledRecurring } from "../components/HostedScheduledRecurring";
 import { ScheduledTemplateReview } from "../components/ScheduledTemplateReview";
 import { useScheduledRecurringAutomation } from "../components/ScheduledRecurringProvider";
@@ -91,10 +93,10 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
   }
   if (current.loading && !current.data) return <Loading label="Henter planlagte fakturaer…" />;
   if (current.error) return <ErrorState message={current.error} onRetry={refresh} />;
-  return <section className="card" aria-label="Planlagte fakturaer">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Planlagte fakturaer">
     <h2>Planlagte fakturaer</h2>
     <p>Gennemgå forfaldne forekomster og vælg, hvilke der skal køres eller springes over. Udstedelse opretter en faktura med PDF; bogføring og afsendelse er særskilte handlinger.</p>
-    <p className="muted">Tidspunkt: {current.data?.asOfDate} · {current.data?.timeZone}. Appens automatik starter kun ved dit valg og stopper, når appen lukkes eller adgangen bortfalder. Serverens særskilte automatik kræver serversamtykke nedenfor. Efter dvale skal manglende forekomster gennemgås. Status og genåbning starter ikke automatik.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Tidspunkt: {current.data?.asOfDate} · {current.data?.timeZone}. Appens automatik starter kun ved dit valg og stopper, når appen lukkes eller adgangen bortfalder. Serverens særskilte automatik kræver serversamtykke nedenfor. Efter dvale skal manglende forekomster gennemgås. Status og genåbning starter ikke automatik.</p>
     <Button type="button" onClick={refresh} disabled={busy}>Opdatér planlægningsstatus</Button>
     <label>Skabelon<Select aria-label="Planlagt fakturaskabelon" value={templateId} disabled={busy} onChange={e => {
       setTemplateId(e.target.value); setPlan(null); setPeriods([]); setDispatchPeriod(""); setConfirmed(false); setMessage("");

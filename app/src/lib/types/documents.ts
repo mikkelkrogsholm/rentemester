@@ -8,15 +8,18 @@ export type DocumentRow = {
   source: string;
   filename: string | null;
   documentType: string;
+  internalVoucherKind?: "bank_evidenced" | "non_cash_balance_correction" | null;
   sourceBankTransactionId: number | null;
   accountingRationale: string | null;
   preparedBy: string | null;
   preparedByProgram: string | null;
+  preparedAt?: string | null;
   supplierName: string | null;
   supplierVatOrCvr: string | null;
   supplierCountryCode: string | null;
   supplierIdentifierKind: string | null;
   supplierIdentityStatus: string | null;
+  partyId?: string | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
   amountIncVat: number | null;

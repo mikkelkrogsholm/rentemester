@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { ApiError, request } from "../lib/api/_shared";
 import { Button } from "./ui";
@@ -54,9 +56,9 @@ export function NativeBackupStatus({slug}:{slug:string}) {
     finally{sending.current=false;setBusy(false);}
   }
   const validGrace=/^\d+$/.test(grace)&&Number(grace)<=365&&Number.isSafeInteger(Number(grace));
-  return <section className="card" aria-label="Backupstatus og bogføringslås">
+  return <section {...stylex.props(cockpitStyles.card)} aria-label="Backupstatus og bogføringslås">
     <h3>Backupstatus og bogføringslås</h3>
-    <p className="muted">Status gælder serverens gemte backupfiler for denne virksomhed. Den dokumenterer ikke opbevaring i skyen eller en afprøvet gendannelse. Ændringer kræver adgang til at administrere virksomheden.</p>
+    <p {...stylex.props(cockpitStyles.muted)}>Status gælder serverens gemte backupfiler for denne virksomhed. Den dokumenterer ikke opbevaring i skyen eller en afprøvet gendannelse. Ændringer kræver adgang til at administrere virksomheden.</p>
     <Button type="button" disabled={busy} onClick={()=>void load()}>Hent backupstatus</Button>
     {pending&&<p role="alert">En ændring kan være gennemført. Nye ændringer er blokeret, indtil du henter og kontrollerer backupstatus. Anmodningen gentages ikke automatisk.</p>}
     {status&&<>
@@ -69,7 +71,7 @@ export function NativeBackupStatus({slug}:{slug:string}) {
       </dl>
       <label><input type="checkbox" checked={enforced} disabled={busy||pending} onChange={e=>{setEnforced(e.target.checked);setConfirmed(false);}}/> Lås bogføring, når en backup er forfalden ud over fristen</label>
       <label>Ekstra frist i dage<input aria-label="Ekstra frist i dage" type="number" min="0" max="365" step="1" value={grace} disabled={busy||pending} onChange={e=>{setGrace(e.target.value);setConfirmed(false);}}/></label>
-      <p className="muted">Låsen er frivillig. Fristen er syv dage plus den ekstra frist, når der er ny aktivitet. Har virksomheden aldrig haft backup, regnes låsefristen fra den første aktivitet. En ny backup dannes separat ovenfor.</p>
+      <p {...stylex.props(cockpitStyles.muted)}>Låsen er frivillig. Fristen er syv dage plus den ekstra frist, når der er ny aktivitet. Har virksomheden aldrig haft backup, regnes låsefristen fra den første aktivitet. En ny backup dannes separat ovenfor.</p>
       <label><input type="checkbox" checked={confirmed} disabled={busy||pending||!validGrace} onChange={e=>setConfirmed(e.target.checked)}/> Jeg har gennemgået ændringen af bogføringslåsen.</label>
       <Button type="button" disabled={busy||pending||!confirmed||!validGrace} onClick={()=>void save()}>Gem bogføringslås</Button>
     </>}

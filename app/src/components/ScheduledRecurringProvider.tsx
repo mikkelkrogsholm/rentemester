@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useWorkspaceTransfer } from "./WorkspaceTransferProvider";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { scheduledRecurringApi } from "../lib/api/scheduled-recurring";
@@ -38,7 +40,7 @@ export function ScheduledRecurringProvider({ children }: { children: ReactNode }
   useEffect(() => { setJobs(old => old.filter(j => j.scope === scope)); setMessage(""); }, [scope]);
   const active = jobs.filter(j => j.scope === scope);
   return <Context.Provider value={controls}>
-    {active.length > 0 && <aside className="banner" role="status">Planlagte fakturaer kører, mens denne app er åben og din adgang er gyldig. Bogføring og afsendelse sker særskilt.
+    {active.length > 0 && <aside {...stylex.props(cockpitStyles.banner)} role="status">Planlagte fakturaer kører, mens denne app er åben og din adgang er gyldig. Bogføring og afsendelse sker særskilt.
       <button type="button" onClick={() => setJobs([])}>Stop automatik i denne app</button>
     </aside>}
     {message && <p role="status">{message}</p>}

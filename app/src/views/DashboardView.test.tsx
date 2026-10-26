@@ -4,16 +4,18 @@ import userEvent from "@testing-library/user-event";
 import { DashboardView } from "./DashboardView";
 import { renderAt } from "../test/render";
 import { overview, mockFetch } from "../test/fixtures";
+import type { ChangesSince } from "../lib/types";
 
-// The P&L chart needs a real <canvas> 2D context, which happy-dom lacks —
-// stub it so the view's data wiring is what the specs exercise.
+// The shared SVG renderer has its own interaction tests; these specs exercise
+// the overview data wiring and mutation recovery.
 vi.mock("../components/PnlChart", () => ({
   PnlChart: () => <div data-testid="pnl-chart" />,
 }));
 
-function overviewRoute(over = {}) {
+function overviewRoute(over = {}, changes: ChangesSince = { events: [], cursor: 0 }) {
   return {
     "GET /api/companies/acme-aps/overview": { overview: overview(over) },
+    "GET /api/companies/acme-aps/changes-since": { changes },
   };
 }
 
@@ -31,7 +33,7 @@ describe("DashboardView — Overblik", () => {
     expect(
       await screen.findByRole("heading", { name: "Overblik", level: 1 }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Omsætning")).toBeInTheDocument();
+    expect(screen.getByText("Omsætning", { selector: "[data-kpi-label]" })).toBeInTheDocument();
     expect(screen.getByText("Udgifter")).toBeInTheDocument();
     expect(screen.getByText("Resultat")).toBeInTheDocument();
   });
@@ -39,7 +41,7 @@ describe("DashboardView — Overblik", () => {
   test("shows the ground-truth result figure", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    const result = (await screen.findByText("Resultat")).closest(".kpi")!;
+    const result = (await screen.findByText("Resultat")).closest('[data-kpi]')!;
     expect(
       within(result as HTMLElement).getByText(/13\.234,82/),
     ).toBeInTheDocument();
@@ -51,7 +53,7 @@ describe("DashboardView — Overblik", () => {
     expect(await screen.findByTestId("pnl-chart")).toBeInTheDocument();
     const vat = screen
       .getByRole("heading", { name: "Moms" })
-      .closest(".status-card")!;
+      .closest('[data-card="status"]')!;
     expect(within(vat as HTMLElement).getByText(/3\.371,00/)).toBeInTheDocument();
     expect(
       within(vat as HTMLElement).getByText(/Q2 2026/),
@@ -118,12 +120,12 @@ describe("DashboardView — Overblik", () => {
     await screen.findByRole("heading", { name: "Overblik", level: 1 });
     const bankCard = screen
       .getByRole("heading", { name: "Bank" })
-      .closest(".status-card")!;
+      .closest('[data-card="status"]')!;
     // Headline figure is the actual statement balance.
-    const figure = bankCard.querySelector(".status-figure")!;
+    const figure = bankCard.querySelector('[data-figure]')!;
     expect(figure.textContent).toMatch(/23\.654,75/);
     // The note carries the booked figure and the unreconciled gap.
-    const note = bankCard.querySelector(".status-note")!;
+    const note = bankCard.querySelector('[data-note]')!;
     expect(note.textContent).toMatch(/Bogført.*41\.388,03/);
     expect(
       within(bankCard as HTMLElement).getByText(/ikke afstemt/),
@@ -160,6 +162,59 @@ describe("DashboardView — Overblik", () => {
     );
   });
 
+  test("uses the canonical attention count when readiness is blocked without an exception", async () => {
+    mockFetch(overviewRoute({ attention: { count: 1, status: "requires-attention" }, exceptions: { count: 0, rows: [], groups: [] } }));
+    renderDashboard();
+    expect(await screen.findByRole("heading", { name: "1 forhold kræver opmærksomhed" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Se krævende handlinger" })).toHaveAttribute("href", "/companies/acme-aps/opmaerksomhed");
+    const tasks = screen.getByRole("heading", { name: "Opgaver" }).closest('[data-card="status"]')!;
+    expect(within(tasks as HTMLElement).getByText("1", { selector: '[data-figure]' })).toBeInTheDocument();
+    expect(within(tasks as HTMLElement).getByRole("link", { name: "Se alle opgaver" })).toBeInTheDocument();
+  });
+
+  test("summarises first-visit changes for the owner and keeps raw audit fields under evidence", async () => {
+    window.localStorage.removeItem("rentemester:changes:local:workspace:acme-aps");
+    mockFetch(overviewRoute({}, { events: [
+      { id: 1, eventType: "document_ingest", entityType: "document", entityId: "1", message: "Raw transport detail", actor: "agent:test", createdAt: "2026-09-08T08:00:00Z" },
+      { id: 2, eventType: "journal_post", entityType: "journal", entityId: "2", message: "Raw posting detail", actor: "user:owner", createdAt: "2026-09-08T08:01:00Z" },
+    ], cursor: 2 }));
+    renderDashboard();
+    expect(await screen.findByText("2 nye ændringer siden dit seneste besøg.")).toBeInTheDocument();
+    expect(screen.getByText("1 bilagsændring")).toBeInTheDocument();
+    expect(screen.getByText("1 bogføringsændring")).toBeInTheDocument();
+    const evidence = screen.getByText("Evidens").closest("details")!;
+    expect(within(evidence as HTMLElement).getByText(/document_ingest/)).toBeInTheDocument();
+    expect(within(evidence as HTMLElement).getByText(/agent:test/)).toBeInTheDocument();
+    expect(evidence).not.toHaveAttribute("open");
+  });
+
+  test("keeps the seen receipt after the refreshed change list becomes empty", async () => {
+    const key = "rentemester:changes:local:workspace:acme-aps";
+    window.localStorage.removeItem(key);
+    const routes = overviewRoute({}, { events: [{ id: 1, eventType: "document_ingest", entityType: "document", entityId: "1", message: "Synthetic change", actor: "system:test", createdAt: "2026-01-15T00:00:00Z" }], cursor: 1 });
+    mockFetch(routes);
+    renderDashboard();
+    const markSeen = await screen.findByRole("button", { name: "Markér som set" });
+    routes["GET /api/companies/acme-aps/changes-since"] = { changes: { events: [], cursor: 1 } };
+    await userEvent.click(markSeen);
+    expect(await screen.findByText("Ingen nye data- eller statusændringer siden dit seneste besøg.")).toBeInTheDocument();
+    expect(screen.getByText("Ændringer markeret som set")).toHaveAttribute("role", "status");
+    expect(window.localStorage.getItem(key)).toBe("1");
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.every(([, init]) => !init?.method || init.method === "GET")).toBe(true);
+    window.localStorage.removeItem(key);
+  });
+
+  test("requests only later changes after a previous visit", async () => {
+    window.localStorage.setItem("rentemester:changes:local:workspace:acme-aps", "42");
+    mockFetch(overviewRoute());
+    renderDashboard();
+    expect(await screen.findByText("Ingen nye data- eller statusændringer siden dit seneste besøg.")).toBeInTheDocument();
+    const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.some((call) => String(call[0]).includes("/changes-since?after=42"))).toBe(true);
+    expect(screen.queryByText(/Første besøg/)).not.toBeInTheDocument();
+    window.localStorage.removeItem("rentemester:changes:local:workspace:acme-aps");
+  });
+
   test("an archived year renders the P&L overview under a read-only banner", async () => {
     mockFetch(
       overviewRoute({
@@ -174,7 +229,7 @@ describe("DashboardView — Overblik", () => {
       await screen.findByText(/Arkiveret regnskabsår 2025 — skrivebeskyttet/),
     ).toBeInTheDocument();
     // The KPI cards still render from the archived figures.
-    expect(screen.getByText("Omsætning")).toBeInTheDocument();
+    expect(screen.getByText("Omsætning", { selector: "[data-kpi-label]" })).toBeInTheDocument();
     expect(screen.getByText("Resultat")).toBeInTheDocument();
     // Live-only data is honestly marked unavailable rather than faked.
     expect(
@@ -203,7 +258,7 @@ describe("DashboardView — Overblik", () => {
     expect(await screen.findByText("Overskudsgrad")).toBeInTheDocument();
     expect(screen.queryByText("Bruttomargin")).not.toBeInTheDocument();
     expect(screen.getByText("Egenkapitalandel")).toBeInTheDocument();
-    const margin = screen.getByText("Overskudsgrad").closest(".key-figure")!;
+    const margin = screen.getByText("Overskudsgrad").closest('[data-key-figure]')!;
     expect(
       within(margin as HTMLElement).getByText(/74,2\s*%/),
     ).toBeInTheDocument();
@@ -212,7 +267,7 @@ describe("DashboardView — Overblik", () => {
   test("the KPI cards drill into the Resultatopgørelse, carrying the year", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    const omsaetning = (await screen.findByText("Omsætning")).closest("a")!;
+    const omsaetning = (await screen.findByText("Omsætning", { selector: "[data-kpi-label]" })).closest("a")!;
     expect(omsaetning).toHaveAttribute(
       "href",
       "/companies/acme-aps/resultatopgorelse?year=2026",
@@ -226,6 +281,12 @@ describe("DashboardView — Overblik", () => {
       await screen.findByRole("heading", { name: "Bank" })
     ).closest("a")!;
     expect(bankCard).toHaveAttribute("href", "/companies/acme-aps/bank?year=2026");
+  });
+
+  test("shows an ambiguous statement as unknown rather than booked liquidity", async () => {
+    mockFetch(overviewRoute({ bank: { balance: 1200, actualBalance: null, difference: null, bankStatementStatus: "ambiguous", bankStatementDiagnostics: ["source collision"] } }));
+    renderDashboard();
+    expect(await screen.findByText(/kan ikke bevises/)).toBeInTheDocument();
   });
 });
 

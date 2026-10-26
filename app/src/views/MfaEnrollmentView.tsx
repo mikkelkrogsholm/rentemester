@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { Button, Input } from "../components/ui";
 import { FormEvent, useState } from "react";
 import { authClient } from "../lib/auth-client";
@@ -14,7 +16,7 @@ export function VerificationRequiredView() {
     catch { /* A generic acknowledgement must not claim that delivery failed or succeeded. */ }
     finally { setBusy(false); setSubmitted(true); }
   };
-  return <AuthPanel title="Bekræft din e-mail"><p>Du skal bekræfte din e-mail, før du kan fortsætte.</p>{submitted && <p role="status">{recoveryMessage}</p>}<Button className="btn" type="button" disabled={busy} onClick={() => void resend()}>Send bekræftelsesmail igen</Button></AuthPanel>;
+  return <AuthPanel title="Bekræft din e-mail"><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Du skal bekræfte din e-mail, før du kan fortsætte.</p>{submitted && <p role="status" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{recoveryMessage}</p>}<Button xstyle={[cockpitStyles.buttonComposition]} type="button" disabled={busy} onClick={() => void resend()}>Send bekræftelsesmail igen</Button></AuthPanel>;
 }
 
 export function MfaEnrollmentView() {
@@ -43,8 +45,8 @@ export function MfaEnrollmentView() {
     finally { setBusy(false); }
   };
   return <AuthPanel title="Opsæt totrinsbekræftelse">
-    {error && <p className="banner error" role="alert">{error}</p>}
-    {!uri ? <form onSubmit={begin}><p>Tilføj Rentemester i din autentifikator-app.</p><label>Adgangskode<Input aria-label="Adgangskode" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><Button className="btn" type="submit" disabled={busy}>Start opsætning</Button></form>
-      : <form onSubmit={verify}><p>Indtast denne opsætningsadresse i din autentifikator-app:</p><code className="totp-uri">{uri}</code>{codes.length > 0 && <section className="recovery-codes" aria-label="Recovery codes"><h3>Recovery codes</h3><p>Gem dem nu. De vises ikke igen.</p><ul>{codes.map((backup) => <li key={backup}>{backup}</li>)}</ul></section>}<label>Engangskode<Input aria-label="Engangskode" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required /></label><Button className="btn" type="submit" disabled={busy}>Bekræft opsætning</Button></form>}
+    {error && <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.banner, cockpitStyles.bannerError)} role="alert">{error}</p>}
+    {!uri ? <form onSubmit={begin} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Tilføj Rentemester i din autentifikator-app.</p><label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Adgangskode<Input aria-label="Adgangskode" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required xstyle={[cockpitStyles.inputComposition]} /></label><Button xstyle={[cockpitStyles.buttonComposition]} type="submit" disabled={busy}>Start opsætning</Button></form>
+      : <form onSubmit={verify} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Indtast denne opsætningsadresse i din autentifikator-app:</p><code {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.totpUri)}>{uri}</code>{codes.length > 0 && <section {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.recoveryCodes)} aria-label="Recovery codes"><h3 {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.h3)}>Recovery codes</h3><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Gem dem nu. De vises ikke igen.</p><ul {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{codes.map((backup) => <li key={backup} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{backup}</li>)}</ul></section>}<label {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Engangskode<Input aria-label="Engangskode" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required xstyle={[cockpitStyles.inputComposition]} /></label><Button xstyle={[cockpitStyles.buttonComposition]} type="submit" disabled={busy}>Bekræft opsætning</Button></form>}
   </AuthPanel>;
 }

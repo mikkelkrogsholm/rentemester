@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useOptionalAuth } from "../lib/auth-context";
 import { ReviewedBankQueue } from "./ReviewedBankQueue";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -44,7 +46,7 @@ export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchP
   return <section aria-label="Planens regnskabsmæssige oversigt">
     <p>Bankperiode: {plan.bankFrom} – {plan.bankTo}. Bogføringsperiode: {plan.accountingFrom} – {plan.accountingTo}.</p>
     <p>Gennemgå hvert bilag, betalingen, kontoen og momsbehandlingen. Alle nye posteringer og afsluttende kontroller skal lykkes samlet. Hvis én fejler, bliver ingen af batchens nye posteringer gemt.</p>
-    <div className="table-scroll"><table className="data"><caption>Posterne i den gennemgåede plan</caption><thead><tr><th>Bilag</th><th>Bankbetaling</th><th>Konto og momsbehandling</th><th>Planens beløb</th><th>Klarhed</th></tr></thead><tbody>
+    <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><caption>Posterne i den gennemgåede plan</caption><thead><tr><th>Bilag</th><th>Bankbetaling</th><th>Konto og momsbehandling</th><th>Planens beløb</th><th>Klarhed</th></tr></thead><tbody>
       {plan.items.map(item => {
         const bank = sourceRecord(item.detail.bank), doc = sourceRecord(item.detail.document), proposed = sourceRecord(item.detail.proposed);
         const vat = sourceRecord(item.detail.vat), amounts = sourceRecord(vat.plan);
@@ -249,67 +251,202 @@ function BatchWorkflowView({ native }: { native: boolean }) {
     } finally { actionInFlight.current = false; setBusy(false); }
   }
 
-  return <section className="statement bookkeeping-workflow">
+  return <section {...stylex.props(cockpitStyles.statement)}>
     {outcome.feedback}
     {native && outcome.blocked && !run && persistedRunKey.current && <p role="status">Gemningens udfald er uafklaret. Bevar denne kørselsnøgle til manuel kontrol: <code>{persistedRunKey.current}</code>. En ny planlæsning beviser ikke, om kørslen blev gemt. Start ikke en ny gemning uden afklaring.</p>}
     <PageHeader title="Bogføringskø" description="Gennemgå bankposter og deres dokumentation, før den præcise plan godkendes og bogføres." />
-    {native && <form className="card form-grid" onSubmit={async e => {e.preventDefault();setError(undefined);try {await loadRunByKey(lookupKey);} catch(cause) {setError(cause instanceof Error ? cause.message : String(cause));}}}><label>Kørselsnøgle til status<Input aria-label="Kørselsnøgle til status" value={lookupKey} maxLength={1024} disabled={busy} onChange={e=>setLookupKey(e.target.value)} /></label><Button type="submit" variant="secondary" disabled={busy || !lookupKey}>Hent kørsel via nøgle</Button></form>}
+    {native && <form {...stylex.props(cockpitStyles.card, cockpitStyles.formGrid)} onSubmit={async e => {e.preventDefault();setError(undefined);try {await loadRunByKey(lookupKey);} catch(cause) {setError(cause instanceof Error ? cause.message : String(cause));}}}><label>Kørselsnøgle til status<Input aria-label="Kørselsnøgle til status" value={lookupKey} maxLength={1024} disabled={busy} onChange={e=>setLookupKey(e.target.value)} /></label><Button type="submit" variant="secondary" disabled={busy || !lookupKey}>Hent kørsel via nøgle</Button></form>}
     {native && <><p>Batchen bogføres samlet. Alle nye posteringer og afsluttende kontroller skal lykkes; ellers gemmes ingen af batchens nye posteringer. Historiske delvise kørsler kan læses, men kan ikke anvendes her.</p><Link to={`/companies/${slug}/batchbogfoering?mode=single`}>Opret én gennemgået bankkladde</Link></>}
-    <ol className="workflow-progress" aria-label="Bogføringens trin">
-      <li aria-current={!visible ? "step" : undefined}>1. Vis arbejdskø</li>
-      <li aria-current={visible && !run ? "step" : undefined}>2. Gennemgå plan</li>
-      <li aria-current={run && !approved ? "step" : undefined}>3. Godkend</li>
-      <li aria-current={approved && !result ? "step" : undefined}>4. Anvend</li>
-      <li aria-current={result ? "step" : undefined}>5. Kvittering</li>
+    <ol {...stylex.props(cockpitStyles.workflowProgress)} aria-label="Bogføringens trin">
+      <li aria-current={!visible ? "step" : undefined} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>1. Vis arbejdskø</li>
+      <li aria-current={visible && !run ? "step" : undefined} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>2. Gennemgå plan</li>
+      <li aria-current={run && !approved ? "step" : undefined} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>3. Godkend</li>
+      <li aria-current={approved && !result ? "step" : undefined} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>4. Anvend</li>
+      <li aria-current={result ? "step" : undefined} {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>5. Kvittering</li>
     </ol>
-    <form className="card form-grid" onSubmit={event => { event.preventDefault(); void refresh(0); }}>
+    <form {...stylex.props(cockpitStyles.card, cockpitStyles.formGrid)} onSubmit={event => { event.preventDefault(); void refresh(0); }}>
       <label>Fra dato<Input aria-label="Fra dato" type="date" value={from} disabled={busy || outcome.blocked} onChange={event => changeDate("from", event.target.value)} /></label>
       <label>Til dato<Input aria-label="Til dato" type="date" value={to} disabled={busy || outcome.blocked} onChange={event => changeDate("to", event.target.value)} /></label>
-      <label>Søg<Input aria-label="Søg" value={filters.search} disabled={busy || outcome.blocked} onChange={event => setFilter("search", event.target.value)} placeholder="Tekst, beløb, modpart eller konto" /></label>
-      <details className="full-width"><summary>Flere filtre</summary><div className="form-grid">
-        <label>Status<Select aria-label="Status" disabled={busy || outcome.blocked} value={filters.status} onChange={event => setFilter("status", event.target.value)}><option value="">Alle statusser</option>{Object.entries(STATUS_LABELS).map(([status, label]) => <option key={status} value={status}>{label}</option>)}</Select></label>
-        <label>Bankkonto<Select aria-label="Bankkonto" disabled={busy || outcome.blocked} value={filters.bankAccountId} onChange={event => setFilter("bankAccountId", event.target.value)}><option value="">Alle bankkonti</option>{bankOptions.map(bank => <option key={bank.id} value={bank.id}>{bank.name}</option>)}</Select></label>
-        <label>Modpart<Select aria-label="Modpart" disabled={busy || outcome.blocked} value={filters.partyId} onChange={event => setFilter("partyId", event.target.value)}><option value="">Alle modparter</option>{partyOptions.map(party => <option key={party.partyId} value={party.partyId}>{party.name}</option>)}</Select></label>
-        <label>Bilagskvalitet<Select aria-label="Bilagskvalitet" disabled={busy || outcome.blocked} value={filters.documentQuality} onChange={event => setFilter("documentQuality", event.target.value)}><option value="">Alle bilag</option><option value="matched">Matchet</option><option value="missing">Mangler</option></Select></label>
-        <label>Konto<Input aria-label="Konto" disabled={busy || outcome.blocked} value={filters.account} onChange={event => setFilter("account", event.target.value)} /></label>
-        <label>Momsbehandling<Input aria-label="Moms" disabled={busy || outcome.blocked} value={filters.vatTreatment} onChange={event => setFilter("vatTreatment", event.target.value)} /></label>
-        <label>Dimension<Input aria-label="Dimension" disabled={busy || outcome.blocked} value={filters.dimension} onChange={event => setFilter("dimension", event.target.value)} placeholder="dimension:medlem" /></label>
+      <label {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formGridLabel,
+					)}>Søg<Input aria-label="Søg" value={filters.search} disabled={busy || outcome.blocked} onChange={event => setFilter("search", event.target.value)} placeholder="Tekst, beløb, modpart eller konto" /></label>
+      <details {...stylex.props(cockpitStyles.fullWidth)}><summary {...stylex.props(cockpitStyles.summaryComposition)}>Flere filtre</summary><div {...stylex.props(cockpitStyles.formGrid)}>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Status<Select aria-label="Status" disabled={busy || outcome.blocked} value={filters.status} onChange={event => setFilter("status", event.target.value)}><option value="" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Alle statusser</option>{Object.entries(STATUS_LABELS).map(([status, label]) => <option key={status} value={status} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{label}</option>)}</Select></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Bankkonto<Select aria-label="Bankkonto" disabled={busy || outcome.blocked} value={filters.bankAccountId} onChange={event => setFilter("bankAccountId", event.target.value)}><option value="" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Alle bankkonti</option>{bankOptions.map(bank => <option key={bank.id} value={bank.id} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{bank.name}</option>)}</Select></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Modpart<Select aria-label="Modpart" disabled={busy || outcome.blocked} value={filters.partyId} onChange={event => setFilter("partyId", event.target.value)}><option value="" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Alle modparter</option>{partyOptions.map(party => <option key={party.partyId} value={party.partyId} {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}>{party.name}</option>)}</Select></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Bilagskvalitet<Select aria-label="Bilagskvalitet" disabled={busy || outcome.blocked} value={filters.documentQuality} onChange={event => setFilter("documentQuality", event.target.value)}><option value="" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Alle bilag</option><option value="matched" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Matchet</option><option value="missing" {...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}>Mangler</option></Select></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Konto<Input aria-label="Konto" disabled={busy || outcome.blocked} value={filters.account} onChange={event => setFilter("account", event.target.value)} /></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Momsbehandling<Input aria-label="Moms" disabled={busy || outcome.blocked} value={filters.vatTreatment} onChange={event => setFilter("vatTreatment", event.target.value)} /></label>
+        <label {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.formGridLabel,
+							)}>Dimension<Input aria-label="Dimension" disabled={busy || outcome.blocked} value={filters.dimension} onChange={event => setFilter("dimension", event.target.value)} placeholder="dimension:medlem" /></label>
       </div></details>
-      <div className="row-actions full-width"><Button type="submit" disabled={busy || !from || !to || from > to}>Vis arbejdskø</Button></div>
-      {optionError && <p className="muted full-width">{optionError}</p>}
+      <div {...stylex.props(cockpitStyles.rowActions, cockpitStyles.fullWidth)}><Button type="submit" disabled={busy || !from || !to || from > to}>Vis arbejdskø</Button></div>
+      {optionError && <p {...stylex.props(cockpitStyles.muted, cockpitStyles.fullWidth)}>{optionError}</p>}
     </form>
-    {error && <p role="alert">{error}</p>}
+    {error && <p role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>{error}</p>}
     {queue && selection && <>
-      <div className="status-grid"><div className="card"><h2>Klar i udvalg</h2><div className="status-figure">{selection.ready}</div></div><div className="card"><h2>Blokeringer i udvalg</h2><div className="status-figure">{selection.blockers}</div></div></div>
-      {queue.population.blockers > 0 && <p className="muted">Hele perioden har {queue.population.blockers} blokeringer; en filtrering kan ikke omgå dem.</p>}
-      {queue.state === "zero" ? <p>Ingen uafstemte bankposter i perioden.</p> : <>
-        <p className="muted">{queue.completeness.nextAction}</p>
-        <div className="table-scroll"><table className="data"><thead><tr><th>Dato</th><th>Banktekst og kilder</th><th className="num">Beløb</th><th>Status</th><th>Næste skridt</th></tr></thead><tbody>{queue.rows.map((row: WorkbenchRow) => <tr key={row.bankTransactionId}>
-          <td>{row.date}</td><td><strong>{row.text}</strong><details><summary>Detaljer og kilder</summary><p>Bilag: {row.document?.id ?? "mangler"} · Modpart: {row.document?.party?.name ?? (row.document?.resolutionState === "internal_no_external_party" ? "Intern post" : "Uafklaret")} · Konto: {row.proposed.account ?? "uafklaret"} · Moms: {row.proposed.vatTreatment ?? "uafklaret"} · Dimensioner: {row.proposed.dimensions.map(dimension => `${dimension.dimensionId}: ${dimension.memberId}`).join(", ") || "ingen"}</p><p><Link to={`/companies/${slug}/bank?transactionId=${row.bankTransactionId}`}>Bank og afstemning</Link>{row.drilldown.documentId && <> · <Link to={`/companies/${slug}/bilag?documentId=${row.drilldown.documentId}`}>Bilag</Link></>}{row.drilldown.partyId && <> · <Link to={`/companies/${slug}/workspace-register#party-${encodeURIComponent(row.drilldown.partyId)}`}>Modpart</Link></>}{row.drilldown.runId && <> · <Link to={`/companies/${slug}/batchbogfoering?runId=${row.drilldown.runId}`}>Gennemgået kørsel</Link></>}{row.drilldown.journalEntryId && <> · <Link to={`/companies/${slug}/posteringer?journalEntryId=${row.drilldown.journalEntryId}`}>Postering</Link></>}</p></details></td>
-          <td className="num">{typeof row.amount === "string" ? <span>{row.amount} {row.currency}</span> : <Amount value={row.amount} currency={row.currency} />}</td><td>{STATUS_LABELS[row.status] ?? "Ukendt status"}</td><td>{row.nextAction}</td>
+      <div {...stylex.props(cockpitStyles.statusGrid)}><div {...stylex.props(cockpitStyles.card)}><h2 {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h2,
+								)}>Klar i udvalg</h2><div {...stylex.props(cockpitStyles.statusFigure)}>{selection.ready}</div></div><div {...stylex.props(cockpitStyles.card)}><h2 {...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h2,
+								)}>Blokeringer i udvalg</h2><div {...stylex.props(cockpitStyles.statusFigure)}>{selection.blockers}</div></div></div>
+      {queue.population.blockers > 0 && <p {...stylex.props(cockpitStyles.muted)}>Hele perioden har {queue.population.blockers} blokeringer; en filtrering kan ikke omgå dem.</p>}
+      {queue.state === "zero" ? <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>Ingen uafstemte bankposter i perioden.</p> : <>
+        <p {...stylex.props(cockpitStyles.muted)}>{queue.completeness.nextAction}</p>
+        <div {...stylex.props(cockpitStyles.tableScroll)}><table {...stylex.props(...[cockpitStyles.tableData])}><thead {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableThead,
+										)}><tr {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+												cockpitStyles.responsiveTableTr,
+											)}><th>Dato</th><th>Banktekst og kilder</th><th {...stylex.props(cockpitStyles.num)}>Beløb</th><th>Status</th><th {...stylex.props(
+													cockpitStyles.statementTableScrollTableThComposition4,
+												)}>Næste skridt</th></tr></thead><tbody {...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.responsiveTableTbody,
+										)}>{queue.rows.map((row: WorkbenchRow) => <tr key={row.bankTransactionId} {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+													cockpitStyles.responsiveTableTr,
+												)}>
+          <td>{row.date}</td><td><strong {...stylex.props(
+															cockpitStyles.element,
+															cockpitStyles.focusVisible,
+														)}>{row.text}</strong><details><summary {...stylex.props(
+																cockpitStyles.summaryComposition,
+															)}>Detaljer og kilder</summary><p {...stylex.props(
+																cockpitStyles.element,
+																cockpitStyles.focusVisible,
+															)}>Bilag: {row.document?.id ?? "mangler"} · Modpart: {row.document?.party?.name ?? (row.document?.resolutionState === "internal_no_external_party" ? "Intern post" : "Uafklaret")} · Konto: {row.proposed.account ?? "uafklaret"} · Moms: {row.proposed.vatTreatment ?? "uafklaret"} · Dimensioner: {row.proposed.dimensions.map(dimension => `${dimension.dimensionId}: ${dimension.memberId}`).join(", ") || "ingen"}</p><p {...stylex.props(
+																cockpitStyles.element,
+																cockpitStyles.focusVisible,
+															)}><Link to={`/companies/${slug}/bank?transactionId=${row.bankTransactionId}`}>Bank og afstemning</Link>{row.drilldown.documentId && <> · <Link to={`/companies/${slug}/bilag?documentId=${row.drilldown.documentId}`} {...stylex.props(
+																			cockpitStyles.aComposition,
+																		)}>Bilag</Link></>}{row.drilldown.partyId && <> · <Link to={`/companies/${slug}/workspace-register#party-${encodeURIComponent(row.drilldown.partyId)}`} {...stylex.props(
+																			cockpitStyles.aComposition,
+																		)}>Modpart</Link></>}{row.drilldown.runId && <> · <Link to={`/companies/${slug}/batchbogfoering?runId=${row.drilldown.runId}`} {...stylex.props(
+																			cockpitStyles.aComposition,
+																		)}>Gennemgået kørsel</Link></>}{row.drilldown.journalEntryId && <> · <Link to={`/companies/${slug}/posteringer?journalEntryId=${row.drilldown.journalEntryId}`} {...stylex.props(
+																			cockpitStyles.aComposition,
+																		)}>Postering</Link></>}</p></details></td>
+          <td {...stylex.props(cockpitStyles.num)}>{typeof row.amount === "string" ? <span>{row.amount} {row.currency}</span> : <Amount value={row.amount} currency={row.currency} />}</td><td>{STATUS_LABELS[row.status] ?? "Ukendt status"}</td><td>{row.nextAction}</td>
         </tr>)}</tbody></table></div>
-        <div className="row-actions"><Button variant="secondary" type="button" disabled={busy || cursor === 0} onClick={() => refresh(Math.max(0, cursor - 25))}>Forrige</Button><Button variant="secondary" type="button" disabled={busy || queue.page.nextCursor === null} onClick={() => refresh(queue.page.nextCursor ?? 0)}>Næste</Button></div>
+        <div {...stylex.props(cockpitStyles.rowActions)}><Button variant="secondary" type="button" disabled={busy || cursor === 0} onClick={() => refresh(Math.max(0, cursor - 25))} xstyle={[cockpitStyles.statementButtonComposition]}>Forrige</Button><Button variant="secondary" type="button" disabled={busy || queue.page.nextCursor === null} onClick={() => refresh(queue.page.nextCursor ?? 0)} xstyle={[cockpitStyles.statementButtonComposition]}>Næste</Button></div>
       </>}
-      <p className="muted">Periodelukning: {queue.periodClose?.status === "available" ? `${queue.periodClose.blockers} blokeringer` : "Kontrol er ikke tilgængelig"} · <Link to={`/companies/${slug}/periodelas?from=${from}&to=${to}`}>Åbn periodeluk</Link></p>
+      <p {...stylex.props(cockpitStyles.muted)}>Periodelukning: {queue.periodClose?.status === "available" ? `${queue.periodClose.blockers} blokeringer` : "Kontrol er ikke tilgængelig"} · <Link to={`/companies/${slug}/periodelas?from=${from}&to=${to}`} {...stylex.props(cockpitStyles.aComposition)}>Åbn periodeluk</Link></p>
     </>}
-    <section className="card"><h2>Gennemgå og godkend planen</h2>
-      <p className="muted">Planen omfatter hele den valgte periode. Filtre ændrer kun visningen af arbejdskøen. Godkendelse skal foretages af en anden bruger end planlæggeren.</p>
-      {visible && <>{native ? <BookkeepingPlanSummary plan={visible} slug={slug} /> : <p>Plan-hash: <code>{visible.planHash}</code></p>}{native && <>
+    <section {...stylex.props(cockpitStyles.card)}><h2 {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h2,
+					)}>Gennemgå og godkend planen</h2>
+      <p {...stylex.props(cockpitStyles.muted)}>Planen omfatter hele den valgte periode. Filtre ændrer kun visningen af arbejdskøen. Godkendelse skal foretages af en anden bruger end planlæggeren.</p>
+      {visible && <>{native ? <BookkeepingPlanSummary plan={visible} slug={slug} /> : <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Plan-hash: <code {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.code,
+							)}>{visible.planHash}</code></p>}{native && <>
         <details><summary>Præcis plan, poster og kildebeviser</summary><p>Plan-hash: <code>{visible.planHash}</code></p><pre>{JSON.stringify(visible, null, 2)}</pre></details>
         {visible.executionPolicy !== "atomic_v1" ? <p role="alert">Denne historiske plan er kun til gennemgang. Opret en ny native plan med aktuelle kildebeviser.</p> : <label><input type="checkbox" checked={reviewed} disabled={busy || outcome.blocked} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået alle poster, kildebeviser og den præcise plan-hash</label>}
         {selfReview && <p>En anden bruger skal godkende denne plan. Planlæggeren kan ikke godkende sit eget arbejde.</p>}
       </>}</>}
-      <div className="row-actions">
+      <div {...stylex.props(cockpitStyles.rowActions)}>
         <Button variant="secondary" requiredPermission="company.draft.write" type="button" disabled={outcome.blocked || (busy || !canPersist) || (native && !reviewed)} onClick={() => requestAction("persist")}>Gem eksakt plan</Button>
         <Button variant="secondary" requiredPermission="company.review" type="button" disabled={outcome.blocked || (busy || !run || approved || Boolean(result)) || (native && (!reviewed || selfReview || visible?.executionPolicy !== "atomic_v1"))} onClick={() => requestAction("approve")}>Godkend</Button>
         <Button requiredPermission="company.ledger.post" type="button" disabled={outcome.blocked || (busy || !approved || Boolean(result)) || (native && (!reviewed || visible?.executionPolicy !== "atomic_v1"))} onClick={() => requestAction("apply")}>Anvend</Button>
       </div>
     </section>
-    {run?.state && <section className="card"><h2>Varig historik</h2>{native && <><Button variant="secondary" disabled={busy} onClick={async () => { try { const response = await api.bookkeepingBatchStatus(slug, run.runId); setRun({ ...run, state: response.state }); } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); } }}>Genlæs kørsel</Button><details><summary>Revisioner, godkendere, forsøg, kvitteringer og kontroller</summary><pre>{JSON.stringify(run.state, null, 2)}</pre></details></>}<p>Revisioner: {run.state.revisions?.length ?? 0} · Forsøg: {run.state.attempts?.length ?? 0} · Kvitteringer: {run.state.receipts?.length ?? 0}</p><p><Link to={`/companies/${slug}/batchbogfoering?runId=${run.runId}`}>Åbn kørsel #{run.runId}</Link></p></section>}
-    {result && <section className="card" role="status"><h2>Kørselsresultat</h2><p>Kørsel #{result.runId} · {result.results?.length ?? 0} behandlede poster. Kontrollér kvitteringer og afsluttende kontroller nedenfor.</p>
-      {result.results?.length > 0 && <ul>{result.results.map((item: { actionKey: string; outcome: string; error?: string }) => <li key={item.actionKey}><strong>{OUTCOME_LABELS[item.outcome] ?? "Ukendt udfald"}</strong> · {item.actionKey}{item.error && <p>{item.error}</p>}</li>)}</ul>}
-      {result.checks?.length > 0 ? <ul aria-label="Afsluttende kontroller">{result.checks.map((check: { name: string; ok: boolean }) => <li key={check.name}>{CHECK_LABELS[check.name] ?? check.name}: {check.ok ? "Bestået" : "Kræver gennemgang"}</li>)}</ul> : <p className="muted">Ingen afsluttende kontroller i dette svar.</p>}
-      <Link to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</Link>
+    {run?.state && <section {...stylex.props(cockpitStyles.card)}><h2 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h2,
+						)}>Varig historik</h2>{native && <><Button variant="secondary" disabled={busy} onClick={async () => { try { const response = await api.bookkeepingBatchStatus(slug, run.runId); setRun({ ...run, state: response.state }); } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); } }}>Genlæs kørsel</Button><details><summary>Revisioner, godkendere, forsøg, kvitteringer og kontroller</summary><pre>{JSON.stringify(run.state, null, 2)}</pre></details></>}<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Revisioner: {run.state.revisions?.length ?? 0} · Forsøg: {run.state.attempts?.length ?? 0} · Kvitteringer: {run.state.receipts?.length ?? 0}</p><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}><Link to={`/companies/${slug}/batchbogfoering?runId=${run.runId}`} {...stylex.props(cockpitStyles.aComposition)}>Åbn kørsel #{run.runId}</Link></p></section>}
+    {result && <section {...stylex.props(cockpitStyles.card)} role="status"><h2 {...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h2,
+						)}>Kørselsresultat</h2><p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kørsel #{result.runId} · {result.results?.length ?? 0} behandlede poster. Kontrollér kvitteringer og afsluttende kontroller nedenfor.</p>
+      {result.results?.length > 0 && <ul {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{result.results.map((item: { actionKey: string; outcome: string; error?: string }) => <li key={item.actionKey}><strong {...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}>{OUTCOME_LABELS[item.outcome] ?? "Ukendt udfald"}</strong> · {item.actionKey}{item.error && <p {...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}>{item.error}</p>}</li>)}</ul>}
+      {result.checks?.length > 0 ? <ul aria-label="Afsluttende kontroller" {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}>{result.checks.map((check: { name: string; ok: boolean }) => <li key={check.name}>{CHECK_LABELS[check.name] ?? check.name}: {check.ok ? "Bestået" : "Kræver gennemgang"}</li>)}</ul> : <p {...stylex.props(cockpitStyles.muted)}>Ingen afsluttende kontroller i dette svar.</p>}
+      <Link to={`/companies/${slug}/posteringer`} {...stylex.props(cockpitStyles.aComposition)}>Se bogførte posteringer</Link>
     </section>}
     {native && confirmation && <ConfirmDialog title={confirmation.action === "persist" ? "Gem præcis batchplan" : confirmation.action === "approve" ? "Godkend præcis batchplan" : "Anvend atomisk batchplan"} body={<><p>Godkendelse og bogføring er særskilte handlinger. Der sendes ingen mail.</p><BookkeepingPlanSummary plan={confirmation.plan} slug={slug} /><details><summary>Præcis plan, poster og kildebeviser</summary><pre>{JSON.stringify(confirmation.plan, null, 2)}</pre></details></>} confirmLabel={confirmation.action === "persist" ? "Gem gennemgået plan" : confirmation.action === "approve" ? "Godkend gennemgået plan" : "Bogfør gennemgået batch"} onConfirm={async () => { await perform(confirmation.action); }} onClose={() => setConfirmation(null)} onRefresh={async () => { if (run) { const response = await api.bookkeepingBatchStatus(slug, run.runId); setRun({ ...run, state: response.state }); } else if (persistedRunKey.current) await loadRunByKey(persistedRunKey.current); else await refresh(0); }} operationKey={`batch-${confirmation.action}-${confirmation.planHash}`} />}
   </section>;

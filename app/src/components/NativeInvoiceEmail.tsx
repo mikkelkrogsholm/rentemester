@@ -1,3 +1,5 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
+import * as stylex from "@stylexjs/stylex";
 import { useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ApiError } from "../lib/api/_shared";
@@ -69,7 +71,7 @@ function DeliveryPanel({ slug, invoices, archived, onChanged, scope }: Props & {
   function chooseRow(row: InvoiceEmailRow, mode: "retry" | "reconcile") {
     setActionRow(row); setAction(mode); setReason(""); setEvidence(""); setOpened(false); setReviewed(false); setMessage("");
   }
-  return <section aria-label="Maillevering" className="statement">
+  return <section aria-label="Maillevering" {...stylex.props(cockpitStyles.statement)}>
     <h2>Maillevering</h2>
     <p>Udstedelse, bogføring og mail er separate handlinger. SMTP-accept beviser ikke, at modtageren har læst eller modtaget mailen i sin indbakke.</p>
     <Button variant="secondary" onClick={state.reload}>Genlæs leveringsstatus</Button>
@@ -82,7 +84,7 @@ function DeliveryPanel({ slug, invoices, archived, onChanged, scope }: Props & {
         <label>Faktura til mail<Select aria-label="Faktura til mail" value={selected} onChange={e => { setSelected(e.target.value); setTo(invoices.find(i => String(i.documentId) === e.target.value)?.customerEmail ?? ""); setOpened(false); setReviewed(false); }}><option value="">Vælg udstedt faktura</option>{invoices.map(i => <option key={i.documentId} value={i.documentId}>{i.invoiceNo} — {i.customerName ?? "Kunde"}</option>)}</Select></label>
         <label>Modtagerens e-mail<Input type="email" maxLength={254} value={to} onChange={e => { setTo(e.target.value); setReviewed(false); }} /></label>
         <label>Mailtype<Select aria-label="Mailtype" value={kind} onChange={e => { setKind(e.target.value as "invoice" | "reminder"); setReviewed(false); }}><option value="invoice">Faktura</option><option value="reminder">Påmindelse uden gebyr eller postering</option></Select></label>
-        {invoice && <><a className="btn secondary" target="_blank" rel="noopener" href={api.invoicePdfUrl(slug, invoice.documentId)} onClick={() => setOpened(true)}>Åbn fakturaens gemte PDF</a><label><input type="checkbox" checked={reviewed} disabled={!opened} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået modtageren og den gemte PDF</label></>}
+        {invoice && <><a {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])} target="_blank" rel="noopener" href={api.invoicePdfUrl(slug, invoice.documentId)} onClick={() => setOpened(true)}>Åbn fakturaens gemte PDF</a><label><input type="checkbox" checked={reviewed} disabled={!opened} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået modtageren og den gemte PDF</label></>}
         <Button disabled={!invoice || !reviewed || !opened} onClick={prepareSend}>Gennemgå mailafsendelse</Button>
       </div>}
       <h3>Leveringshistorik</h3>
@@ -103,7 +105,7 @@ function DeliveryPanel({ slug, invoices, archived, onChanged, scope }: Props & {
           <label>Kontrolleret udfald<Select aria-label="Kontrolleret udfald" value={resolution} onChange={e => setResolution(e.target.value as "accepted" | "not_accepted")}><option value="not_accepted">SMTP-serveren accepterede ikke mailen</option><option value="accepted">SMTP-serveren accepterede mailen</option></Select></label>
           <label>Dokumentation fra SMTP-log<Textarea value={evidence} minLength={10} maxLength={4000} placeholder="Reference til den kontrollerede SMTP-log og dens resultat" onChange={e => setEvidence(e.target.value)} /></label>
           <p>Afklaringen er din dokumenterede erklæring. Den sender ingen mail. Et nyt forsøg kræver derefter en særskilt bekræftelse.</p>
-        </> : <><a className="btn secondary" target="_blank" rel="noopener" href={api.invoicePdfUrl(slug, actionRow.invoiceDocumentId)} onClick={() => setOpened(true)}>Åbn fakturaens gemte PDF før nyt forsøg</a><label><input type="checkbox" disabled={!opened} checked={reviewed} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået den faste modtager og PDF til nyt forsøg</label></>}
+        </> : <><a {...stylex.props(...[cockpitStyles.buttonComposition, cockpitStyles.element])} target="_blank" rel="noopener" href={api.invoicePdfUrl(slug, actionRow.invoiceDocumentId)} onClick={() => setOpened(true)}>Åbn fakturaens gemte PDF før nyt forsøg</a><label><input type="checkbox" disabled={!opened} checked={reviewed} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået den faste modtager og PDF til nyt forsøg</label></>}
         <Button onClick={prepareAction} disabled={!reason.trim() || (action === "retry" && (!opened || !reviewed)) || (action === "reconcile" && !evidence.trim())}>Gennemgå {action === "retry" ? "det nye forsøg" : "afklaringen"}</Button>
         <Button variant="secondary" onClick={() => setActionRow(null)}>Annullér ændring</Button>
       </div>}
@@ -145,6 +147,6 @@ function DeliveryReview({ scope, slug, allowed, intent, onClose, onResult, onRef
     {error && <Banner kind="error">{error}</Banner>}
     {marker.blocked && <UnknownMutationNotice onRefresh={onRefresh} onRelease={() => { marker.release(); setError(""); }} persistent={marker.persistent} verifyPersistence={marker.verifyPersistence} />}
     <label><input type="checkbox" checked={confirmed} disabled={busy || marker.blocked} onChange={e => setConfirmed(e.target.checked)} />Jeg bekræfter den gennemgåede handling</label>
-    <div className="modal-actions"><Button variant="secondary" disabled={busy} onClick={onClose}>Tilbage uden afsendelse</Button><Button disabled={busy || !confirmed || marker.blocked || !allowed} onClick={() => void send()}>{intent.action === "reconcile" ? "Registrér afklaring" : "Send gennemgået mail én gang"}</Button></div>
+    <div {...stylex.props(cockpitStyles.modalActions)}><Button variant="secondary" disabled={busy} onClick={onClose}>Tilbage uden afsendelse</Button><Button disabled={busy || !confirmed || marker.blocked || !allowed} onClick={() => void send()}>{intent.action === "reconcile" ? "Registrér afklaring" : "Send gennemgået mail én gang"}</Button></div>
   </Dialog>;
 }

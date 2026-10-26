@@ -1,3 +1,4 @@
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import * as stylex from "@stylexjs/stylex";
@@ -107,7 +108,7 @@ function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
   }
 
   return (
-    <Dialog title="Importér fil" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    <Dialog title="Importér fil" onClose={onClose} busy={busy} initialFocusRef={closeRef} xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}>
     {outcome.feedback}
       {guard.confirmation}
 
@@ -117,8 +118,12 @@ function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
           <ImportReceipt done={done} closeRef={closeRef} onClose={onClose} />
         ) : (
           <>
-            <div className="modal-body">
-              <p>
+            <div {...stylex.props(cockpitStyles.modalBody)}>
+              <p {...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}>
                 Vælg en eksportfil fra dit tidligere bogføringssystem —
                 Rentemester genkender selv formatet. Understøttet nu: Dinero
                 «Kontakter» (Kontakter.csv) med kunder og leverandører.
@@ -128,7 +133,7 @@ function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
 
-            <label className="modal-field">
+            <label {...stylex.props(cockpitStyles.modalField)}>
               Fil
               <Input
                 type="file"
@@ -138,12 +143,12 @@ function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
               />
             </label>
             {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+              <p {...stylex.props(...[cockpitStyles.muted, viewStyles.site0])} >
                 Valgt: {fileName}
               </p>
             )}
 
-            <label className="modal-field modal-checkbox">
+            <label {...stylex.props(cockpitStyles.modalField, cockpitStyles.modalCheckbox)}>
               <Input
                 type="checkbox"
                 checked={enrichCvr}
@@ -153,18 +158,18 @@ function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
               Berig danske virksomheder med adresse m.m. fra CVR-registeret
             </label>
 
-            <div className="modal-actions">
+            <div {...stylex.props(cockpitStyles.modalActions)}>
               <Button variant="secondary"
                 type="button"
-                className="btn secondary"
+
                 onClick={onClose}
-                disabled={busy}
+                disabled={busy} xstyle={[cockpitStyles.buttonComposition]}
               >
                 Annullér
               </Button>
               <Button requiredPermission="company.ledger.post"
                 type="button"
-                className="btn"
+
                 onClick={handleImport}
                 disabled={outcome.blocked || (busy || !content)}
               >
@@ -202,13 +207,21 @@ function ImportReceipt({
 
   return (
     <>
-      <div className="modal-body">
-        <p>
+      <div {...stylex.props(cockpitStyles.modalBody)}>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.modalBodyP,
+					)}>
           {done.detected
             ? `Genkendt som ${done.detected.label}.`
             : "Filen blev importeret."}
         </p>
-        <p>
+        <p {...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.modalBodyP,
+					)}>
           {created} {created === 1 ? "kontakt" : "kontakter"} oprettet (
           {s.customersCreated}{" "}
           {s.customersCreated === 1 ? "kunde" : "kunder"},{" "}
@@ -245,12 +258,12 @@ function ImportReceipt({
         </Banner>
       )}
 
-      <div className="modal-actions">
+      <div {...stylex.props(cockpitStyles.modalActions)}>
         <Button
           type="button"
-          className="btn"
+
           ref={closeRef}
-          onClick={onClose}
+          onClick={onClose} xstyle={[cockpitStyles.buttonComposition]}
         >
           Luk
         </Button>
