@@ -1,0 +1,863 @@
+{
+  "baseImages": {
+    "runtime": "debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587",
+    "rustBuilder": "rust:1.94.1-slim-bookworm@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2",
+    "webBuilder": "oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6"
+  },
+  "files": [
+    {
+      "executable": false,
+      "path": "THIRD-PARTY-NOTICES.txt",
+      "sha256": "a2fa85ce866bb9970cd47384a4792d302f707d19a85d54dcb7bfc22b35153475",
+      "size": 1619
+    },
+    {
+      "executable": false,
+      "path": "bin/cargo.txt",
+      "sha256": "f53c9c2502e421a5a8d0c7948809c3de6e6d41a0189ddc23dfe4c661b11f7806",
+      "size": 36
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/LICENSE",
+      "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93",
+      "size": 1177
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/VERSION",
+      "sha256": "9ea21b933a52e57cd585f5a543c16155513f8195a158b0526f3a3c50fc3431cd",
+      "size": 37
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/args.gn",
+      "sha256": "3199e87f0b72a96a454bb5a5f880ea33ee8c6b4a0a5db4511eb0cec4a35e5ab5",
+      "size": 253
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/artifact.json",
+      "sha256": "c4ba4b28f14cf478d72a8934d0bbe464a0da30cbb330aec1e98d1326ae992695",
+      "size": 354
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/lib/libpdfium.so",
+      "sha256": "6252fce3da45e7f0dc5b27f4d4e1a1456ca3f7734cdb04f927967df772127478",
+      "size": 7834256
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/abseil.txt",
+      "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+      "size": 11361
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/agg23.txt",
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+      "size": 725
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/fast_float.txt",
+      "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6",
+      "size": 1079
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/freetype.txt",
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+      "size": 6741
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/icu.txt",
+      "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+      "size": 27718
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/lcms.txt",
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+      "size": 1353
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/libjpeg_turbo.ijg",
+      "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+      "size": 12799
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/libjpeg_turbo.md",
+      "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+      "size": 5620
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/libopenjpeg.txt",
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+      "size": 1794
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/libpng.txt",
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+      "size": 5345
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/libtiff.txt",
+      "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+      "size": 1139
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/llvm-libc.txt",
+      "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47",
+      "size": 15140
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/pdfium.txt",
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+      "size": 12818
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/simdutf.txt",
+      "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f",
+      "size": 1059
+    },
+    {
+      "executable": false,
+      "path": "bin/pdfium/licenses/zlib.txt",
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+      "size": 1332
+    },
+    {
+      "executable": true,
+      "path": "bin/rentemester-mcp",
+      "sha256": "82b5af8ce7a2da7279873f429cf03e3520c12466e8256bd6b6e59c5ac67ff93c",
+      "size": 22186880
+    },
+    {
+      "executable": true,
+      "path": "bin/rentemester-pdf-worker",
+      "sha256": "451b5d6359332bfc7d5a0256f4fdef30b36a563e3b754d1bebe461b8a57edd2c",
+      "size": 5162032
+    },
+    {
+      "executable": true,
+      "path": "bin/rentemester-rust",
+      "sha256": "b0e2b524e7902a6f61c7fd630c355e248fc97d4116b9d9f013f4678884a12898",
+      "size": 24865640
+    },
+    {
+      "executable": true,
+      "path": "bin/rentemester-server",
+      "sha256": "f1b87d06f6c20653eed4d5f3a0402243798b903ea298dde5ced72dcccf0f638e",
+      "size": 56391464
+    },
+    {
+      "executable": false,
+      "path": "bin/rustc.txt",
+      "sha256": "05ab2838f795d30dee11b3a4078deded9525e5158abc7ec591be1f8a5bc8f2ce",
+      "size": 197
+    },
+    {
+      "executable": false,
+      "path": "debian-packages.txt",
+      "sha256": "5ff23e30a1575abfc19714c2cdfc2c3b770aead82dc2c1d6cd071043958e9759",
+      "size": 2902
+    },
+    {
+      "executable": false,
+      "path": "linked-libraries.txt",
+      "sha256": "82c8db5da5fbd1c21b531cd5c568027acd7ce36be155417b15806fc9b214361a",
+      "size": 1029
+    },
+    {
+      "executable": false,
+      "path": "native-mcp-catalogue.json",
+      "sha256": "fbb42060aeb133737cdb328419e414ddc518feb24a892d545912f05a428b9c61",
+      "size": 764194
+    },
+    {
+      "executable": false,
+      "path": "native-server.json",
+      "sha256": "fa76d80bd8be4dffa882567a8add578cc974d71f4f2f7fef2f5787dec53b279c",
+      "size": 137
+    },
+    {
+      "executable": false,
+      "path": "web/chunk-4e1mjnxp.js",
+      "sha256": "06fe325bf20fb52d2ae7bc4d46dd10ae2e2d70fbc9ae7299800f1257b42590f3",
+      "size": 1848566
+    },
+    {
+      "executable": false,
+      "path": "web/chunk-4e1mjnxp.js.map",
+      "sha256": "a7474935c8b2e9a966c313ee05e75485c339a5ab080f3f8da6cdea1fb23dc0d6",
+      "size": 5721794
+    },
+    {
+      "executable": false,
+      "path": "web/chunk-jt95pfwt.css",
+      "sha256": "c658657c64be1690d1b7b891242fe79696a23d5c9b75b11ad89979270eb0c09c",
+      "size": 549182
+    },
+    {
+      "executable": false,
+      "path": "web/index.html",
+      "sha256": "29ad18494e1d74099eb0b4c8a78bf3a97aa288353ec6fe14db3e12a35571efc0",
+      "size": 741
+    },
+    {
+      "executable": false,
+      "path": "web/licenses/ibm-plex-mono.txt",
+      "sha256": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f",
+      "size": 5299
+    },
+    {
+      "executable": false,
+      "path": "web/licenses/ibm-plex-sans.txt",
+      "sha256": "d0283623ef57e722fd0eb688a8041589670c608ab780cd3612d06ba6f153d3fd",
+      "size": 4429
+    },
+    {
+      "executable": false,
+      "path": "web/licenses/source-serif-4.txt",
+      "sha256": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+      "size": 4314
+    },
+    {
+      "executable": false,
+      "path": "web/stylex-fb5ae53142308d22.css",
+      "sha256": "fb5ae53142308d2204394ddfe01cff4119a6727f7132c9284606036d1c32edd7",
+      "size": 8954
+    }
+  ],
+  "format": "rentemester-rust-build/1",
+  "inputs": {
+    "cargoLockSha256": "bc013952594d15900e9ba428307bd613e015754c16bcc82899e8b2a7a7d39960",
+    "entrypointSha256": "66d7248fd7250073108a4b1a6b66059be059df919800c3fe665a6ea44a764e56",
+    "pdfPinsSha256": "e4a02f731da3bea8926deaf694233f83c5e29b3923f040a79a275e9e07f02897",
+    "vendor": [
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/.gitignore",
+        "sha256": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
+        "size": 26
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/Cargo.lock",
+        "sha256": "98613943806be93e12c818c0b612824435f8f8460e9c4acf42fd564b18d37d4c",
+        "size": 7318
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/Cargo.toml",
+        "sha256": "ce2c66104c29834e8c5e875f765e2ddfc577b9366b1ccef80f3680c2039948b3",
+        "size": 2380
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/Cargo.toml.orig",
+        "sha256": "f7a4bf06e3f2b8ad8f1e559637b84c19fec5ad3daee05c42b75fb596c3c188e9",
+        "size": 2084
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/LICENSE",
+        "sha256": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+        "size": 1067
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/README.md",
+        "sha256": "17a4e830209b642f0bfebd4b3f581fa4fea24efca5e500e10eee58760de99969",
+        "size": 16177
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/Upgrade.md",
+        "sha256": "d151a67d4bbb1a5a300d084d210d6cd238d833a6d4bd5d958ae7469a9deccb36",
+        "size": 1853
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/bindgen-bindings/bindgen_3.34.1.rs",
+        "sha256": "4f94d0192ec890b62773368cb026daf219f5182094952c007d28ed6d3812fd68",
+        "size": 110115
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/bindgen-bindings/bindgen_3.34.1_ext.rs",
+        "sha256": "44ff11f09886f8c41494f65043ac2ddba4e476bb17a81fe93a8c10c7bffdf4a8",
+        "size": 283926
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/build.rs",
+        "sha256": "269acf1864de5046ac5b77814926d41fe24108b0d027f635812a1db3c965f81f",
+        "size": 34354
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlcipher/LICENSE",
+        "sha256": "ea4fcb309f14a22065e1ea45362d494d320012249ed865fe9c7c0946db754131",
+        "size": 1467
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlcipher/bindgen_bundled_version.rs",
+        "sha256": "971ec006a2405a7cc443ec69500b1b6fbe45cf3f6ababf7f7815e9a3edbd6dbe",
+        "size": 124545
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlcipher/sqlite3.c",
+        "sha256": "ea0bf0b08f688ca5d9312b2e33e7f81b3f4ae54b5016fb062ae1f2632a30a1b9",
+        "size": 9616148
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlcipher/sqlite3.h",
+        "sha256": "91190701218669c31d2f56835c98882074ad051f2d38afee9f5b9c35d8406149",
+        "size": 673726
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlcipher/sqlite3ext.h",
+        "sha256": "ea81fb7bd05882e0e0b92c4d60f677b205f7f1fbf085f218b12f0b5b3f0b9e48",
+        "size": 38632
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/bindgen_bundled_version.rs",
+        "sha256": "5b5a37a74dc728fb0bcd041867eb577c03c95e2fe46285262c589a3b1cd4bbac",
+        "size": 126484
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/bindgen_bundled_version_ext.rs",
+        "sha256": "445cc206e04a87131d4690742517ee7dcc3a430319bac847ce5e9586f98ee301",
+        "size": 317964
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/sqlite3.c",
+        "sha256": "52e5b617185361d6e10454726ee1333e8485eacb4296a5298be335899300fe9b",
+        "size": 9507972
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/sqlite3.h",
+        "sha256": "9e69a1353a4288450b0d5239ede11fc7f1f4c8e5eb07491fc8317eacb5b7de7e",
+        "size": 690725
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/sqlite3ext.h",
+        "sha256": "ac9645e5c9ff0cf176efdd6e75cb5e98f46295d38e02db5c4d208826a39ab4be",
+        "size": 39175
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/sqlite3/wasm32-wasi-vfs.c",
+        "sha256": "b95842044da2b8777876b7d3fef8c9711e8c201fb4a4255dbac98729a456bb5d",
+        "size": 21443
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/src/error.rs",
+        "sha256": "9685678a8752bf47e5e39923bb2cf466cc312a25848d91cc206bf89eaccfb7d6",
+        "size": 6573
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/src/lib.rs",
+        "sha256": "f61d8e306e11357479e20999f7b7adc5f3dbaea40cd17361853574001cf79360",
+        "size": 826
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/wrapper.h",
+        "sha256": "b78f576f7eeabf316e183d476b0f16344b6897680b4df47628d3ce38c0aa979a",
+        "size": 21
+      },
+      {
+        "executable": false,
+        "path": "libsqlite3-sys-0.38.2/wrapper_ext.h",
+        "sha256": "fa7a53fea99318ee29d75e6d5fab4d7ed26e9599803268e6a24396265f2a6f3a",
+        "size": 25
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/.gitignore",
+        "sha256": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
+        "size": 26
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/Cargo.lock",
+        "sha256": "087abe4a9e80d908a449c7f04020c5b1f86d18e441b93f17037158f74a0741d0",
+        "size": 38441
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/Cargo.toml",
+        "sha256": "0caf77d1ad70851eaa13e249ac4c8eca6fa4cc197da17f05a5a08ecf4cde3b0e",
+        "size": 7506
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/Cargo.toml.orig",
+        "sha256": "eca265d7eed3284bb4847cbb491ecc347a2dbce9abc8436f82746d5cd4515a39",
+        "size": 7319
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/LICENSE",
+        "sha256": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+        "size": 1067
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/README.md",
+        "sha256": "17a4e830209b642f0bfebd4b3f581fa4fea24efca5e500e10eee58760de99969",
+        "size": 16177
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/benches/cache.rs",
+        "sha256": "30459d8d7f65dd684909a53590f9be32e2e545a0775cd93ee0ce85dd08410955",
+        "size": 633
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/benches/exec.rs",
+        "sha256": "a9f5e209dbfc73d1ee574608e0105a6c317b83f73d873ea8afd8b60e07cbc8d7",
+        "size": 541
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/bindings.md",
+        "sha256": "bf8198fd6ac58c41ca22f3494644a41e95b055b280727b81fa35a9783bca935b",
+        "size": 11067
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/load_extension.rs",
+        "sha256": "f6577107bf9deb2cb899726a7bb4f19781de1068048701d25dcf2595940ebb4f",
+        "size": 638
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/loadable_extension.rs",
+        "sha256": "2a4beb4ac13d605085f5efc631ca0b137f657c18366343e3158d5b118e3824af",
+        "size": 1536
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/owning_rows.rs",
+        "sha256": "1300fd8251693af3e72f87409359d3d46fcd79bf5e025359fcbce86366486d90",
+        "size": 708
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/owning_statement.rs",
+        "sha256": "e0e06674c65b48dcd7c7ec30fc9ac6cc54a80b84d19b24268d6771c271bd8fa6",
+        "size": 907
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/persons/README.md",
+        "sha256": "27da552441890ae2410992b6602affb7663395ebd93f9ced2488b89456d44ec8",
+        "size": 1102
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/examples/persons/main.rs",
+        "sha256": "23d96842f66098b4a5065651b8b17f45a8d4f4ed77de2fb588e4b153fc994b65",
+        "size": 1420
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/auto_extension.rs",
+        "sha256": "48de9160b6243fd3b2f0018ee021bab894811b59e7c0f1d478d36d3a55932b2c",
+        "size": 2158
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/backup.rs",
+        "sha256": "595d5bc77e3a720791760a3ea61a8cd246a0ad134a317e03030a259ef069eb20",
+        "size": 14863
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/bind.rs",
+        "sha256": "83af46d93696bc9eb3ee714ba7375804d62f90d324c3d0e0929fec8a54cc5660",
+        "size": 2216
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/blob/mod.rs",
+        "sha256": "11c83bb35ec8617b405c844d6f31f0bbd43c9f2de668a7cc65179ffbc6ff27c0",
+        "size": 19240
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/blob/pos_io.rs",
+        "sha256": "ba6a1f3d61ecb6bd79d8bf67193a6eaf8754673d5a5a01fbee82c949fb3c6a0f",
+        "size": 10738
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/busy.rs",
+        "sha256": "5917828189828dce9db93e023f08273b00c1e6e7f2edf7535a62c3fcacc0775d",
+        "size": 5426
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/cache.rs",
+        "sha256": "aabbbd6f1cb4b1961d1df4e60545def916a2564183a9c6fdf51257713523cca0",
+        "size": 10263
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/collation.rs",
+        "sha256": "d6dbe8e79711c6e6f84436e85f7358bacc0dd16493dbe7f82fa44d2538b42c99",
+        "size": 8382
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/column.rs",
+        "sha256": "269241f960502475b02f763d981d6f79a2d2dcec40fea9bf434ad69c2750176a",
+        "size": 19326
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/config.rs",
+        "sha256": "cf0792d7411a5353e21f9f80bf461e66c3bbc431fdcb73c8e28f8c5e52844b1c",
+        "size": 7571
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/context.rs",
+        "sha256": "9ee8c931e03328e64d420ecd159f9a331bb722813b9bf6e0f8e0a31abe0cbc4b",
+        "size": 2121
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/error.rs",
+        "sha256": "255d048cddaf8e385b65761f06bc0cf4868ce508ee724858871e31ba41e10b9e",
+        "size": 20825
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/functions.rs",
+        "sha256": "082875c1f2cd760da0c2590301526e85f748a8aceaab13508daaf1bf1eeb7084",
+        "size": 41658
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/hooks/mod.rs",
+        "sha256": "55d96cf39ffd83c54fe8410f7eb2c396e4964c7cb75c3273b066e56c7426557b",
+        "size": 32586
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/hooks/preupdate_hook.rs",
+        "sha256": "92093b0d5255566684072d0b7fe4aa9fa8a87f39d1f5232dfbd129e24cd855ea",
+        "size": 13467
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/inner_connection.rs",
+        "sha256": "a2088e3274a33b2e6b4fc17ec16054f8e3add78c3ba898042b76096a9abf71af",
+        "size": 14991
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/lib.rs",
+        "sha256": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+        "size": 81945
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/limits.rs",
+        "sha256": "fd42eee65eb2a1db7e5ba0dafc545546f4ae419dbb432d9b80d789d4324d2005",
+        "size": 7102
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/load_extension_guard.rs",
+        "sha256": "40ea2c61e74abf3d1cbe37d882222e2152ec4359de88f699d862e06d0da5e4fa",
+        "size": 1294
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/params.rs",
+        "sha256": "5cac2041f4fa8cb479997cbe9d0f716b577dde145e346ec3597d97de0cee6629",
+        "size": 17684
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/pragma.rs",
+        "sha256": "80c34e9281093b3df54268f7c8fe21673751e047ba566f70844b6566bc7f2359",
+        "size": 12860
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/raw_statement.rs",
+        "sha256": "9c7369e238a409fe6855a2df006e5bbe31d114a8b1c01695dcc71b4dbc2a950e",
+        "size": 8435
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/row.rs",
+        "sha256": "ca0d543ee7004db58d365bdf45708aa59d9c81ef20e20b4da40ab3eea6aaa492",
+        "size": 21490
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/serialize.rs",
+        "sha256": "2d825edbf9b470f1f8930de5752b841dd08258845b173cb6b1d9fe86ab639122",
+        "size": 6954
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/session.rs",
+        "sha256": "b8658cf33cd47ddbb6b63d51fd827db9ec48a4c24aa47d91d200a286679c7555",
+        "size": 29480
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/statement.rs",
+        "sha256": "cc53dcc82755d97a48f2fa3b33d4d65c0f06fa45af0896441100e2467bfcc478",
+        "size": 48168
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/trace.rs",
+        "sha256": "7efc4190d25c2d6e0b9f33c7a742f26d1324aab8c86f6ccefde65f9e8e623262",
+        "size": 13928
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/transaction.rs",
+        "sha256": "ed5d3f13f057415607efaff56eb4e8a46f985a7f4c1c7b7899063604b6809cfd",
+        "size": 27151
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/chrono.rs",
+        "sha256": "6bb8964a304c7ccf9dee5cf0ce23386ce3fa3722d41c12ea6093cbe9ae3553ad",
+        "size": 11131
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/from_sql.rs",
+        "sha256": "321815d30a5987df0b775975d70b06b46d258ac32b0b7a095b589063d18af087",
+        "size": 15865
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/jiff.rs",
+        "sha256": "bc883f6c62effd09927bb6f169e2d245dad755c9b74145cfaecd607fe6d9198c",
+        "size": 6806
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/mod.rs",
+        "sha256": "ef7836b82f36f6a87e2af14b71b9b2f6dae05eeeeba5d7ded9480193e0ac08c3",
+        "size": 16145
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/serde_json.rs",
+        "sha256": "421e0f13ddb4d198db92b794c0e0798a875a59092399ca0cdd0d12abc51a5b5e",
+        "size": 4559
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/time.rs",
+        "sha256": "7277cc235ad96fb9f6238ded9ce5795e051b0cfb9c273de1d3999dc2e4e832ca",
+        "size": 17661
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/to_sql.rs",
+        "sha256": "0cc8452d1ae0f531918b672bc20384beeba4941c66b6a0619466b78be0b7cddd",
+        "size": 17563
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/url.rs",
+        "sha256": "dff51bb12720bd7148cb86c43479444210c72fa354d0ff7a94ce9fc5cfbfb7c2",
+        "size": 2681
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/value.rs",
+        "sha256": "a567e66156a4895332ed481ad362128ea770219b1886c7cccb520993fd0cf92d",
+        "size": 3772
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/types/value_ref.rs",
+        "sha256": "7ccb0e379a067ded70ae6754209e3e824bc465cc260bca2f3e57245a65082562",
+        "size": 11497
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/unlock_notify.rs",
+        "sha256": "14d1989cba499bc95945b11b827f5180296c081a814b2c84826e01ed3739e4c5",
+        "size": 4151
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/util/mod.rs",
+        "sha256": "9d7a788bd1cf0e30df36905586c4222ddde6a994b0faa11b0736bb853fecd53f",
+        "size": 1300
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/util/param_cache.rs",
+        "sha256": "754971ed9204b0a6e718d2d60408a161cd4fc53fa9cd361c1134f436f7a91253",
+        "size": 2003
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/util/small_cstr.rs",
+        "sha256": "fa180c2f5b4ead9671991659cd58f2eb819bd6f5f2ff948c170610731adf2298",
+        "size": 4654
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/util/sqlite_string.rs",
+        "sha256": "60b013b7fc0088d429205715cf054dceb52a5e66d5664e612cacddee3371f42a",
+        "size": 8703
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/version.rs",
+        "sha256": "392b327ecd9acc1d289f92abb671104b065e232368456b0bbd5bfaca96d90950",
+        "size": 758
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/vtab/array.rs",
+        "sha256": "9d65a6c411818518badbc1baeb36a3b225b59f944ecc3fa04ad212fc9790fa20",
+        "size": 6429
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/vtab/csvtab.rs",
+        "sha256": "0e5246872678ffab8300d8ff763d67c1a3f3da8777f1fbb6462194d34868ec54",
+        "size": 12989
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/vtab/mod.rs",
+        "sha256": "d8152c1026bff6cf5097ec8146aaa289631ab60728c9dedaebc9c0e64cd0ee3c",
+        "size": 51001
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/vtab/series.rs",
+        "sha256": "5ca96868e72f01928fc4f240063a9ef8e9376a2c446047e3b6d7f035e7d7f2c7",
+        "size": 11507
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/src/vtab/vtablog.rs",
+        "sha256": "f1e2789ef3edf118d62bbbfa67e9c90f9da4c237151137b19fc8944840b312ca",
+        "size": 11843
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/test.csv",
+        "sha256": "3f5649d7b9f80468999b80d4d0e747c6f4f1bba80ade792689eeb4359dc1834a",
+        "size": 72
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/tests/auto_ext.rs",
+        "sha256": "f157b0f686eb93098026d6d7b71104caf5dab094b5b7cc134b68c9915d3e856b",
+        "size": 1368
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/tests/config_log.rs",
+        "sha256": "3482b49890d6830b3ac18cf165f35f9dd5daea94bceff509b4b4255931514978",
+        "size": 1068
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/tests/deny_single_threaded_sqlite_config.rs",
+        "sha256": "a4e4f89cde3a0fc1405f0175d6d41bc970e2ed541d6a4804000571694a7d4c43",
+        "size": 848
+      },
+      {
+        "executable": false,
+        "path": "rusqlite-0.40.2/tests/vtab.rs",
+        "sha256": "06fa4a865993c74f7a54608f50fab515e11530b3b5c639d3e8ab555b564997a9",
+        "size": 2907
+      },
+      {
+        "executable": false,
+        "path": "sqlite-identity.patch",
+        "sha256": "04f88063fc01a77e36981dadffba0a6667f9b69f0efa34cfa789c5a02fa1bdb7",
+        "size": 4378
+      },
+      {
+        "executable": false,
+        "path": "sqlite-provenance.json",
+        "sha256": "521ec4723fe80d605a99850984b4fa1a5050188a7de6dada81458289cef3bedd",
+        "size": 10080
+      }
+    ],
+    "webLockSha256": "af03f4f22d536eb84e8e86bf7c5552fd3c1dbcc122d14bbdd8f9b617c071cb4f"
+  },
+  "pdf": {
+    "artifact": {
+      "archive": "pdfium-linux-arm64.tgz",
+      "library": "lib/libpdfium.so",
+      "librarySha256": "6252fce3da45e7f0dc5b27f4d4e1a1456ca3f7734cdb04f927967df772127478",
+      "sha256": "ee7f7b7d5468958336a818c1cd580bdd20972846b7377b13f9a923d92d1d4674",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7881/pdfium-linux-arm64.tgz"
+    },
+    "binding": {
+      "crate": "pdfium-render",
+      "defaultFeatures": false,
+      "features": [
+        "pdfium_7881"
+      ],
+      "version": "0.9.4"
+    },
+    "release": "chromium/7881"
+  },
+  "product": {
+    "builtAt": "2026-10-26T02:03:44Z",
+    "gitCommit": "0aba5cc24bae2a1e8a377b01066100b886e5945a",
+    "sourceDateEpoch": 1792980224,
+    "sourceDirty": false,
+    "version": "0.2.0"
+  },
+  "schemas": {
+    "apiEpoch": 1,
+    "companySchema": 36,
+    "controlSchema": 32
+  },
+  "toolchain": {
+    "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8",
+    "target": "aarch64-unknown-linux-gnu"
+  }
+}

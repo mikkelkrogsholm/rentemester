@@ -1,0 +1,18 @@
+{
+  "acceptance": [
+    {
+      "check": "current32_recovery",
+      "key": "660199addc41c8f721faf58d6e8ee4a3b8a5bc465ba0737176995b77ba7fea29",
+      "argv": [
+        "python3",
+        "/tmp/issue725-native32-recovery.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue725-native32-recovery-20261026T021854.328822000/acceptance/660199addc41c8f721faf58d6e8ee4a3b8a5bc465ba0737176995b77ba7fea29/current32_recovery.log"
+    }
+  ],
+  "message": "Agreed checks passed on the combined result. Deliver the result; no further tasks. publish can fast-forward the original checkout.",
+  "phase": "done",
+  "result_branch": "sgd/issue725-native32-recovery-20261026T021854.328822000/integration"
+}

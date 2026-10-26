@@ -81,5 +81,136 @@
     "scripts/rust/run-hosted-auth.py": "d33a606c837d224e30fb9725ff2f0c07a299cb0714222e5a0c49a313ccb2a76e",
     "scripts/rust/run-rust-container.py": "271167bc9b9a8eb404950752391e172f43c8a582279f994333122eeb18dea73f",
     "scripts/rust/check-native-container-restore.ts": "00c00115f856b6a9895ceb6314682ba298a001a29f644bbcea949e21eb2b32ab"
-  }
+  },
+  "currentNative32Candidate": {
+    "checkedAt": "2026-10-26T02:28:41.611366+00:00",
+    "artifact": {
+      "imageId": "sha256:db7f093f75c49178a4f3034c92dc0046a9b36ffa345c0cfba47b6c3c2fe1939e",
+      "sourceCommit": "0aba5cc24bae2a1e8a377b01066100b886e5945a",
+      "version": "0.2.0",
+      "tag": "rentemester-rust:issue725-0aba5cc2",
+      "nativeBuildInfo": {
+        "apiEpoch": 1,
+        "companySchema": 36,
+        "controlSchema": 32,
+        "format": "rentemester-native-server/1",
+        "platform": "linux-aarch64",
+        "version": "0.2.0"
+      },
+      "packageProofSha256": "a9dbbb192a3eab3e15460220453f430f4e43184734a741823740a163ed4f1fdd",
+      "registryPublished": false,
+      "promotionPerformed": false,
+      "runtimeInterpreterAndCompilerAbsenceVerified": true,
+      "actualNonRootUid": 10001
+    },
+    "buildSgdRun": "issue725-native32-arm64-20261026T020839.608223000",
+    "recoverySgdRun": "issue725-native32-recovery-20261026T021854.328822000",
+    "sgdPhase": "done",
+    "scope": "Required matching LinuxARM64 physical32 candidate after custody correction; existing image build/package tools and retained signed R17 archive. Previous31 image/proofs remain historical, no original financial/provider factory replay.",
+    "review": "Reviewed clean0aba5cc2 image labels/build identity/exact39files/modes/live binaries/448MCP tools and no JS/compiler runtime; actual standalone server build-info control32/company36/API1. Independently verified frozen archive/trust, fresh nonroot/read-only/resource-limited target with no source/signer mount, normal new-owner MFA/recovery login and exact original journal/VAT/reference/bytes, ordinary restart. All8financial/period row multisets including multiplicity and17originalauditprefix plus1restoreboundary preserved; actual Linuxrootidentity/custody32 persisted across restart. Zero new financial/provider actions. Owned target/volumes cleaned after retained proof/private snapshots.",
+    "recoverySummary": {
+      "archiveSha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c",
+      "trustedKeySha256": "e0c1015757b6915ea5db5dfa2396d555aed9b88fa94251a853df155af34f6e63",
+      "sourceDeviceMounted": false,
+      "sourceServerStopped": true,
+      "physicalControlSchema": 32,
+      "first": {
+        "passed": true,
+        "freshOrdinaryMfa": true,
+        "ordinaryUnusedRecoveryLogin": true,
+        "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+        "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+        "exactLedgerVatReportsOriginals": true,
+        "truthfulRecordedUi": true,
+        "financialOrProviderWrites": 0,
+        "identityWrites": 5
+      },
+      "firstStopExit": 0,
+      "reopen": {
+        "passed": true,
+        "freshOrdinaryMfa": false,
+        "ordinaryUnusedRecoveryLogin": true,
+        "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+        "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+        "exactLedgerVatReportsOriginals": true,
+        "truthfulRecordedUi": true,
+        "financialOrProviderWrites": 0,
+        "identityWrites": 2
+      },
+      "targetStopExit": 0,
+      "actualLinuxNamespace32BindingVerified": true,
+      "exactArchivedTables": {
+        "accounting_periods": 1,
+        "period_close_reviews": 1,
+        "period_close_decisions": 2,
+        "journal_entries": 1,
+        "journal_lines": 3,
+        "bank_transactions": 1,
+        "bank_journal_reconciliations": 1,
+        "documents": 1
+      },
+      "originalAuditPrefixRows": 17,
+      "restoreBoundaryAuditRows": 1,
+      "sourceUnchanged": true,
+      "ownedContainersAndVolumesRemoved": true
+    },
+    "proofs": {
+      "reopen-proof.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/reopen-proof.json",
+        "sha256": "a0203074ad53ba80b87482dd8feaed48808cc46622ad0a186f152b3a60321a8c"
+      },
+      "reported-recovery.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/reported-recovery.json",
+        "sha256": "91abab790d655d36f7d5d0bb3adf9f4dd387d5fdc6d1d052c4b241e7de39e938"
+      },
+      "build-identity.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/build-identity.json",
+        "sha256": "74e80128031b12e65ab37a08406074fdc3696d7c7f46010072002bd89c7dda01"
+      },
+      "current32_recovery.log": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/current32_recovery.log",
+        "sha256": "05f4d3737ed895d78aed5df18ea141f1fcc2435dbe91b1a4d31d2fd90d8bdab2"
+      },
+      "first-proof.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/first-proof.json",
+        "sha256": "ed1dc78bef665dfcae7407f2d3ad253e4362cd8dcf8b3adbcba4b2b13a4977dd"
+      },
+      "recovery-receipt.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/recovery-receipt.json",
+        "sha256": "669c4b8649d965f4f2d0a284c93f8cbf85898a49bf2c4aa7192ef04181dfeac9"
+      },
+      "package.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/package.json",
+        "sha256": "a9dbbb192a3eab3e15460220453f430f4e43184734a741823740a163ed4f1fdd"
+      },
+      "build-package-receipt.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/build-package-receipt.json",
+        "sha256": "3740c320f953c9efbc364f7a4f7fb0014071f27801e4f2dd4bf709d38780174c"
+      },
+      "image.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/image.json",
+        "sha256": "3a24ade8e49671381dc3c87e653c6a1ad29193490e8a47b094b4bd282eebc707"
+      },
+      "package.log": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/package.log",
+        "sha256": "9197303dc1621dc0c8600743a8fae423cb2f4148fdb55c60bf140f4ea5352ae6"
+      },
+      "build.log": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/build.log",
+        "sha256": "abd21ee105c9908a0aab71c2e9c200e66461cdb091af17394f7c80536fc898dd"
+      },
+      "runtime-absence.json": {
+        "path": "docs/architecture/rust-target/implementation/acceptance725/schema32/runtime-absence.json",
+        "sha256": "7ecf2fb63c3a3ea621918fbea26e027953cbf0aadde74d43ebe27b59a8b6ec3d"
+      }
+    },
+    "limits": [
+      "This is a local immutable image ID, not a reviewed registry digest or production promotion.",
+      "No independent AMD64/cold reproducibility, registry SBOM/attestation or human/provider approval claimed; original main-source and final native gates remain.",
+      "Prior HTTPS/security/domain proofs remain attached to their recorded revisions; this new qualification covers current32 package and source-free signed recovery/read/restart only.",
+      "No full operator/native RTO or complete J01-J07/platform qualification inferred from component timestamps."
+    ],
+    "wholeIssueAccepted": false
+  },
+  "primaryCurrentCandidate": "currentNative32Candidate; original6ffe5703 image remains revision-bound physical31 evidence"
 }

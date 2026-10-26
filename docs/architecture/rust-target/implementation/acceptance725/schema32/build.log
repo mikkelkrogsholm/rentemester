@@ -1,0 +1,302 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.rust
+#1 transferring dockerfile: 7.82kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#2 DONE 0.9s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/rust:1.94.1-slim-bookworm@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#5 DONE 0.6s
+
+#6 [internal] load metadata for docker.io/library/debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+#6 DONE 0.6s
+
+#7 [internal] load .dockerignore
+#7 transferring context: 217B done
+#7 DONE 0.0s
+
+#8 [rust-toolchain 1/1] FROM docker.io/library/rust:1.94.1-slim-bookworm@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2
+#8 DONE 0.0s
+
+#9 [runtime-base 1/3] FROM docker.io/library/debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+#9 DONE 0.0s
+
+#10 [web  1/13] FROM docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#10 DONE 0.0s
+
+#11 [internal] load build context
+#11 transferring context: 55.82MB 0.6s done
+#11 DONE 0.6s
+
+#12 [web  2/13] WORKDIR /build
+#12 CACHED
+
+#13 [rust-build  1/15] WORKDIR /source
+#13 CACHED
+
+#14 [rust-build  2/15] COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
+#14 CACHED
+
+#15 [rust-build  3/15] COPY .cargo/ ./.cargo/
+#15 CACHED
+
+#16 [web  3/13] COPY package.json bun.lock bunfig.toml ./
+#16 DONE 0.1s
+
+#17 [rust-build  4/15] COPY crates/ ./crates/
+#17 DONE 0.2s
+
+#18 [web  4/13] COPY app/package.json app/bunfig.toml ./app/
+#18 DONE 0.0s
+
+#19 [rust-build  5/15] COPY protocol/ ./protocol/
+#19 DONE 0.0s
+
+#20 [rust-build  6/15] COPY rules/dk/ ./rules/dk/
+#20 DONE 0.0s
+
+#21 [rust-build  7/15] COPY sources/ ./sources/
+#21 DONE 0.0s
+
+#22 [rust-build  8/15] COPY examples/import-synthetic.csv ./examples/import-synthetic.csv
+#22 DONE 0.0s
+
+#23 [rust-build  9/15] COPY docs/architecture/rust-target/implementation/baseline/inventory.json ./docs/architecture/rust-target/implementation/baseline/inventory.json
+#23 DONE 0.0s
+
+#24 [rust-build 10/15] COPY vendor/ ./vendor/
+#24 DONE 0.1s
+
+#25 [web  5/13] RUN bun install --frozen-lockfile
+#25 0.120 bun install v1.4.0 (34cbb9a40)
+#25 ...
+
+#26 [rust-build 11/15] COPY src/core/migrations/ ./src/core/migrations/
+#26 DONE 0.0s
+
+#27 [rust-build 12/15] COPY src/core/workspace-migrations/ ./src/core/workspace-migrations/
+#27 DONE 0.0s
+
+#28 [rust-build 13/15] COPY scripts/rust/cargo-guard.sh scripts/rust/cargo-guard.py ./scripts/rust/
+#28 DONE 0.0s
+
+#29 [rust-build 14/15] COPY scripts/rust/pdf-worker/artifacts.json ./scripts/rust/pdf-worker/artifacts.json
+#29 DONE 0.0s
+
+#30 [rust-build 15/15] RUN --mount=type=cache,id=issue725-b6c58539-arm64,target=/build,sharing=private     test -n "issue725-b6c58539" && test -n "1792980224"     && test "2" = 2     && case "false" in true|false) ;; *) exit 2 ;; esac     && printf '%s' "0aba5cc24bae2a1e8a377b01066100b886e5945a" | grep -Eq '^[0-9a-f]{40}$'     && test -n "0.2.0"     && export RENTEMESTER_BUILD_REVISION="0aba5cc24bae2a1e8a377b01066100b886e5945a"     && umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker     && mkdir /out     && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/     && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
+#30 0.166 info: syncing channel updates for 1.94.1-aarch64-unknown-linux-gnu
+#30 1.171 info: latest update on 2026-03-26 for version 1.94.1 (e408947bf 2026-03-25)
+#30 1.180 info: downloading component clippy
+#30 ...
+
+#25 [web  5/13] RUN bun install --frozen-lockfile
+#25 3.115 
+#25 3.115 + @biomejs/biome@2.5.10
+#25 3.115 + @types/bun@1.4.0
+#25 3.115 + typescript@5.9.3
+#25 3.115 + @better-auth/api-key@1.7.1
+#25 3.115 + @modelcontextprotocol/sdk@1.29.0
+#25 3.115 + better-auth@1.7.1
+#25 3.115 + pdfjs-dist@6.2.108
+#25 3.115 + zod@4.4.3
+#25 3.115 
+#25 3.115 246 packages installed [3.00s]
+#25 DONE 3.6s
+
+#31 [web  6/13] COPY app/ ./app/
+#31 DONE 0.0s
+
+#32 [web  7/13] COPY protocol/ ./protocol/
+#32 DONE 0.0s
+
+#33 [web  8/13] COPY DESIGN.md ./
+#33 DONE 0.0s
+
+#34 [web  9/13] COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
+#34 DONE 0.0s
+
+#35 [web 10/13] COPY src/design ./src/design
+#35 DONE 0.0s
+
+#36 [web 11/13] COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
+#36 DONE 0.0s
+
+#30 [rust-build 15/15] RUN --mount=type=cache,id=issue725-b6c58539-arm64,target=/build,sharing=private     test -n "issue725-b6c58539" && test -n "1792980224"     && test "2" = 2     && case "false" in true|false) ;; *) exit 2 ;; esac     && printf '%s' "0aba5cc24bae2a1e8a377b01066100b886e5945a" | grep -Eq '^[0-9a-f]{40}$'     && test -n "0.2.0"     && export RENTEMESTER_BUILD_REVISION="0aba5cc24bae2a1e8a377b01066100b886e5945a"     && umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker     && mkdir /out     && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/     && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
+#30 ...
+
+#37 [web 12/13] COPY crates/rentemester-desktop/src/design_tokens.rs ./crates/rentemester-desktop/src/design_tokens.rs
+#37 DONE 0.0s
+
+#38 [web 13/13] RUN bun run cockpit:build
+#38 0.111 $ bun run --filter rentemester-cockpit build
+#38 0.115 rentemester-cockpit build: $ bun run ../scripts/design-tokens.ts --check
+#38 ...
+
+#30 [rust-build 15/15] RUN --mount=type=cache,id=issue725-b6c58539-arm64,target=/build,sharing=private     test -n "issue725-b6c58539" && test -n "1792980224"     && test "2" = 2     && case "false" in true|false) ;; *) exit 2 ;; esac     && printf '%s' "0aba5cc24bae2a1e8a377b01066100b886e5945a" | grep -Eq '^[0-9a-f]{40}$'     && test -n "0.2.0"     && export RENTEMESTER_BUILD_REVISION="0aba5cc24bae2a1e8a377b01066100b886e5945a"     && umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker     && mkdir /out     && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/     && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
+#30 3.915    Compiling libsqlite3-sys v0.38.2 (/source/vendor/libsqlite3-sys-0.38.2)
+#30 3.918    Compiling rentemester-engine v0.2.0 (/source/crates/rentemester-engine)
+#30 ...
+
+#38 [web 13/13] RUN bun run cockpit:build
+#38 10.82 rentemester-cockpit build: Exited with code 0
+#38 DONE 10.9s
+
+#39 [pdf-artifact 1/3] RUN apt-get install -y --no-install-recommends python3 && apt-get clean
+#39 CACHED
+
+#40 [pdf-artifact 2/3] COPY scripts/rust/pdf-worker/ /fetch/
+#40 CACHED
+
+#41 [runtime-base 2/3] COPY --from=rust-toolchain /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+#41 CACHED
+
+#42 [pdf-artifact 3/3] RUN case "arm64" in amd64) artifact=pdfium-linux-x64.tgz ;; arm64) artifact=pdfium-linux-arm64.tgz ;; *) exit 2 ;; esac     && python3 /fetch/fetch.py --artifact "$artifact" --destination /pdfium
+#42 CACHED
+
+#43 [runtime-base 3/3] RUN printf '' > /etc/apt/sources.list.d/debian.sources     && printf '%s\n' 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20261005T000000Z bookworm main' > /etc/apt/sources.list     && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && apt-get clean     && dpkg-query -W > /debian-packages.txt
+#43 CACHED
+
+#30 [rust-build 15/15] RUN --mount=type=cache,id=issue725-b6c58539-arm64,target=/build,sharing=private     test -n "issue725-b6c58539" && test -n "1792980224"     && test "2" = 2     && case "false" in true|false) ;; *) exit 2 ;; esac     && printf '%s' "0aba5cc24bae2a1e8a377b01066100b886e5945a" | grep -Eq '^[0-9a-f]{40}$'     && test -n "0.2.0"     && export RENTEMESTER_BUILD_REVISION="0aba5cc24bae2a1e8a377b01066100b886e5945a"     && umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker     && mkdir /out     && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/     && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
+#30 32.86    Compiling rentemester-client v0.2.0 (/source/crates/rentemester-client)
+#30 38.09    Compiling rusqlite v0.40.2 (/source/vendor/rusqlite-0.40.2)
+#30 39.29    Compiling rentemester-storage v0.2.0 (/source/crates/rentemester-storage)
+#30 54.58    Compiling rentemester-runtime v0.2.0 (/source/crates/rentemester-runtime)
+#30 79.81    Compiling rentemester-application v0.2.0 (/source/crates/rentemester-application)
+#30 120.4    Compiling rentemester-host v0.2.0 (/source/crates/rentemester-host)
+#30 134.7    Compiling rentemester-server v0.2.0 (/source/crates/rentemester-server)
+#30 141.7    Compiling rentemester-pdf-worker v0.2.0 (/source/crates/rentemester-pdf-worker)
+#30 149.6    Compiling rentemester-mcp v0.2.0 (/source/crates/rentemester-mcp)
+#30 149.9 warning: unused imports: `company_schema` and `tool`
+#30 149.9  --> crates/rentemester-mcp/src/backup_governance.rs:1:20
+#30 149.9   |
+#30 149.9 1 | use crate::tools::{company_schema, tool};
+#30 149.9   |                    ^^^^^^^^^^^^^^  ^^^^
+#30 149.9   |
+#30 149.9   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+#30 149.9 
+#30 149.9 warning: unused import: `serde::Deserialize`
+#30 149.9  --> crates/rentemester-mcp/src/backup_governance.rs:3:5
+#30 149.9   |
+#30 149.9 3 | use serde::Deserialize;
+#30 149.9   |     ^^^^^^^^^^^^^^^^^^
+#30 149.9 
+#30 149.9 warning: unused import: `json`
+#30 149.9  --> crates/rentemester-mcp/src/backup_governance.rs:4:25
+#30 149.9   |
+#30 149.9 4 | use serde_json::{Value, json};
+#30 149.9   |                         ^^^^
+#30 149.9 
+#30 149.9 warning: unused import: `crate::public_einvoice::original717_tool_result`
+#30 149.9   --> crates/rentemester-mcp/src/digisense_received.rs:28:9
+#30 149.9    |
+#30 149.9 28 | pub use crate::public_einvoice::original717_tool_result;
+#30 149.9    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#30 149.9 
+#30 164.6    Compiling rentemester-cli v0.2.0 (/source/crates/rentemester-cli)
+#30 166.7 warning: function `accepts` is never used
+#30 166.7   --> crates/rentemester-cli/src/regulatory.rs:94:8
+#30 166.7    |
+#30 166.7 94 | pub fn accepts(args: &[String]) -> bool {
+#30 166.7    |        ^^^^^^^
+#30 166.7    |
+#30 166.7    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+#30 166.7 
+#30 166.7 warning: function `preflight` is never used
+#30 166.7    --> crates/rentemester-cli/src/regulatory.rs:161:8
+#30 166.7     |
+#30 166.7 161 | pub fn preflight(args: &[String]) -> Result<bool, crate::dated_reports::Output> {
+#30 166.7     |        ^^^^^^^^^
+#30 166.7 
+#30 166.7 warning: function `binding_refusal` is never used
+#30 166.7    --> crates/rentemester-cli/src/regulatory.rs:165:8
+#30 166.7     |
+#30 166.7 165 | pub fn binding_refusal(args: &[String]) -> crate::dated_reports::Output {
+#30 166.7     |        ^^^^^^^^^^^^^^^
+#30 166.7 
+#30 206.3 warning: `rentemester-mcp` (bin "rentemester-mcp") generated 4 warnings (run `cargo fix --bin "rentemester-mcp" -p rentemester-mcp` to apply 4 suggestions)
+#30 209.2 warning: function `endpoint` is never used
+#30 209.2  --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+#30 209.2   |
+#30 209.2 2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+#30 209.2   |        ^^^^^^^^
+#30 209.2   |
+#30 209.2   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+#30 209.2 
+#30 228.9 warning: `rentemester-cli` (bin "rentemester-rust") generated 3 warnings
+#30 262.4 warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+#30 262.4     Finished `release` profile [optimized] target(s) in 4m 18s
+#30 DONE 262.6s
+
+#44 [identity  1/15] COPY --from=rust-build /out/ /bundle/bin/
+#44 DONE 0.1s
+
+#45 [identity  2/15] COPY --from=web /build/app/dist/ /bundle/web/
+#45 DONE 0.0s
+
+#46 [identity  3/15] COPY --from=pdf-artifact /pdfium/ /bundle/bin/pdfium/
+#46 DONE 0.0s
+
+#47 [identity  4/15] COPY --from=runtime-base /debian-packages.txt /bundle/debian-packages.txt
+#47 DONE 0.0s
+
+#48 [identity  5/15] COPY scripts/release/rust-third-party-notices.txt /bundle/THIRD-PARTY-NOTICES.txt
+#48 DONE 0.0s
+
+#49 [identity  6/15] COPY Cargo.toml Cargo.lock package.json bun.lock /identity-source/
+#49 DONE 0.0s
+
+#50 [identity  7/15] COPY app/package.json /identity-source/app/package.json
+#50 DONE 0.0s
+
+#51 [identity  8/15] COPY vendor/ /identity-source/vendor/
+#51 DONE 0.0s
+
+#52 [identity  9/15] COPY scripts/rust/pdf-worker/artifacts.json /identity-source/scripts/rust/pdf-worker/artifacts.json
+#52 DONE 0.0s
+
+#53 [identity 10/15] COPY scripts/rust/pdf-worker/license-inventory.json /identity-source/scripts/rust/pdf-worker/license-inventory.json
+#53 DONE 0.0s
+
+#54 [identity 11/15] COPY scripts/release/pdfium-license-approval.json /identity-source/scripts/release/pdfium-license-approval.json
+#54 DONE 0.0s
+
+#55 [identity 12/15] COPY scripts/release/rust-third-party-notices.txt /identity-source/scripts/release/rust-third-party-notices.txt
+#55 DONE 0.0s
+
+#56 [identity 13/15] COPY scripts/release/rust-entrypoint.sh /identity-source/scripts/release/rust-entrypoint.sh
+#56 DONE 0.0s
+
+#57 [identity 14/15] COPY scripts/release/create-rust-build-identity.py /create-identity.py
+#57 DONE 0.0s
+
+#58 [identity 15/15] RUN for file in /bundle/bin/rentemester-* /bundle/bin/pdfium/lib/libpdfium.so; do       linked=$(ldd "$file") || exit 1;       printf '%s\n' "$linked" | sed -E 's/[[:space:]]*\(0x[0-9a-f]+\)//g' >> /bundle/linked-libraries.txt;     done     && ! grep -q 'not found' /bundle/linked-libraries.txt     && /bundle/bin/rentemester-server --build-info > /bundle/native-server.json     && /bundle/bin/rentemester-mcp --catalogue > /bundle/native-mcp-catalogue.json     && python3 /create-identity.py --source /identity-source --bundle /bundle          --commit "0aba5cc24bae2a1e8a377b01066100b886e5945a" --version "0.2.0" --epoch "1792980224" --dirty "false"          --rust-image "rust:1.94.1-slim-bookworm@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2" --web-image "oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6" --runtime-image "debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587"
+#58 DONE 0.4s
+
+#59 [runtime 1/4] COPY --from=identity /bundle/ /opt/rentemester/
+#59 DONE 0.1s
+
+#60 [runtime 2/4] COPY --chmod=0555 scripts/release/rust-entrypoint.sh /usr/local/bin/rentemester-entrypoint
+#60 DONE 0.0s
+
+#61 [runtime 3/4] RUN test -n "0.2.0"     && printf '%s' "0aba5cc24bae2a1e8a377b01066100b886e5945a" | grep -Eq '^[0-9a-f]{40}$'     && test -n "1792980224"     && mkdir -p /state /config && chown 10001:10001 /state && chmod 0700 /state     && for file in /opt/rentemester/bin/rentemester-* /opt/rentemester/bin/pdfium/lib/libpdfium.so; do          linked=$(ldd "$file") || exit 1;          if printf '%s' "$linked" | grep -q 'not found'; then exit 1; fi;        done
+#61 DONE 0.1s
+
+#62 [runtime 4/4] WORKDIR /opt/rentemester
+#62 DONE 0.0s
+
+#63 exporting to image
+#63 exporting layers
+#63 exporting layers 0.2s done
+#63 writing image sha256:db7f093f75c49178a4f3034c92dc0046a9b36ffa345c0cfba47b6c3c2fe1939e done
+#63 naming to docker.io/library/rentemester-rust:issue725-0aba5cc2 done
+#63 DONE 0.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/w369dky36pyle76f564juzy4a

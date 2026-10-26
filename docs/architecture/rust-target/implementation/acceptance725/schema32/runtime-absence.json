@@ -1,0 +1,16 @@
+{
+  "imageId": "sha256:db7f093f75c49178a4f3034c92dc0046a9b36ffa345c0cfba47b6c3c2fe1939e",
+  "sourceCommit": "0aba5cc24bae2a1e8a377b01066100b886e5945a",
+  "actualNonRootUid": 10001,
+  "absentRuntimeExecutables": [
+    "bun",
+    "node",
+    "python",
+    "python3",
+    "cargo",
+    "rustc"
+  ],
+  "network": "none",
+  "readOnlyRoot": true,
+  "exitCode": 0
+}

@@ -1,0 +1,31 @@
+{
+  "acceptance": [
+    {
+      "check": "build",
+      "key": "365c4adda47fae5fbce653ead908fe90458f33f504c7a838f250a4d6198eeb50",
+      "argv": [
+        "python3",
+        "/tmp/issue725-check.py",
+        "build"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue725-native32-arm64-20261026T020839.608223000/acceptance/365c4adda47fae5fbce653ead908fe90458f33f504c7a838f250a4d6198eeb50/build.log"
+    },
+    {
+      "check": "package",
+      "key": "49a92baa33fff7f76cc70f01b968c0d8a866ff2d15c8add8956b4beda4784ac1",
+      "argv": [
+        "python3",
+        "/tmp/issue725-check.py",
+        "package"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue725-native32-arm64-20261026T020839.608223000/acceptance/49a92baa33fff7f76cc70f01b968c0d8a866ff2d15c8add8956b4beda4784ac1/package.log"
+    }
+  ],
+  "message": "Agreed checks passed on the combined result. Deliver the result; no further tasks. publish can fast-forward the original checkout.",
+  "phase": "done",
+  "result_branch": "sgd/issue725-native32-arm64-20261026T020839.608223000/integration"
+}

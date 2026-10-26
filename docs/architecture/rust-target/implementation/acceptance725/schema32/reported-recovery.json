@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "sgdRun": "issue725-native32-recovery-20261026T021854.328822000",
+  "imageId": "sha256:db7f093f75c49178a4f3034c92dc0046a9b36ffa345c0cfba47b6c3c2fe1939e",
+  "runtimeSource": "0aba5cc24bae2a1e8a377b01066100b886e5945a",
+  "archiveSha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c",
+  "trustedKeySha256": "e0c1015757b6915ea5db5dfa2396d555aed9b88fa94251a853df155af34f6e63",
+  "sourceDeviceMounted": false,
+  "sourceServerStopped": true,
+  "newFinancialOrProviderEffects": false,
+  "purpose": "Necessary new native32 Linux candidate qualification, not reconstruction of old reports; retained signed archive only, no original financial/provider factory",
+  "physicalControlSchema": 32,
+  "whole725Accepted": false,
+  "startedAt": "2026-10-26T02:20:23.451481+00:00",
+  "browserHelperSha256": "123ac79cc1ddaa4f5f329ea3148d8d807a045e1b09a99991d3647cb62f916ae0",
+  "runnerSha256": "7396bde4f9a9e66c068f29e5d3f5082bae5ac0bc88bc19369da57126d16ae1c1",
+  "independentPackagedVerification": {
+    "ok": true,
+    "format": "rentemester-native-backup/1",
+    "companies": 1,
+    "scope": "signed_inventory_current_schema_integrity_journal_chain_and_originals"
+  },
+  "restoredHealth": {
+    "authRequired": true,
+    "backend": "rust",
+    "deploymentProfile": "hosted",
+    "ok": true,
+    "readiness": {
+      "code": "current",
+      "status": "ready"
+    },
+    "service": "rentemester",
+    "setupRequired": false,
+    "workspaceReady": true
+  },
+  "rootIdentityBeforeRestart": "65025:4388663",
+  "first": {
+    "passed": true,
+    "freshOrdinaryMfa": true,
+    "ordinaryUnusedRecoveryLogin": true,
+    "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+    "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+    "exactLedgerVatReportsOriginals": true,
+    "truthfulRecordedUi": true,
+    "financialOrProviderWrites": 0,
+    "identityWrites": 5
+  },
+  "firstStopExit": 0,
+  "reopenHealth": {
+    "authRequired": true,
+    "backend": "rust",
+    "deploymentProfile": "hosted",
+    "ok": true,
+    "readiness": {
+      "code": "current",
+      "status": "ready"
+    },
+    "service": "rentemester",
+    "setupRequired": false,
+    "workspaceReady": true
+  },
+  "reopen": {
+    "passed": true,
+    "freshOrdinaryMfa": false,
+    "ordinaryUnusedRecoveryLogin": true,
+    "reportedReference": "SYNTHETIC-J04-EXTERNAL-RECEIPT-NOT-SUBMITTED",
+    "packetHash": "af3898ec7ab3db5b2c6d20aa5a73a40191b7b63c776cdfd2f07a121cb3811228",
+    "exactLedgerVatReportsOriginals": true,
+    "truthfulRecordedUi": true,
+    "financialOrProviderWrites": 0,
+    "identityWrites": 2
+  },
+  "rootIdentityAfterRestart": "65025:4388663",
+  "targetStopExit": 0,
+  "actualLinuxNamespace32BindingVerified": true,
+  "exactArchivedTables": {
+    "accounting_periods": 1,
+    "period_close_reviews": 1,
+    "period_close_decisions": 2,
+    "journal_entries": 1,
+    "journal_lines": 3,
+    "bank_transactions": 1,
+    "bank_journal_reconciliations": 1,
+    "documents": 1
+  },
+  "originalAuditPrefixRows": 17,
+  "restoreBoundaryAuditRows": 1,
+  "sourceUnchanged": true,
+  "ownedContainersAndVolumesRemoved": true,
+  "finishedAt": "2026-10-26T02:20:57.161826+00:00"
+}
