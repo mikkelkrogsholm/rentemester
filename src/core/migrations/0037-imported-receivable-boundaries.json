@@ -1,0 +1,5 @@
+{
+  "id": 37,
+  "name": "rentemester-imported-receivable-boundaries-v37",
+  "sql": "CREATE TABLE IF NOT EXISTS imported_receivable_boundaries (\n  dinero_import_attempt_id INTEGER PRIMARY KEY REFERENCES dinero_import_attempts(id),\n  control_date TEXT NOT NULL CHECK(length(control_date)=10),\n  schedule_hash TEXT NOT NULL CHECK(length(schedule_hash)=64),\n  source_document_hash TEXT NOT NULL CHECK(length(source_document_hash)=64),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n);\nCREATE INDEX IF NOT EXISTS idx_imported_receivable_boundaries_control_date ON imported_receivable_boundaries(control_date);\nCREATE TRIGGER IF NOT EXISTS imported_receivable_boundaries_no_update BEFORE UPDATE ON imported_receivable_boundaries BEGIN SELECT RAISE(ABORT, 'imported receivable boundaries are append-only'); END;\nCREATE TRIGGER IF NOT EXISTS imported_receivable_boundaries_no_delete BEFORE DELETE ON imported_receivable_boundaries BEGIN SELECT RAISE(ABORT, 'imported receivable boundaries are append-only'); END;\n"
+}

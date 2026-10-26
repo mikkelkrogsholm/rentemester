@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // "Åbne exceptions" — owner-facing list of exception rows with severity pill,
 // plain-Danish type heading and (when present) required-action guidance.
 
@@ -26,7 +27,7 @@ const EXCEPTION_SEVERITY_PILL: Record<string, "danger" | "warning" | "neutral"> 
 export function exceptionsSection(input: DashboardInput): string {
   const result = input.exceptions;
   if (result.count === 0 || result.rows.length === 0) {
-    return `<div class="empty-state">Ingen åbne exceptions</div>`;
+    return `<div ${documentAttr("empty")}>Ingen åbne exceptions</div>`;
   }
   // Stable order: highest severity first, then by id so the render is
   // deterministic regardless of the row order the CLI passes in.
@@ -46,20 +47,20 @@ export function exceptionsSection(input: DashboardInput): string {
     // SPA shows the whole message; the static dashboard must too. (#270)
     const action = (row.requiredAction ?? "").trim();
     const actionHtml = action
-      ? `\n      <div class="detail"><strong>Sådan løser du den:</strong> ${escapeHtml(action)}</div>`
+      ? `\n      <div ${documentAttr("detail")}><strong>Sådan løser du den:</strong> ${escapeHtml(action)}</div>`
       : "";
-    return `  <div class="status-row">
+    return `  <div ${documentAttr("statusRow")}>
     <div>
-      <div class="label">${escapeHtml(exceptionTypeDa(row.type))}</div>
-      <div class="detail">${escapeHtml(row.message)}</div>${actionHtml}
+      <div ${documentAttr("label")}>${escapeHtml(exceptionTypeDa(row.type))}</div>
+      <div ${documentAttr("detail")}>${escapeHtml(row.message)}</div>${actionHtml}
     </div>
-    <div><span class="pill ${pillClass}">${escapeHtml(severityDa(row.severity, "title"))}</span></div>
+    <div><span ${documentAttr(pillClass === "danger" ? "pillDanger" : pillClass === "warning" ? "pillWarning" : "pillNeutral")}>${escapeHtml(severityDa(row.severity, "title"))}</span></div>
   </div>`;
   }).join("\n");
   const overflowRow = overflow > 0
-    ? `<div class="muted" style="margin-top: var(--space-xs); font-size: 13px;">… og ${overflow} yderligere</div>`
+    ? `<div ${documentAttr("overflow")}>… og ${overflow} yderligere</div>`
     : "";
-  return `<div class="section">
+  return `<div ${documentAttr("section")}>
 ${items}
 </div>
 ${overflowRow}`;

@@ -3,7 +3,7 @@
  * This module never migrates or writes a legal-entity ledger. Different
  * currencies are deliberately not compared and no tolerance is inferred.
  */
-import { Database, type SQLQueryBindings } from "bun:sqlite";
+import { type Database, type SQLQueryBindings } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import type { ResolveActorInput } from "./actor";
 import { resolveActor } from "./actor";
@@ -13,6 +13,7 @@ import { fromOre, toOre } from "./money";
 import { companyPaths } from "./paths";
 import { companyRootForSlug, listWorkspaceCompanies } from "./workspace";
 import { insertWorkspaceAudit } from "./workspace-control";
+import { openCurrentLedgerReadOnly } from "./ledger-inspection";
 import { parseGroupAsOf, readCurrentGroupManifest, type EffectiveInterval, type GroupManifest } from "./group-manifest";
 
 const IDENTIFIER = /^[a-z][a-z0-9-]{0,63}$/;
@@ -240,7 +241,7 @@ export type IntercompanyReconciliationRow =
 
 function readSide(workspaceRoot: string, companySlug: string, accountNos: readonly string[], position: IntercompanyPosition, asOf: string): Side {
   const root = companyRootForSlug(workspaceRoot, companySlug);
-  const db = new Database(companyPaths(root).db, { readonly: true });
+  const db = openCurrentLedgerReadOnly(companyPaths(root).db);
   try {
     db.exec("PRAGMA query_only = ON; PRAGMA foreign_keys = ON");
     assertSchemaCompatibility(db);

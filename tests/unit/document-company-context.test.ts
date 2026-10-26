@@ -9,6 +9,7 @@ import { setDocumentCompanyContext, validSimplifiedPurchaseCompanyContext } from
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { bookExpenseFromBank } from "../../src/core/expense-booking";
 import { registerPayable } from "../../src/core/payables";
+import { reviewIncompleteStandardPurchaseVatEvidence, validIncompleteStandardPurchaseVatEvidenceReview } from "../../src/core/document-purchase-vat-evidence-review";
 
 const simplifiedMetadata: DocumentMetadata = {
   source: "email",
@@ -60,7 +61,96 @@ function recordContext(fixture: ReturnType<typeof setup>) {
   });
 }
 
+function accountingEvidenceSnapshot(db: ReturnType<typeof openDb>) {
+  return {
+    documents: db.query("SELECT * FROM documents ORDER BY id").all(),
+    bank: db.query("SELECT * FROM bank_transactions ORDER BY id").all(),
+    journals: db.query("SELECT * FROM journal_entries ORDER BY id").all(),
+    lines: db.query("SELECT * FROM journal_lines ORDER BY id").all(),
+    audit: db.query("SELECT * FROM audit_log ORDER BY id").all(),
+    payables: db.query("SELECT * FROM payables ORDER BY id").all(),
+    sequences: db.query("SELECT * FROM sequences ORDER BY kind, scope").all(),
+    contexts: db.query("SELECT * FROM document_company_contexts ORDER BY document_id").all(),
+    reviews: db.query("SELECT * FROM document_purchase_vat_evidence_reviews ORDER BY id").all(),
+  };
+}
+
 describe("auditable company context for simplified Danish purchase invoices (#570)", () => {
+  for (const workflow of ["expense", "payable"] as const) {
+    for (const scenario of ["supplier", "context-and-rate", "printed-recipient-and-rate", "reviewed", "tampered-payment"] as const) {
+      test(`incomplete purchase preserves ${workflow} gates for ${scenario}`, () => {
+        const fixture = setup(`incomplete-order-${workflow}-${scenario}`);
+        try {
+          const { db } = fixture;
+          const metadata: DocumentMetadata = {
+            ...simplifiedMetadata,
+            invoiceNo: "SYN-INCOMPLETE-ORDER",
+            amountIncVat: 3750,
+            vatAmount: 750,
+            danishSimplifiedPurchaseInvoice: false,
+            incompleteStandardPurchaseInvoice: true,
+            recipient: { name: "Synthetic Individual", address: "Personal Street 2" },
+          };
+          const file = join(fixture.inbox, "incomplete-order.txt");
+          writeFileSync(file, "Synthetic incomplete invoice\n3750 DKK\n");
+          const document = ingestDocument(db, fixture.root, file, metadata, { createdBy: "agent:test", createdByProgram: "test" });
+          expect(document.ok).toBe(true);
+          const documentId = document.documentId!;
+          const bankId = Number((db.query(`INSERT INTO bank_transactions
+            (transaction_date,text,amount,currency,transaction_hash,status)
+            VALUES('2026-08-20','Synthetic company purchase',-3750,'DKK','bank-incomplete-order','imported') RETURNING id`).get() as { id: number }).id);
+
+          if (scenario === "supplier") db.run("UPDATE documents SET sender_vat_cvr=NULL,supplier_identity_status='human_resolution_required' WHERE id=?", documentId);
+          if (scenario === "context-and-rate" || scenario === "printed-recipient-and-rate") db.run("UPDATE documents SET vat_amount=751 WHERE id=?", documentId);
+          if (scenario === "printed-recipient-and-rate") db.run("UPDATE documents SET recipient_vat_cvr='DK12345678' WHERE id=?", documentId);
+          if (scenario === "reviewed" || scenario === "tampered-payment") {
+            expect(setDocumentCompanyContext(db, {
+              documentId, sourceReference: "supplier-email:SYN-INCOMPLETE-ORDER",
+              businessUseReason: "Synthetic equipment used in taxable activity", confirm: true,
+              createdBy: "user:reviewer", createdByProgram: "unit-test",
+            }).ok).toBe(true);
+            expect(reviewIncompleteStandardPurchaseVatEvidence(db, {
+              documentId, bankTransactionId: bankId,
+              businessEvidenceReference: "purchase-order:SYN-INCOMPLETE-ORDER", businessEvidenceSha256: "a".repeat(64),
+              rationale: "Formal buyer-field deficiency only; payment and business use reviewed",
+              principal: "service-account:synthetic-reviewer", confirm: true,
+              createdBy: "user:reviewer", createdByProgram: "unit-test",
+            }).ok).toBe(true);
+            expect(validIncompleteStandardPurchaseVatEvidenceReview(db, documentId)).toBe(true);
+            if (scenario === "tampered-payment") {
+              db.run("UPDATE bank_transactions SET transaction_hash='tampered-evidence' WHERE id=?", bankId);
+              expect(validIncompleteStandardPurchaseVatEvidenceReview(db, documentId)).toBe(false);
+            }
+          }
+
+          const before = accountingEvidenceSnapshot(db);
+          const result = workflow === "expense"
+            ? bookExpenseFromBank(db, { documentId, bankTransactionId: bankId, expenseAccountNo: "3000", vatTreatment: "standard" })
+            : registerPayable(db, { documentId, billDate: "2026-08-20", dueDate: "2026-09-03", expenseAccountNo: "3000", vatTreatment: "standard" });
+          if (scenario === "reviewed") {
+            expect(result.ok).toBe(true);
+            expect(result.errors).toEqual([]);
+            expect(db.query("SELECT COUNT(*) AS n FROM journal_entries WHERE document_id=?").get(documentId)).toEqual({ n: 1 });
+            expect(verifyAuditChain(db).ok).toBe(true);
+          } else {
+            expect(result.ok).toBe(false);
+            expect(result.appliedRules).toEqual(workflow === "expense" ? [] : ["DK-PAYABLE-001"]);
+            if (scenario === "supplier") {
+              expect(result.errors).toEqual(["deductible Danish purchase VAT requires a resolved Danish supplier identity; use human resolution or non_deductible instead"]);
+            } else if (workflow === "expense") {
+              expect(result.errors).toEqual(["incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction"]);
+            } else if (scenario === "printed-recipient-and-rate") {
+              expect(result.errors).toEqual([`document ${documentId} vat_amount 751 is inconsistent with the 25% rate (expected ~749.75 for net 2999)`]);
+            } else {
+              expect(result.errors).toEqual(["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"]);
+            }
+            expect(accountingEvidenceSnapshot(db)).toEqual(before);
+          }
+        } finally { close(fixture); }
+      });
+    }
+  }
+
   test("purchase workflows preserve first rejection and make no accounting changes for overlapping invalid facts", () => {
     const supplierError = "deductible Danish purchase VAT requires a resolved Danish supplier identity; use human resolution or non_deductible instead";
     const contextError = "standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context";
@@ -110,8 +200,7 @@ describe("auditable company context for simplified Danish purchase invoices (#57
 
   test("accepts the reduced field set, preserves the printed recipient and keeps company identity separate", () => {
     expect(validateDocumentMetadata(simplifiedMetadata)).toMatchObject({ ok: true });
-    expect(validateDocumentMetadata({ ...simplifiedMetadata, danishSimplifiedPurchaseInvoice: false }).errors)
-      .toContain("recipient.vatOrCvr is required");
+    expect(validateDocumentMetadata({ ...simplifiedMetadata, danishSimplifiedPurchaseInvoice: false }).ok).toBe(true);
     expect(validateDocumentMetadata({ ...simplifiedMetadata, amountIncVat: 3000.01 }).ok).toBe(false);
     expect(validateDocumentMetadata({ ...simplifiedMetadata, invoiceNo: undefined }).ok).toBe(false);
 
@@ -161,6 +250,18 @@ describe("auditable company context for simplified Danish purchase invoices (#57
     } finally { close(fixture); }
   });
 
+  test("records company attribution for a truthfully incomplete standard invoice without changing its source facts", () => {
+    const incomplete: DocumentMetadata = { ...simplifiedMetadata, invoiceNo: "SYN-618-1", danishSimplifiedPurchaseInvoice: false, incompleteStandardPurchaseInvoice: true, recipient: { name: "Synthetic Buyer ApS" } };
+    const fixture = setup("incomplete-company-context");
+    try {
+      const file = join(fixture.inbox, "incomplete.txt"); writeFileSync(file, "Synthetic incomplete invoice\n125 DKK\n");
+      const document = ingestDocument(fixture.db, fixture.root, file, incomplete, { createdBy: "agent:test", createdByProgram: "test" });
+      expect(document.ok).toBe(true);
+      expect(setDocumentCompanyContext(fixture.db, { documentId: document.documentId!, sourceReference: "supplier-email:SYN-618", businessUseReason: "Synthetic company purchase", confirm: true, createdBy: "agent:test", createdByProgram: "unit-test" })).toMatchObject({ ok: true, applied: true });
+      expect(fixture.db.query("SELECT recipient_address,recipient_vat_cvr FROM documents WHERE id=?").get(document.documentId!)).toEqual({ recipient_address: null, recipient_vat_cvr: null });
+    } finally { close(fixture); }
+  });
+
   test("rejects posted documents and fails closed if either immutable binding changes", () => {
     const posted = setup("company-context-linked");
     try {
@@ -202,5 +303,26 @@ describe("auditable company context for simplified Danish purchase invoices (#57
       expect(recordContext(payable).ok).toBe(true);
       expect(registerPayable(payable.db, input).ok).toBe(true);
     } finally { close(payable); }
+  });
+
+  test("#622 allows a formally deficient standard invoice only after hash-bound payment and business-evidence review", () => {
+    const fixture = setup("formal-deficiency-review");
+    try {
+      const metadata: DocumentMetadata = { ...simplifiedMetadata, invoiceNo: "SYN-622-1", amountIncVat: 3750, vatAmount: 750, danishSimplifiedPurchaseInvoice: false, incompleteStandardPurchaseInvoice: true, recipient: { name: "Synthetic Individual", address: "Personal Street 2" } };
+      const file = join(fixture.inbox, "formal-deficiency.txt"); writeFileSync(file, "Synthetic equipment invoice\n3750 DKK\n");
+      const document = ingestDocument(fixture.db, fixture.root, file, metadata, { createdBy: "agent:test", createdByProgram: "test" });
+      const documentId = document.documentId!;
+      const bankId = Number((fixture.db.query(`INSERT INTO bank_transactions(transaction_date,text,amount,currency,transaction_hash,status) VALUES('2026-08-20','Synthetic company card purchase',-3750,'DKK','bank-syn-622','imported') RETURNING id`).get() as { id:number }).id);
+      expect(bookExpenseFromBank(fixture.db, { documentId, bankTransactionId: bankId, expenseAccountNo: "3000", vatTreatment: "standard" }).errors).toContain("incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction");
+      expect(setDocumentCompanyContext(fixture.db, { documentId, sourceReference: "supplier-email:SYN-622", businessUseReason: "Synthetic equipment is used in taxable activity", confirm: true, createdBy: "user:reviewer", createdByProgram: "unit-test" }).ok).toBe(true);
+      const input = { documentId, bankTransactionId: bankId, businessEvidenceReference: "purchase-order:SYN-622", businessEvidenceSha256: "a".repeat(64), rationale: "Formal buyer-field deficiency only; payment and business use reviewed", principal: "service-account:synthetic-reviewer", confirm: true, createdBy: "user:reviewer", createdByProgram: "unit-test" };
+      const review = reviewIncompleteStandardPurchaseVatEvidence(fixture.db, input);
+      expect(review).toMatchObject({ ok: true, applied: true });
+      expect(reviewIncompleteStandardPurchaseVatEvidence(fixture.db, input)).toMatchObject({ ok: true, applied: false });
+      expect(validIncompleteStandardPurchaseVatEvidenceReview(fixture.db, documentId)).toBe(true);
+      const booked = bookExpenseFromBank(fixture.db, { documentId, bankTransactionId: bankId, expenseAccountNo: "3000", vatTreatment: "standard" });
+      expect(booked.errors).toEqual([]);
+      expect(booked.ok).toBe(true);
+    } finally { close(fixture); }
   });
 });

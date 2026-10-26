@@ -57,20 +57,25 @@ type JournalPostingPolicy = {
   historicalImport: boolean;
   /** A reversal may faithfully copy an older uncoded VAT correction. */
   allowUncodedVatControl: boolean;
+  /** Exact reversals retain the original document without creating another correction link. */
+  skipNonCashBalanceCorrectionContract: boolean;
 };
 
 const MANUAL_POSTING_POLICY: JournalPostingPolicy = {
   historicalImport: false,
   allowUncodedVatControl: false,
+  skipNonCashBalanceCorrectionContract: false,
 };
 
 const HISTORICAL_IMPORT_POSTING_POLICY: JournalPostingPolicy = {
   historicalImport: true,
   allowUncodedVatControl: true,
+  skipNonCashBalanceCorrectionContract: false,
 };
 
 export type JournalPostResult = {
   ok: boolean;
+  idempotent?: boolean;
   entryId?: JournalEntryId;
   entryNo?: string;
   entryHash?: string;
@@ -322,6 +327,107 @@ function existingCreditNoteJournal(db: Database, documentId: number | undefined)
   ).get(documentId) as { id: number; entry_no: string } | null;
 }
 
+type NonCashBalanceEvidence = { document_id:number; document_sha256:string; issue_date:string; amount:number; currency:string; opening_journal_entry_id:number|null; opening_journal_line_id:number|null };
+function nonCashBalanceEvidence(db:Database,documentId:number|undefined):NonCashBalanceEvidence|null {
+  if(documentId==null)return null;
+  return db.query("SELECT e.document_id,e.document_sha256,e.issue_date,e.amount,e.currency,l.opening_journal_entry_id,l.opening_journal_line_id FROM non_cash_balance_correction_evidence e LEFT JOIN legacy_opening_creditor_reclassification_evidence l ON l.document_id=e.document_id WHERE e.document_id=?").get(documentId) as NonCashBalanceEvidence|null;
+}
+function nonCashBalancePayloadHash(payload:JournalEntryInput):string {
+  return createHash("sha256").update(JSON.stringify({transactionDate:payload.transactionDate,text:payload.text.trim(),documentId:payload.documentId??null,sourceBankTransactionId:payload.sourceBankTransactionId??null,currency:(payload.currency??"DKK").trim().toUpperCase(),amountForeign:payload.amountForeign??null,amountDkk:payload.amountDkk??null,fxRateToDkk:payload.fxRateToDkk??null,lines:payload.lines.map(line=>({accountNo:line.accountNo,debitAmount:normalizeAmount(line.debitAmount),creditAmount:normalizeAmount(line.creditAmount),vatCode:line.vatCode?.trim()||null,text:line.text??null}))})).digest("hex");
+}
+
+/** A released capacity must be backed by the same hash-chain proof as audit. */
+function journalChainIsCanonicalThrough(db: Database, entryId: number): boolean {
+  const entries = db.query(`SELECT id,entry_no,transaction_date,text,source_bank_transaction_id,document_id,currency,amount_foreign,amount_dkk,fx_rate_to_dkk,rule_version,created_by,created_by_program,status,reversal_of_entry_id,previous_hash,entry_hash FROM journal_entries WHERE id<=? ORDER BY id`).all(entryId) as Array<any>;
+  let previous = "GENESIS";
+  for (const entry of entries) {
+    const lines = db.query(`SELECT a.account_no,jl.debit_amount,jl.credit_amount,jl.vat_code,jl.text FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE jl.journal_entry_id=? ORDER BY jl.id`).all(entry.id) as Array<any>;
+    if (entry.previous_hash !== previous || entry.entry_hash !== hashEntry(canonicalEntryData(entry, lines), previous)) return false;
+    previous = entry.entry_hash;
+  }
+  return entries.at(-1)?.id === entryId;
+}
+
+/**
+ * Returns the still-consumed opening-creditor capacity. A correction releases
+ * capacity only when its own journal has exactly one durable, exact inverse.
+ * Anything less certain is deliberately still consumed: a replacement must
+ * never rely on a partial, malformed or ambiguous reversal.
+ */
+function activeLegacyOpeningCreditorCapacity(
+  db: Database,
+  openingJournalLineId: number,
+  currentPayloadHash: string,
+): { usedOre: bigint; errors: string[] } {
+  const corrections = db.query(`
+    SELECT correction.document_id, correction.journal_entry_id,
+           correction.document_sha256, correction.journal_entry_hash,
+           correction.payload_hash, evidence.amount,
+           original.status AS original_status, original.reversal_of_entry_id,
+           original.document_id AS original_document_id, original.source_bank_transaction_id AS original_source_bank_transaction_id, original.currency AS original_currency,
+           original.amount_foreign AS original_amount_foreign, original.amount_dkk AS original_amount_dkk,
+           original.fx_rate_to_dkk AS original_fx_rate_to_dkk, original.entry_hash AS current_journal_hash,
+           document.sha256_hash AS current_document_hash
+      FROM legacy_opening_creditor_reclassification_evidence legacy
+      JOIN non_cash_balance_correction_evidence evidence ON evidence.document_id=legacy.document_id
+      JOIN non_cash_balance_correction_postings correction ON correction.document_id=legacy.document_id
+      JOIN journal_entries original ON original.id=correction.journal_entry_id
+      JOIN documents document ON document.id=legacy.document_id
+     WHERE legacy.opening_journal_line_id=? AND correction.payload_hash<>?
+     ORDER BY correction.journal_entry_id ASC
+  `).all(openingJournalLineId, currentPayloadHash) as Array<any>;
+  const errors: string[] = [];
+  let usedOre = 0n;
+  for (const correction of corrections) {
+    const label = `legacy opening creditor correction journal ${correction.journal_entry_id}`;
+    const sourceIntact = correction.original_status === "posted"
+      && correction.reversal_of_entry_id == null
+      && Number(correction.original_document_id) === Number(correction.document_id)
+      && correction.current_journal_hash === correction.journal_entry_hash
+      && correction.current_document_hash === correction.document_sha256;
+    if (!sourceIntact) {
+      errors.push(`${label} has changed or malformed immutable source evidence`);
+      continue;
+    }
+    const reversals = db.query(`
+      SELECT id,status,reversal_of_entry_id,document_id,source_bank_transaction_id,currency,amount_foreign,amount_dkk,fx_rate_to_dkk
+        FROM journal_entries WHERE reversal_of_entry_id=? ORDER BY id ASC
+    `).all(correction.journal_entry_id) as Array<any>;
+    if (reversals.length === 0) {
+      usedOre += toOre(Number(correction.amount));
+      continue;
+    }
+    if (reversals.length !== 1) {
+      errors.push(`${label} has ambiguous reversal evidence`);
+      continue;
+    }
+    const reversal = reversals[0]!;
+    const metadataMatches = reversal.status === "reversed"
+      && Number(reversal.reversal_of_entry_id) === Number(correction.journal_entry_id)
+      && Number(reversal.document_id) === Number(correction.original_document_id)
+      && reversal.source_bank_transaction_id === correction.original_source_bank_transaction_id
+      && reversal.currency === correction.original_currency
+      && reversal.amount_foreign === correction.original_amount_foreign
+      && reversal.amount_dkk === correction.original_amount_dkk
+      && reversal.fx_rate_to_dkk === correction.original_fx_rate_to_dkk;
+    const originalLines = db.query(`SELECT account_id,debit_amount,credit_amount,vat_code,currency FROM journal_lines WHERE journal_entry_id=? ORDER BY id ASC`).all(correction.journal_entry_id) as Array<any>;
+    const reversalLines = db.query(`SELECT account_id,debit_amount,credit_amount,vat_code,currency FROM journal_lines WHERE journal_entry_id=? ORDER BY id ASC`).all(reversal.id) as Array<any>;
+    const exactInverse = originalLines.length > 0 && originalLines.length === reversalLines.length && originalLines.every((line, index) => {
+      const inverse = reversalLines[index]!;
+      return Number(inverse.account_id) === Number(line.account_id)
+        && (inverse.vat_code ?? null) === (line.vat_code ?? null)
+        && (inverse.currency ?? null) === (line.currency ?? null)
+        && toOre(Number(inverse.debit_amount)) === toOre(Number(line.credit_amount))
+        && toOre(Number(inverse.credit_amount)) === toOre(Number(line.debit_amount));
+    });
+    const hasReverseAudit = db.query(`SELECT 1 FROM audit_log WHERE event_type='journal_reverse' AND entity_type='journal_entry' AND entity_id=CAST(? AS TEXT) LIMIT 1`).get(reversal.id) != null;
+    if (!metadataMatches || !exactInverse || !hasReverseAudit || !journalChainIsCanonicalThrough(db, Number(reversal.id))) {
+      errors.push(`${label} has partial or mismatched reversal evidence`);
+    }
+  }
+  return { usedOre, errors };
+}
+
 function validateJournalEntryWithPolicy(
   db: Database,
   payload: JournalEntryInput,
@@ -329,8 +435,21 @@ function validateJournalEntryWithPolicy(
 ) {
   const errors: string[] = [];
   const appliedRules: string[] = [LEDGER_RULES.BALANCED, LEDGER_RULES.APPEND_ONLY];
-  const lines = payload.lines ?? [];
-  const currency = (payload.currency ?? 'DKK').trim().toUpperCase();
+  const lines = Array.isArray(payload.lines) ? payload.lines : [];
+  const currency = typeof payload.currency === "string" ? payload.currency.trim().toUpperCase() : "DKK";
+
+  // CLI and draft inputs are JSON objects, not necessarily typed journal
+  // payloads. Reject unsafe shapes before any downstream line/string access.
+  if (payload.currency != null && typeof payload.currency !== "string") errors.push("currency must be a 3-letter ISO code when present");
+  if (!Array.isArray(payload.lines)) errors.push("at least two journal lines are required");
+  lines.forEach((line, idx) => {
+    if (typeof line !== "object" || line === null || Array.isArray(line)) {
+      errors.push(`lines[${idx}] must be a journal line object`);
+    } else if (!Number.isFinite(normalizeAmount(line.debitAmount)) || !Number.isFinite(normalizeAmount(line.creditAmount))) {
+      errors.push(`lines[${idx}] amounts must remain finite after rounding`);
+    }
+  });
+  if (errors.length > 0) return { ok: false, appliedRules, errors };
 
   if (!looksLikeIsoDate(payload.transactionDate)) errors.push("transactionDate must be present in YYYY-MM-DD format");
   if (typeof payload.text !== "string" || payload.text.trim().length === 0) errors.push("text is required");
@@ -398,6 +517,43 @@ function validateJournalEntryWithPolicy(
 
   if (debitSum !== creditSum) {
     errors.push(`journal entry must balance: debit ${fromOre(debitSum)} != credit ${fromOre(creditSum)}`);
+  }
+
+  const nonCashEvidence=policy.skipNonCashBalanceCorrectionContract?null:nonCashBalanceEvidence(db,payload.documentId);
+  if(nonCashEvidence){
+    appliedRules.push("DK-BOOKKEEPING-NON-CASH-BALANCE-CORRECTION-001");
+    if(payload.sourceBankTransactionId!=null)errors.push("non-cash balance correction must not reference a bank transaction");
+    if(payload.transactionDate!==nonCashEvidence.issue_date)errors.push(`non-cash balance correction date must match document date ${nonCashEvidence.issue_date}`);
+    if(currency!==nonCashEvidence.currency.toUpperCase())errors.push(`non-cash balance correction currency must match document currency ${nonCashEvidence.currency}`);
+    if(currency!=="DKK")errors.push("non-cash balance correction currency must be DKK");
+    if(debitSum!==toOre(Number(nonCashEvidence.amount))||creditSum!==toOre(Number(nonCashEvidence.amount)))errors.push(`non-cash balance correction journal amount must match document amount ${roundDkk(Number(nonCashEvidence.amount))}`);
+    const legacyOpening=nonCashEvidence.opening_journal_entry_id!=null&&nonCashEvidence.opening_journal_line_id!=null;
+    const forbiddenRoles=new Set((db.query(`SELECT account_no FROM account_role_mappings WHERE status='confirmed' AND role IN ('bank','debtors',${legacyOpening ? "'output_vat','input_vat','reverse_charge_vat','vat_settlement'" : "'creditors','output_vat','input_vat','reverse_charge_vat','vat_settlement'"}) UNION SELECT ledger_account_no AS account_no FROM bank_accounts WHERE ledger_account_no IS NOT NULL AND length(trim(ledger_account_no))>0`).all() as Array<{account_no:string}>).map(row=>row.account_no));
+    for(const [idx,line] of lines.entries()){
+      const account=accounts.get(line.accountNo);
+      if(account&&(!['asset','liability','equity'].includes(account.type)||forbiddenRoles.has(line.accountNo)))errors.push(`lines[${idx}] account ${line.accountNo} is not an eligible non-cash balance account`);
+      if(typeof line.vatCode==='string'&&line.vatCode.trim())errors.push(`lines[${idx}] vatCode is forbidden for non-cash balance corrections`);
+    }
+    if(legacyOpening){
+      appliedRules.push("DK-BOOKKEEPING-LEGACY-OPENING-CREDITOR-RECLASSIFICATION-001");
+      const opening=db.query("SELECT opening.transaction_date,line.id AS line_id,a.account_no,line.debit_amount,line.credit_amount FROM opening_balances marker JOIN journal_entries opening ON opening.id=marker.journal_entry_id AND opening.status='posted' JOIN journal_lines line ON line.id=? AND line.journal_entry_id=opening.id JOIN accounts a ON a.id=line.account_id JOIN account_role_mappings r ON r.account_no=a.account_no AND r.role='creditors' AND r.status='confirmed' WHERE opening.id=?").get(nonCashEvidence.opening_journal_line_id,nonCashEvidence.opening_journal_entry_id) as {transaction_date:string;line_id:number;account_no:string;debit_amount:number;credit_amount:number}|null;
+      if(!opening)errors.push("legacy opening creditor reclassification must reference an exact posted primobalance creditor line");else{
+        if(Number(opening.debit_amount)!==0||Number(opening.credit_amount)<=0)errors.push("legacy opening creditor line must be a credit balance");
+        if(payload.transactionDate<opening.transaction_date)errors.push(`legacy opening creditor reclassification date must not precede primobalance date ${opening.transaction_date}`);
+        if(lines.length!==2)errors.push("legacy opening creditor reclassification requires exactly two journal lines");
+        const creditor=lines.find(line=>line.accountNo===opening.account_no),counter=lines.find(line=>line.accountNo!==opening.account_no);
+        if(!creditor||normalizeAmount(creditor.debitAmount)!==Number(nonCashEvidence.amount)||normalizeAmount(creditor.creditAmount)!==0)errors.push(`legacy opening creditor account ${opening.account_no} must be debited by the exact document amount`);
+        if(!counter||normalizeAmount(counter.creditAmount)!==Number(nonCashEvidence.amount)||normalizeAmount(counter.debitAmount)!==0)errors.push("legacy opening creditor reclassification counteraccount must be credited by the exact document amount");
+        if(counter){const a=accounts.get(counter.accountNo);if(!a||!['asset','liability','equity'].includes(a.type)||forbiddenRoles.has(counter.accountNo)||counter.accountNo===opening.account_no)errors.push("legacy opening creditor reclassification counteraccount must be an eligible non-cash balance account");}
+        const explained=db.query("SELECT p.id FROM payables p JOIN journal_lines l ON l.journal_entry_id=p.journal_entry_id JOIN accounts a ON a.id=l.account_id JOIN account_role_mappings r ON r.account_no=a.account_no AND r.role='creditors' AND r.status='confirmed' LIMIT 1").get()??db.query("SELECT p.id FROM payable_payments p JOIN journal_lines l ON l.journal_entry_id=p.journal_entry_id JOIN accounts a ON a.id=l.account_id JOIN account_role_mappings r ON r.account_no=a.account_no AND r.role='creditors' AND r.status='confirmed' LIMIT 1").get();
+        if(explained)errors.push("legacy opening creditor reclassification is blocked because canonical payable evidence exists for a creditor account");
+        const capacity=activeLegacyOpeningCreditorCapacity(db,opening.line_id,nonCashBalancePayloadHash(payload));
+        errors.push(...capacity.errors);
+        if(capacity.errors.length===0&&capacity.usedOre+toOre(Number(nonCashEvidence.amount))>toOre(Number(opening.credit_amount)))errors.push("legacy opening creditor reclassification exceeds the documented remaining primobalance creditor balance");
+      }
+    }
+    const prior=db.query("SELECT journal_entry_id,payload_hash FROM non_cash_balance_correction_postings WHERE document_id=?").get(nonCashEvidence.document_id) as {journal_entry_id:number;payload_hash:string}|null;
+    if(prior&&prior.payload_hash!==nonCashBalancePayloadHash(payload))errors.push(`non-cash balance correction document ${nonCashEvidence.document_id} is already linked to a conflicting journal`);
   }
 
   // #533: a new manual entry that changes a VAT control account without any
@@ -630,6 +786,13 @@ function postJournalEntryInCurrentTransactionWithPolicy(
   const validation = validateJournalEntryWithPolicy(db, payload, policy);
   if (!validation.ok) return { ok: false, appliedRules: validation.appliedRules, errors: validation.errors };
 
+  const correctionEvidence=policy.skipNonCashBalanceCorrectionContract?null:nonCashBalanceEvidence(db,payload.documentId);
+  const correctionPayloadHash=correctionEvidence?nonCashBalancePayloadHash(payload):null;
+  if(correctionEvidence&&correctionPayloadHash){
+    const prior=db.query(`SELECT p.journal_entry_id,j.entry_no,j.entry_hash FROM non_cash_balance_correction_postings p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.document_id=? AND p.payload_hash=?`).get(correctionEvidence.document_id,correctionPayloadHash) as {journal_entry_id:number;entry_no:string;entry_hash:string}|null;
+    if(prior)return {ok:true,idempotent:true,entryId:asJournalEntryId(prior.journal_entry_id),entryNo:prior.entry_no,entryHash:prior.entry_hash,appliedRules:validation.appliedRules,errors:[]};
+  }
+
   const accounts = accountMap(db);
 
   let applied: ReturnType<typeof applyJournalEntry>;
@@ -649,7 +812,12 @@ function postJournalEntryInCurrentTransactionWithPolicy(
   }
 
   const { previousHash: _previousHash, ...result } = applied;
-  return { ok: true, appliedRules: validation.appliedRules, errors: [], ...result };
+  if(correctionEvidence&&correctionPayloadHash){
+    const actor=resolveActor({createdBy:payload.createdBy,createdByProgram:payload.createdByProgram});
+    db.query(`INSERT INTO non_cash_balance_correction_postings(document_id,journal_entry_id,document_sha256,journal_entry_hash,payload_hash,actor,program) VALUES(?,?,?,?,?,?,?)`).run(correctionEvidence.document_id,applied.entryId,correctionEvidence.document_sha256,applied.entryHash,correctionPayloadHash,actor.createdBy,actor.createdByProgram);
+    insertAuditLog(db,{eventType:"non_cash_balance_correction_posted",entityType:"document",entityId:correctionEvidence.document_id,message:`Bound non-cash balance correction document ${correctionEvidence.document_id} to journal ${applied.entryNo}`,createdBy:actor.createdBy,createdByProgram:actor.createdByProgram});
+  }
+  return { ok: true, ...(correctionEvidence?{idempotent:false}:{}), appliedRules: validation.appliedRules, errors: [], ...result };
 }
 
 /** Public/manual journal posting. Import privileges cannot be supplied in data. */
@@ -913,6 +1081,7 @@ function reverseJournalEntryInternal(
   const reversalPolicy: JournalPostingPolicy = {
     historicalImport: fromImport,
     allowUncodedVatControl: true,
+    skipNonCashBalanceCorrectionContract: true,
   };
   const validation = validateJournalEntryWithPolicy(db, reversalPayload, reversalPolicy);
   if (!validation.ok) return { ok: false, appliedRules: [...new Set([...appliedRules, ...validation.appliedRules])], errors: validation.errors };

@@ -28,6 +28,14 @@ const containerTest = readFileSync(
   join(root, "scripts", "release", "test-local-container.ts"),
   "utf8",
 );
+const cockpitEvidenceRunner = readFileSync(
+  join(root, "scripts", "release", "run-cockpit-evidence.ts"),
+  "utf8",
+);
+const cockpitEvidenceProxy = readFileSync(
+  join(root, "scripts", "release", "cockpit-evidence-proxy.ts"),
+  "utf8",
+);
 
 describe("release workflow security contract", () => {
   test("pins every privileged third-party action to a full commit", () => {
@@ -73,6 +81,26 @@ describe("release workflow security contract", () => {
     );
   });
 
+  test("runs Cockpit evidence through a loopback proxy to one internal-only application", () => {
+    expect(cockpitEvidenceRunner).toContain('"network", "create", "--internal", network');
+    expect(cockpitEvidenceRunner).toContain('"network", "inspect", network, "--format", "{{.Internal}}"');
+    expect(cockpitEvidenceRunner).toContain("Docker did not create an internal evidence network");
+    expect(cockpitEvidenceRunner).toContain('"--network",\n      network');
+    expect(cockpitEvidenceRunner).not.toContain('"--publish"');
+    expect(cockpitEvidenceRunner).toContain('"{{json .NetworkSettings}}"');
+    expect(cockpitEvidenceProxy).toContain("candidate must be attached only to the internal evidence network");
+    expect(cockpitEvidenceProxy).toContain("candidate must not publish container ports");
+    expect(cockpitEvidenceProxy).toContain("invalid internal application IPv4");
+    expect(cockpitEvidenceProxy).toContain('hostname: "127.0.0.1"');
+    expect(cockpitEvidenceRunner).toContain("startLoopbackProxy(appAddress)");
+    expect(cockpitEvidenceProxy).toContain("const appOrigin = `http://${appAddress}:${appPort}`");
+    expect(cockpitEvidenceProxy).toContain("new URL(`${incoming.pathname}${incoming.search}`, appOrigin)");
+    expect(cockpitEvidenceRunner).toContain('proxy?.stop(true)');
+    expect(cockpitEvidenceRunner).toContain('"network", "rm", network');
+    expect(cockpitEvidenceRunner).not.toContain('"--network",\n      "bridge"');
+    expect(cockpitEvidenceRunner).not.toContain('"--network",\n      "host"');
+  });
+
   test("makes the production license allowlist a merge and release gate", () => {
     expect(testWorkflow).toContain("run: bun run supply-chain:licenses");
     expect(candidate).toContain("run: bun run supply-chain:licenses");
@@ -80,7 +108,8 @@ describe("release workflow security contract", () => {
 
   test("blocks advisories and binds audit, licenses and lockfile into release evidence", () => {
     expect(testWorkflow).toContain("run: bun run supply-chain:audit");
-    expect(candidate).toContain("run: bun run supply-chain:audit");
+    expect(candidate).toContain("run: bun audit --audit-level=low --json > supply-chain-audit.json");
+    expect(candidate).toContain("SUPPLY_CHAIN_AUDIT_REPORT_PATH: supply-chain-audit.json");
     expect(candidate).toContain("bun run supply-chain:evidence > supply-chain-evidence.json");
     expect(candidate).toContain("RELEASE_SUPPLY_CHAIN_SHA256");
     expect(candidate).toContain("RELEASE_AGENT_DISCOVERY_SHA256");
@@ -142,15 +171,18 @@ describe("release workflow security contract", () => {
     expect(candidate).not.toContain("serve --workspace /workspace --host 127.0.0.1");
     expect(candidate).toContain("cockpit asset missing");
     expect(candidate).toContain("fetch(new URL(asset,base))");
-    expect(candidate).toContain("name: Render the published local-container cockpit");
-    expect(candidate).toContain('"/companies/release-check?year=2026"');
-    expect(candidate).toContain('"/companies/release-check/manage?source=release-candidate"');
-    expect(candidate).toContain('company add \\');
-    expect(candidate).toContain('--workspace /workspace --name "Release Check" --slug release-check');
-    expect(candidate).toContain("--virtual-time-budget=5000 --dump-dom \"$base_url$route\"");
-    expect(candidate).toContain("<div id=\"root\"><div class=\"app-shell\"");
-    expect(candidate).toContain("grep -F 'Release Check'");
-    expect(candidate).toContain("local-container cockpit was rejected by the UI security-profile gate");
+    expect(candidate).toContain("name: Generate digest-bound Cockpit acceptance evidence");
+    expect(candidate).toContain("COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}");
+    expect(candidate).toContain("GH_TOKEN: ${{ github.token }}");
+    expect(candidate).toContain("gh auth status");
+    expect(candidate).toContain("--label epic:648 --limit 1000");
+    expect(candidate).toContain(
+      "cockpit-evidence/cockpit-epic-648-open-issues.json.sha256",
+    );
+    expect(candidate).toContain("cockpit-evidence/cockpit-evidence.json");
+    expect(candidate).toContain("RELEASE_COCKPIT_EVIDENCE_SHA256");
+    expect(candidate).toContain("RELEASE_COCKPIT_REGRESSION_QUERY_SHA256");
+    expect(candidate).toContain("cockpit-evidence/*.png");
     expect(candidate).toContain("sbom: true");
     expect(candidate).toContain("outputs: type=registry,rewrite-timestamp=true");
     expect(candidate).not.toMatch(/^\s+push:\s+true\s*$/m);
@@ -178,6 +210,41 @@ describe("release workflow security contract", () => {
     expect(candidate).toContain("const sbom=value.SPDX??value");
     expect(candidate).toContain("sbom.spdx.json.sha256");
     expect(candidate).toContain("SBOM must contain pdfjs-dist@6.2.108");
+  });
+
+  test("uses the generator's fail-closed Cockpit evidence verification", () => {
+    const evidenceStep = candidate.slice(
+      candidate.indexOf("name: Generate digest-bound Cockpit acceptance evidence"),
+      candidate.indexOf("name: Extract digest-bound SPDX SBOM evidence"),
+    );
+    const verify = cockpitEvidenceRunner.indexOf("verifyEvidence(manifestPath)");
+    const success = cockpitEvidenceRunner.indexOf("process.stdout.write(`${manifestPath}\\n`)");
+
+    expect(evidenceStep).toContain("bun run scripts/release/run-cockpit-evidence.ts");
+    expect(evidenceStep).not.toContain("verify-cockpit-evidence.ts");
+    expect(verify).toBeGreaterThan(-1);
+    expect(success).toBeGreaterThan(verify);
+  });
+
+  test("binds the release manifest to raw Cockpit artifact files", () => {
+    const manifestStep = candidate.slice(
+      candidate.indexOf("name: Create digest-bound release manifest"),
+      candidate.indexOf("name: Attest candidate image provenance"),
+    );
+
+    expect(manifestStep).not.toContain("hashFiles(");
+    expect(manifestStep).toContain("set -euo pipefail");
+    expect(manifestStep).toContain('test -f "cockpit-evidence/cockpit-evidence.json"');
+    expect(manifestStep).toContain(
+      'test -f "cockpit-evidence/cockpit-epic-648-open-issues.json"',
+    );
+    expect(manifestStep).toContain(
+      'RELEASE_COCKPIT_EVIDENCE_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-evidence.json"',
+    );
+    expect(manifestStep).toContain(
+      'RELEASE_COCKPIT_REGRESSION_QUERY_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-epic-648-open-issues.json"',
+    );
+    expect(manifestStep).toContain("bun run scripts/release/create-manifest.ts");
   });
 
   test("binds promotion to one successful trusted run and its attestation", () => {

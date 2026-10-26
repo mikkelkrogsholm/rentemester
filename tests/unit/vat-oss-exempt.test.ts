@@ -118,7 +118,7 @@ describe("OSS first slice (digital services to EU consumers)", () => {
     // Only the domestic sale's VAT lands in salgsmoms — the OSS sale is excluded.
     expect(filing.rubrikker.salgsmoms).toBe(250);
     // OSS sales are NOT rubrik B (that is non-OSS cross-border) nor rubrik C.
-    expect(filing.rubrikker.rubrikB).toBe(0);
+    expect(filing.rubrikker.rubrikBVarerEuSalesList).toBe(0);
     expect(filing.rubrikker.rubrikC).toBe(0);
 
     db.close();

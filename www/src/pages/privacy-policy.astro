@@ -1,15 +1,16 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 <BaseLayout title="Privacy Policy for Rentemester.dk" description="Privacy Policy for Rentemester.dk: no cookies, no tracking, no analytics, no contact forms and no external scripts on the static website." pathname="/privacy-policy" pageType="WebPage" datePublished="2026-05-18" dateModified="2026-05-18">
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-24 prose-da">
-    <h1>Privacy Policy</h1>
-    <p><strong>By Mikkel Krogsholm.</strong> Published 2026-05-18. Updated 2026-05-18.</p>
-    <p>Rentemester.dk is a static website for an open source software project. The website does not set cookies, does not run analytics, does not include advertising pixels, does not embed third-party fonts, and does not contain contact forms. There is no account system and no signup flow.</p>
-    <p>When you browse the site, the web server may process ordinary technical request data such as IP address, URL, user agent and timestamp. That processing is limited to operating the website, diagnosing abuse and keeping the server available. The project does not use those logs for profiling, marketing or visitor analytics.</p>
-    <p>If you click a link to GitHub, you leave Rentemester.dk and GitHub’s own privacy policy applies. If you send an email to the project, the email is handled as ordinary correspondence. Do not send real bookkeeping data, bank details, CPR numbers or invoices unless sharing them is necessary and lawful.</p>
-    <p>The Rentemester software itself is local-first. Users decide where their company directory, SQLite database, backups and documents are stored. The website does not receive those files. The Danish privacy page is the canonical policy text for Danish visitors.</p>
-    <p>Because the site is static, privacy risk is deliberately small: no browser fingerprinting, no remarketing, no newsletter forms, no embedded video players and no client-side behavioural measurement.</p>
-    <p><a href="/privatlivspolitik">Read the Danish privacy policy</a>.</p>
+  <article {...sx.pages_privacyPolicy_article1}>
+    <h1 {...sx.pages_privacyPolicy_h12}>Privacy Policy</h1>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>By Mikkel Krogsholm.</strong> Published 2026-05-18. Updated 2026-05-18.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester.dk is a static website for an open source software project. The website does not set cookies, does not run analytics, does not include advertising pixels, does not embed third-party fonts, and does not contain contact forms. There is no account system and no signup flow.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>When you browse the site, the web server may process ordinary technical request data such as IP address, URL, user agent and timestamp. That processing is limited to operating the website, diagnosing abuse and keeping the server available. The project does not use those logs for profiling, marketing or visitor analytics.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>If you click a link to GitHub, you leave Rentemester.dk and GitHub’s own privacy policy applies. If you send an email to the project, the email is handled as ordinary correspondence. Do not send real bookkeeping data, bank details, CPR numbers or invoices unless sharing them is necessary and lawful.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>The Rentemester software itself is local-first. Users decide where their company directory, SQLite database, backups and documents are stored. The website does not receive those files. The Danish privacy page is the canonical policy text for Danish visitors.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Because the site is static, privacy risk is deliberately small: no browser fingerprinting, no remarketing, no newsletter forms, no embedded video players and no client-side behavioural measurement.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/privatlivspolitik">Read the Danish privacy policy</a>.</p>
   </article>
 </BaseLayout>

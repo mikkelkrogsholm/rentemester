@@ -28,6 +28,7 @@ import { toOre } from "../money";
 import { reconcileChartOfAccounts, reconcileCompanyMasterData } from "./reconcile";
 import { postDineroPostings, IMPORT_POSTINGS_RULE } from "./dinero-postings";
 import { resolveSource } from "./source";
+import { removePathWithRetry } from "../fs-cleanup";
 import {
   archiveDineroYears,
   checkRollForward,
@@ -502,11 +503,11 @@ function runDineroV4(db: Database, resolved: MultiArtifactSource, source: Import
       if (!landed.ok) throw new ImportRollback(landed);
       const openItems = planMigrationOpenItemControls(db, source);
       if (openItems.errors.length > 0) throw new Error(openItems.errors.join("; "));
+      const controlDate=(source.historicalEntries??[]).reduce((latest,entry)=>entry.transactionDate>latest?entry.transactionDate:latest,source.cutOverDate);
       if (source.importedReceivableSchedule) {
-        const schedule = validateImportedReceivableSchedule(source.importedReceivableSchedule);
+        const schedule = validateImportedReceivableSchedule(source.importedReceivableSchedule, controlDate);
         if (!schedule.ok) throw new Error(schedule.errors.join("; "));
         const receivableControls=openItems.balances.filter(balance=>balance.kind==="receivable");
-        const controlDate=(source.historicalEntries??[]).reduce((latest,entry)=>entry.transactionDate>latest?entry.transactionDate:latest,source.cutOverDate);
         for (const balance of receivableControls) {
           if (importedScheduleBalanceOre(schedule.schedule,controlDate,balance.accountNo)!==toOre(balance.amount)) throw new Error(`imported receivable schedule does not reconcile exactly to control ${balance.accountNo} at ${controlDate}`);
         }
@@ -540,7 +541,7 @@ function runDineroV4(db: Database, resolved: MultiArtifactSource, source: Import
       }
       const provenance = persistDineroEvidence(db, resolved, source, options, "accepted", landed);
       if (source.importedReceivableSchedule) {
-        const recordedSchedule = recordImportedReceivableSchedule(db, provenance.attemptId, source.importedReceivableSchedule);
+        const recordedSchedule = recordImportedReceivableSchedule(db, provenance.attemptId, source.importedReceivableSchedule, controlDate);
         if (!recordedSchedule.ok) throw new Error(recordedSchedule.errors.join("; "));
         landed.auditTrail.push(`Recorded immutable imported receivable schedule ${recordedSchedule.scheduleHash}`);
       }
@@ -632,45 +633,50 @@ export function runImportFromSource(
     ]);
   }
 
-  let parsed: ParseResult;
-  if (typeof parser.parseSource === "function") {
-    // Multi-file parser: enforce declared required files before parsing.
-    const missing: string[] = [];
-    for (const required of parser.requiredFiles ?? []) {
-      if (!resolved.files[required]) {
-        missing.push(`required export file '${required}' is missing`);
+  try {
+    let parsed: ParseResult;
+    if (typeof parser.parseSource === "function") {
+      // Multi-file parser: enforce declared required files before parsing.
+      const missing: string[] = [];
+      for (const required of parser.requiredFiles ?? []) {
+        if (!resolved.files[required]) {
+          missing.push(`required export file '${required}' is missing`);
+        }
       }
+      if (missing.length > 0) return failParse(missing, resolved);
+      parsed = parser.parseSource(resolved);
+    } else if (typeof parser.parse === "function") {
+      // Single-string parser: it expects one file's text. A directory with more
+      // than one file is ambiguous for such a parser.
+      const names = Object.keys(resolved.files);
+      if (names.length !== 1) {
+        return failParse([
+          `parser '${parser.system}' expects a single export file but ${names.length} were found at ${path}`,
+        ], resolved);
+      }
+      parsed = parser.parse(resolved.files[names[0]!]!.text);
+    } else {
+      return failParse([`parser '${parser.system}' implements neither parse nor parseSource`], resolved);
     }
-    if (missing.length > 0) return failParse(missing, resolved);
-    parsed = parser.parseSource(resolved);
-  } else if (typeof parser.parse === "function") {
-    // Single-string parser: it expects one file's text. A directory with more
-    // than one file is ambiguous for such a parser.
-    const names = Object.keys(resolved.files);
-    if (names.length !== 1) {
-      return failParse([
-        `parser '${parser.system}' expects a single export file but ${names.length} were found at ${path}`,
-      ], resolved);
+
+    if (!parsed.ok || !parsed.source) {
+      return failParse(parsed.errors, resolved);
     }
-    parsed = parser.parse(resolved.files[names[0]!]!.text);
-  } else {
-    return failParse([`parser '${parser.system}' implements neither parse nor parseSource`], resolved);
-  }
+    if (parser.system === "dinero" && typeof parser.parseSource === "function") {
+      const preflight = preflightDineroArchive(db, resolved, parsed.source);
+      if (preflight.errors.length > 0) return failParse(preflight.errors, resolved);
+      const atomic = runDineroV4(db, resolved, parsed.source as ImportSource, options);
+      if (resolved.archiveIntegrity) atomic.archiveIntegrity = resolved.archiveIntegrity;
+      return atomic;
+    }
+    const result = runImport(db, parsed.source as ImportSource, options);
+    if (resolved.archiveIntegrity) result.archiveIntegrity = resolved.archiveIntegrity;
 
-  if (!parsed.ok || !parsed.source) {
-    return failParse(parsed.errors, resolved);
+    return result;
+  } finally {
+    // Only ZIP resolution owns its root; directory/file inputs belong to the caller.
+    if (resolved.sourceEvidence.sourceKind === "zip") removePathWithRetry(resolved.rootDir);
   }
-  if (parser.system === "dinero" && typeof parser.parseSource === "function") {
-    const preflight = preflightDineroArchive(db, resolved, parsed.source);
-    if (preflight.errors.length > 0) return failParse(preflight.errors, resolved);
-    const atomic = runDineroV4(db, resolved, parsed.source as ImportSource, options);
-    if (resolved.archiveIntegrity) atomic.archiveIntegrity = resolved.archiveIntegrity;
-    return atomic;
-  }
-  const result = runImport(db, parsed.source as ImportSource, options);
-  if (resolved.archiveIntegrity) result.archiveIntegrity = resolved.archiveIntegrity;
-
-  return result;
 }
 
 /** Validates archive parsing and roll-forward before the live ledger can change. */

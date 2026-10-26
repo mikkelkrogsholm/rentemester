@@ -1,3 +1,4 @@
+import { pdfText as extractPdfText } from "../fixtures/rendered-pdf-text";
 // Tests: src/core/issued-invoices.ts
 import { describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -7,7 +8,7 @@ import { addBankAccount } from "../../src/core/bank";
 import { issueCreditNote } from "../../src/core/credit-notes";
 import { migrate, openDb } from "../../src/core/db";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
-import { readIssuedInvoicePdfText, renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
+import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { seedAccounts } from "../../src/core/ledger";
 import { companyPaths, ensureCompanyDirs } from "../../src/core/paths";
@@ -62,7 +63,7 @@ describe("invoice issue", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("issues a validated invoice as immutable persisted snapshot", () => {
+  test("issues a validated invoice as immutable persisted snapshot", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-issue-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
@@ -103,8 +104,8 @@ describe("invoice issue", () => {
       mime_type: "application/pdf",
       stored_path: result.pdfStoredPath,
     });
-    const pdfText = readIssuedInvoicePdfText(result.pdfStoredPath!);
-    expect(pdfText.startsWith("%PDF-")).toBe(true);
+    const pdfText = await extractPdfText(readFileSync(result.pdfStoredPath!));
+    expect(readFileSync(result.pdfStoredPath!).subarray(0, 5).toString()).toBe("%PDF-");
     expect(pdfText).toContain("2026-0001");
     expect(pdfText).toContain("DK12345678");
     // #225: customer-facing amounts use Danish number format (1.000,00).

@@ -615,6 +615,11 @@ export function exportVatPdf(
   });
   rows.push({
     kind: "line",
+    label: "Købsmoms",
+    amount: formatAmountDa(v.rubrikker.kobsmoms),
+  });
+  rows.push({
+    kind: "line",
     label: "Moms af varekøb i udlandet",
     amount: formatAmountDa(v.rubrikker.momsAfVarekobUdland),
   });
@@ -624,32 +629,35 @@ export function exportVatPdf(
     amount: formatAmountDa(v.rubrikker.momsAfYdelseskobUdland),
   });
   rows.push({
-    kind: "line",
-    label: "Købsmoms",
-    amount: formatAmountDa(v.rubrikker.kobsmoms),
-  });
-  rows.push({
     kind: "total",
-    label: "Momstilsvar",
-    amount: formatAmountDa(v.rubrikker.momstilsvar),
+    label: "Moms i alt",
+    amount: formatAmountDa(v.rubrikker.momsIAlt),
   });
 
   rows.push({ kind: "section", label: "Yderligere rubrikker" });
   rows.push({
     kind: "line",
-    label: "Rubrik A (varekøb fra udlandet)",
-    amount: formatAmountDa(v.rubrikker.rubrikA),
+    label: "Rubrik A (varer købt i EU)",
+    amount: formatAmountDa(v.rubrikker.rubrikAVarer),
   });
   rows.push({
     kind: "line",
-    label: "Rubrik B (varesalg til udlandet)",
-    amount: formatAmountDa(v.rubrikker.rubrikB),
+    label: "Rubrik A (ydelser købt i EU)",
+    amount: formatAmountDa(v.rubrikker.rubrikAYdelser),
   });
-  rows.push({
-    kind: "line",
-    label: "Rubrik C (momsfritaget salg)",
-    amount: formatAmountDa(v.rubrikker.rubrikC),
-  });
+  for (const [label, amount] of [
+    ["Rubrik B (varer / EU-salg uden moms)", v.rubrikker.rubrikBVarerEuSalesList],
+    ["Rubrik B (varer / ikke EU-salg-listen)", v.rubrikker.rubrikBVarerIkkeEuSalesList],
+    ["Rubrik B (ydelser)", v.rubrikker.rubrikBYdelser],
+    ["Rubrik C (momsfritaget salg)", v.rubrikker.rubrikC],
+    ["Olie- og flaskegasafgift", v.rubrikker.olieOgFlaskegasafgift],
+    ["Elafgift", v.rubrikker.elafgift],
+    ["Naturgas- og bygasafgift", v.rubrikker.naturgasOgBygasafgift],
+    ["Kulafgift", v.rubrikker.kulafgift],
+    ["CO2-afgift", v.rubrikker.co2Afgift],
+    ["Vandafgift", v.rubrikker.vandafgift],
+  ] as const) rows.push({ kind: "line", label, amount: formatAmountDa(amount) });
+  rows.push({ kind: "line", label: "Afrunding mod rå momsrapport", amount: formatAmountDa(v.rubrikker.wholeKronerDifferenceDkk) });
 
   const content = buildStatementPdf({
     title: "Momsangivelse",

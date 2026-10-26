@@ -12,10 +12,25 @@ de gamle banknavne og filtre er endnu ikke alle porteret.
 Dette er ingen erklæring om fuld paritet med listen nedenfor. Se også
 [den native serverkontrakt](rust-server.md).
 
-Den autoritative liste over de tools Rentemester-MCP-serveren eksponerer til
-agenter (Claude, Cursor, Claude Code, Codex osv.). Dokumentet startede som
-bygge-tegning for MCP-epicen (#89, scaffold #77, implementation #78) og
+### Historical TypeScript source profile
+
+The authoritative internal operation registry contains every exact operation.
+The default transport projection exposes exactly eight compact tools to agents
+(Claude, Cursor, Claude Code, Codex osv.):
+
+`system_server_about`, `agent_capability_search`, `agent_workflow_describe`,
+`agent_operation_search`, `agent_operation_describe`, `agent_operation_read`,
+`agent_operation_write`, `agent_operation_destroy`.
+
+Set `RENTEMESTER_MCP_PROFILE=full` before startup to expose the complete
+backward-compatible legacy surface directly. The document started as
+bygge-tegning for MCP-epicen (#89, scaffold #77, implementation #78) and
 vedligeholdes nu som facitliste mod den kørende server.
+
+In compact mode every precise operation remains available through the
+registry/gateway route and discovery reports `directlyListed: false`; coverage
+therefore still includes every precise operation while `tools/list` stays
+bounded and stable.
 
 > **Hold dette synkront.** Tool-tallet i dette dokument skal matche en
 > kørende server. Den hurtige måde at få den faktiske liste på er at drive
@@ -26,6 +41,19 @@ Kilder:
 - En kørende `src/mcp/server.ts` (`tools/list`) — facit for hvilke tools der
   faktisk eksponeres og deres `annotations` (read-only/destructive-hints).
 - `src/mcp/registry.ts` — registrerer hele tool-surface'en pr. domæne.
+
+Legacy kontakt → canonical party mapping: `legacy_party_mapping_plan` og
+`legacy_party_mapping_list` er read-only. `legacy_party_mapping_apply` kræver
+bekræftelse, autentificeret company membership, idempotency key og eksakt
+kontakt-/bilag-/planbinding; `legacy_party_mapping_supersede` er den append-only
+korrektionsvej. En reviewed legacy reference alene opretter aldrig en mapping.
+Importerede, uafklarede leverandører bruger først
+`vendor_identity_enrichment_plan` → `vendor_identity_enrichment_apply` og kan
+inspiceres med `vendor_identity_enrichment_list`. Planen læser og SHA-256-
+verificerer det registrerede originalbilag og kræver eksakt navn/adresse samt
+overensstemmende dokumentidentitet. Apply udfylder kun null typefelter,
+kræver `company.master-data`, confirmation, actor, plan-hash og principal-scoped
+idempotency og overskriver aldrig en eksisterende typed identitet.
 - `src/cli-meta.ts` — CLI-kommandoerne. MCP-surface'en er *tæt på* 1:1 med
   CLI'en, men ikke fuldstændig — se "CLI/MCP-mapping" nedenfor.
 - `src/core/*.ts` — TypeScript-typer for inputs og resultater (`InvoicePayload`,
@@ -116,7 +144,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 214 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 269 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -190,6 +218,7 @@ sende uændret for at hente næste side. Et svar med `hasMore: true` er
 | `journal_dry_run` | `{ entryId, entryNo, previousHash, entryHash, accountEffects: [{ accountNo, accountName, balanceBefore, balanceAfter, delta }] }` — ikke-bindende forhåndsvisning af `journal_post`: felterne beskriver hvad posteringen *ville* få. `accountEffects` lister saldo før/efter pr. berørt konto (debet-minus-kredit-netto, i kroner). Ved en ugyldig payload er konvolutten `ok=false` med `errors[]`, og `data` mangler. |
 | `bank_list` | `{ rows: [...], total, count, limit, offset, hasMore, nextOffset? }` (pagineret) |
 | `invoice_list` | `{ invoices: [...], count }` |
+| `invoice_imported_receivables` | `{ asOfDate, boundary, count, totalOpen, rows: [{ externalInvoiceId, invoiceDate, grossAmount, paidAmount, openBalance, controlAccountNo, sourceDocumentHash, scheduleHash }] }` — source-evidenced pre-cut-over debtors only. They are intentionally separate from `invoice_list`; never add the two without an explicit reconciliation. |
 | `exceptions_list` | `{ exceptions: [...], count }` |
 | `period_list` | `{ periods: [{ id, periodStart, periodEnd, kind, status, reference, createdAt }], count }` — `kind` er `"vat_period" \| "fiscal_year" \| "custom"`; ældre rækker kan læses som `"vat_quarter"`, der kun er et legacy-alias. `status` er `"open" \| "closed" \| "reported"`; `reference` kan være `null`. |
 | `audit_verify` | `{ entries: <number> }` — kun antallet af verificerede posteringer. Integritets-verdikten læses fra **konvolutten**: `ok=true` (+ tom `errors[]`) ⇒ kæden er intakt; `ok=false` ⇒ `errors[]` lister bruddene. Der er hverken `ok` eller `errors` *inde i* `data`. |
@@ -232,16 +261,68 @@ sende uændret for at hente næste side. Et svar med `hasMore: true` er
 > `JournalEntryResult`). En agent behøver derfor ikke kalde et tool blot for
 > at lære dets resultat-shape at kende.
 
+## Workspace tasks, annual wheel and boards
+
+Task adapters in `src/mcp/tools/tasks.ts` correspond to the CLI adapters
+`src/cli/tasks.ts`, `src/cli/task-series.ts` and `src/cli/task-boards.ts`.
+Every operation has explicit `workspace`; authenticated sessions are bound to
+that canonical workspace. The catalog entry permission `workspace.tasks.read`
+only enters the service: it does not grant mutation authority. The shared
+service rechecks live resource permissions (`company.tasks.read/write/manage`
+or `workspace.tasks.manage`) and affected actor policies before accessing or
+mutating the requested task, series or board. Actor attribution never supplies
+a principal; optional `actor` on writes is policy checked separately.
+
+Reads have no side effects. All writes require `confirm:true` and a durable
+`idempotencyKey`. Existing records require `expectedVersion`; `0` creates a
+new series/board. After an uncertain result, read the canonical record and
+retry only the identical payload/key. `IDEMPOTENCY_CONFLICT`, version conflicts,
+missing evidence, unresolved sources and access rejection are fail-closed.
+The exact typed nested inputs are returned by `agent_operation_describe`.
+
+| Tool | CLI | Business input | `data` fields | Class |
+| --- | --- | --- | --- | --- |
+| `tasks_list` | `tasks list` | Company/status/type/search/assignee/date filters; `includeArchived?`, `showDone?`, `undated?`, `unassigned?` | `tasks`, `count`, `boards`, `series`, `projections`, permitted `companies`, `currentUserId`, `canManageWorkspace`, `runtime`, `notifications`, `sourceCoverage` | read |
+| `tasks_get` | `tasks get` | `taskId` | `task` | read |
+| `tasks_history` | `tasks history` | `taskId` | `history` | read |
+| `tasks_create` | `tasks create` | `title`, explicit `scope`, optional task fields, `idempotencyKey` | `task` | write-reversible |
+| `tasks_update` | `tasks update` | `taskId`, typed `patch`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_move` | `tasks move` | `taskId`, `status`, `columnId?`, `workspaceColumnId?`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_complete` | `tasks complete` | `taskId`, `outcome`, `note`, `references?`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_reopen` | `tasks reopen` | `taskId`, `reason`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_sync` | `tasks sync` | `companySlugs?`, `asOfDate?`, `idempotencyKey` | `tasks` and synchronization coverage | write-reversible |
+| `tasks_reminder_set` | `tasks reminder` | `taskId`, typed `reminder`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_notifications` | `tasks notifications` | No business input | `notifications` | read |
+| `tasks_runtime` | `tasks runtime` | No business input | `runtime` | read |
+| `tasks_run` | `tasks run` | `asOfDate?`, `idempotencyKey` | `notifications`, `runtime` | write-reversible |
+| `task_series_list` | `task-series list` | `companySlugs?`, `includeArchived?` | `series` | read |
+| `task_series_save` | `task-series save` | Typed `series`, `expectedVersion`, `idempotencyKey` | `series` | write-reversible |
+| `task_series_project` | `task-series project` | `from`, `to`, `companySlugs?`, `includeArchived?` | `projections` | read |
+| `task_series_materialize` | `task-series materialize` | `companySlugs?`, `asOfDate?`, `idempotencyKey` | `tasks` | write-reversible |
+| `task_boards_list` | `task-boards list` | `companySlugs?`, `includeArchived?` | `boards` | read |
+| `task_boards_preview` | `task-boards preview` | Typed `board`, `expectedVersion?` | `preview` (`previewHash`, affected tasks, status changes) | read |
+| `task_boards_save` | `task-boards save` | Typed `board`, `expectedVersion`, `idempotencyKey` | `board` | write-reversible |
+
+Scope is `{kind:"company",companySlug}` or
+`{kind:"workspace",companySlugs:[...]}`. Status is `open`, `in_progress`,
+`waiting` or `done`. Completion separately records `completed`, `not_relevant`,
+`cancelled` or `exception`, with a note and evidence. Moving a card never
+replaces evidence, ledger approval, payment or filing. `task_boards_preview`
+returns a bound `previewHash` before changing meaning or deleting a populated
+column; `task_boards_save` requires explicit relocations and the current preview.
+Assignment never grants access or sends an external message. The reminder
+runner sends only in-product reminders and starts no LLM work.
+
 ## Tool-count summary
 
 Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 91
-- **Ordinary write-tools**: 122
+- **Read-tools**: 119
+- **Ordinary write-tools**: 149
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **214** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **269** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 
@@ -257,7 +338,7 @@ paired writes are `documents_parse` and `documents_parse_pending`; both require
 `confirm:true`, the normal actor allow-list, and return bounded summaries only.
 Parsing is evidence, not bookkeeping authority.
 
-49 tools i den kuraterede tabel nedenfor. Ingen state-bivirkninger; må kaldes
+50 tools i den kuraterede tabel nedenfor. Ingen state-bivirkninger; må kaldes
 frit og parallelt.
 
 | Tool | CLI-ækvivalent | Input | Brief |
@@ -299,6 +380,7 @@ Document-party resolution uses exactly one visible state per document: `resolved
 | `invoice_interest_correction_calc` | `invoice interest-correction` | `{ company, documentId? \| invoiceNumber? }` | Foreslår en korrektion af for meget opkrævet morarente (read-only). Opstår når en betaling/kreditnota er registreret med virkningsdato inde i et allerede bogført rentekravs vindue. Felter: `hasProposal`, `overClaimedAmount`, `postedInterest`, `lawfulInterest`, `alreadyCorrected`, `throughDate`. |
 | `invoice_imported_receivables` | `invoice imported-receivables` | `{ company, asOf }` | Læser kildebeviste importerede tilgodehavender med åbne saldi på en eksplicit dato. `asOf` er påkrævet i MCP; CLI bruger `--as-of` og ellers dagsdato. Resultatet har `asOfDate`, `boundary`, `count`, `totalOpen` og `rows`. Disse kilderegistre er adskilt fra native fakturaer og kan ikke udstedes, rykkes eller afregnes via native fakturakommandoer. Read-only; kræver `company.read`. |
 | `invoice_list` | `invoice list` | `{ company, status?, from?, to?, customerCvr?, customer?, invoiceNumber?, minAmount?, maxAmount?, asOf? }` | Lister udstedte fakturaer med filtre. |
+| `invoice_imported_receivables` | `invoice imported-receivables` | `{ company, asOf }` | Lister kildebeviste importerede tilgodehavender pr. cutoff. Listen er et arkiv-read og indeholder aldrig Rentemester-udstedte fakturaer. HTTP-paritet: `GET /api/companies/:slug/imported-receivables?asOf=YYYY-MM-DD`. |
 | `invoice_overdue` | `invoice overdue` | `{ company, asOf?, minDays? }` | Lister forfaldne, ikke fuldt afregnede fakturaer. |
 | `invoice_status` | `invoice status` | `{ company, documentId? \| invoiceNumber?, asOf? }` | Viser åben saldo og status på en faktura. |
 | `invoice_validate` | `invoice validate` | `{ payload: InvoicePayload }` | Validerer faktura-payload uden at gemme. |
@@ -374,7 +456,7 @@ append-only finanskæde.
 | `cvr_lookup` | `customer cvr-lookup` | `{ company, cvr, confirm }` | Slår en dansk virksomhed op i CVR-registret og cacher snapshottet. Kræver `CVR_USERNAME`/`CVR_PASSWORD`. |
 | `customer_create` | `customer create` | `{ company, input: CreateCustomerInput, fromCvr?, confirm }` | Opretter append-only kundepost. Kan arkiveres. |
 | `documents_ingest` | `documents ingest` | `{ company, filePath, metadata: DocumentMetadata, vendorId?, force?, confirm }` | Indlæser og hash-lagrer et bilag. `internal_voucher` kræver bank-id, begrundelse og moms 0. |
-| `documents_set_company_context` | `documents set-company-context` | `{ company, documentId, sourceReference, businessUseReason, confirm }` | Gemmer append-only, hash-bundet virksomheds-kontekst for et dansk forenklet købsbilag; ændrer aldrig modtagerfelter på fakturaen. |
+| `documents_set_company_context` | `documents set-company-context` | `{ company, documentId, sourceReference, businessUseReason, confirm }` | Gemmer append-only, hash-bundet virksomheds- og forretningskontekst for et dansk forenklet købsbilag eller et ufuldstændigt standardkøbsbilag; ændrer aldrig modtagerfelter på fakturaen og er ikke en moms-godkendelse. |
 | `efaktura_modtag` | `efaktura modtag` | `{ company, digisenseCompanyKey?, limit?, maxTimestamp?, metadata?, force?, confirm }` | Poller modtagne e-fakturaer hos Digisense (pagination), ingester hvert nyt dokument. Dedup på internalId — rerun-stabil. |
 | `efaktura_modtag_workspace` | `efaktura modtag-workspace` | `{ workspace, confirm }` | Poller aktive manifest-virksomheder med deres lokale bindings; ingen caller credentials/companyKey og redigerede per-company resultater. |
 | `exception_resolve` | `exceptions resolve` | `{ company, id, note?, confirm }` | Markerer exception som løst. |
@@ -692,8 +774,8 @@ og `tools/list`):
   `system export-accountant` (håndoff-pakke til bogholder/revisor) og
   `system backup-guide` (HTML-guide).
 - `src/cli/vat.ts` (tvilling: `src/mcp/tools/vat.ts`) —
-  `vat momsangivelse` (alias: `vat filing`) er CLI-only; MCP har kun
-  `vat_report`, `vat_eu_sales_list`, `vat_oss_report` og `vat_post_*`.
+  `vat momsangivelse` (alias: `vat filing`) har MCP-pendanten `vat_filing`.
+  Begge bygger den read-only, hele-kroner TastSelv-form og indsender aldrig til Skattestyrelsen.
 - `src/cli/import.ts` (tvilling: `src/mcp/tools/import.ts`) —
   `import run` (fuld migrering), `import systems` og `import contacts` er
   CLI-only; MCP har kun `import_archive_list`/`import_archive_year`.
@@ -720,6 +802,14 @@ ord-for-ord, CLI/MCP-pendanter og er derfor hverken CLI-only eller MCP-only:
   `expense vat-preflight` og `expense_vat_preflight[_apply]`; MCP-værktøjet
   ligger under expense-domænet, mens CLI-adapteren bevidst er en selvstændig
   fil for at holde provider-I/O ude af posting-kernen.
+- `src/cli/purchase-case.ts` ↔ `src/mcp/tools/purchase-cases.ts` —
+  kildebundne, foreløbige købscases og eksakt review. Flowet bogfører aldrig
+  eller ændrer momsstatus; den efterfølgende bogføring følger det eksisterende
+  purchase-/payable-flow. Købsoverblikkets bogførte grundlag læses altid fra
+  hovedbogen, også for historiske køb uden case. Aktive accounting drafts i
+  perioden vises som en særskilt foreløbig effekt med deres egen økonomidato;
+  de er synlige med `caseId: null`, hvis ingen case findes, og udløser aldrig
+  automatisk historisk case-backfill.
 
 > **Andre kendte mikro-afvigelser (samme filnavn, divergent klassifikation
 > eller ergonomi):**

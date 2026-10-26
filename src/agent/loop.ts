@@ -339,13 +339,28 @@ function runPhases(db: Database, input: AgentRunInput, report: AgentRunReport): 
     // Only outgoing supplier payments are bookable as expenses here. Customer
     // payments and refunds are settled by their own deterministic features —
     // the agent never improvises a posting for them.
-    const best = row.suggestions
+    const purchaseMatches = row.suggestions
       .filter((s) => s.kind === "purchase_sale")
-      .sort((a, b) => b.confidence - a.confidence)[0];
+      .sort((a, b) => b.confidence - a.confidence);
+    const best = purchaseMatches[0];
 
     if (!best) {
       // No expense candidate at all — leave it for the reconcile phase to
       // surface as an unmatched-bank-transaction exception.
+      continue;
+    }
+    const strongestMatches = purchaseMatches.filter(match => match.confidence === best.confidence);
+    if (best.confidence >= AUTO_BOOK_CONFIDENCE_THRESHOLD && strongestMatches.length > 1) {
+      routeException(db, report, {
+        type: "AGENT_AMBIGUOUS_MATCH",
+        severity: "medium",
+        message:
+          `Banktransaktion ${row.bankTransactionId} matcher bilag ${strongestMatches.map(match => match.documentId).join(", ")} ` +
+          `lige sikkert (${best.confidence.toFixed(2)}) — agenten vælger ikke mellem dem.`,
+        requiredAction: "Gennemgå bilagene, og bogfør betalingen manuelt mod det rette bilag med 'expense book'.",
+        relatedBankTransactionId: row.bankTransactionId,
+        sourceEvidence: { rule: AGENT_RULE_ID, matches: strongestMatches },
+      });
       continue;
     }
     if (best.confidence < AUTO_BOOK_CONFIDENCE_THRESHOLD) {

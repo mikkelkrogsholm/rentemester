@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Når et køb bliver et anlægsaktiv, skal anskaffelse, afskrivningsplan og hver periodisk postering hænge sammen. Rentemester kan hjælpe med den mekanik, men den skattemæssige vurdering er stadig brugerens eller rådgiverens ansvar."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Anlægsaktiver adskiller sig fra almindelige udgifter, fordi værdien forbruges over tid. Det kræver et aktivregister, en plan for afskrivning og bogførte perioder, der kan knyttes tilbage til det oprindelige bilag.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Aktivregister</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Aktivregister</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan registrere et aktiv med navn, kategori, anskaffelsesdato, kostpris, forventet levetid og dokumentlink. Aktivregisteret viser akkumulerede afskrivninger og bogført værdi.
     </p>
 
-    <h2>Periodiske afskrivninger</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Periodiske afskrivninger</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Afskrivningsflowet posterer balancerede perioder: debet på afskrivningskonto og kredit på akkumulerede afskrivninger. Hver periode er deterministisk og knyttet til aktivet.
     </p>
 
-    <h2>Straksafskrivning kræver eksplicit valg</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Straksafskrivning kræver eksplicit valg</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Koden understøtter straksafskrivning af mindre aktiver, men kræver eksplicit bekræftelse og kildehenvisning til reglen. Rentemester må ikke selv beslutte den skattemæssige behandling.
     </p>
   </article>

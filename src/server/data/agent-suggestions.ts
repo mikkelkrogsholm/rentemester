@@ -23,7 +23,7 @@
 
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import {
   companyRootForSlug,
@@ -185,9 +185,8 @@ export function buildCompanyAgentSuggestions(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
 
     // Open agent-* exceptions, optionally joined to an audit_log entry that

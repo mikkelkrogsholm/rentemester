@@ -8,6 +8,7 @@
 
 import type { Database } from "bun:sqlite";
 import { listBankAccounts } from "../../core/bank";
+import { fromOre, toOre } from "../../core/money";
 import { roundKroner } from "./shared";
 
 /**
@@ -55,52 +56,130 @@ export function bankBalanceAsOf(db: Database, asOfDate: string): number {
   return roundKroner(row.bal);
 }
 
+export type BankStatementStatus = "known" | "no-balance-column" | "none" | "ambiguous";
+
+export type StatementBalanceResolution = {
+  status: BankStatementStatus;
+  balance: number | null;
+  /** Immutable source rows that establish the returned closing balance. */
+  provenance: Array<{ bankAccountId: number | null; transactionId: number; transactionDate: string; sourceOrder: "ascending" | "descending" | "single-row" }>;
+  diagnostics: string[];
+};
+
+type StatementRow = {
+  id: number;
+  bankAccountId: number | null;
+  transactionDate: string;
+  amount: number;
+  balanceAfter: number | null;
+  statementRowIndex: number | null;
+  statementOrder: "ascending" | "descending" | null;
+  statementOrderProvenance: string | null;
+};
+
 /**
- * Actual bank balance from the imported statement, kroner — the `balance_after`
- * of the most recent `bank_transactions` row (latest `transaction_date`, then
- * latest id) per bank account, summed across accounts.
- *
- * This is what the owner's bank app shows; it can differ from the booked
- * ledger balance when transactions are imported but not yet reconciled. Rows
- * with no `balance_after` (a generic CSV import that omitted the running
- * balance) are skipped. Returns `null` when no statement balance is known.
+ * Resolves statement closing balances exclusively from persisted source order.
+ * SQLite row ids and import order are never chronology. A same-date cluster
+ * without one declared direction/provenance is intentionally ambiguous.
  */
-export function actualBankBalanceAsOf(
-  db: Database,
-  asOfDate: string,
-): number | null {
-  // The latest dated row per bank account (id breaks same-date ties). Rows
-  // imported before #187 have a null bank_account_id — group them together as
-  // one logical account so a single statement still surfaces.
-  const rows = db
-    .query(
-      `SELECT bt.balance_after AS balanceAfter
-         FROM bank_transactions bt
-         JOIN (
-           SELECT bank_account_id AS acc,
-                  MAX(transaction_date) AS maxDate
-             FROM bank_transactions
-            WHERE transaction_date <= ?
-              AND balance_after IS NOT NULL
-            GROUP BY bank_account_id
-         ) latest
-           ON (bt.bank_account_id IS latest.acc
-               OR (bt.bank_account_id IS NULL AND latest.acc IS NULL))
-          AND bt.transaction_date = latest.maxDate
-        WHERE bt.transaction_date <= ?
-          AND bt.balance_after IS NOT NULL
-          AND bt.id = (
-            SELECT MAX(b2.id) FROM bank_transactions b2
-             WHERE (b2.bank_account_id IS bt.bank_account_id)
-               AND b2.transaction_date = bt.transaction_date
-               AND b2.balance_after IS NOT NULL
-               AND b2.transaction_date <= ?
-          )`,
-    )
-    .all(asOfDate, asOfDate, asOfDate) as Array<{ balanceAfter: number }>;
-  if (rows.length === 0) return null;
-  const total = rows.reduce((sum, r) => sum + Number(r.balanceAfter ?? 0), 0);
-  return roundKroner(total);
+export function resolveActualBankBalanceAsOf(db: Database, asOfDate: string): StatementBalanceResolution {
+  const rows = db.query(
+    `SELECT id, bank_account_id AS bankAccountId, transaction_date AS transactionDate,
+            amount, balance_after AS balanceAfter, statement_row_index AS statementRowIndex,
+            statement_order AS statementOrder, statement_order_provenance AS statementOrderProvenance
+       FROM bank_transactions WHERE transaction_date <= ?
+       ORDER BY bank_account_id, transaction_date, id`,
+  ).all(asOfDate) as StatementRow[];
+  if (rows.length === 0) return { status: "none", balance: null, provenance: [], diagnostics: [] };
+
+  const accounts = new Map<string, StatementRow[]>();
+  for (const row of rows) {
+    const key = row.bankAccountId === null ? "legacy:null" : `account:${row.bankAccountId}`;
+    accounts.set(key, [...(accounts.get(key) ?? []), row]);
+  }
+  const provenance: StatementBalanceResolution["provenance"] = [];
+  const diagnostics: string[] = [];
+  let totalOre = 0n;
+  let knownAccounts = 0;
+  let hadBalance = false;
+  let accountsWithoutBalances = 0;
+
+  for (const accountRows of accounts.values()) {
+    const balanceRows = accountRows.filter((row) => row.balanceAfter !== null);
+    if (balanceRows.length === 0) {
+      accountsWithoutBalances += 1;
+      diagnostics.push(`bank account ${accountRows[0]!.bankAccountId ?? "legacy"} has no balance_after`);
+      continue;
+    }
+    hadBalance = true;
+    // A partial running-balance stream cannot prove its movement check.
+    if (balanceRows.length !== accountRows.length) {
+      diagnostics.push(`bank account ${accountRows[0]!.bankAccountId ?? "legacy"} has transactions without balance_after`);
+      continue;
+    }
+    const byDate = new Map<string, StatementRow[]>();
+    for (const row of balanceRows) byDate.set(row.transactionDate, [...(byDate.get(row.transactionDate) ?? []), row]);
+    let previousOre: bigint | null = null;
+    let accountAmbiguous = false;
+    let closing: StatementRow | null = null;
+    for (const date of [...byDate.keys()].sort()) {
+      const cluster = byDate.get(date)!;
+      let ordered: StatementRow[];
+      let sourceOrder: "ascending" | "descending" | "single-row";
+      if (cluster.length === 1) {
+        ordered = cluster;
+        sourceOrder = "single-row";
+      } else {
+        const direction = cluster[0]!.statementOrder;
+        const provenanceId = cluster[0]!.statementOrderProvenance;
+        const valid = direction !== null && provenanceId !== null && cluster.every((row) =>
+          row.statementOrder === direction && row.statementOrderProvenance === provenanceId && Number.isInteger(row.statementRowIndex),
+        );
+        const uniqueIndices = new Set(cluster.map((row) => row.statementRowIndex)).size === cluster.length;
+        if (!valid || !uniqueIndices) {
+          diagnostics.push(`bank account ${cluster[0]!.bankAccountId ?? "legacy"} has ambiguous statement order on ${date}`);
+          accountAmbiguous = true;
+          break;
+        }
+        sourceOrder = direction;
+        ordered = [...cluster].sort((a, b) => direction === "ascending"
+          ? Number(a.statementRowIndex) - Number(b.statementRowIndex)
+          : Number(b.statementRowIndex) - Number(a.statementRowIndex));
+      }
+      for (const row of ordered) {
+        const balanceOre = toOre(Number(row.balanceAfter));
+        if (previousOre !== null && previousOre + toOre(Number(row.amount)) !== balanceOre) {
+          diagnostics.push(`bank account ${row.bankAccountId ?? "legacy"} has inconsistent running balance at transaction ${row.id}`);
+          accountAmbiguous = true;
+          break;
+        }
+        previousOre = balanceOre;
+        closing = row;
+        if (cluster.length > 1 || date === [...byDate.keys()].sort().at(-1)) {
+          // The final element is replaced below; retaining only the endpoint
+          // makes this read model compact and traceable.
+        }
+      }
+      if (accountAmbiguous) break;
+      if (closing && date === [...byDate.keys()].sort().at(-1)) {
+        provenance.push({ bankAccountId: closing.bankAccountId, transactionId: closing.id, transactionDate: closing.transactionDate, sourceOrder });
+      }
+    }
+    if (accountAmbiguous || closing === null || previousOre === null) continue;
+    totalOre += previousOre;
+    knownAccounts += 1;
+  }
+  // A portfolio total is meaningful only when every imported account has a
+  // provable statement closing balance. Do not sum the known subset.
+  if (hadBalance && diagnostics.length > 0) return { status: "ambiguous", balance: null, provenance: [], diagnostics };
+  if (!hadBalance && accountsWithoutBalances > 0) return { status: "no-balance-column", balance: null, provenance: [], diagnostics: [] };
+  if (!hadBalance || knownAccounts === 0) return { status: "no-balance-column", balance: null, provenance: [], diagnostics: [] };
+  return { status: "known", balance: fromOre(totalOre), provenance, diagnostics: [] };
+}
+
+/** Actual statement balance in kroner; null when its source is not provable. */
+export function actualBankBalanceAsOf(db: Database, asOfDate: string): number | null {
+  return resolveActualBankBalanceAsOf(db, asOfDate).balance;
 }
 
 /**
@@ -121,9 +200,6 @@ export function actualBankBalanceAsOf(
 export function bankStatementStatusAsOf(
   db: Database,
   asOfDate: string,
-): "known" | "no-balance-column" | "none" {
-  if (actualBankBalanceAsOf(db, asOfDate) !== null) return "known";
-  const hasAnyTransactions =
-    (db.query("SELECT 1 FROM bank_transactions LIMIT 1").get() as unknown) !== null;
-  return hasAnyTransactions ? "no-balance-column" : "none";
+): BankStatementStatus {
+  return resolveActualBankBalanceAsOf(db, asOfDate).status;
 }

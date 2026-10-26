@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Local-first regnskab betyder, at data ligger i en mappe du ejer. Det giver gennemsigtighed og eksportmuligheder, men kræver også backup, adgangskontrol og disciplin."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       De fleste regnskabsprogrammer er cloud-first. Det er praktisk, men betyder også at data, workflow og eksport afhænger af leverandøren. Rentemester går en anden vej: lokal virksomhedsmappe, SQLite og kildekode, der kan inspiceres.
     </p>
 
@@ -37,19 +38,19 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Fordele</h2>
-    <ul>
-      <li>du kan inspicere filer og database lokalt</li>
-      <li>eksport og backup kan være førsteprioritet</li>
-      <li>ingen telemetry eller cloudafhængighed som standardclaim</li>
-      <li>AI-workflows kan begrænses til lokale, strukturerede tools</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Fordele</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>du kan inspicere filer og database lokalt</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>eksport og backup kan være førsteprioritet</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>ingen telemetry eller cloudafhængighed som standardclaim</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>AI-workflows kan begrænses til lokale, strukturerede tools</li>
     </ul>
 
-    <h2>Ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Local-first fjerner ikke driftsansvar. Brugeren skal stadig beskytte filer, nøgler og backups. Derfor skal siden ikke sælge lokal data som magisk sikkerhed, men som et andet tradeoff: mere kontrol, mere ansvar.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den rigtige brugeroplevelse er derfor ikke bare "download og glem". Den bør vise sundhedsstatus, backup-status, audit-fejl og åbne exceptions tydeligt, så lokal kontrol ikke bliver lokal uorden.
     </p>
   </article>

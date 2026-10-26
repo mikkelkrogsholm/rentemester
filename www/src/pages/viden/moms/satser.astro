@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -34,12 +35,12 @@ const retsinfoMomslovenUrl = "https://www.retsinformation.dk/eli/lta/2024/209";
     lead="Danmark har som udgangspunkt 25 procent moms på varer og ydelser. Men der findes vigtige undtagelser: momsfritagelse, 0-sats og omvendt betalingspligt."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kort version: den normale danske momssats er 25 procent. Når du beregner moms oven på en nettopris, lægger du 25 procent til. Når du finder momsen i en pris inklusiv moms, udgør momsen 20 procent af bruttobeløbet.
     </p>
-    <p>
-      Kilder: Momslovens § 33 fastsætter afgiften til 25 procent af afgiftsgrundlaget, og Skattestyrelsens juridiske vejledning forklarer, at det svarer til 20 procent af prisen inklusiv moms. Se <a href={retsinfoMomslovenUrl} rel="noopener" target="_blank">momsloven på Retsinformation</a> og <a href={skatMomssatsUrl} rel="noopener" target="_blank">Skattestyrelsens afsnit om momssatsen</a>.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Kilder: Momslovens § 33 fastsætter afgiften til 25 procent af afgiftsgrundlaget, og Skattestyrelsens juridiske vejledning forklarer, at det svarer til 20 procent af prisen inklusiv moms. Se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={retsinfoMomslovenUrl} rel="noopener" target="_blank">momsloven på Retsinformation</a> og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={skatMomssatsUrl} rel="noopener" target="_blank">Skattestyrelsens afsnit om momssatsen</a>.
     </p>
 
     <SeoEvidence
@@ -54,32 +55,32 @@ const retsinfoMomslovenUrl = "https://www.retsinformation.dk/eli/lta/2024/209";
       ]}
     />
 
-    <h2>Standardmoms: 25 procent</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Standardmoms: 25 procent</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       De fleste momspligtige danske salg af varer og ydelser er omfattet af 25 procent moms. En faktura på 1.000 kr. ekskl. moms bliver derfor 1.250 kr. inkl. moms.
     </p>
-    <pre><code>1.000,00 kr. ekskl. moms
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>1.000,00 kr. ekskl. moms
 + 250,00 kr. moms
 = 1.250,00 kr. inkl. moms</code></pre>
 
-    <h2>Moms i et beløb inkl. moms</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Moms i et beløb inkl. moms</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis beløbet allerede er inklusiv moms, finder du momsen som 20 procent af bruttobeløbet. En kvittering på 1.250 kr. inkl. moms indeholder 250 kr. moms.
     </p>
 
-    <h2>Momsfritagelse og 0-sats</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Momsfritagelse og 0-sats</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Nogle aktiviteter er momsfritaget, og enkelte salg kan være 0-sats eller uden dansk moms afhængigt af reglerne. Det skal ikke behandles som almindelig 25 procent moms. Eksempler afhænger af branche, ydelse, kundetype og land, så kontroller altid den konkrete situation.
     </p>
 
-    <h2>Reverse charge</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Reverse charge</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Ved visse køb fra EU eller udlandet skal køberen selv beregne dansk moms efter reglerne om omvendt betalingspligt. I praksis kan der både opstå udgående og indgående moms i samme bogføring, hvis der er fuldt fradrag.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
-      Rentemesters kildekode har momslogik for standardmoms, EU reverse charge, repræsentationsmoms og bad-debt VAT relief. `vat report` samler tallene for en periode, og posteringer kobles til moms-koder i ledgeren. Brug <a href="/vaerktoej/momsberegner">momsberegneren</a> til simple beløb og <a href="/viden/frister/moms">momsfrister</a> til perioder.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Rentemesters kildekode har momslogik for standardmoms, EU reverse charge, repræsentationsmoms og bad-debt VAT relief. `vat report` samler tallene for en periode, og posteringer kobles til moms-koder i ledgeren. Brug <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/vaerktoej/momsberegner">momsberegneren</a> til simple beløb og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/frister/moms">momsfrister</a> til perioder.
     </p>
   </article>
 </BaseLayout>

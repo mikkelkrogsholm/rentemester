@@ -30,7 +30,7 @@ describe("vat momsangivelse CLI", () => {
     expect(parsed.periodStatus).toBe("closed");
     expect(parsed.rubrikker.kobsmoms).toBe(250);
     expect(parsed.rubrikker.salgsmoms).toBe(0);
-    expect(parsed.rubrikker.momstilsvar).toBe(-250);
+    expect(parsed.rubrikker.momsIAlt).toBe(-250);
   });
 
   test("fails clearly when the VAT period is still open", async () => {

@@ -102,8 +102,19 @@ if (!/^sha256:[0-9a-f]{64}$/i.test(releaseImageDigest)) {
   throw new Error("release manifest image digest must be sha256");
 }
 const sbomSha256 = stringField(evidence, "sbomSha256");
-if (!/^sha256:[0-9a-f]{64}$/i.test(sbomSha256)) {
-  throw new Error("release manifest SBOM evidence is invalid");
+const supplyChainSha256 = stringField(evidence, "supplyChainSha256");
+const agentDiscoverySha256 = stringField(evidence, "agentDiscoverySha256");
+// Rust v2 has its own strict evidence schema; these cockpit hashes belong to Bun v1 only.
+const evidenceChecksums = [sbomSha256, supplyChainSha256, agentDiscoverySha256];
+if (manifest.value.manifestVersion === 1) {
+  evidenceChecksums.push(
+    stringField(evidence, "cockpitEvidenceSha256"),
+    stringField(evidence, "cockpitRegressionQuerySha256"),
+  );
+}
+if (!evidenceChecksums
+  .every((digest) => /^sha256:[0-9a-f]{64}$/i.test(digest))) {
+  throw new Error("release manifest evidence checksums are invalid");
 }
 if (
   !/^\d+$/.test(stringField(workflow, "runId")) ||

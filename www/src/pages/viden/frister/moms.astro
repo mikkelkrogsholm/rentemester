@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -42,12 +43,12 @@ const skatFristerUrl = "https://skat.dk/erhverv/moms/frister-indberet-og-betal-m
     lead="Momsfristen afhænger af din virksomheds momsperiode. Rentemester kan lave momsrapport for en valgt periode, men du skal altid kontrollere den konkrete frist i TastSelv Erhverv."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kort version: danske virksomheder indberetter typisk moms månedligt, kvartalsvist eller halvårligt. Hvilken rytme du har, afhænger blandt andet af virksomhedens momspligtige omsætning, om virksomheden er nystartet, og Skattestyrelsens registrering. Den konkrete frist står i TastSelv Erhverv.
     </p>
-    <p>
-      Kilde: Skattestyrelsens aktuelle oversigt over <a href={skatFristerUrl} rel="noopener" target="_blank">frister for indberetning og betaling af moms</a>. Brug den som facit, hvis datoer eller grænser ændrer sig.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Kilde: Skattestyrelsens aktuelle oversigt over <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={skatFristerUrl} rel="noopener" target="_blank">frister for indberetning og betaling af moms</a>. Brug den som facit, hvis datoer eller grænser ændrer sig.
     </p>
 
     <SeoEvidence
@@ -62,40 +63,40 @@ const skatFristerUrl = "https://skat.dk/erhverv/moms/frister-indberet-og-betal-m
       ]}
     />
 
-    <h2>Typiske momsperioder</h2>
-    <ul>
-      <li><strong>Månedlig moms:</strong> typisk når den momspligtige omsætning er over 50 mio. kr. årligt, eller hvis virksomheden selv har søgt om månedsvis afregning.</li>
-      <li><strong>Kvartalsmoms:</strong> typisk for nystartede virksomheder, virksomheder der selv har søgt om kvartalsvis afregning, eller virksomheder med momspligtig omsætning mellem 5 og 50 mio. kr. årligt.</li>
-      <li><strong>Halvårsmoms:</strong> typisk når den momspligtige omsætning er under 5 mio. kr. årligt, og virksomheden har indberettet og betalt til tiden.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typiske momsperioder</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Månedlig moms:</strong> typisk når den momspligtige omsætning er over 50 mio. kr. årligt, eller hvis virksomheden selv har søgt om månedsvis afregning.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Kvartalsmoms:</strong> typisk for nystartede virksomheder, virksomheder der selv har søgt om kvartalsvis afregning, eller virksomheder med momspligtig omsætning mellem 5 og 50 mio. kr. årligt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Halvårsmoms:</strong> typisk når den momspligtige omsætning er under 5 mio. kr. årligt, og virksomheden har indberettet og betalt til tiden.</li>
     </ul>
 
-    <h2>Hvad bør være klar før fristen?</h2>
-    <ul>
-      <li>alle salgsfakturaer for perioden</li>
-      <li>alle købsbilag og kvitteringer</li>
-      <li>bankafstemning for perioden</li>
-      <li>korrekt håndtering af EU-køb, repræsentation og kreditnotaer</li>
-      <li>momsrapport med udgående moms, indgående moms og nettobeløb</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør være klar før fristen?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>alle salgsfakturaer for perioden</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>alle købsbilag og kvitteringer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bankafstemning for perioden</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>korrekt håndtering af EU-køb, repræsentation og kreditnotaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>momsrapport med udgående moms, indgående moms og nettobeløb</li>
     </ul>
 
-    <h2>Sådan undgår du frist-stress</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan undgår du frist-stress</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den praktiske fejl er næsten aldrig selve indberetningen. Det er bilagene, afstemningen og usikre posteringer der mangler. Derfor bør bogføringen være løbende, ikke en øvelse aftenen før deadline.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan generere en momsrapport for en valgt periode med `vat report`. Den samler udgående moms, indgående moms, reverse charge og særlige momsflows som repræsentation ud fra posteringerne i den lokale ledger. Roadmap'et er at koble det tydeligere til fristkalender, bilagsmail og exceptions, så mangler kan opdages før fristen.
     </p>
-    <p>
-      Brug også <a href="/vaerktoej/momsberegner">momsberegneren</a> og læs <a href="/viden/moms/satser">momssatser i Danmark</a>.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Brug også <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/vaerktoej/momsberegner">momsberegneren</a> og læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/moms/satser">momssatser i Danmark</a>.
     </p>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

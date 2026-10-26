@@ -16,6 +16,7 @@ import { buildCompanyPeriods } from "../data/periods-view";
 import { buildCompanyRetention } from "../data/retention-view";
 import {
   buildCompanyAgentSuggestions,
+  buildCompanyAttention,
   buildCompanyArchiveYear,
   buildCompanyBudget,
   buildCompanyBudgetDimensionActuals,
@@ -186,9 +187,10 @@ export function handleCompanyAnnualReport(
   slug: string,
   url: URL,
 ): Response {
+  const canonicalYear = url.searchParams.get("year");
   const fiscalYearStart = url.searchParams.get("fiscalYearStart");
   const fiscalYearEnd = url.searchParams.get("fiscalYearEnd");
-  if (!fiscalYearStart || !fiscalYearEnd) {
+  if (!canonicalYear && (!fiscalYearStart || !fiscalYearEnd)) {
     throw ApiError.badRequest(
       "fiscalYearStart og fiscalYearEnd (YYYY-MM-DD) er begge påkrævet.",
     );
@@ -196,8 +198,9 @@ export function handleCompanyAnnualReport(
   const data = buildCompanyAnnualReport(
     config.workspaceRoot,
     slug,
-    fiscalYearStart,
-    fiscalYearEnd,
+    fiscalYearStart ?? "",
+    fiscalYearEnd ?? "",
+    canonicalYear ?? undefined,
   );
   return okResponse({ annualReport: data });
 }
@@ -336,4 +339,9 @@ export function handleCompanyAgentSuggestions(
 ): Response {
   const data = buildCompanyAgentSuggestions(config.workspaceRoot, slug);
   return okResponse({ agentSuggestions: data });
+}
+
+/** GET /api/companies/:slug/attention — one read-only daily task inbox (#649). */
+export function handleCompanyAttention(config: ServerConfig, slug: string): Response {
+  return okResponse({ attention: buildCompanyAttention(config.workspaceRoot, slug) });
 }

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sådan bogfører du" title="Udenlandske fakturaer kræver ekstra kontrol" lead="En udenlandsk faktura handler både om valuta, momsbehandling, leverandørland, momsnummer og DKK-grundlag. Det er ikke nok at bogføre beløbet direkte fra fakturaen." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Ved udenlandske fakturaer skal du kontrollere, om købet er fra EU eller uden for EU, om der er reverse charge, og hvordan beløbet skal omsættes til DKK i bogføringen. Fejl her påvirker både omkostning, momsrapport og audit trail.
     </p>
 
@@ -33,17 +34,17 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Kontroller før bogføring</h2>
-    <ul>
-      <li>leverandørland og momsnummer</li>
-      <li>valuta og beløb i original valuta</li>
-      <li>DKK-beløb eller deterministisk omregningsgrundlag</li>
-      <li>om fakturaen har udenlandsk moms</li>
-      <li>om reverse charge gælder</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Kontroller før bogføring</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandørland og momsnummer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>valuta og beløb i original valuta</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>DKK-beløb eller deterministisk omregningsgrundlag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om fakturaen har udenlandsk moms</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om reverse charge gælder</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har testede flows for udenlandsk valuta, DKK-banksettlement, udenlandsk bilag og EU service reverse charge. Usikker momsklassifikation bør stoppe som exception i stedet for at blive bogført automatisk.
     </p>
   </article>

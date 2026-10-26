@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // "Næste momsfrist" card — countdown to the SKAT VAT filing deadline for the
 // CLI-selected period.
 
@@ -28,15 +29,15 @@ export function deadlineSection(input: DashboardInput): string {
   // When the company is not VAT-registered the card explains so instead of
   // inventing a period from a non-existent cadence.
   if (input.company.vatPeriodType === null) {
-    return `<div class="deadline-card">
+    return `<div ${documentAttr("deadline")}>
   <div>
-    <div class="label-sm">Næste momsfrist</div>
-    <div class="headline" style="font-size: 18px;">Ikke momsregistreret</div>
-    <div class="muted" style="font-size: 13px; margin-top: var(--space-xxs);"><span class="pill success">Ingen pligt</span> Selskabet er ikke momsregistreret — ingen momsangivelse eller frist.</div>
+    <div ${documentAttr("labelSm")}>Næste momsfrist</div>
+    <div ${documentAttr("deadlineTitle")}>Ikke momsregistreret</div>
+    <div ${documentAttr("deadlineDetail")}><span ${documentAttr("pillSuccess")}>Ingen pligt</span> Selskabet er ikke momsregistreret — ingen momsangivelse eller frist.</div>
   </div>
-  <div style="text-align: right;">
-    <div class="label-sm">Est. nettomoms</div>
-    <div class="amount-lg">—</div>
+  <div ${documentAttr("right")}>
+    <div ${documentAttr("labelSm")}>Est. nettomoms</div>
+    <div ${documentAttr("amountLg")}>—</div>
   </div>
 </div>`;
   }
@@ -56,37 +57,37 @@ export function deadlineSection(input: DashboardInput): string {
   let pill: string;
   let detail: string;
   if (errors.length > 0) {
-    pill = `<span class="pill warning">Kan ikke beregne</span>`;
+    pill = `<span ${documentAttr("pillWarning")}>Kan ikke beregne</span>`;
     detail = truncate(errors[0]!, 80);
   } else if (!deadline) {
-    pill = `<span class="pill warning">Kan ikke beregne</span>`;
+    pill = `<span ${documentAttr("pillWarning")}>Kan ikke beregne</span>`;
     detail = "";
   } else if (daysRemaining < 0) {
-    pill = `<span class="pill danger">Forfalden</span>`;
+    pill = `<span ${documentAttr("pillDanger")}>Forfalden</span>`;
     detail = `${Math.abs(daysRemaining)} dage over`;
   } else if (daysRemaining <= 14) {
-    pill = `<span class="pill warning">${daysRemaining} dage tilbage</span>`;
+    pill = `<span ${documentAttr("pillWarning")}>${daysRemaining} dage tilbage</span>`;
     detail = "";
   } else {
-    pill = `<span class="pill success">${daysRemaining} dage tilbage</span>`;
+    pill = `<span ${documentAttr("pillSuccess")}>${daysRemaining} dage tilbage</span>`;
     detail = "";
   }
   const deadlineLine = deadline
-    ? `<div class="muted" style="font-size: 13px; margin-top: var(--space-xxs);">SKAT-frist: <span class="mono">${escapeHtml(deadline)}</span></div>`
+    ? `<div ${documentAttr("deadlineDetail")}>SKAT-frist: <span ${documentAttr("mono")}>${escapeHtml(deadline)}</span></div>`
     : "";
   const net = input.vatPeriod.netVatPayable;
   const netLabel = net < 0 ? "Til gode" : "Est. nettomoms";
   const netValue = formatDkk(net);
-  return `<div class="deadline-card">
+  return `<div ${documentAttr("deadline")}>
   <div>
-    <div class="label-sm">Næste momsfrist</div>
-    <div class="headline" style="font-size: 18px;">${escapeHtml(period.label)}</div>
+    <div ${documentAttr("labelSm")}>Næste momsfrist</div>
+    <div ${documentAttr("deadlineTitle")}>${escapeHtml(period.label)}</div>
     ${deadlineLine}
-    <div class="muted" style="font-size: 13px; margin-top: var(--space-xxs);">${pill} ${escapeHtml(detail)}</div>
+    <div ${documentAttr("deadlineDetail")}>${pill} ${escapeHtml(detail)}</div>
   </div>
-  <div style="text-align: right;">
-    <div class="label-sm">${escapeHtml(netLabel)}</div>
-    <div class="amount-lg">${escapeHtml(netValue)}</div>
+  <div ${documentAttr("right")}>
+    <div ${documentAttr("labelSm")}>${escapeHtml(netLabel)}</div>
+    <div ${documentAttr("amountLg")}>${escapeHtml(netValue)}</div>
   </div>
 </div>`;
 }

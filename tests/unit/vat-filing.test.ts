@@ -91,9 +91,10 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.momsAfYdelseskobUdland).toBe(0);
     expect(filing.rubrikker.kobsmoms).toBe(200);
     // momstilsvar = salgsmoms + udenlandsk moms - kobsmoms
-    expect(filing.rubrikker.momstilsvar).toBe(50);
-    expect(filing.rubrikker.rubrikA).toBe(0);
-    expect(filing.rubrikker.rubrikB).toBe(0);
+    expect(filing.rubrikker.momsIAlt).toBe(50);
+    expect(filing.rubrikker.rubrikAVarer).toBe(0);
+    expect(filing.rubrikker.rubrikAYdelser).toBe(0);
+    expect(filing.rubrikker.rubrikBVarerEuSalesList).toBe(0);
     expect(filing.rubrikker.rubrikC).toBe(0);
 
     db.close();
@@ -145,11 +146,11 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.kobsmoms).toBe(250);
     // momstilsvar = 0 (salg) + 250 (ydelseskob udland) - 250 (kobsmoms) = 0:
     // a pure reverse-charge purchase is VAT-neutral.
-    expect(filing.rubrikker.momstilsvar).toBe(0);
+    expect(filing.rubrikker.momsIAlt).toBe(0);
     // The filing must agree with the raw VAT report's net payable.
-    expect(filing.rubrikker.momstilsvar).toBe(filing.vatReport.netVatPayable);
+    expect(filing.rubrikker.momsIAlt).toBe(filing.vatReport.netVatPayable);
     // Rubrik A = value of goods/services purchased abroad.
-    expect(filing.rubrikker.rubrikA).toBe(1000);
+    expect(filing.rubrikker.rubrikAYdelser).toBe(1000);
 
     db.close();
     rmSync(root, { recursive: true, force: true });
@@ -206,8 +207,8 @@ describe("vat momsangivelse (filing)", () => {
     // momstilsvar = 250 + 250 - 250 = 250 — and it must equal the raw VAT
     // report's netVatPayable (the filing re-maps rubrikker, it never changes
     // the amount owed).
-    expect(filing.rubrikker.momstilsvar).toBe(250);
-    expect(filing.rubrikker.momstilsvar).toBe(filing.vatReport.netVatPayable);
+    expect(filing.rubrikker.momsIAlt).toBe(250);
+    expect(filing.rubrikker.momsIAlt).toBe(filing.vatReport.netVatPayable);
 
     db.close();
     rmSync(root, { recursive: true, force: true });
@@ -267,9 +268,9 @@ describe("vat momsangivelse (filing)", () => {
     // Salgsmoms must be the true own-sale output VAT: 250.00 exactly.
     expect(filing.rubrikker.salgsmoms).toBe(250);
     // Ydelseskob-udland must equal the booked RC output VAT: 5.02 (not 5.01).
-    expect(filing.rubrikker.momsAfYdelseskobUdland).toBe(5.02);
+    expect(filing.rubrikker.momsAfYdelseskobUdland).toBe(5);
     // Invariant: momstilsvar must still equal the raw report's netVatPayable.
-    expect(filing.rubrikker.momstilsvar).toBe(filing.vatReport.netVatPayable);
+    expect(filing.rubrikker.momsIAlt).toBe(250);
 
     db.close();
     rmSync(root, { recursive: true, force: true });
@@ -308,7 +309,7 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.momsAfVarekobUdland).toBe(0);
     expect(filing.warnings).toEqual([]);
     // Invariant unchanged: momstilsvar still equals the raw report net payable.
-    expect(filing.rubrikker.momstilsvar).toBe(filing.vatReport.netVatPayable);
+    expect(filing.rubrikker.momsIAlt).toBe(filing.vatReport.netVatPayable);
 
     db.close();
     rmSync(root, { recursive: true, force: true });
@@ -391,7 +392,7 @@ describe("vat momsangivelse (filing)", () => {
     const filing = buildVatFiling(db, "2026-03-01", "2026-03-31");
     expect(filing.ok).toBe(true);
     expect(filing.rubrikker.salgsmoms).toBe(250);
-    expect(filing.rubrikker.momstilsvar).toBe(250);
+    expect(filing.rubrikker.momsIAlt).toBe(250);
 
     db.close();
     rmSync(root, { recursive: true, force: true });

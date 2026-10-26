@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Deterministic, offline PDF text extraction with append-only evidence. */
 import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
@@ -21,7 +22,7 @@ export type PdfParseResult = { contractVersion: string; inputSha256: string; sta
 export type PdfParseRun = PdfParseResult & { cached: boolean; parseId?: number; resultHash: string };
 /** Test/benchmark-only observation point, called after a parser child starts. */
 export type PdfChildLaunchObserver = () => void;
-const canonical = (value: unknown): string => Array.isArray(value) ? `[${value.map(canonical).join(",")}]` : value && typeof value === "object" ? `{${Object.keys(value as object).sort().map(k => `${JSON.stringify(k)}:${canonical((value as Record<string, unknown>)[k])}`).join(",")}}` : JSON.stringify(value);
+const canonical = canonicalJson;
 const hash = (value: unknown) => createHash("sha256").update(canonical(value)).digest("hex");
 const inputHash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const codeOf = (error: unknown): PdfParseErrorCode => error instanceof PdfParseError ? error.code : "internal";

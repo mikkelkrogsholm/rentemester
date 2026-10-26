@@ -1,3 +1,4 @@
+import { ownershipEndpointSlugs as ownershipEndpointsFromEvidence } from "../core/ownership-graph";
 import { realpathSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -5,38 +6,51 @@ import { defaultKeyHasher } from "@better-auth/api-key";
 import type { RoutePermission } from "../core/access-permissions";
 import { authorizeWorkspaceRoute } from "../core/workspace-access";
 import { openWorkspaceControlReadOnlyDb } from "../core/workspace-control";
-import { findWorkspaceCompany, isValidSlug, listWorkspaceCompanies } from "../core/workspace";
+import { isValidSlug, listWorkspaceCompanies } from "../core/workspace";
+import { resolveWorkspaceCompany } from "../core/workspace-company-resolver";
 import { WORKSPACE_SERVICE_PRINCIPAL_CONFIG_ID } from "../server/better-auth";
 
-export const MCP_TOOL_PERMISSIONS: Readonly<Record<string, RoutePermission>> = Object.freeze(Object.fromEntries([
+const mcpToolPermissions = Object.fromEntries([
   ["agent_capability_search", "public.read"], ["agent_workflow_describe", "public.read"], ["cvr_lookup", "public.read"], ["invoice_validate", "public.read"], ["meta_about", "public.read"],
+  ..."tasks_list tasks_get tasks_history tasks_notifications tasks_runtime task_series_list task_series_project task_boards_list task_boards_preview".split(" ").map((n) => [n, "workspace.tasks.read"]),
+  ..."tasks_create tasks_update tasks_move tasks_complete tasks_reopen tasks_sync tasks_reminder_set tasks_run task_series_save task_series_materialize task_boards_save".split(" ").map((n) => [n, "workspace.tasks.read"]),
   ["portfolio_overview", "workspace.read"], ["company_add", "workspace.manage"],
   ["cfo_analytics_query", "workspace.read"],
-  ..."accounts_list accounts_roles_status accrual_register_report asset_register_report audit_log_list audit_verify bank_account_list bank_list bank_suggest_matches bank_reconciliation_correction_plan direct_bank_purchase_payable_correction_plan bookkeeping_batch_plan bookkeeping_batch_status bookkeeping_workbench budget_forecast liquidity_forecast_13_week budget_list budget_vs_actual company_profile_get customer_list dimension_assignment_list dimension_assignment_plan dimension_budget_list dimension_budget_plan dimension_definition_list dimension_member_list efaktura_onboarding_status efaktura_status exceptions_list import_archive_list invoice_compensation_calc invoice_find invoice_imported_receivables invoice_interest_calc invoice_interest_correction_calc invoice_list invoice_overdue invoice_status journal_dry_run journal_list mileage_list mileage_report payable_list supplier_commitment_plan supplier_commitment_list supplier_commitment_matches supplier_commitment_alerts period_close_readiness period_close_status period_list posting_rule_explain reconcile_bank recurring_invoice_list retention_status system_healthcheck tax_return_prepare vat_oss_report vat_report vendor_list".split(" ").map((n) => [n, "company.read"]),
-  ..."workspace_party_search workspace_party_inspect corporate_record_list corporate_record_inspect corporate_record_download".split(" ").map((n) => [n, "company.read"]),
+  ..."accounts_list accounts_roles_status accrual_register_report asset_register_report audit_log_list audit_verify bank_account_list bank_list bank_suggest_matches bank_reconciliation_correction_plan bank_legacy_binding_plan direct_bank_purchase_payable_correction_plan bookkeeping_batch_plan bookkeeping_batch_status bookkeeping_workbench purchase_case_get purchase_case_list purchase_overview budget_forecast liquidity_forecast_13_week budget_list budget_vs_actual company_profile_get customer_list dimension_assignment_list dimension_assignment_plan dimension_budget_list dimension_budget_plan dimension_definition_list dimension_member_list efaktura_onboarding_status efaktura_status exceptions_list import_archive_list invoice_compensation_calc invoice_find invoice_imported_receivables invoice_imported_receivables_backfill_plan invoice_imported_receivable_settlement_plan invoice_imported_receivable_settlement_status invoice_interest_calc invoice_interest_correction_calc invoice_list invoice_overdue invoice_status journal_dry_run journal_explain journal_list mileage_list mileage_report payable_legacy_backfill_plan payable_list supplier_commitment_plan supplier_commitment_list supplier_commitment_matches supplier_commitment_alerts period_close_readiness period_close_status period_list posting_rule_explain reconcile_bank recurring_invoice_list retention_status system_healthcheck tax_return_prepare vat_filing vat_oss_report vat_report vendor_list".split(" ").map((n) => [n, "company.read"]),
+  ["accounting_approval_policy_get", "company.read"], ["accounting_approval_policy_set", "company.admin"],
+  ..."workspace_party_search workspace_party_inspect party_hub party_profile corporate_record_list corporate_record_inspect corporate_record_download legacy_party_mapping_plan legacy_party_mapping_list vendor_identity_enrichment_plan vendor_identity_enrichment_list".split(" ").map((n) => [n, "company.read"]),
   ..."intercompany_disposition_plan intercompany_disposition_status".split(" ").map((n) => [n, "company.ownership.read"]),
   ..."company_knowledge_context".split(" ").map((n) => [n, "company.knowledge.read"]),
   ..."ownership_graph_query ownership_snapshot_history".split(" ").map((n) => [n, "company.ownership.read"]),
   ..."documents_invoice_extraction documents_list documents_parsed_text documents_parse_status".split(" ").map((n) => [n, "company.documents.read"]),
-  ..."documents_party_link_list documents_party_link_inspect documents_party_link_plan".split(" ").map((n) => [n, "company.documents.read"]),
+  ..."documents_party_link_list documents_party_link_inspect documents_party_link_plan party_coverage party_coverage_plan".split(" ").map((n) => [n, "company.documents.read"]),
   ..."workspace_inbox_list workspace_inbox_inspect workspace_inbox_status".split(" ").map((n) => [n, "company.documents.read"]),
   ..."documents_ingest documents_parse documents_parse_pending mail_intake_ingest imap_intake_poll".split(" ").map((n) => [n, "company.documents.upload"]),
   ..."workspace_inbox_ingest workspace_inbox_assign workspace_inbox_complete".split(" ").map((n) => [n, "company.documents.upload"]),
-  ..."accounts_add accounts_role_confirm bank_account_update company_sync_cvr customer_create dimension_definition_create dimension_member_create dimension_definition_lifecycle dimension_member_lifecycle documents_enrich documents_extract_invoice documents_set_company_context posting_rule_propose recurring_invoice_create vendor_create".split(" ").map((n) => [n, "company.master-data"]),
-  ..."workspace_party_create workspace_party_link_role corporate_record_ingest corporate_record_link corporate_record_enrich corporate_record_supersede".split(" ").map((n) => [n, "company.master-data"]),
-  ..."documents_party_link_apply documents_party_link_supersede documents_internal_no_external_party documents_internal_no_external_party_supersede".split(" ").map((n) => [n, "company.master-data"]),
+  ..."accounts_add accounts_role_confirm bank_account_update company_sync_cvr customer_create dimension_definition_create dimension_member_create dimension_definition_lifecycle dimension_member_lifecycle documents_enrich documents_extract_invoice documents_set_company_context documents_review_purchase_vat_evidence documents_review_non_eu_reverse_charge_evidence posting_rule_propose recurring_invoice_create vendor_create".split(" ").map((n) => [n, "company.master-data"]),
+  ..."workspace_party_create workspace_party_link_role corporate_record_ingest corporate_record_link corporate_record_enrich corporate_record_supersede legacy_party_mapping_apply legacy_party_mapping_supersede vendor_identity_enrichment_apply".split(" ").map((n) => [n, "company.master-data"]),
+  ..."documents_party_link_apply documents_party_link_supersede documents_internal_no_external_party documents_internal_no_external_party_supersede party_coverage_apply".split(" ").map((n) => [n, "company.master-data"]),
   ..."company_knowledge_propose company_knowledge_review company_knowledge_supersede".split(" ").map((n) => [n, "company.knowledge.manage"]),
   ..."ownership_snapshot_propose ownership_snapshot_review ownership_snapshot_apply".split(" ").map((n) => [n, "company.ownership.manage"]),
   ..."intercompany_disposition_propose intercompany_disposition_approve intercompany_disposition_link intercompany_disposition_settle intercompany_disposition_reopen intercompany_disposition_supersede".split(" ").map((n) => [n, "company.ownership.manage"]),
-  ..."accrual_register asset_register bank_import bookkeeping_batch_dry_run bookkeeping_batch_persist budget_set dimension_assignment_apply supplier_commitment_apply supplier_commitment_change supplier_commitment_match efaktura_konfigurer efaktura_modtag efaktura_modtag_workspace efaktura_onboard efaktura_registrer expense_book invoice_claim_compensation invoice_claim_interest invoice_credit_note invoice_issue invoice_render invoice_remind mileage_log payable_register recurring_invoice_generate recurring_invoice_run_workspace".split(" ").map((n) => [n, "company.draft.write"]),
-  ..."accrual_recognize asset_depreciate asset_write_off bank_reconciliation_correction_apply direct_bank_purchase_payable_correction_apply bookkeeping_batch_apply expense_vat_preflight_apply invoice_apply_payment invoice_post invoice_post_compensation invoice_post_interest invoice_post_interest_correction invoice_post_reminder invoice_refund_bank invoice_settle_bank invoice_settle_claim_bank invoice_write_off_bad_debt journal_post journal_reverse payable_pay period_close vat_post_eu_service_purchase vat_post_representation_purchase".split(" ").map((n) => [n, "company.ledger.post"]),
-  ..."bookkeeping_batch_approve dimension_assignment_replace dimension_assignment_supersede dimension_budget_apply exception_resolve period_close period_close_review posting_rule_approve".split(" ").map((n) => [n, "company.review"]),
+  ..."accrual_register asset_register bank_import bookkeeping_batch_dry_run bookkeeping_batch_persist purchase_case_create budget_set dimension_assignment_apply supplier_commitment_apply supplier_commitment_change supplier_commitment_match efaktura_konfigurer efaktura_modtag efaktura_modtag_workspace efaktura_onboard efaktura_registrer expense_book invoice_claim_compensation invoice_claim_interest invoice_credit_note invoice_issue invoice_render invoice_remind mileage_log payable_register recurring_invoice_generate recurring_invoice_run_workspace vat_filing_evidence_record".split(" ").map((n) => [n, "company.draft.write"]),
+  ..."accrual_recognize asset_depreciate asset_write_off bank_reconciliation_correction_apply bank_legacy_binding_apply direct_bank_purchase_payable_correction_apply bookkeeping_batch_apply expense_vat_preflight_apply invoice_apply_payment invoice_imported_receivables_backfill_apply invoice_imported_receivable_settlement_apply invoice_post invoice_post_compensation invoice_post_interest invoice_post_interest_correction invoice_post_reminder invoice_refund_bank invoice_settle_bank invoice_settle_claim_bank invoice_write_off_bad_debt journal_post journal_reverse payable_legacy_backfill_apply payable_pay period_close vat_post_eu_service_purchase vat_post_representation_purchase".split(" ").map((n) => [n, "company.ledger.post"]),
+  ..."bookkeeping_batch_approve purchase_case_review purchase_case_reassess purchase_case_group_review dimension_assignment_replace dimension_assignment_supersede dimension_budget_apply exception_resolve period_close period_close_review posting_rule_approve".split(" ").map((n) => [n, "company.review"]),
   ..."workspace_party_propose_merge workspace_party_approve_merge".split(" ").map((n) => [n, "company.review"]),
   ..."gdpr_audit_log gdpr_discover gdpr_export import_archive_year mileage_export".split(" ").map((n) => [n, "company.export"]),
   ..."customer_validate_vat expense_vat_preflight vat_eu_sales_list".split(" ").map((n) => [n, "company.external-lookup"]),
   ..."efaktura_send invoice_send_email peppol_submit_public_invoice".split(" ").map((n) => [n, "company.external-send"]),
   ..."system_backup system_backup_archive system_backup_confirm_placement system_backup_destination_add system_backup_destination_list system_backup_destination_remove system_backup_governance system_backup_lock system_backup_place system_backup_status system_backup_verify_remote_placement system_export_authority system_restore_backup".split(" ").map((n) => [n, "company.admin"]),
-] as Array<[string, RoutePermission]>));
+] as Array<[string, RoutePermission]>) as Record<string, RoutePermission>;
+
+// Compact gateway names are public discovery entry points. Keep them
+// non-enumerable so the legacy 249-operation permission parity remains a
+// stable compatibility identity; a gateway never grants the selected
+// operation because its captured original callback re-authorizes that name.
+for (const name of ["system_server_about", "agent_capability_search", "agent_workflow_describe", "agent_operation_search", "agent_operation_describe", "agent_operation_read", "agent_operation_write", "agent_operation_destroy"]) {
+  if (!(name in mcpToolPermissions)) Object.defineProperty(mcpToolPermissions, name, { value: "public.read", enumerable: false });
+}
+export const MCP_TOOL_PERMISSIONS: Readonly<Record<string, RoutePermission>> = Object.freeze(mcpToolPermissions);
 
 export type McpSecurityContext = { workspaceRoot: string; verify(): Promise<{ serviceAccountId: string; credentialId: string } | null> };
 export type McpAuthenticatedPrincipal = { kind: "service-account"; subjectId: string; credentialId: string };
@@ -84,14 +98,16 @@ export function createMcpSecurityContextFromEnv(env: NodeJS.ProcessEnv = process
 export function resolveMcpWorkspaceCompany(context: McpSecurityContext, raw: unknown): { slug: string; root: string } | null {
   if (typeof raw !== "string" || !raw.trim()) return null;
   const value = raw.trim();
-  const company = isValidSlug(value) ? findWorkspaceCompany(context.workspaceRoot, value) : null;
-  if (company) return { slug: company.slug, root: realpathSync(resolve(context.workspaceRoot, company.slug)) };
+  const bySlug = isValidSlug(value)
+    ? resolveWorkspaceCompany(context.workspaceRoot, value, { selection: "registered", archived: "allow", ledger: "optional" })
+    : null;
+  if (bySlug?.ok) return { slug: bySlug.company.entry.slug, root: realpathSync(bySlug.company.companyRoot) };
   try {
     const candidate = realpathSync(resolve(value));
     const rel = relative(context.workspaceRoot, candidate);
     if (rel === "" || rel.startsWith(`..${sep}`) || rel === ".." || resolve(context.workspaceRoot, rel) !== candidate) return null;
-    const byPath = findWorkspaceCompany(context.workspaceRoot, rel);
-    return byPath ? { slug: byPath.slug, root: candidate } : null;
+    const byPath = resolveWorkspaceCompany(context.workspaceRoot, rel, { selection: "registered", archived: "allow", ledger: "optional" });
+    return byPath.ok ? { slug: byPath.company.entry.slug, root: candidate } : null;
   } catch { return null; }
 }
 
@@ -136,7 +152,7 @@ export async function authorizeMcpTool(context: McpSecurityContext, name: string
     // narrow ownership permission for *every* company endpoint before it can
     // observe, review or apply that relation.  Actors remain audit-only.
     if (name.startsWith("ownership_")) {
-      const endpointSlugs = ownershipEndpointSlugs(db, args);
+      const endpointSlugs = ownershipEndpointSlugs(db, name === "ownership_snapshot_propose" ? { facts: args.facts } : { snapshotId: args.snapshotId });
       const endpointPermission = name === "ownership_snapshot_propose" ? permission : name === "ownership_snapshot_history" ? permission : "company.admin";
       if (!endpointSlugs || ![...endpointSlugs].every((slug) =>
         authorizeWorkspaceRoute(db, context.workspaceRoot, { userId: principal.serviceAccountId, permission: endpointPermission, companySlug: slug }).allowed,
@@ -174,26 +190,8 @@ export async function authorizeMcpTool(context: McpSecurityContext, name: string
 /** Returns every company endpoint in an ownership operation, or null when a
  * stored snapshot cannot be resolved.  Never infer access from the actor. */
 function ownershipEndpointSlugs(db: ReturnType<typeof openWorkspaceControlReadOnlyDb>, args: Record<string, unknown>): Set<string> | null {
-  let facts: unknown[] | null = null;
-  if (Array.isArray(args.facts)) facts = args.facts;
-  else if (typeof args.snapshotId === "string") {
-    const row = db.query("SELECT canonical_facts FROM rm_ownership_source_snapshots WHERE snapshot_id=?").get(args.snapshotId) as { canonical_facts?: string } | null;
-    if (!row?.canonical_facts) return null;
-    try { facts = JSON.parse(row.canonical_facts); } catch { return null; }
-  }
-  if (!facts) return new Set();
-  const result = new Set<string>();
-  for (const raw of facts) {
-    if (!raw || typeof raw !== "object") return null;
-    const fact = raw as { ownedCompanySlug?: unknown; owner?: { kind?: unknown; companySlug?: unknown } };
-    if (typeof fact.ownedCompanySlug !== "string" || !isValidSlug(fact.ownedCompanySlug)) return null;
-    result.add(fact.ownedCompanySlug);
-    if (fact.owner?.kind === "company") {
-      if (typeof fact.owner.companySlug !== "string" || !isValidSlug(fact.owner.companySlug)) return null;
-      result.add(fact.owner.companySlug);
-    }
-  }
-  return result;
+  if (!("facts" in args) && typeof args.snapshotId !== "string") return new Set();
+  try { return ownershipEndpointsFromEvidence(db, args); } catch { return null; }
 }
 
 /**

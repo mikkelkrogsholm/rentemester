@@ -6,8 +6,7 @@ import {
 } from "../shared";
 import {
   bankBalanceAsOf,
-  actualBankBalanceAsOf,
-  bankStatementStatusAsOf,
+  resolveActualBankBalanceAsOf,
 } from "../bank";
 
 // --------------------------------------------------------------------------
@@ -25,6 +24,8 @@ export type BankTransactionRow = {
   reconciliationStatus: "matched" | "unmatched";
   /** The matched journal entry's number, when reconciled. */
   journalEntryNo: string | null;
+  /** Exact reviewed bank-row party decision; never inferred from text. */
+  partyId: string | null;
 };
 
 export type CompanyBank = ReturnType<typeof buildCompanyBank>;
@@ -72,11 +73,15 @@ export function buildCompanyBank(
                 bt.text          AS text,
                 bt.amount        AS amount,
                 bt.balance_after AS runningBalance,
-                br.journal_entry_no AS journalEntryNo
+                br.journal_entry_no AS journalEntryNo,
+                party_decision.party_id AS partyId
            FROM bank_transactions bt
            LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id = bt.id
+           LEFT JOIN current_party_coverage_bank_resolution_events party_decision ON party_decision.bank_transaction_id = bt.id
           WHERE bt.transaction_date >= ? AND bt.transaction_date <= ?
-          ORDER BY bt.transaction_date ASC, bt.id ASC`,
+          ORDER BY bt.transaction_date ASC,
+                   CASE WHEN bt.statement_order = 'descending' THEN -bt.statement_row_index ELSE bt.statement_row_index END ASC,
+                   bt.id ASC`,
       )
       .all(yearStart, yearEnd) as Array<{
       id: number;
@@ -85,6 +90,7 @@ export function buildCompanyBank(
       amount: number;
       runningBalance: number | null;
       journalEntryNo: string | null;
+      partyId: string | null;
     }>;
     const transactions: BankTransactionRow[] = rows.map((r) => ({
       id: r.id,
@@ -97,6 +103,7 @@ export function buildCompanyBank(
           : roundKroner(r.runningBalance),
       reconciliationStatus: r.journalEntryNo ? "matched" : "unmatched",
       journalEntryNo: r.journalEntryNo,
+      partyId: r.partyId,
     }));
     const matchedCount = transactions.filter(
       (t) => t.reconciliationStatus === "matched",
@@ -106,7 +113,8 @@ export function buildCompanyBank(
     // imported `balance_after`). Their gap is the headline of a bank page —
     // money the owner has on paper but not in the account, or vice versa.
     const bookedBalance = bankBalanceAsOf(ctx.db, yearEnd);
-    const actualBalance = actualBankBalanceAsOf(ctx.db, yearEnd);
+    const statementBalance = resolveActualBankBalanceAsOf(ctx.db, yearEnd);
+    const actualBalance = statementBalance.balance;
     const difference =
       actualBalance === null ? null : roundKroner(bookedBalance - actualBalance);
 
@@ -118,7 +126,7 @@ export function buildCompanyBank(
     // them so the UI can say "banksaldo ukendt — kontoudtoget havde ingen
     // saldo-kolonne" instead. EJER-12: the shared `bankStatementStatusAsOf`
     // helper is used so the portfolio card and dashboard tell the same story.
-    const bankStatementStatus = bankStatementStatusAsOf(ctx.db, yearEnd);
+    const bankStatementStatus = statementBalance.status;
 
     return {
       slug: ctx.entry.slug,
@@ -133,6 +141,8 @@ export function buildCompanyBank(
       actualBalance,
       difference,
       bankStatementStatus,
+      actualBalanceProvenance: statementBalance.provenance,
+      bankStatementDiagnostics: statementBalance.diagnostics,
       transactions,
       matchedCount,
       unmatchedCount: transactions.length - matchedCount,

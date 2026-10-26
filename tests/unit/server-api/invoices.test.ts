@@ -49,6 +49,29 @@ describe("cockpit API — invoices (GET .../invoices)", () => {
     }
   });
 
+  test("keeps the read-only imported receivable archive separate from native invoices", async () => {
+    const ws = makeWorkspace("inv-imported-archive", ["Acme ApS"]);
+    try {
+      issueTestInvoice(ws, "acme-aps", "2026-03-15", 1000);
+      const res = await get(
+        config({ workspaceRoot: ws }),
+        "/api/companies/acme-aps/imported-receivables?asOf=2026-12-31",
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.importedReceivables).toMatchObject({
+        ok: true,
+        count: 0,
+        totalOpen: 0,
+        boundary: expect.stringContaining("native"),
+      });
+      // The independently-issued row remains only on /invoices; this endpoint
+      // cannot be used to accidentally double count the cut-over balance.
+      expect(res.body.importedReceivables.rows).toEqual([]);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
   test("invoices for an unknown slug is a safe 404", async () => {
     const ws = makeWorkspace("inv-404", ["Acme ApS"]);
     try {

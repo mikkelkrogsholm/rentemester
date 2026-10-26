@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { lstatSync, writeFileSync } from "node:fs";
 import { migrate } from "../core/db";
 import { insertAuditLog } from "../core/actor";
-import { inspectLedger, inspectOpenLedger, inspectSchemaViews, repairCanonicalSchemaViews, type LedgerInspection } from "../core/ledger-inspection";
+import { inspectLedger, inspectOpenLedger, inspectSchemaViews, openLedgerReadOnly, repairCanonicalSchemaViews, type LedgerInspection } from "../core/ledger-inspection";
 import { companyPaths } from "../core/paths";
 import {
   createSystemBackup,
@@ -222,8 +222,7 @@ export function register(dispatch: CommandDispatch, remoteProviderAdapter?: Remo
       }
       let db: Database | undefined;
       try {
-        db = new Database(dbPath, { readonly: true });
-        db.exec("PRAGMA query_only = ON;");
+        db = openLedgerReadOnly(dbPath);
         const views = inspectSchemaViews(db);
         if (!views.ok) ctx.emitResult({ ok: true, errors: [], action: "repair_schema_views", wouldRepair: true, views });
         else ctx.emitResult({ ok: true, errors: [], action: "repair_schema_views", wouldRepair: false, schema, views });

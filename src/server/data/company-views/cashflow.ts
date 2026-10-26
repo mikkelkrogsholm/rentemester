@@ -4,7 +4,7 @@ import {
   statementCompanyBlock,
   MONTH_NAMES_DK,
 } from "../shared";
-import { actualBankBalanceAsOf } from "../bank";
+import { resolveActualBankBalanceAsOf } from "../bank";
 
 // --------------------------------------------------------------------------
 // Per-company cash flow (Likviditet — actual money in/out, year-aware)
@@ -101,7 +101,9 @@ export function buildCompanyCashflow(
                 bt.balance_after    AS balanceAfter
            FROM bank_transactions bt
           WHERE bt.transaction_date >= ? AND bt.transaction_date <= ?
-          ORDER BY bt.transaction_date ASC, bt.id ASC`,
+          ORDER BY bt.transaction_date ASC,
+                   CASE WHEN bt.statement_order = 'descending' THEN -bt.statement_row_index ELSE bt.statement_row_index END ASC,
+                   bt.id ASC`,
       )
       .all(yearStart, yearEnd) as Array<{
       date: string;
@@ -140,8 +142,10 @@ export function buildCompanyCashflow(
     // begins; closing balance — the actual balance at the year end. Both come
     // from the same `balance_after`-based helper the bank view uses, so they
     // are null when no statement carries a running balance.
-    const openingBalance = actualBankBalanceAsOf(ctx.db, priorYearEnd);
-    const closingBalance = actualBankBalanceAsOf(ctx.db, yearEnd);
+    const openingResolution = resolveActualBankBalanceAsOf(ctx.db, priorYearEnd);
+    const closingResolution = resolveActualBankBalanceAsOf(ctx.db, yearEnd);
+    const openingBalance = openingResolution.balance;
+    const closingBalance = closingResolution.balance;
 
     return {
       slug: ctx.entry.slug,
@@ -156,6 +160,10 @@ export function buildCompanyCashflow(
       balanceSeries,
       openingBalance,
       closingBalance,
+      openingBalanceProvenance: openingResolution.provenance,
+      closingBalanceProvenance: closingResolution.provenance,
+      bankStatementStatus: closingResolution.status,
+      bankStatementDiagnostics: closingResolution.diagnostics,
       totalIn: roundKroner(totalIn),
       totalOut: roundKroner(totalOut),
     };

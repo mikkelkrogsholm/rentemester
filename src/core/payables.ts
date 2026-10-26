@@ -1,3 +1,4 @@
+import { decodeTransactionRejection, TransactionRejectionError } from "./transaction-rejection";
 /**
  * Kreditorstyring — the accounts-payable open-item register.
  *
@@ -311,7 +312,7 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
   if (vatTreatment === "standard") {
     const supplierErrors = deductiblePurchaseSupplierErrors(document);
     if (supplierErrors.length > 0) return { ok: false, appliedRules: [RULE_ID], errors: supplierErrors };
-    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document);
+    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document, { requireIncompleteReview: false });
     if (contextErrors.length > 0) return { ok: false, appliedRules: [RULE_ID], errors: contextErrors };
   }
   if (vatTreatment === "exempt" && vatAmount !== 0) {
@@ -374,7 +375,7 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
         lines,
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       const inserted = db.query(
@@ -429,7 +430,7 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
     // post-write failure as an exception so it can roll back journal,
     // payable/payment, receipt and audit together.
     if (inCurrentTransaction) throw error;
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
       appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
@@ -574,7 +575,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
         ],
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       const inserted = db.query(
@@ -610,7 +611,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
     // `{ ok:false }` result after writes have occurred in an outer receipt
     // transaction.
     if (inCurrentTransaction) throw error;
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
       appliedRules: [...new Set([PAYMENT_RULE_ID, ...(parsed?.appliedRules ?? [])])],
@@ -714,15 +715,4 @@ export function buildPayablesList(db: Database, filters: PayablesListFilters = {
     rows,
     errors: [],
   };
-}
-
-function parseTransactionError(error: unknown): { appliedRules?: string[]; errors?: string[] } | null {
-  if (typeof error === "object" && error && "message" in error) {
-    try {
-      return JSON.parse(String((error as { message: unknown }).message));
-    } catch {
-      return null;
-    }
-  }
-  return null;
 }

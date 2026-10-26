@@ -1,4 +1,4 @@
-version: dk-vat-v0.0.5
+version: dk-vat-v0.0.6
 sources:
   - DK-MOMSLOVEN-2024-209
   - DK-MOMSBEKENDTGORELSEN-2023-1435
@@ -181,7 +181,7 @@ rules:
         - bad_debt_writeoff_above_open_principal_balance
     explanation: When an issued Danish standard-rated invoice becomes an established bad debt, Rentemester must write off the gross receivable, expense the deductible loss basis, and reduce output VAT deterministically for the same loss amount.
   - rule_id: DK-VAT-FILING-001
-    name: A filing-ready momsangivelse may only be produced for a closed VAT period and must map data into the standard SKAT rubrikker
+    name: A filing-ready momsangivelse may only be produced for a closed VAT period and must map to the exact whole-kroner TastSelv form
     category: vat_reporting
     source_id: DK-MOMSLOVEN-2024-209
     provisions:
@@ -191,17 +191,17 @@ rules:
     machine_rule:
       condition: vat_period_status in ['closed', 'reported']
       require:
-        - salgsmoms
-        - moms_af_varekob_udland
-        - moms_af_ydelseskob_udland
-        - kobsmoms
-        - momstilsvar_equals_salgsmoms_plus_udenlandsk_moms_minus_kobsmoms
-        - rubrik_a
-        - rubrik_b
-        - rubrik_c
+        - all_16_tastselv_input_fields_are_signed_integer_dkk
+        - each_input_field_truncated_toward_zero_before_total
+        - moms_i_alt_equals_whole_kroner_field_formula
+        - eu_goods_and_services_are_split_in_rubrik_a
+        - b_fields_have_documented_source_classification
+        - eu_sales_list_reconciles_only_to_applicable_b_fields
+        - energy_refunds_have_append_only_evidence
       forbid:
         - momsangivelse_for_open_or_incomplete_vat_period
-    explanation: A momsangivelse must only be produced for a closed or reported vat_quarter period and must deterministically map the VAT settlement data into the standard SKAT rubrikker so the business can file via TastSelv with traceable numbers.
+        - inferred_b_field_from_aggregate_foreign_sales
+    explanation: A momsangivelse is only produced for a closed or reported VAT period. Every TastSelv field is stated in whole kroner disregarding øre (§ 57); the total is calculated from those submitted fields, while raw ledger totals retain øre precision. Ambiguous B classifications and undocumented energy refunds are blocked rather than guessed.
   - rule_id: DK-VAT-EU-SALES-LIST-001
     name: Cross-border B2B sales without Danish VAT must be listed per customer VAT number for the EU sales list
     category: vat_reporting

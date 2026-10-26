@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="En import fra Dinero skal ikke bare læse CSV-filer. Den skal etablere en korrekt åbningsbalance, replaye relevante posteringer og gemme tidligere år som arkiv, så overgangen kan forklares."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Migration fra et andet bogføringssystem er et af de steder, hvor små fejl bliver dyre. Kontonumre kan betyde noget andet, bilag kan ligge i særskilte mapper, og gamle regnskabsår bør ofte bevares som dokumentation uden at blive genposteret i den nye hovedbog.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad importen læser</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad importen læser</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Dinero-sporet i grafen omfatter kontoplan, posteringer, saldobalance, firmaoplysninger, kontakter og bilag. Importen kan håndtere både mapper og zip-kilder via et fælles import-framework.
     </p>
 
-    <h2>Åbningsbalance før replay</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Åbningsbalance før replay</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester bruger åbningsbalancen som skæringspunkt. Først etableres virksomhedens primo ved cut-over, derefter kan relevante posteringer fra cut-over-året replayes som balancerede journalposter.
     </p>
 
-    <h2>Gamle år som arkiv</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Gamle år som arkiv</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Tidligere Dinero-år bliver ikke nødvendigvis genposteret i den aktive ledger. Koden har et read-only arkivspor, så gamle års Posteringer og SaldoBalance kan vises som referencedata uden at ændre den nye hovedbog.
     </p>
   </article>

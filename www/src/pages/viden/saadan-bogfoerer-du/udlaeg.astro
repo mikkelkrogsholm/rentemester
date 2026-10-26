@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -34,12 +35,12 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
     lead="Et udlæg er en udgift betalt af en person på virksomhedens vegne. Det vigtigste er dokumentation: bilag, formål, beløb, moms og hvem der skal refunderes."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kort version: gem bilaget, vurder om udgiften er erhvervsmæssig, bogfør udgiften på korrekt konto, og bogfør refusionen til personen separat. Udlæg uden bilag eller klart formål bør ikke bogføres automatisk.
     </p>
-    <p>
-      Kildegrundlaget er bogføringslovens krav om registrering, dokumentation og opbevaring af regnskabsmateriale. Se <a href={bogfoeringslovenUrl} rel="noopener" target="_blank">bogføringsloven på Retsinformation</a>, og få faglig vurdering ved tvivl om fradrag eller privat/erhvervsmæssig blanding.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Kildegrundlaget er bogføringslovens krav om registrering, dokumentation og opbevaring af regnskabsmateriale. Se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={bogfoeringslovenUrl} rel="noopener" target="_blank">bogføringsloven på Retsinformation</a>, og få faglig vurdering ved tvivl om fradrag eller privat/erhvervsmæssig blanding.
     </p>
 
     <SeoEvidence
@@ -54,37 +55,37 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
       ]}
     />
 
-    <h2>Hvad er et udlæg?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad er et udlæg?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Et udlæg opstår når en ejer, medarbejder eller anden person betaler en udgift for virksomheden med private midler. Virksomheden skylder derefter personen pengene, indtil udlægget refunderes.
     </p>
 
-    <h2>Hvilke oplysninger skal du have?</h2>
-    <ul>
-      <li>bilag eller kvittering</li>
-      <li>dato</li>
-      <li>leverandør</li>
-      <li>beløb inkl. og ekskl. moms hvis relevant</li>
-      <li>valuta hvis beløbet ikke er i DKK</li>
-      <li>erhvervsmæssigt formål</li>
-      <li>person der skal refunderes</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvilke oplysninger skal du have?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag eller kvittering</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandør</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beløb inkl. og ekskl. moms hvis relevant</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>valuta hvis beløbet ikke er i DKK</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>erhvervsmæssigt formål</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>person der skal refunderes</li>
     </ul>
 
-    <h2>Typisk bogføring</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typisk bogføring</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Udgiften bogføres på den relevante omkostningskonto. Modposten er normalt en mellemregning eller skyldig post til personen, indtil virksomheden udbetaler refusionen.
     </p>
-    <pre><code>Debet: relevant omkostningskonto
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>Debet: relevant omkostningskonto
 Debet: købsmoms hvis fradragsberettiget
 Kredit: mellemregning / skyldig refusion</code></pre>
 
-    <h2>Udlæg med usikker moms</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Udlæg med usikker moms</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Nogle udlæg kræver ekstra vurdering. Restaurant, repræsentation, blandet privat/erhverv og udenlandske bilag bør ikke behandles blindt. Her er det bedre at stoppe og spørge end at bogføre forkert.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemesters kildekode kan ingest'e bilag, gemme SHA-256 hash og bogføre udgifter med dokumentation. Roadmap'et er at udbygge udlægsflowet med bedre masterdata, bilagsmail og exception-kø, så manglende formål eller usikker moms ikke ender som skjult fejl.
     </p>
   </article>

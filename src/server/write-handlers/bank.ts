@@ -33,7 +33,7 @@ export async function handleBankReconciliationCorrectionApply(config:ServerConfi
 /**
  * POST /api/companies/:slug/bank/import — imports a bank-statement CSV.
  *
- * Body: `{ csvContent: string, account?: string, profile?: string,
+ * Body: `{ csvContent: string, account?: string, profile?: string, statementOrder?: "ascending"|"descending",
  * confirm: true }`. The frontend reads the chosen CSV file in the browser and
  * POSTs its text as `csvContent`; the handler writes it to a `mkdtemp` file
  * and calls the SAME `importBankCsv` core function the CLI/MCP use, then runs
@@ -57,6 +57,10 @@ export async function handleBankImport(
       const csvContent = requireBodyString(body, "csvContent");
       const account = optionalBodyString(body, "account");
       const profile = optionalBodyString(body, "profile");
+      const statementOrder = optionalBodyString(body, "statementOrder");
+      if (statementOrder !== undefined && statementOrder !== "ascending" && statementOrder !== "descending") {
+        throw ApiError.badRequest("statementOrder must be 'ascending' or 'descending'");
+      }
 
       // Mirror the MCP `csvContent` pattern: persist the inline CSV to a
       // private temp file, then hand core a path — core reads from disk and
@@ -73,6 +77,7 @@ export async function handleBankImport(
         const imported = importBankCsv(ctx.db, ctx.companyRoot, csvPath, {
           account,
           profile,
+          statementOrder: statementOrder as "ascending" | "descending" | undefined,
         });
         // The CLI/MCP both sync unmatched-transaction exceptions after a
         // successful import — replicate that so the Cockpit behaves identically.

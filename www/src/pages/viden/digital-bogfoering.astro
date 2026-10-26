@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import SeoEvidence from "../../components/SeoEvidence.astro";
@@ -50,8 +51,8 @@ const jsonLd = {
     lead="Digital bogføring er ikke bare at bruge en computer. Reglerne handler om registrering, opbevaring, sikkerhedskopi, bilag og systemkrav. Rentemester arbejder i den retning, men er ikke et registreret standardbogføringssystem."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kort version: digital bogføring bliver et krav for flere danske virksomheder, men tidspunktet afhænger af virksomhedsform, regnskabsår og omsætning. Hvis din virksomhed er omfattet, skal du sikre at systemet og arbejdsgangen lever op til kravene.
     </p>
 
@@ -68,30 +69,30 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Hvad skal du afklare først?</h2>
-    <ul>
-      <li>Om virksomheden er årsregnskabspligtig eller personligt ejet.</li>
-      <li>Hvornår regnskabsåret starter.</li>
-      <li>Om virksomheden bruger registreret eller ikke-registreret system.</li>
-      <li>Om omsætningstærskler for personligt ejede virksomheder er relevante.</li>
-      <li>Hvordan bilag, transaktioner, backup og afstemning dokumenteres.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad skal du afklare først?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Om virksomheden er årsregnskabspligtig eller personligt ejet.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Hvornår regnskabsåret starter.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Om virksomheden bruger registreret eller ikke-registreret system.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Om omsætningstærskler for personligt ejede virksomheder er relevante.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Hvordan bilag, transaktioner, backup og afstemning dokumenteres.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har lokale data, SQLite-ledger, bilag med hash, append-only posteringer, backup/restore, audit-verifikation og eksport/handoff i kodebasen. Det er relevante byggesten for digital bogføring, men siden lover ikke formel compliance eller registrering.
     </p>
 
-    <h2>Hvad må vi ikke sige?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad må vi ikke sige?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Vi må ikke kalde Rentemester et færdigt registreret bogføringssystem, og vi må ikke antyde at alle virksomheder kan bruge projektet som lovpligtigt system uden egen vurdering. Den ærlige formulering er: et open source-projekt under udvikling med flere af de tekniske kontrolspor, digital bogføring kræver.
     </p>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

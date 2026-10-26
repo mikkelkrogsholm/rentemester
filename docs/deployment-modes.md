@@ -36,6 +36,10 @@ Rentemester har allerede størstedelen af den nødvendige datagrænse:
   dokumentarkiv, fakturaer, konfiguration, logs, exports og backups;
 - et workspace er en mappe med `workspace.json` og én virksomhed pr.
   undermappe/slug;
+- `workspace.json` er den autoritative registrering: kun aktive `live`-poster
+  med en unik, normaliseret CVR indgår i cockpit, portfolio og readiness.
+  Test-, dry-run-, restore-, backup-, retest- og baseline-kopier må gerne
+  ligge som søskendemapper, men bliver aldrig adopteret ved læsning;
 - CLI'en kan fortsat arbejde direkte på en enkelt rå virksomhedssti med
   `--company <path>`;
 - CLI og MCP kan slå en virksomhed op via slug, når et workspace er
@@ -171,6 +175,67 @@ En Bun standalone-build kan undersøges som packaging-teknik, men må først
 vælges efter bevis for `bun:sqlite`, migrationsfiler, regler/kilder, cockpit-
 assets, dokumenter, backup/restore og platformssignering. Produktarkitekturen må
 ikke afhænge af, at denne packaging virker.
+
+## Lokal service-adgang
+
+En lokal container bruger samme Better Auth API-key-format og samme
+workspace-/virksomheds-memberships som hosted drift. Den har ikke en implicit
+"lokal administrator-token" og en `actor` giver aldrig adgang alene.
+
+Når et nyt lokalt workspace skal automatiseres, oprettes én servicekonto med
+`workspace-access bootstrap-local-service`. Kommandoen kræver en præcis
+virksomhedsrolle (`reader`, `reviewer`, `bookkeeper` eller `owner`), en
+eksplicit `--confirm yes`, en policy-godkendt audit-actor samt en almindelig
+0600-fil med den canonical base64url Better Auth-secret. Credentialet vises
+kun i det succesfulde output og skal straks flyttes til en ekstern secret
+manager. Det må aldrig skrives i workspace, ledger, image eller log.
+
+`workspace-access local-service-rotate` erstatter én credential og viser den
+nye nøgle én gang. `workspace-access local-service-revoke` deaktiverer den
+valgte credential append-only. Begge kræver den samme lokale fysisk beskyttede
+auth-secret-fil, live servicekonto-id, credential-id, virksomhed og audit-actor.
+Ved hver MCP- eller CLI-write valideres credentialets enabled/expiry-status og
+den konkrete servicekontos aktuelle workspace- og virksomheds-membership.
+
+For `vendor-identity-enrichment apply` og `legacy-party-mapping apply` er den
+mindste standardrolle `bookkeeper`, fordi den giver `company.master-data`;
+`owner` virker også, mens `reader` og `reviewer` afvises. CLI/MCP-processen skal
+have `RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` og `RENTEMESTER_WORKSPACE` i sit eget
+miljø. Inde i standardcontaineren er det canonical mount `/workspace`.
+Credentialet er autorisationen. `--actor` er en separat, policy-godkendt
+revisionsidentitet og giver aldrig adgang i sig selv. Plan/list er read-only;
+apply kræver desuden eksakt plan-hash, idempotency key og `--confirm yes` (CLI)
+eller `confirm: true` (MCP/HTTP).
+
+Eksempel med et allerede initialiseret, syntetisk workspace-volume og en
+eksternt opbevaret auth-secret-fil (samme secret som workspacets auth-runtime).
+Erstat image-digest, volume, slug og actor med egne værdier; actor skal være
+tilladt i virksomhedens policy. Secret-filen skal kunne læses af containerens
+UID 1000, have mode 0600 og mountes read-only uden for `/workspace`:
+
+```sh
+docker run --rm --network none \
+  --volume example-workspace:/workspace \
+  --mount type=bind,src=/secure/auth-secret,dst=/run/secrets/auth-secret,readonly \
+  ghcr.io/mikkelkrogsholm/rentemester@sha256:<verified-digest> \
+  workspace-access bootstrap-local-service \
+  --workspace /workspace --company example-company \
+  --display-name "Bookkeeping service" --company-role bookkeeper \
+  --auth-secret-file /run/secrets/auth-secret \
+  --actor user:owner --confirm yes
+```
+
+Indlæs den returnerede service-token i klientprocessens miljø fra din eksterne
+secret manager. Ved `docker run` videresendes miljøvariablen med
+`--env RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` (uden token i argumentet) og
+`--env RENTEMESTER_WORKSPACE=/workspace`. Et eksisterende containershell arver
+ikke automatisk værtens miljø. Gem også service-account-id og credential-id til
+senere rotation/tilbagekaldelse. Kopiér ikke token-output til support/evidens.
+
+Ledger-migration v52 tilføjer kun append-only enrichment-evidens og dens
+indekser/triggere. Migrationen udfylder ingen leverandøridentiteter automatisk.
+Afprøv upgrade på en kopi og verificér backup før drift; nedgradering til en
+runtime uden v52 kræver en pre-upgrade-backup, ikke sletning af evidenstabellen.
 
 ## Hosted Better Auth: secrets og rate-limit-proxy
 

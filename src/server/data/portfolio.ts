@@ -11,7 +11,7 @@ import { existsSync } from "node:fs";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "../../core/paths";
 import { diffDaysSafe as daysBetween } from "../../core/dates";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly, openLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import { buildInvoiceList, buildOverdueInvoiceList } from "../../core/invoice-list";
 import { listBankTransactions } from "../../core/reconciliation";
@@ -25,14 +25,15 @@ import {
   companyRootForSlug,
   findWorkspaceCompany,
   listWorkspaceCompanies,
+  requireCanonicalLiveCompanies,
   type WorkspaceCompanyEntry,
 } from "../../core/workspace";
-import { discoverWorkspaceCompanies } from "../discovery";
 import { ApiError } from "../errors";
 import { currentFiscalYear, roundKroner } from "./shared";
-import { actualBankBalanceAsOf, bankStatementStatusAsOf } from "./bank";
+import { resolveActualBankBalanceAsOf } from "./bank";
 import { selectVatPeriod, vatPeriodEffectiveStatus } from "./vat";
 import { groupExceptions, type ExceptionGroup } from "./exceptions";
+import { buildCompanyAttention } from "./attention";
 
 // --------------------------------------------------------------------------
 // Per-company summary (one row in the portfolio overview)
@@ -72,11 +73,13 @@ export type CompanySummary = {
    * its CSV had no balance column" — so it never wrongly says "intet kontoudtog
    * importeret" for a company whose import simply lacked a balance column.
    */
-  bankStatementStatus: "known" | "no-balance-column" | "none";
+  bankStatementStatus: "known" | "no-balance-column" | "none" | "ambiguous";
+  bankStatementDiagnostics: string[];
   /** Current registered VAT-period position + deadline; null when unknown. */
   vat: CompanyVatSummary | null;
   /** Open tasks — open exceptions, grouped into Danish summary lines. */
   openTaskCount: number;
+  attentionStatus: "clear" | "requires-attention";
   taskGroups: ExceptionGroup[];
   auditChainOk: boolean;
   // --- legacy fields retained for the MCP/older consumers -----------------
@@ -109,8 +112,10 @@ function summariseCompany(
       omsaetning: 0,
       actualBankBalance: null,
       bankStatementStatus: "none",
+      bankStatementDiagnostics: [],
       vat: null,
       openTaskCount: 0,
+      attentionStatus: "clear",
       taskGroups: [],
       auditChainOk: false,
       openInvoiceCount: 0,
@@ -124,7 +129,7 @@ function summariseCompany(
 
   let db: Database;
   try {
-    db = openDb(dbPath);
+    db = openLedgerReadOnly(dbPath);
   } catch {
     // An unreadable ledger degrades gracefully — treated as "missing".
     return {
@@ -138,8 +143,10 @@ function summariseCompany(
       omsaetning: 0,
       actualBankBalance: null,
       bankStatementStatus: "none",
+      bankStatementDiagnostics: [],
       vat: null,
       openTaskCount: 0,
+      attentionStatus: "clear",
       taskGroups: [],
       auditChainOk: false,
       openInvoiceCount: 0,
@@ -151,7 +158,6 @@ function summariseCompany(
     };
   }
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const { label: fyLabel, year: yearNum } = currentFiscalYear(db, company);
     const yearStart = `${yearNum}-01-01`;
@@ -163,8 +169,9 @@ function summariseCompany(
     // Actual bank balance from the imported statement (what the bank shows),
     // plus WHY it is (or is not) known so the card never wrongly claims "intet
     // kontoudtog importeret" for a balance-column-less import (EJER-12).
-    const actualBankBalance = actualBankBalanceAsOf(db, yearEnd);
-    const bankStatementStatus = bankStatementStatusAsOf(db, yearEnd);
+    const statementBalance = resolveActualBankBalanceAsOf(db, yearEnd);
+    const actualBankBalance = statementBalance.balance;
+    const bankStatementStatus = statementBalance.status;
 
     // VAT: the booked position for the company's actual VAT period — the
     // period (month / quarter / half-year, per `vatPeriodType`) that is due
@@ -193,6 +200,7 @@ function summariseCompany(
 
     // Open tasks — open exceptions grouped into Danish summary lines.
     const exceptions = listExceptions(db, { status: "open" });
+    const attention = buildCompanyAttention(workspaceRoot, entry.slug);
     const taskGroups = groupExceptions(
       exceptions.rows.map((row: any) => ({
         type: row.type,
@@ -207,7 +215,7 @@ function summariseCompany(
     const invoices = buildInvoiceList(db, { status: "open", asOfDate: yearEnd });
     const overdue = buildOverdueInvoiceList(db, {});
     const unlinked = listBankTransactions(db, { status: "unmatched" });
-    const audit = verifyAuditChain(db);
+    const audit = verifyAuditChain(db, { companyRoot });
 
     return {
       slug: entry.slug,
@@ -220,8 +228,10 @@ function summariseCompany(
       omsaetning: pl.totalIncome,
       actualBankBalance,
       bankStatementStatus,
+      bankStatementDiagnostics: statementBalance.diagnostics,
       vat,
-      openTaskCount: exceptions.count,
+      openTaskCount: attention.count,
+      attentionStatus: attention.status,
       taskGroups,
       auditChainOk: audit.ok,
       openInvoiceCount: invoices.count,
@@ -252,8 +262,9 @@ export type PortfolioOverview = {
   rollup: {
     /** Combined year-to-date result across all companies, kroner. */
     resultat: number;
-    /** Combined liquidity — actual bank balance across all companies, kroner. */
-    liquidity: number;
+    /** Combined liquidity, null unless every company has a provable balance. */
+    liquidity: number | null;
+    liquidityComplete: boolean;
     /** Combined VAT owed across all companies, kroner. */
     vatPayable: number;
     /** Total open tasks across all companies. */
@@ -292,15 +303,12 @@ export function buildPortfolioOverview(
   asOfDate: string,
   options: PortfolioOverviewOptions = {},
 ): PortfolioOverview {
-  // Discover-and-adopt any present-but-unlisted company directory first
-  // (#256): the portfolio is the cockpit's landing page, so an owner who set
-  // a company up via the CLI must land on that real company — not onboarding.
   const entries = options.companySlugs
     ? (() => {
       const allowed = new Set(options.companySlugs);
-      return listWorkspaceCompanies(workspaceRoot).filter((entry) => allowed.has(entry.slug));
+      return requireCanonicalLiveCompanies(workspaceRoot).map((item) => item.entry).filter((entry) => allowed.has(entry.slug));
     })()
-    : discoverWorkspaceCompanies(workspaceRoot);
+    : requireCanonicalLiveCompanies(workspaceRoot).map((item) => item.entry);
   const companies = entries.map((entry) =>
     summariseCompany(workspaceRoot, entry, asOfDate),
   );
@@ -331,13 +339,15 @@ export function buildPortfolioOverview(
       netVatPayable: 0,
     },
   );
+  const liquidityComplete = companies.every((company) => company.actualBankBalance !== null);
   return {
     workspace: workspaceRoot,
     asOf: asOfDate,
     companyCount: companies.length,
     rollup: {
       resultat: roundKroner(rollup.resultat),
-      liquidity: roundKroner(rollup.liquidity),
+      liquidity: liquidityComplete ? roundKroner(rollup.liquidity) : null,
+      liquidityComplete,
       vatPayable: roundKroner(rollup.vatPayable),
       openTaskCount: rollup.openTaskCount,
     },
@@ -381,9 +391,8 @@ export function buildCompanyDashboardData(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const invoices = buildInvoiceList(db, { status: "open", asOfDate });
     const overdueInvoices = buildOverdueInvoiceList(db, { asOfDate });
@@ -438,7 +447,7 @@ export function buildCompanyDashboardData(
           })();
     const recentActivity = listRecentAuditLog(db, 10);
     const backup = getBackupComplianceStatus(db, companyRoot, asOfDate);
-    const audit = verifyAuditChain(db);
+    const audit = verifyAuditChain(db, { companyRoot });
 
     return {
       slug: entry.slug,

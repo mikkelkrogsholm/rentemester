@@ -19,6 +19,10 @@ COPY DESIGN.md ./
 COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
 COPY src/design ./src/design
 COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
+# Shared task contracts and type-only playbook metadata are checked by tsc.
+COPY src/core/tasks-types.ts ./src/core/tasks-types.ts
+COPY src/core/knowledge-pages.ts ./src/core/knowledge-pages.ts
+COPY src/core/canonical-json.ts ./src/core/canonical-json.ts
 RUN bun run cockpit:build \
     && find app/dist -print0 | xargs -0 touch -d "${RENTEMESTER_BUILT_AT}"
 

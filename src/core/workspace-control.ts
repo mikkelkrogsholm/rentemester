@@ -10,153 +10,22 @@ import { openSqliteReadOnlySnapshot } from "./sqlite-readonly-snapshot";
 /** Private workspace-owned state. Company ledgers are deliberately elsewhere. */
 export const WORKSPACE_CONTROL_DIRECTORY = ".rentemester";
 export const WORKSPACE_CONTROL_DB_FILE = "workspace-control.sqlite";
-export const WORKSPACE_CONTROL_BASELINE_MIGRATION_ID = 1;
-export const WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME =
-  "rentemester-workspace-control-baseline-v1";
-export const WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_ID = 2;
-export const WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME =
-  "rentemester-better-auth-foundation-v2";
-export const WORKSPACE_CONTROL_ACCESS_MIGRATION_ID = 3;
-export const WORKSPACE_CONTROL_ACCESS_MIGRATION_NAME =
-  "rentemester-workspace-access-events-v3";
-export const WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_ID = 4;
-export const WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_NAME =
-  "rentemester-workspace-bootstrap-saga-v4";
-export const WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_ID = 5;
-export const WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_NAME =
-  "rentemester-session-assurance-v5";
-export const WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_ID = 6;
-export const WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_NAME = "rentemester-auth-evidence-v6";
-export const WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_ID = 7;
-export const WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_NAME = "rentemester-group-structure-v7";
-export const WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_ID = 8;
-export const WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_NAME = "rentemester-document-access-audit-v8";
-export const WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_ID = 9;
-export const WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_NAME = "rentemester-intercompany-mapping-v9";
-export const WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_ID = 10;
-export const WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_NAME = "rentemester-consolidation-elimination-v10";
-export const WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_ID = 11;
-export const WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_NAME = "rentemester-consolidation-profile-v11";
-export const WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_ID = 12;
-export const WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_NAME = "rentemester-auth-recovery-telemetry-v12";
-export const WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_ID = 13;
-export const WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_NAME = "rentemester-authorization-denial-audit-v13";
-export const WORKSPACE_CONTROL_INVITATIONS_MIGRATION_ID = 14;
-export const WORKSPACE_CONTROL_INVITATIONS_MIGRATION_NAME = "rentemester-workspace-invitations-v14";
-export const WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_ID = 15;
-export const WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_NAME = "rentemester-party-registry-v15";
-export const WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_ID = 16;
-export const WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_NAME = "rentemester-corporate-records-v16";
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_ID = 17;
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_NAME = "rentemester-workspace-service-principals-v17";
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_ID = 18;
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_NAME = "rentemester-workspace-service-principal-saga-v18";
-export const WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_ID = 19;
-export const WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_NAME = "rentemester-party-assertions-v19";
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_ID = 20;
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_NAME = "rentemester-corporate-record-governance-v20";
-export const WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_ID = 21;
-export const WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_NAME = "rentemester-company-knowledge-v21";
-export const WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_ID = 22;
-export const WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_NAME = "rentemester-ownership-graph-v22";
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_ID = 23;
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_NAME = "rentemester-corporate-record-scope-integrity-v23";
-export const WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_ID = 24;
-export const WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_NAME = "rentemester-ownership-fact-lifecycle-v24";
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_ID = 25;
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_NAME = "rentemester-workspace-document-inbox-v25";
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_ID = 26;
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_NAME = "rentemester-workspace-inbox-handoff-claims-v26";
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_ID = 27;
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_NAME = "rentemester-intercompany-dispositions-v27";
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_ID = 28;
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_NAME = "rentemester-intercompany-disposition-lifecycle-v28";
+import { loadMigrationCatalog } from "./migration-catalog";
 
-const baselineArtifact = readFileSync(
-  join(import.meta.dir, "workspace-migrations", "0001-workspace-control-baseline.json"),
-);
-const betterAuthArtifact = readFileSync(
-  join(import.meta.dir, "workspace-migrations", "0002-better-auth-foundation.json"),
-);
-const workspaceAccessArtifact = readFileSync(
-  join(import.meta.dir, "workspace-migrations", "0003-workspace-access-events.json"),
-);
-const workspaceBootstrapArtifact = readFileSync(
-  join(import.meta.dir, "workspace-migrations", "0004-workspace-bootstrap-saga-v4.json"),
-);
-const workspaceSessionAssuranceArtifact = readFileSync(
-  join(import.meta.dir, "workspace-migrations", "0005-session-assurance-v5.json"),
-);
-const workspaceAuthAuditArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0006-auth-audit-v6.json"));
-const workspaceGroupStructureArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0007-group-structure-v7.json"));
-const workspaceDocumentAccessArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0008-document-access-audit-v8.json"));
-const workspaceIntercompanyMappingArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0009-intercompany-mapping-v9.json"));
-const workspaceConsolidationEliminationArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0010-consolidation-elimination-v10.json"));
-const workspaceConsolidationProfileArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0011-consolidation-profile-v11.json"));
-const workspaceAuthRecoveryTelemetryArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0012-auth-recovery-telemetry-v12.json"));
-const workspaceAuthorizationDenialAuditArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0013-authorization-denial-audit-v13.json"));
-const workspaceInvitationsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0014-workspace-invitations-v14.json"));
-const workspacePartyRegistryArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0015-party-registry-v15.json"));
-const workspaceCorporateRecordsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0016-corporate-records-v16.json"));
-const workspaceServicePrincipalsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0017-service-principals-v17.json"));
-const workspaceServicePrincipalSagaArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0018-service-principal-saga-v18.json"));
-const workspacePartyAssertionsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0019-party-assertions-v19.json"));
-const workspaceCorporateRecordGovernanceArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0020-corporate-record-governance-v20.json"));
-const workspaceCompanyKnowledgeArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0021-company-knowledge-v21.json"));
-const workspaceOwnershipGraphArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0022-ownership-graph-v22.json"));
-const workspaceCorporateRecordScopeIntegrityArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0023-corporate-record-scope-integrity-v23.json"));
-const workspaceOwnershipFactLifecycleArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0024-ownership-fact-lifecycle-v24.json"));
-const workspaceDocumentInboxArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0025-workspace-document-inbox-v25.json"));
-const workspaceDocumentInboxHandoffClaimsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0026-workspace-inbox-handoff-claims-v26.json"));
-const workspaceIntercompanyDispositionsArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0027-intercompany-dispositions-v27.json"));
-const workspaceIntercompanyDispositionLifecycleArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0028-intercompany-disposition-lifecycle-v28.json"));
-const workspaceInboxSingleAssignmentArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0029-workspace-inbox-single-assignment-v29.json"));
-const workspaceDocumentPartyRoleTaxonomyArtifact = readFileSync(join(import.meta.dir, "workspace-migrations", "0030-document-party-role-taxonomy-v30.json"));
+// This is the legacy MAIN lineage (31 knowledge, 32 approval, 33 mapping,
+// 34 tasks), not the native lineage (31 mail, 32 custody). Keep the native
+// artifact intact, but never register it under MAIN's conflicting version 31.
+// Native catalog admission remains authoritative for native workspaces.
+const migrations = loadMigrationCatalog(join(import.meta.dir, "workspace-migrations"), {}, [
+  "0031-workspace-mail-intake-v31.json",
+]);
+export const WORKSPACE_CONTROL_BASELINE_MIGRATION_ID = migrations[0]!.id;
+export const WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME = migrations[0]!.name;
+export const WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM = migrations[0]!.checksum;
+export const CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION = migrations.at(-1)!.id;
+export function supportedWorkspaceControlMigrations() { return migrations.map(({ id, name, checksum }) => ({ id, name, checksum })); }
 
-export const WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM = createHash("sha256")
-  .update(baselineArtifact)
-  .digest("hex");
-export const WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM = createHash("sha256")
-  .update(betterAuthArtifact)
-  .digest("hex");
-export const WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM = createHash("sha256")
-  .update(workspaceAccessArtifact)
-  .digest("hex");
-export const WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM = createHash("sha256")
-  .update(workspaceBootstrapArtifact)
-  .digest("hex");
-export const WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_CHECKSUM = createHash("sha256")
-  .update(workspaceSessionAssuranceArtifact)
-  .digest("hex");
-export const WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceAuthAuditArtifact).digest("hex");
-export const WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceGroupStructureArtifact).digest("hex");
-export const WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceDocumentAccessArtifact).digest("hex");
-export const WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceIntercompanyMappingArtifact).digest("hex");
-export const WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceConsolidationEliminationArtifact).digest("hex");
-export const WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceConsolidationProfileArtifact).digest("hex");
-export const WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceAuthRecoveryTelemetryArtifact).digest("hex");
-export const WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceAuthorizationDenialAuditArtifact).digest("hex");
-export const WORKSPACE_CONTROL_INVITATIONS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceInvitationsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_CHECKSUM = createHash("sha256").update(workspacePartyRegistryArtifact).digest("hex");
-export const WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceCorporateRecordsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceServicePrincipalsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceServicePrincipalSagaArtifact).digest("hex");
-export const WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_CHECKSUM = createHash("sha256").update(workspacePartyAssertionsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceCorporateRecordGovernanceArtifact).digest("hex");
-export const WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceCompanyKnowledgeArtifact).digest("hex");
-export const WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceOwnershipGraphArtifact).digest("hex");
-export const WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceCorporateRecordScopeIntegrityArtifact).digest("hex");
-export const WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceOwnershipFactLifecycleArtifact).digest("hex");
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceDocumentInboxArtifact).digest("hex");
-export const WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceDocumentInboxHandoffClaimsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceIntercompanyDispositionsArtifact).digest("hex");
-export const WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceIntercompanyDispositionLifecycleArtifact).digest("hex");
-export const WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_ID = 29;
-export const WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_NAME = "rentemester-workspace-inbox-single-assignment-v29";
-export const WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceInboxSingleAssignmentArtifact).digest("hex");
-export const WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_ID = 30;
-export const WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_NAME = "rentemester-document-party-role-taxonomy-v30";
-export const WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_CHECKSUM = createHash("sha256").update(workspaceDocumentPartyRoleTaxonomyArtifact).digest("hex");
+export type WorkspaceMigrationRow = { id: number; name: string; checksum: string | null; };
 
 export type WorkspaceControlPaths = {
   root: string;
@@ -168,80 +37,6 @@ export function workspaceControlPaths(workspaceRoot: string): WorkspaceControlPa
   const directory = join(workspaceRoot, WORKSPACE_CONTROL_DIRECTORY);
   return { root: workspaceRoot, directory, db: join(directory, WORKSPACE_CONTROL_DB_FILE) };
 }
-
-type WorkspaceMigration = {
-  id: number;
-  name: string;
-  checksum: string;
-  artifact: Buffer;
-};
-
-export type WorkspaceMigrationRow = {
-  id: number;
-  name: string;
-  checksum: string | null;
-};
-
-const migrations: readonly WorkspaceMigration[] = [
-  {
-    id: WORKSPACE_CONTROL_BASELINE_MIGRATION_ID,
-    name: WORKSPACE_CONTROL_BASELINE_MIGRATION_NAME,
-    checksum: WORKSPACE_CONTROL_BASELINE_MIGRATION_CHECKSUM,
-    artifact: baselineArtifact,
-  },
-  {
-    id: WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_ID,
-    name: WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_NAME,
-    checksum: WORKSPACE_CONTROL_BETTER_AUTH_MIGRATION_CHECKSUM,
-    artifact: betterAuthArtifact,
-  },
-  {
-    id: WORKSPACE_CONTROL_ACCESS_MIGRATION_ID,
-    name: WORKSPACE_CONTROL_ACCESS_MIGRATION_NAME,
-    checksum: WORKSPACE_CONTROL_ACCESS_MIGRATION_CHECKSUM,
-    artifact: workspaceAccessArtifact,
-  },
-  {
-    id: WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_ID,
-    name: WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_NAME,
-    checksum: WORKSPACE_CONTROL_BOOTSTRAP_MIGRATION_CHECKSUM,
-    artifact: workspaceBootstrapArtifact,
-  },
-  {
-    id: WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_ID,
-    name: WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_NAME,
-    checksum: WORKSPACE_CONTROL_SESSION_ASSURANCE_MIGRATION_CHECKSUM,
-    artifact: workspaceSessionAssuranceArtifact,
-  },
-  { id: WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_ID, name: WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTH_AUDIT_MIGRATION_CHECKSUM, artifact: workspaceAuthAuditArtifact },
-  { id: WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_ID, name: WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_GROUP_STRUCTURE_MIGRATION_CHECKSUM, artifact: workspaceGroupStructureArtifact },
-  { id: WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_ID, name: WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_ACCESS_MIGRATION_CHECKSUM, artifact: workspaceDocumentAccessArtifact },
-  { id: WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_ID, name: WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_MAPPING_MIGRATION_CHECKSUM, artifact: workspaceIntercompanyMappingArtifact },
-  { id: WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_ID, name: WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CONSOLIDATION_ELIMINATION_MIGRATION_CHECKSUM, artifact: workspaceConsolidationEliminationArtifact },
-  { id: WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_ID, name: WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CONSOLIDATION_PROFILE_MIGRATION_CHECKSUM, artifact: workspaceConsolidationProfileArtifact },
-  { id: WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_ID, name: WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTH_RECOVERY_TELEMETRY_MIGRATION_CHECKSUM, artifact: workspaceAuthRecoveryTelemetryArtifact },
-  { id: WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_ID, name: WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_AUTHORIZATION_DENIAL_AUDIT_MIGRATION_CHECKSUM, artifact: workspaceAuthorizationDenialAuditArtifact },
-  { id: WORKSPACE_CONTROL_INVITATIONS_MIGRATION_ID, name: WORKSPACE_CONTROL_INVITATIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INVITATIONS_MIGRATION_CHECKSUM, artifact: workspaceInvitationsArtifact },
-  { id: WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_ID, name: WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_PARTY_REGISTRY_MIGRATION_CHECKSUM, artifact: workspacePartyRegistryArtifact },
-  { id: WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_ID, name: WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORDS_MIGRATION_CHECKSUM, artifact: workspaceCorporateRecordsArtifact },
-  { id: WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_ID, name: WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_SERVICE_PRINCIPALS_MIGRATION_CHECKSUM, artifact: workspaceServicePrincipalsArtifact },
-  { id: WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_ID, name: WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_SERVICE_PRINCIPAL_SAGA_MIGRATION_CHECKSUM, artifact: workspaceServicePrincipalSagaArtifact },
-  { id: WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_ID, name: WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_PARTY_ASSERTIONS_MIGRATION_CHECKSUM, artifact: workspacePartyAssertionsArtifact },
-  { id: WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_ID, name: WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORD_GOVERNANCE_MIGRATION_CHECKSUM, artifact: workspaceCorporateRecordGovernanceArtifact },
-  { id: WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_ID, name: WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_COMPANY_KNOWLEDGE_MIGRATION_CHECKSUM, artifact: workspaceCompanyKnowledgeArtifact },
-  { id: WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_ID, name: WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_OWNERSHIP_GRAPH_MIGRATION_CHECKSUM, artifact: workspaceOwnershipGraphArtifact },
-  { id: WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_ID, name: WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_CORPORATE_RECORD_SCOPE_INTEGRITY_MIGRATION_CHECKSUM, artifact: workspaceCorporateRecordScopeIntegrityArtifact },
-  { id: WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_ID, name: WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_OWNERSHIP_FACT_LIFECYCLE_MIGRATION_CHECKSUM, artifact: workspaceOwnershipFactLifecycleArtifact },
-  { id: WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_ID, name: WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_INBOX_MIGRATION_CHECKSUM, artifact: workspaceDocumentInboxArtifact },
-  { id: WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_ID, name: WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_INBOX_HANDOFF_CLAIMS_MIGRATION_CHECKSUM, artifact: workspaceDocumentInboxHandoffClaimsArtifact },
-  { id: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_ID, name: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITIONS_MIGRATION_CHECKSUM, artifact: workspaceIntercompanyDispositionsArtifact },
-  { id: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_ID, name: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INTERCOMPANY_DISPOSITION_LIFECYCLE_MIGRATION_CHECKSUM, artifact: workspaceIntercompanyDispositionLifecycleArtifact },
-  { id: WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_ID, name: WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_INBOX_SINGLE_ASSIGNMENT_MIGRATION_CHECKSUM, artifact: workspaceInboxSingleAssignmentArtifact },
-  { id: WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_ID, name: WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_NAME, checksum: WORKSPACE_CONTROL_DOCUMENT_PARTY_ROLE_TAXONOMY_MIGRATION_CHECKSUM, artifact: workspaceDocumentPartyRoleTaxonomyArtifact },
-];
-
-/** Latest immutable control-schema migration this runtime can safely serve. */
-export const CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION = migrations.at(-1)!.id;
 
 function tableExists(db: Database, name: string): boolean {
   return db.query(
@@ -516,10 +311,14 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
     "rm_party_alias_assertions",
     "rm_party_field_assertions",
     "rm_party_legacy_links",
+    "rm_legacy_party_mapping_events",
     "rm_corporate_record_events",
     "rm_corporate_record_scope_assertions",
     "rm_company_knowledge_assertions",
     "rm_company_knowledge_events",
+    "rm_knowledge_page_events",
+    "rm_knowledge_relation_events",
+    "rm_accounting_approval_policy_events",
     "rm_ownership_source_snapshots",
     "rm_ownership_snapshot_events",
     "rm_ownership_facts",
@@ -527,6 +326,11 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
     "rm_intercompany_disposition_events",
     "rm_intercompany_disposition_journal_links",
     "rm_intercompany_disposition_lifecycle_events",
+    "rm_task_events",
+    "rm_task_board_events",
+    "rm_task_series_events",
+    "rm_task_receipts",
+    "rm_task_notifications",
   ]) {
     if (!tableExists(db, table)) {
       throw new Error(`workspace control access table '${table}' is missing`);

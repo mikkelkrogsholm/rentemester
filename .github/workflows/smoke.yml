@@ -27,6 +27,9 @@ jobs:
         with:
           bun-version: 1.4.0
 
+      - name: Verify headless Chrome startup for release evidence
+        run: bun run scripts/release/cockpit-evidence-browser.ts
+
       - name: Build and verify the local container profile
         run: bun run container:test
 

@@ -1,6 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, postJournalEntryInCurrentTransaction, type JournalPostResult } from "./ledger";
 import { getCompanySettings } from "./company";
+import { validNonEuReverseChargeReview } from "./document-non-eu-reverse-charge-review";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { requireCachedViesValidation, normalizeEuVatNumber } from "./vies";
 import { addDkk, compareDkk, fromOre, percentOfDkk, roundDkk, subtractDkk, sumDkk, toOre } from "./money";
@@ -201,8 +202,11 @@ function postServiceReverseChargeLines(
   ruleId: string,
   sourceLabel: string,
   inCurrentTransaction = false,
+  deductionPercent = 100,
 ): JournalPostResult {
   const vatAmount = percentOfDkk(input.netAmount, 25);
+  const deductibleVat = roundDkk(vatAmount * deductionPercent / 100);
+  const nonDeductibleVat = roundDkk(vatAmount - deductibleVat);
   const inputVat = resolveAccountRole(db, "input_vat");
   const outputVat = resolveAccountRole(db, "reverse_charge_vat");
   const bank = input.paymentAccountNo ? { ok: true as const, accountNo: input.paymentAccountNo } : resolveAccountRole(db, "bank");
@@ -223,7 +227,8 @@ function postServiceReverseChargeLines(
     createdByProgram: input.createdByProgram,
     lines: [
       { accountNo: input.expenseAccountNo, debitAmount: roundDkk(input.netAmount), vatCode, text: `${sourceLabel} service purchase base` },
-      { accountNo: inputVat.accountNo, debitAmount: vatAmount, text: "Deductible reverse-charge input VAT" },
+      ...(nonDeductibleVat > 0 ? [{ accountNo: input.expenseAccountNo, debitAmount: nonDeductibleVat, text: "Non-deductible reverse-charge VAT" }] : []),
+      { accountNo: inputVat.accountNo, debitAmount: deductibleVat, text: "Deductible reverse-charge input VAT" },
       { accountNo: bank.accountNo, creditAmount: roundDkk(input.netAmount), text: "Payment / liability" },
       { accountNo: outputVat.accountNo, creditAmount: vatAmount, text: "Reverse-charge output VAT" },
     ],
@@ -355,7 +360,10 @@ function documentDanishInputVatSupplierErrors(db: Database, documentId: number):
  * the purchase remains available for human resolution without creating a VAT
  * journal entry.
  */
-function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): string[] {
+/** Shared documentary gate for both the read-only purchase preflight and
+ * posting. Keep this source-of-truth here: preflight must never present a
+ * green purchase-eligibility result that booking will immediately reject. */
+export function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): string[] {
   const row = db.query(
     `SELECT sender_vat_cvr, recipient_vat_cvr, payload_json
        FROM documents
@@ -367,6 +375,8 @@ function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): str
   } | null;
   if (!row) return [`documentId ${documentId} does not exist`];
 
+  const reviewed = validNonEuReverseChargeReview(db, documentId);
+  if (reviewed) return [];
   const errors: string[] = [];
   if (!row.sender_vat_cvr?.trim()) {
     errors.push("non-EU reverse-charge input-VAT deduction requires the supplier's home-country registration number on the invoice");
@@ -390,17 +400,26 @@ function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): str
   let wordingConfirmed = false;
   try {
     const payload = row.payload_json ? JSON.parse(row.payload_json) as unknown : null;
+    const record = payload && typeof payload === "object" && !Array.isArray(payload)
+      ? payload as Record<string, unknown>
+      : null;
+    const evidence = record?.reverseChargeWordingEvidence;
+    const sourceEvidence = evidence && typeof evidence === "object" && !Array.isArray(evidence)
+      ? evidence as Record<string, unknown>
+      : null;
+    // A historical boolean may remain in immutable metadata, but it is not
+    // documentary evidence. Only a cited source statement can unlock the
+    // same booking gate that preflight reports.
     wordingConfirmed = Boolean(
       payload
-      && typeof payload === "object"
-      && !Array.isArray(payload)
-      && (payload as Record<string, unknown>).reverseChargeWordingConfirmed === true,
+      && typeof sourceEvidence?.excerpt === "string" && sourceEvidence.excerpt.trim()
+      && typeof sourceEvidence.location === "string" && sourceEvidence.location.trim(),
     );
   } catch {
     wordingConfirmed = false;
   }
   if (!wordingConfirmed) {
-    errors.push("non-EU reverse-charge input-VAT deduction requires confirmed reverse-charge wording on the invoice");
+    errors.push("non-EU reverse-charge input-VAT deduction requires confirmed reverse-charge wording evidenced by a source excerpt/location on the invoice");
   }
   return errors;
 }
@@ -464,7 +483,8 @@ function postNonEuServiceReverseChargePurchaseInternal(db: Database, input: Reve
       errors: ["document requires human resolution before non-EU reverse-charge input-VAT deduction", ...evidenceErrors],
     };
   }
-  return postServiceReverseChargeLines(db, input, "NON_EU_SERVICE_REVERSE_CHARGE", NON_EU_REVERSE_CHARGE_RULE_ID, "Non-EU", inCurrentTransaction);
+  const reviewed = validNonEuReverseChargeReview(db, input.documentId);
+  return postServiceReverseChargeLines(db, input, "NON_EU_SERVICE_REVERSE_CHARGE", NON_EU_REVERSE_CHARGE_RULE_ID, "Non-EU", inCurrentTransaction, reviewed?.deductionPercent ?? 100);
 }
 
 export function postNonEuServiceReverseChargePurchaseInCurrentTransaction(db: Database, input: ReverseChargePurchaseInput): JournalPostResult {

@@ -51,7 +51,7 @@ describe("serve CLI", () => {
   test("serve boots the API on a config-driven port and serves the workspace", async () => {
     const ws = tmpRoot("serve-cli");
     initWorkspace(ws);
-    createCompany(ws, { name: "Acme ApS" });
+    createCompany(ws, { name: "Acme ApS", cvr: "DK90000101" });
     // Port 0 lets the OS pick a free port deterministically per run.
     const port = 4400 + Math.floor(Math.random() * 200);
     const proc = Bun.spawn(

@@ -1,7 +1,7 @@
 /** Workspace inbound polling: manifest entries are the authority, never caller keys/credentials. */
 import { existsSync } from "node:fs";
-import { Database } from "bun:sqlite";
 import { openDb, migrate } from "../db";
+import { openLedgerReadOnly } from "../ledger-inspection";
 import { evaluateBackupLock } from "../backup-governance";
 import { companyPaths } from "../paths";
 import { listWorkspaceCompanies, companyRootForSlug } from "../workspace";
@@ -62,7 +62,7 @@ function preflightWorkspaceTargets(targets: WorkspaceTarget[], actor: string): v
     // `openDb` changes persistent journal mode to WAL. A preflight must be
     // byte/state read-only until every target has passed, so use SQLite's
     // readonly handle directly and defer openDb/migrate to the execution pass.
-    const db = new Database(companyPaths(target.root).db, { readonly: true });
+    const db = openLedgerReadOnly(companyPaths(target.root).db);
     try {
       let lock: ReturnType<typeof evaluateBackupLock>;
       try {

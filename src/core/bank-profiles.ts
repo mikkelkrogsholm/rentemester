@@ -57,6 +57,12 @@ export type BankImportProfile = {
    * profiled file.
    */
   columns: Record<string, ProfileFieldName>;
+  /**
+   * Declared row order in the source file. It is evidence, not a heuristic:
+   * the final running balance is resolved from this persisted direction when
+   * several statement rows have the same date.
+   */
+  statementOrder?: "ascending" | "descending";
 };
 
 /**
@@ -90,6 +96,10 @@ const DANSKE_BANK: BankImportProfile = {
     arkivreference: "archive_reference",
     kundereference: "customer_reference",
   },
+  // The export lists most recent statement rows first. Keeping that fact on
+  // every imported row lets readers resolve same-day closing balances without
+  // ever treating SQLite insertion ids as banking chronology.
+  statementOrder: "descending",
 };
 
 const PROFILES: Record<string, BankImportProfile> = {

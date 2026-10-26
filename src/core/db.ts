@@ -261,6 +261,28 @@ export type OpenDbOptions = {
   journalMode?: "WAL" | "DELETE";
 };
 
+function makeCloseDeterministic(db: Database): void {
+  const close = Database.prototype.close;
+  let closed = false;
+  Object.defineProperty(db, "close", {
+    value: function (this: Database, throwOnError = false) {
+      if (closed) return;
+      (this as Database & { clearQueryCache(): void }).clearQueryCache();
+      // Finish this connection's WAL work while the handle is still alive.
+      // PASSIVE never waits for another writer, so concurrent CLI processes
+      // retain their normal serialization without a strict-close deadlock.
+      try {
+        this.run("PRAGMA wal_checkpoint(PASSIVE)");
+      } catch {
+        // An exceptional caller may still be unwinding a transaction. Native
+        // close performs the rollback; checkpointing must not mask its error.
+      }
+      close.call(this, throwOnError);
+      closed = true;
+    },
+  });
+}
+
 export function openDb(path: string, options: OpenDbOptions = {}) {
   assertLegacyWorkspaceActive(dirname(dirname(dirname(path))));
   // Compatibility is a read-only preflight. In particular, do not change the
@@ -272,6 +294,7 @@ export function openDb(path: string, options: OpenDbOptions = {}) {
       assertLegacySourceActive(preflight);
       assertSchemaCompatibility(preflight);
     } finally {
+      (preflight as Database & { clearQueryCache(): void }).clearQueryCache();
       preflight.close();
     }
   }
@@ -281,10 +304,12 @@ export function openDb(path: string, options: OpenDbOptions = {}) {
   // processes open the same company ledger at once (the agent-demo pipeline,
   // parallel test runs on a saturated CI host). 5s was too tight under load;
   // 30s lets the single writer finish rather than erroring "database is locked".
-  db.exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 30000;");
+  db.run("PRAGMA foreign_keys = ON");
+  db.run("PRAGMA busy_timeout = 30000");
   db.exec(options.journalMode === "DELETE"
     ? "PRAGMA journal_mode = DELETE;"
     : "PRAGMA journal_mode = WAL;");
+  makeCloseDeterministic(db);
   return db;
 }
 
@@ -323,6 +348,15 @@ function restoreSchemaViews(db: Database, schema: string) {
 /** Baseline stage shared by full migration and exact schema-parity tooling. */
 export function normalizeCompanyBaseline(db: Database) {
   assertSchemaCompatibility(db);
+  const queryOnly = Number(Object.values(
+    db.query("PRAGMA query_only").get() as Record<string, unknown>,
+  )[0]) === 1;
+  if (queryOnly) {
+    if (!schemaHistoryIsCurrent(db)) {
+      throw new Error("ledger schema migration is required before read-only access");
+    }
+    return;
+  }
   // A current, checksummed ledger is an inspection target: routine opens must
   // never recreate a missing canonical view and thereby hide drift. Pending
   // and fresh ledgers still evaluate the complete baseline schema.

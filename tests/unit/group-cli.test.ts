@@ -28,6 +28,26 @@ async function run(args: string[]) {
 }
 
 describe("group CLI workspace-wide authorization", () => {
+  test("an unauthorized disposition proposal leaves no append-only proposal, event or audit", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-proposal-gate-"));
+    initWorkspace(workspace);
+    const left = createCompany(workspace, { name: "Synthetic Left", onboardingActor: "user:maker" });
+    const right = createCompany(workspace, { name: "Synthetic Right", onboardingActor: "user:maker" });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      const party = createParty(db, { partyId: "synthetic-party", kind: "organization", name: "Synthetic parties", source: "synthetic", observedAt: "2026-01-01T00:00:00Z", reviewAssertion: "reviewed", actor: "user:maker" });
+      const record = ingestCorporateRecord(db, { recordId: "synthetic-evidence", type: "intercompany_agreement", bytes: new TextEncoder().encode("Synthetic agreement"), filename: "agreement.txt", source: "synthetic", receivedAt: "2026-01-01T00:00:00Z", uploader: "synthetic", actor: "user:maker" });
+      const input = join(workspace, "disposition.json");
+      writeFileSync(input, JSON.stringify({ type: "loan", economicDate: "2026-02-01", amount: 100, currency: "DKK", partyIds: [party.partyId], evidenceRecordIds: [record.recordId], left: { companySlug: left.slug, role: "lender", expectedSide: "receivable" }, right: { companySlug: right.slug, role: "borrower", expectedSide: "payable" } }));
+      const snapshot = () => ["rm_intercompany_dispositions", "rm_intercompany_disposition_events", "workspace_audit"].map(table => db.query(`SELECT * FROM ${table} ORDER BY rowid`).all());
+      const before = snapshot();
+      const args = ["group", "propose-disposition", "--workspace", workspace, "--disposition", input, "--confirm", "yes", "--format", "json"];
+      expect((await run([...args, "--actor", "user:intruder"])).result.ok).toBe(false);
+      expect(snapshot()).toEqual(before);
+      expect((await run([...args, "--actor", "user:maker"])).result.ok).toBe(true);
+      expect(db.query("SELECT COUNT(*) AS count FROM rm_intercompany_dispositions").get()).toEqual({ count: 1 });
+    } finally { db.close(); rmSync(workspace, { recursive: true, force: true }); }
+  });
   test("disposition lifecycle authorizes both companies and preserves both legal ledgers", async () => {
     const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-lifecycle-cli-"));
     initWorkspace(workspace);

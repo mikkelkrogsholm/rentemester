@@ -76,7 +76,9 @@ rentemester --version
 curl http://127.0.0.1:4319/api/health
 ```
 
-MCP-klienter bruger `meta_about`. Health/MCP viser produktversion, commit,
+MCP-klienter starter i compact-profilen med `system_server_about`; det
+bagudkompatible full-profilnavn `meta_about` bevares. Health/MCP viser
+produktversion, commit,
 buildtid, schema-version/baseline-checksum og `rules.digest`. Lokale source-runs
 har med vilje `null` for commit og buildtid; officielle images har begge dele.
 
@@ -88,3 +90,12 @@ yes` må opgradere schemaet; MCP har med vilje ingen migrations-tool.
 
 Backups, myndighedspakker og SAF-T-pakker har `manifestVersion: 2` og samme
 `provenance`-blok. Ældre backupmanifests uden feltet læses fortsat som v1.
+
+## Source integration: separate workspace schema lineages (#718)
+
+The explicitly selected historical TypeScript source retains MAIN workspace-control
+migrations 31 knowledge pages, 32 accounting approval, 33 legacy party mapping and
+34 tasks. Native Rust retains its independent 31 mail-intake / 32 custody lineage.
+Equal version numbers do not establish compatibility. Neither this source merge
+nor the retained JSON artifacts authorize native admission of MAIN control34;
+explicit native task port and versioned adoption remain separate work.

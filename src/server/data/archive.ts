@@ -17,7 +17,7 @@
 import { existsSync } from "node:fs";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import {
   companyRootForSlug,
@@ -31,7 +31,7 @@ export type IncomeStatementLine = {
   name: string;
   amount: number;
   /** The same account's amount in the prior calendar year, kroner. */
-  priorAmount: number;
+  priorAmount: number | null;
 };
 
 /** The `import_archive_years` header row for a fiscal year, or null. */
@@ -184,9 +184,8 @@ export function buildCompanyArchiveYear(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
 
     const yearRow = db

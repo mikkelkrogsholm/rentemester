@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Durable transaction-owning retry receipts for high-risk local writes (#583). */
 import { createHash } from "node:crypto";
 import type { Database } from "bun:sqlite";
@@ -9,6 +10,7 @@ export const IDEMPOTENCY_RETENTION_DAYS = 30;
 export type RetryClass = "safe-read" | "key-idempotent" | "natural-idempotent" | "external-provider-reconciled" | "unsafe-read-back";
 export const RETRY_CLASS_BY_OPERATION: Readonly<Record<string, RetryClass>> = Object.freeze({
   journal_post: "key-idempotent", journal_reverse: "key-idempotent", expense_book: "key-idempotent", payable_register: "key-idempotent", payable_pay: "key-idempotent",
+  purchase_case_create: "key-idempotent", purchase_case_review: "key-idempotent", purchase_case_reassess: "key-idempotent", purchase_case_group_review: "key-idempotent",
   bookkeeping_batch_apply: "natural-idempotent", reconcile_bank: "natural-idempotent", bank_import: "natural-idempotent",
   bank_reconciliation_correction_apply: "key-idempotent",
   direct_bank_purchase_payable_correction_apply: "key-idempotent",
@@ -16,10 +18,10 @@ export const RETRY_CLASS_BY_OPERATION: Readonly<Record<string, RetryClass>> = Ob
 });
 /** Single reviewed retry registry for runtime and agent discovery. */
 export const RETRY_OPERATION_NAMES = Object.freeze({
-  keyIdempotent: new Set(["journal_post", "journal_reverse", "expense_book", "payable_register", "payable_pay", "bank_reconciliation_correction_apply", "direct_bank_purchase_payable_correction_apply"]),
-  naturalIdempotent: new Set(["bank_import", "bookkeeping_batch_apply", "bookkeeping_batch_approve", "bookkeeping_batch_dry_run", "bookkeeping_batch_persist", "dimension_budget_apply", "documents_enrich", "documents_extract_invoice", "documents_parse", "documents_parse_pending", "documents_set_company_context", "documents_party_link_apply", "documents_party_link_supersede", "documents_internal_no_external_party", "documents_internal_no_external_party_supersede", "invoice_render", "posting_rule_propose", "recurring_invoice_generate", "recurring_invoice_run_workspace"]),
+  keyIdempotent: new Set(["journal_post", "journal_reverse", "expense_book", "payable_register", "payable_pay", "purchase_case_create", "purchase_case_review", "purchase_case_reassess", "purchase_case_group_review", "bank_reconciliation_correction_apply", "direct_bank_purchase_payable_correction_apply"]),
+  naturalIdempotent: new Set(["bank_import", "bank_legacy_binding_apply", "bookkeeping_batch_apply", "bookkeeping_batch_approve", "bookkeeping_batch_dry_run", "bookkeeping_batch_persist", "dimension_budget_apply", "documents_enrich", "documents_extract_invoice", "documents_parse", "documents_parse_pending", "documents_set_company_context", "documents_review_purchase_vat_evidence", "documents_review_non_eu_reverse_charge_evidence", "documents_party_link_apply", "documents_party_link_supersede", "documents_internal_no_external_party", "documents_internal_no_external_party_supersede", "invoice_imported_receivables_backfill_apply", "invoice_imported_receivable_settlement_apply", "invoice_render", "legacy_party_mapping_apply", "legacy_party_mapping_supersede", "party_coverage_apply", "payable_legacy_backfill_apply", "posting_rule_propose", "recurring_invoice_generate", "recurring_invoice_run_workspace", "vendor_identity_enrichment_apply", "vat_filing_evidence_record"]),
   externalProviderReconciled: new Set(["efaktura_konfigurer", "efaktura_onboard", "efaktura_registrer", "efaktura_send", "efaktura_modtag", "efaktura_modtag_workspace", "efaktura_status", "peppol_submit_public_invoice", "mail_intake_ingest", "imap_intake_poll", "customer_validate_vat", "cvr_lookup"]),
-  naturalIdempotentCli: new Set(["import contacts", "bookkeeping-batch persist", "bookkeeping-batch dry-run", "bookkeeping-batch approve", "bookkeeping-batch apply", "dimensions budget-apply"]),
+  naturalIdempotentCli: new Set(["import contacts", "bookkeeping-batch persist", "bookkeeping-batch dry-run", "bookkeeping-batch approve", "bookkeeping-batch apply", "dimensions budget-apply", "documents party-coverage-apply", "legacy-party-mapping apply", "legacy-party-mapping supersede", "vendor-identity-enrichment apply"]),
 });
 export type StablePrincipal = { kind: "user" | "service-account"; subjectId: string };
 export type IdempotencyReceipt = { replayed: boolean; receiptId: number; createdAt: string; expiresAt: string };
@@ -27,14 +29,9 @@ export type BusinessRejection = { ok: false; errors?: string[] };
 export class IdempotencyError extends Error {
   constructor(readonly code: "IDEMPOTENCY_CONFLICT" | "IDEMPOTENCY_OUTCOME_EXPIRED" | "IDEMPOTENCY_AUTH_REQUIRED" | "IDEMPOTENCY_STORAGE_FAILURE", message: string) { super(message); this.name = "IdempotencyError"; }
 }
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`).join(",")}}`;
-}
+
 export function canonicalPayloadHash(value: unknown): string {
-  const serialized = canonical(value);
+  const serialized = canonicalJson(value);
   if (Buffer.byteLength(serialized, "utf8") > IDEMPOTENCY_PAYLOAD_MAX_BYTES) throw new IdempotencyError("IDEMPOTENCY_STORAGE_FAILURE", "validated idempotency payload exceeds receipt limit");
   return createHash("sha256").update(serialized).digest("hex");
 }

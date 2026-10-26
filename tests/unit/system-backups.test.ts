@@ -11,6 +11,47 @@ import { backupManifestKeyPath, createSystemBackup, getBackupComplianceStatus } 
 import { writeFileAtomic } from "../../src/core/atomic-file";
 
 describe("system backups", () => {
+  for (const corruption of ["missing", "tampered"] as const) {
+    test(`rejects ${corruption} document evidence before publishing a signed manifest or success audit`, () => {
+      const root = mkdtempSync(join(tmpdir(), "rentemester-backup-incomplete-"));
+      const paths = ensureCompanyDirs(root);
+      const db = openDb(paths.db);
+      try {
+        migrate(db);
+        const source = join(root, "synthetic.txt");
+        writeFileSync(source, "Synthetic receipt");
+        const doc = ingestDocument(db, root, source, { source: "email", documentType: "cash_register_receipt", issueDate: "2026-05-16", deliveryDescription: "Synthetic goods", amountIncVat: 125, currency: "DKK", sender: { name: "Synthetic Shop" }, vatAmount: 25 });
+        expect(doc.ok).toBe(true);
+        const stored = join(paths.documentsOriginals, readdirSync(paths.documentsOriginals)[0]!);
+        if (corruption === "missing") rmSync(stored); else writeFileSync(stored, "Tampered receipt");
+        const audit = db.query("SELECT * FROM audit_log").all();
+        const result = createSystemBackup(db, root, { createdAt: "2026-05-17T02:09:00.000Z" });
+        expect(result.ok).toBe(false);
+        expect(result.errors.join(" ")).toContain("copied evidence is missing or does not match");
+        expect(existsSync(join(paths.backups, "backup-20260517T020900Z"))).toBe(false);
+        expect(db.query("SELECT * FROM audit_log").all()).toEqual(audit);
+      } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+    });
+  }
+  for (const store of ["documentsOriginals", "invoicesIssued"] as const) {
+    test(`rejects unregistered files in ${store} without publishing or auditing a backup`, () => {
+      const root = mkdtempSync(join(tmpdir(), "rentemester-backup-orphan-"));
+      const paths = ensureCompanyDirs(root);
+      const db = openDb(paths.db);
+      try {
+        migrate(db);
+        const orphan = join(paths[store], "orphan-sensitive.txt");
+        writeFileSync(orphan, "Synthetic unregistered evidence");
+        const audit = db.query("SELECT * FROM audit_log").all();
+        const result = createSystemBackup(db, root, { createdAt: "2026-05-17T02:09:00.000Z" });
+        expect(result.ok).toBe(false);
+        expect(result.errors.join(" ")).toContain("not registered");
+        expect(existsSync(join(paths.backups, "backup-20260517T020900Z"))).toBe(false);
+        expect(existsSync(orphan)).toBe(true);
+        expect(db.query("SELECT * FROM audit_log").all()).toEqual(audit);
+      } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+    });
+  }
   test("creates a full backup snapshot with manifest and copied documents", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-backup-"));
     const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-backup-inbox-"));
@@ -61,11 +102,21 @@ describe("system backups", () => {
     migrate(db);
 
     const writerScript = join(companyRoot, "writer.ts");
+    const readyPath = join(companyRoot, "writer-ready");
+    const startPath = join(companyRoot, "writer-start");
+    const attemptedPath = join(companyRoot, "writer-attempted");
     writeFileSync(writerScript, `
-      await Bun.sleep(50);
+      const { existsSync, writeFileSync } = await import("node:fs");
       const { openDb } = await import(${JSON.stringify(join(process.cwd(), "src/core/db.ts"))});
       const db = openDb(process.argv[2]);
+      writeFileSync(process.argv[3], "ready");
+      const deadline = Date.now() + 5000;
+      while (!existsSync(process.argv[4])) {
+        if (Date.now() > deadline) throw new Error("backup lock was never acquired");
+        await Bun.sleep(5);
+      }
       const started = Date.now();
+      writeFileSync(process.argv[5], "attempted");
       db.run(
         "INSERT INTO bank_transactions (transaction_date, booking_date, text, amount, currency, reference, import_batch_id, source_file_hash, transaction_hash) VALUES (?, ?, ?, ?, 'DKK', ?, ?, ?, ?)",
         "2026-05-17",
@@ -81,13 +132,33 @@ describe("system backups", () => {
       db.close();
     `);
 
-    const writer = Bun.spawn(["bun", "run", writerScript, paths.db], {
+    const writer = Bun.spawn(["bun", "run", writerScript, paths.db, readyPath, startPath, attemptedPath], {
       cwd: process.cwd(),
       stdout: "pipe",
       stderr: "pipe",
     });
 
+    // Synchronize on process readiness and the acquired lock, not import timing.
+    const readyDeadline = Date.now() + 5000;
+    while (!existsSync(readyPath)) {
+      if (Date.now() > readyDeadline) { writer.kill(); throw new Error("writer did not become ready"); }
+      await Bun.sleep(5);
+    }
+    const originalExec = db.exec.bind(db);
+    db.exec = (sql) => {
+      const result = originalExec(sql);
+      if (sql === "BEGIN IMMEDIATE;") {
+        writeFileSync(startPath, "locked");
+        const attemptDeadline = Date.now() + 5000;
+        while (!existsSync(attemptedPath)) {
+          if (Date.now() > attemptDeadline) { writer.kill(); throw new Error("writer did not attempt its locked write"); }
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
+        }
+      }
+      return result;
+    };
     const backup = createSystemBackup(db, companyRoot, { createdAt: "2026-05-17T02:09:00.000Z", debugHoldMs: 400 });
+    db.exec = originalExec;
     expect(backup.ok).toBe(true);
 
     const writerStdout = await new Response(writer.stdout).text();

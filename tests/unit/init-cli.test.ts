@@ -54,7 +54,7 @@ describe("init CLI", () => {
       const company = join(ws, "acme-aps");
       const initProc = Bun.spawn(
         [
-          "bun", "run", "src/cli.ts", "init", "--company", company, "--format", "json",
+          "bun", "run", "src/cli.ts", "init", "--company", company, "--format", "json", "--cvr", "DK90000102",
           // #241: pass bank details so the advisory warning on stderr does not
           // confuse this test, which is about workspace registration, not #241.
           "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",

@@ -1,10 +1,11 @@
+import { canonicalJson } from "./canonical-json";
 import { createHash, randomUUID } from "node:crypto";
 import type { Database } from "bun:sqlite";
 const TYPES=["incorporation","articles","registration","shareholder_register","shareholder_agreement","board_resolution","general_meeting_minutes","capital_or_dividend_resolution","annual_report","auditor_deliverable","intercompany_agreement","ownership_register","share_transfer","authority_letter","bank_mandate","tax_registration","other"] as const;
 const STORAGE_TYPES=["articles","registration","board_resolution","ownership_register","share_transfer","authority_letter","bank_mandate","tax_registration","other"] as const;
 type RecordType=typeof TYPES[number]; type LinkType="company"|"party"|"ownership"|"disposition"|"legacy_evidence_ref";
-const canonical=(v:unknown):string=>v===null||typeof v!=="object"?JSON.stringify(v):Array.isArray(v)?`[${v.map(canonical).join(",")}]`:`{${Object.keys(v as object).sort().map(k=>`${JSON.stringify(k)}:${canonical((v as any)[k])}`).join(",")}}`;
-const hash=(v:Uint8Array|string)=>createHash("sha256").update(v).digest("hex");
+const canonical = canonicalJson;
+const hash=(value:Uint8Array|string)=>createHash("sha256").update(value).digest("hex");
 const requireText=(value:unknown,label:string,max=320)=>{const out=typeof value==="string"?value.trim():"";if(!out||out.length>max)throw new Error(`${label} is required and bounded`);return out;};
 const iso=(value:unknown,label:string)=>{const date=new Date(requireText(value,label,40));if(Number.isNaN(date.valueOf()))throw new Error(`${label} must be ISO-8601`);return date.toISOString();};
 function storageType(type:RecordType):typeof STORAGE_TYPES[number] { return (STORAGE_TYPES as readonly string[]).includes(type) ? type as typeof STORAGE_TYPES[number] : "other"; }

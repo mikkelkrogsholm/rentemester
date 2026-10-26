@@ -1,3 +1,4 @@
+import { decodeTransactionRejection, TransactionRejectionError } from "./transaction-rejection";
 /**
  * Accruals / periodeafgrænsningsposter.
  *
@@ -402,7 +403,7 @@ export function registerAccrual(
         ),
       });
       if (!journal.ok) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       // The one permitted accruals-row mutation: link the registration entry.
@@ -431,11 +432,11 @@ export function registerAccrual(
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([ACCRUAL_RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([ACCRUAL_RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }
@@ -579,7 +580,7 @@ export function recognizeAccrualPeriod(
         ),
       });
       if (!journal.ok) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       const posting = db.query(
@@ -616,11 +617,11 @@ export function recognizeAccrualPeriod(
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([ACCRUAL_RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([ACCRUAL_RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }
@@ -823,19 +824,4 @@ export function listDueAccrualRecognitionPeriods(
     totalDueAmount: sumDkk(periods.map((p) => p.amount)),
     errors: [],
   };
-}
-
-/**
- * Unpacks the JSON error thrown to abort a posting transaction so the original
- * `appliedRules`/`errors` from the failed `postJournalEntry` can be surfaced.
- */
-function parseTransactionError(error: unknown): { appliedRules?: unknown; errors?: unknown } | null {
-  if (typeof error === "object" && error && "message" in error) {
-    try {
-      return JSON.parse(String((error as { message: unknown }).message));
-    } catch {
-      return null;
-    }
-  }
-  return null;
 }

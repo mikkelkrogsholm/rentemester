@@ -1,168 +1,131 @@
 # Rentemester: behavior-preserving simplification
 
-## Mandate and completion
+## Mandate and delivery boundary
 
-Refactor the complete product so its code is easier to understand, change and
-verify. Preserve supported behavior, external CLI/MCP/HTTP contracts, user flows,
-data compatibility, accounting rules, audit history, actor/access gates and
-explicit confirmation. Use Graphify to locate dependencies and source/tests to
-verify them. No new features, schema/rule changes or company-specific defaults.
+Make the complete product easier to understand, change, test and diagnose.
+Preserve supported UI/CLI/HTTP/MCP behavior, existing data, accounting rules,
+actor/access policy, confirmation, audit history, atomicity and idempotency.
+No new features, schema/rule changes, company-specific defaults, merge or
+production deployment. The lead owns implementation and verification.
 
-The bounded improvement list below comes from a Graphify-first audit of core,
-imports, agent runtime, CLI/MCP/server and cockpit code and tests. The full goal
-remains active until every selected item has implementation and acceptance
-evidence, integrated checks pass, the graph is updated, and a final review
-confirms the scope and reports limitations. Ordinary implementation decisions
-remain with the lead. A simplification that requires changed product behavior
-or lacks sufficient verification must be raised with the user.
+Delivery branch: `codex/rentemester-simplification`, based on current-main
+commit `2896aafe99cec716325bdfc3a9949e24dc2bd90a`. The source tree, graph health
+and final verification are recorded in `graphify-out/refactor-verification.json`.
+That machine-readable record supplies the final gate status and exact counts;
+temporary logs are supporting local evidence, not product prerequisites.
+That record is historical refactor acceptance. The subsequent requested review
+and defect repairs are recorded in [review-adversarial-2026-10-03.md](review-adversarial-2026-10-03.md)
+and `graphify-out/review-verification.json`.
 
-## Improvement list
+## Finite improvement list
 
-| ID | Change and demonstrated pressure | Acceptance | State |
-| --- | --- | --- | --- |
-| R1 | Share cockpit JSON/binary transport and error handling. PDF preview and accountant export duplicate the canonical seam; binary 401 does not expire the UI session, and export network failure lacks the code used to lock uncertain writes. | Failing tests before fixes; error envelopes, auth expiry, network/body failure, read/write distinction, one request, PDF/tar payloads and headers preserved. | Implemented; integrated audit pending |
-| R2 | Give CLI mutation scope one explicit owner; workspace disposition settle/reopen/supersede incorrectly require a company before their own workspace preflight. Remove repeated period reopen actor resolution while preserving its historical empty-policy distinction for explicit versus derived machine actors. The spec-driven check also found three ownership scope omissions and three unclassified company-knowledge writes. | Synthetic failure reproduction; correct workspace dispatch; allowed/denied/derived actors, attribution and period lifecycle tests. | Implemented; integrated audit pending |
-| R3 | Share purchase supplier/recipient evidence and 25% consistency checks used by direct-bank expenses and payable registration. Keep workflow-specific treatment inference, validation order and result rules. | Both paths: identity/context refusal, malformed payloads, rate/tolerance, mixed VAT, FX and nonregistered-company cases; preserve first error and rollback. | Implemented; integrated audit pending |
-| R4 | Replace repeated transaction-rejection JSON codecs with one structured error/decoder across the existing invoice mutation paths. Retain legacy message fallback and operation-owned transactions/rule merging. | Failed journal/evidence/application writes roll back rows, audit and sequences; retry remains gap-free; invoice lifecycle/negative suites pass and result shapes are preserved. | Implemented; integrated audit pending |
-| R5 | Remove five cockpit refresh counters already implemented by useAsync.reload. These counters mistakenly change resource identity and discard existing data. | Deferred same-resource reload and refresh failure retain data; real company/filter changes hide old data; five view suites and hook tests pass. | Implemented; integrated audit pending |
-| R6 | Share the exact invoice input serializer between preview and issue. | Both endpoints send identical data; optional truthy/undefined omission semantics and zero VAT preserved; invoice modal tests pass. | Implemented; integrated audit pending |
-| R7 | Remove unreachable legacy Dinero archive/bilag branch and private helpers; the identical earlier condition always returns via atomic v4. Keep both active preflight calls and all active v4 effects. | Import framework, archive integrity, atomic failure/dry-run/file rollback, receipt links, open items and immutable retry suites pass. | Implemented; integrated audit pending |
-| R8 | Agent loop imports the CLI rendering barrel for a wrapper that merely calls core/money.formatKronerDa. Call the canonical domain formatter directly. | Runtime agent, Danish output and money formatting tests preserve outputs; agent has no CLI rendering import. | Implemented; integrated audit pending |
-| R9 | Share the repeated strict read-ledger lifecycle in MCP's adaptive and explicit read-only wrappers. Preserve their public envelopes and policy differences. | Whole-tree read-only side-effect checks, schema refusal/inspection, slug resolution, redacted errors, guaranteed close and concurrent read/write isolation. | Implemented; integrated audit pending |
+| ID | Delivered simplification | Observable acceptance |
+| --- | --- | --- |
+| R1 | One cockpit transport owns JSON/binary requests, authentication expiry and structured failures. | PDF/tar bytes, headers and envelopes retained; one request; binary auth/body/network failure and read/write distinctions verified. |
+| R2 | Explicit CLI mutation-policy scope; workspace handlers own their precondition sequence. Canonical identity precedes registry writes and disposition access. Repeated period actor resolution removed. | Workspace targets, confirmation/error precedence, actor denial/attribution, four access bootstrap scopes, three knowledge writes, ownership lifecycle and period explicit/derived actor distinction verified. |
+| R3 | One owner for purchase supplier/recipient evidence and native-currency 25% arithmetic. | Direct-bank and payable first-error order, incomplete-invoice review differences, mixed/simplified VAT, FX, tolerance, recipient evidence and no-write denial verified. |
+| R4 | One structured transaction-rejection error and legacy decoder across invoice, interest correction, asset, payable and accrual mutation paths. | Owning transactions, rollback, audit/sequence continuity, outer receipt rethrows, existing rule merging and legacy messages retained. |
+| R5 | Five cockpit views use `useAsync.reload` instead of refresh counters. | Same-resource pending/failed reads retain data; actual resource changes clear data. Legacy bank-binding modal refresh and integrity stale-result warning verified. |
+| R6 | One exact invoice serializer for preview and issue. | Identical bodies and existing optional-field omission/zero-VAT semantics retained. |
+| R7 | Unreachable legacy Dinero archive/bilag branch and private helpers removed. | Both active preflights and atomic v4 effects retained; dry-run, rejected provenance, file rollback, links/open items and immutable retry verified. |
+| R8 | Agent loop calls the domain money formatter directly. | Danish output retained; runtime no longer imports the CLI rendering barrel. |
+| R9 | One MCP strict read-ledger lifecycle owns opening, schema validation, awaited execution and close. | Public wrappers retain distinct path/error/actor policies; read-only byte preservation, async close/redaction and concurrent read/write isolation verified. |
 
-Execution increments: first remove the proven obsolete paths/dependencies and
-repair CLI policy ownership; then consolidate cockpit behavior; then consolidate
-core safety rules and transaction rejections. Each increment has focused tests
-and a reviewed diff. This order does not reduce the full improvement list.
+This list remains the finite work boundary. R4 includes the identical remaining
+codec sites found on newer main; this does not add a new improvement category.
+Tests characterize observable contracts rather than implementation layout.
 
-## Baseline, 2026-10-03
+## Product-area assessment
 
-- Checkout: `codex/release-render-fix`, HEAD `42a91717`; Bun `1.4.0`.
-- Prior Graphify upgrade/rebuild changes and dated graph artifacts are preserved.
-  No product code was dirty before this mission.
-- Graph: Graphify `0.9.74`, 9,086 nodes / 33,769 edges. Structural connections
-  may be undirected or collapsed; proposed changes were checked against source.
-- Runtime typecheck, lint (1,165 files), agent-discovery coverage, cockpit build,
-  CLI smoke and MCP smoke passed before code changes.
-- Cockpit: 570 tests / 67 files passed; browser: 167 tests passed.
-- Backend: 2,660 passed, 1 failed / 415 files. The first bank-suggest-matches
-  CLI case returned exit 1 instead of 0 under the full parallel suite. All five
-  cases pass in isolation. Cause remains unproven; do not describe baseline as
-  entirely green or delete/weaken the test. Final full verification must revisit.
-- Focused import baseline: 83 tests / 8 files passed.
-- Supply-chain audit (259 packages), production licenses (132 packages), PDF
-  benchmark verification and container integration passed. Container
-  reproducibility baseline also passed (session 14006 completed with exit 0).
-- Discovery surface baseline: MCP 214, CLI 265, HTTP 208. Hashes are saved in
-  the baseline-discovery JSON for comparison after refactoring.
-- Detailed command output: `/tmp/rentemester-refactor-x57lVC/`. Temporary paths
-  are local evidence, not portable product prerequisites.
+Graphify queries and scoped source/diff review guide this assessment. The graph
+is a navigation aid: structural edges can be collapsed or undirected, and
+semantic inference is checked against sources before changing behavior. This
+assessment covers product areas; it does not claim a line-by-line proof of every
+unchanged function.
 
-## Decisions and deferred findings
+| Area | Assessment and disposition | Verification evidence |
+| --- | --- | --- |
+| Ledger, schema, money, VAT and audit | Preserve domain rules/schema and transaction ownership; selected shared seams R3/R4/R8. | Full backend; purchase rejection/acceptance matrix, fault rollback, sequences and money tests; CLI/MCP lifecycle smoke. |
+| Invoices, claims, refunds, credit notes, interest, payables, assets and accruals | Share mechanical rejection encoding only; keep workflow rules and result-specific rule composition. | Lifecycle, corrections, negative/fault cases and receipt-idempotency rollback suites. |
+| Imports, bank evidence and external integrations | R7 removes proved unreachable code. Retain both preflights, provenance, v4 and fan-out gates. | Archive/file rollback, evidence identity and workspace DigiSense governance suites. |
+| CLI, workspace registry, groups and periods | R2 makes scope ownership explicit; preserve each existing handler's validation order and current company policies. | Public-spec scope checks, registry/disposition lifecycle, actor/confirmation matrix and period tests. |
+| HTTP/MCP security, discovery and write orchestration | R9 consolidates reads. Keep newer service-principal membership, authenticated idempotency, confirmed-write and backup-lock wrappers. | Discovery comparison, server/security suites, MCP strict-read/concurrency tests and smoke. |
+| Cockpit routes, forms, API and export | R1/R5/R6 share existing mechanisms, including both accountant-export placements and legacy bank callback. | Full cockpit/browser acceptance; binary transport, invoice modal, export replay guard and deferred refresh cases. |
+| Reports, consolidation and readiness | Preserve read-only reporting layers, explicit eliminations and existing readiness controls. | Full backend, group/period/readiness suites and report smoke. |
+| Runtime agent and operational tooling | R8 removes CLI dependency; retain runtime gates and packaging workflow. | Runtime/discovery, typecheck/lint, supply-chain, container integration and OCI reproducibility. |
+| Public website and documentation | No website behavior change selected. Update Graphify workflow and evidence documentation. | Structural scan and diff review; packaging includes final docs. |
 
-- Keep direct-bank expenses and payable registration separate: their FX,
-  treatment, internal-voucher and validation sequencing contracts differ.
+## Deliberate non-changes
+
+- Keep direct-bank expenses and payables separate: FX, treatment, internal
+  vouchers and validation sequence have different supported contracts.
 - Keep ordinary and recurring invoice validation separate: quantity and price
   rules differ.
-- Keep the outer Dinero archive preflight: removing it could change rejection
-  envelopes and rejected-attempt provenance, independently of dead-code removal.
-- Company-local supplier policy/account mapping in agent/contract is a broader
-  product-boundary question; this refactor preserves current supported behavior.
+- Keep the outer Dinero archive preflight: removing it can change rejection
+  envelopes and rejected-attempt provenance independently of dead-code removal.
+- Keep company-local supplier policy/account mapping unchanged: changing that
+  boundary would change supported product behavior beyond this mandate.
+- Retain newer main's purchase-case, party/master-data, authenticated write,
+  readiness and service-principal controls. Port helpers into current files;
+  never replace them with older release-branch versions.
 
-## Implementation evidence
+## Baseline, failures and repair evidence
 
-All nine items now have source changes. The lead owns all writes; delegated
-source discovery and review were read-only. Integrated verification and the
-final completion audit remain outstanding; the goal is active.
+Current-main baseline passed frozen installation, runtime typecheck, lint,
+production cockpit build, 2,888 backend tests / 454 files and 619 cockpit tests
+/ 74 files. Discovery baseline: MCP 249, CLI 299, HTTP 241, 29 capabilities,
+42 workflows and 789 bindings.
 
-- R1/R5/R6: shared JSON/binary transport, one invoice serializer, five reload
-  counters removed. Export uses the existing uncertain-write guard with stable
-  company scope across both UI placements. Before-change regressions reproduced
-  binary auth/error handling, refresh data loss and export replay risk. Focused
-  80 tests / 12 files passed; independent frontend review found no substantive
-  remaining issue. Full cockpit verification: 583 tests / 69 files passed.
-  Cockpit production build passed. Browser verification is running.
-- R2: explicit mutation-root classification replaces the nested root expression.
-  Workspace disposition and ownership commands no longer require an unrelated
-  company. Company-knowledge writes now participate in the documented canonical
-  actor gate. Baseline registry regression: 7 failures / 8 tests; one existing
-  knowledge lifecycle still passed. Exact disposition confirmation and two-company
-  authorization/lifecycle/retry tests added. Reopen's explicit/derived identity
-  distinction is characterized and preserved, rather than silently hardened.
-  New scope invariants use public command specs to detect future omissions.
-- Disposition inspection reuses the existing strict snapshot reader, including
-  committed WAL frames without touching original sidecars. The fixture's initial
-  raw-main-file hash assertion was invalid before checkpointing its own writes:
-  drift already occurred on an authorization denial that never inspected legal
-  ledgers. The corrected fixture finishes writes and hashes database plus all
-  sidecars; successful and denied lifecycle calls preserve that digest. Do not
-  describe the original hash mismatch as a proved domain mutation.
-- R3: supplier mapping, recipient context and uniform 25% arithmetic now have one
-  owner, with caller validation positions and rules unchanged. A before-change
-  matrix of ten overlapping-invalid cases established distinct first errors and
-  no accounting/audit/sequence writes. All 44 focused purchase tests / 6 files
-  passed after extraction; independent source review found no supported drift.
-- R4: six invoice mutation modules use one structured transaction-rejection error
-  and legacy decoder. Transaction ownership, rollback, rule union and credit-note
-  file cleanup are unchanged. The JSON message remains compatible. Malformed
-  legacy details outside the typed result contract now fall back to the original
-  error rather than producing character rules or string errors. Focused invoice
-  suites: 30 tests / 6 files; additional codec, fault rollback, concurrent caps,
-  credit-note and MCP lifecycle suites: 39 tests / 5 files; all passed. Independent
-  source/legacy-decoder review found no supported drift.
-- R7/R8: unreachable Dinero branch and its private helpers removed; agent imports
-  the canonical core formatter directly. Both active import preflights retained.
-  Focused import/agent/money verification: 132 tests / 13 files passed.
-- R9: one internal read-ledger function owns snapshot opening, schema gate and
-  guaranteed close; public wrappers retain path/error/actor policy differences.
-  Focused MCP verification: 55 tests / 3 files passed, including byte-preserving
-  reads, concurrent read/write isolation, async failure close/redaction, schema
-  refusal and slug resolution. Independent interface review found no substantive
-  regression; close failures now also reach the envelope catch.
-- Runtime typecheck and lint passed after core/MCP edits. Full backend verification
-  is running. One focused multi-file CLI run failed at existing group mapping
-  setup with empty stdout; stderr diagnostics were added and a focused rerun is
-  running. Baseline bank-suggest-matches flakiness must still be revisited.
+The original release checkout (`42a91717`) was 479 non-graph files behind
+current main. It is parked as local historical commit `0bbe82bc`; it supplies
+no current-main delivery proof. Its full suite had a bank CLI flake, and its
+full packaging gate failed reproducibility despite a separate successful run.
+No old-base green claim or main-target PR is based on that result.
 
-## Remaining completion work
+Before-change characterization established purchase error ordering and denial
+without accounting/audit/sequence writes. Binary transport, export replay risk
+and refresh data loss have failing-before/passing-after evidence. Invalid
+snapshot fixtures were corrected before using them as proof: a nonexistent
+context `id` key and hashing unfinished fixture WAL writes were fixture errors,
+not demonstrated product mutations.
 
-1. Resolve or diagnose integrated failures; rerun changed checks when warranted.
-2. Compare public discovery surfaces and document intended metadata corrections.
-3. Run smoke, delivery/container and relevant end-to-end acceptance after changes.
-4. Update Graphify and verify changed symbols, removed dead paths, semantic
-   retention and graph integrity; refresh graph build metadata honestly.
-5. Review the integrated result and audit each item and original goal requirement.
-6. Record final evidence and remaining limitations before marking completion.
+The first current-main full gate passed (2,922 backend, 634 cockpit, 177 browser
+tests). Final independent review subsequently found two uncovered defects:
+central handler actor validation changed confirmation/target error precedence,
+and IntegrityView hid retained data during refresh/failure. Those findings
+invalidate use of that earlier gate as final proof. The handler sequence is now
+restored, identity remains before registry mutation/disposition reads, and the
+integrity view retains the last result with a clear refresh/failure indication.
+Focused repaired policy acceptance: 61 tests / 6 files; integrity/hook: 14 tests
+/ 2 files. The new CLI matrix failed ten cases before the repair.
 
-## Delivery-base reconciliation
+The newer interest-correction codec was also identified during final review.
+Its 37 existing tests passed before extraction and the 40 interest/codec tests
+passed afterward. Interest correction retains its fixed bookkeeping rule in
+failure results. Asset/payable/accrual codecs retain their transaction mode,
+rule merging and payable outer-transaction rethrow behavior.
 
-Delivery fetch found origin/main at `2896aafe`, with substantial supported
-functionality absent from the original `codex/release-render-fix` checkout
-(479 non-graph files differ; 329 src/app files). Its local green checks therefore
-prove preservation only against `42a91717`, not the current product. Do not
-mark the goal complete or publish a main-target PR from that old base.
+Discovery counts and catalogue stay unchanged. Exactly three company-knowledge
+CLI bindings are corrected from read/no-actor metadata to write/actor/unsafe
+read-back; derived coverage/profile hashes change for this intended correction.
 
-The completed source work and evidence above are retained. Product diff is
-saved locally at `/tmp/rentemester-refactor-x57lVC/refactor-product.patch`,
-including separate untracked helpers/tests to transfer. The next bounded step
-is to port the same nine improvements into a managed worktree of current
-origin/main, retain every newer safeguard/feature, rerun the baseline and
-integrated acceptance there, update its graph and deliver verified changes.
-No selected item is removed or weakened by this reconciliation.
+## Graph and final verification evidence
 
-Managed integration checkout created at
-`/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rentemester-simplification/rentemester`,
-base `2896aafe`. Current-main baseline frontend passes 619 tests / 74 files;
-backend baseline is running. Six tracked patches need deliberate adaptation;
-others apply cleanly. New incomplete-invoice VAT review controls must be retained.
+Graphify is installed at 0.9.74 with the SQL parser. The graph includes the
+current structural extraction and semantic document/rule/image evidence.
+Ninety-eight unchanged semantic sources reuse content/prompt-matching cache
+fragments; 25 changed/new sources were freshly extracted. Luna's first fragments
+were insufficient (truncated reads and a chunk without edges); those results
+were rejected. One Sol repair supplied 140 unique nodes and 97 located edges,
+with all 25 sources represented and valid endpoints. Final edits to this record
+and the Graphify guide are source-checked before cache/manifest stamping.
 
-The old-base full `verify:local` passed through smoke/container integration but
-its final container reproducibility run failed with two different digests. A
-separate reproducibility run had passed. Cause is unproven; source/artifact changes
-during the verification window are a possible confounder. No claim of a full
-green old-base verify gate or current-main completion is supported.
+Native semantic token usage is unavailable. Zero token placeholders are not a
+claim of zero cost. `graphify-out/build-info.json` records source fingerprints,
+coverage, actual provenance and limitations; `graphify-out/graph-health.json`
+records graph diagnostics, including structural parser/direction limitations.
 
-This old-base checkout is explicitly parked as a local preservation checkpoint.
-After transfer, the progress record in the managed current-main checkout is the
-authoritative continuation record; this file is historical and must not govern
-new completion claims. No remote push or PR is produced from this older base.
+Completion requires the final `bun run verify:local` to exit 0 on a frozen
+source/docs tree, graph integrity and semantic coverage to be checked, and each
+R1–R9 item to have source and acceptance evidence. Consult
+`graphify-out/refactor-verification.json` for that final audited status.

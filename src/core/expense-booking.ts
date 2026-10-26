@@ -349,7 +349,7 @@ function bookExpenseFromBankInternal(db: Database, input: BookExpenseFromBankInp
   // through a separately hash-bound company context. It never replaces the
   // supplier identity checks above and ordinary documents get no exception.
   if (vatTreatment === "standard") {
-    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document);
+    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document, { requireIncompleteReview: true });
     if (contextErrors.length > 0) return { ok: false, appliedRules: [], errors: contextErrors };
   }
   const transactionDate = input.transactionDate ?? bank.transaction_date;

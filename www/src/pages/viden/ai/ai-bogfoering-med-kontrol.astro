@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="AI kan læse bilag, foreslå kontering og finde mangler. Men bogføring kræver deterministiske regler, dokumentation og audit trail, ellers bliver automatisering bare hurtigere fejl."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       AI-bogføring lyder attraktivt, fordi mange regnskabsopgaver er repetitive. Problemet opstår, når modellen får lov at gætte regler, fradrag eller momsbehandling uden et kontrolleret system omkring sig.
     </p>
 
@@ -37,20 +38,20 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad AI egner sig til</h2>
-    <ul>
-      <li>læse bilag og foreslå metadata</li>
-      <li>finde manglende oplysninger</li>
-      <li>foreslå match mellem bank og faktura</li>
-      <li>pege på exceptions</li>
-      <li>forberede handlinger gennem strukturerede tools</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad AI egner sig til</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>læse bilag og foreslå metadata</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>finde manglende oplysninger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>foreslå match mellem bank og faktura</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>pege på exceptions</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>forberede handlinger gennem strukturerede tools</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester eksponerer workflows gennem MCP-tools og holder reglerne i kode. AI-klienten kan assistere, men bogføring skal stadig gå gennem validering, dokumentkrav, append-only ledger og audit-verifikation.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den vigtigste designregel er, at AI ikke må være den eneste kilde til sandhed. Hvis bilaget mangler, momsnummeret ikke er valideret, eller posteringen ikke balancerer, skal flowet stoppe i stedet for at producere en pæn, forkert bogføring.
     </p>
   </article>

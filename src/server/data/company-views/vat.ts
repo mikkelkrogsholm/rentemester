@@ -15,6 +15,7 @@ import {
   vatRubrikkerForPeriod,
   emptyVatRubrikker,
 } from "../vat";
+import { buildVatFiling } from "../../../core/vat-filing";
 
 // --------------------------------------------------------------------------
 // Per-company VAT return (Moms, year-aware) — cockpit-redesign it. 3
@@ -123,9 +124,10 @@ export function buildCompanyVat(
       vat.periodStart,
       vat.periodEnd,
     );
-    const momsangivelseReady =
-      (periodStatus === "closed" || periodStatus === "reported") &&
-      vat.reportOk;
+    const filing = (periodStatus === "closed" || periodStatus === "reported")
+      ? buildVatFiling(ctx.db, vat.periodStart, vat.periodEnd)
+      : null;
+    const momsangivelseReady = filing?.ok === true;
 
     // The full SKAT TastSelv rubrics — the same numbers the CLI's
     // `vat momsangivelse` reports — so an owner can file straight from here.
@@ -153,7 +155,10 @@ export function buildCompanyVat(
       daysRemaining: daysBetween(asOfDate, deadline),
       periodStatus,
       momsangivelseReady,
-      vatReportErrors: vat.reportErrors,
+      // A closed period can still be unfileable: for example, an aggregate B
+      // amount may lack the audited classification required by TastSelv. The
+      // Cockpit must expose the identical fail-closed contract as the CLI/MCP.
+      vatReportErrors: filing && !filing.ok ? filing.errors : vat.reportErrors,
       vatReportWarnings: vat.reportWarnings,
       rubrikker,
     };

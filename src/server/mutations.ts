@@ -24,13 +24,11 @@
 // `{ ok, errors }` result; a business rejection (`ok:false`) is mapped to a
 // 400/409 `ApiError`, never a 500.
 
-import { existsSync } from "node:fs";
 import type { Database } from "bun:sqlite";
 import { migrate, openDb } from "../core/db";
-import { companyPaths } from "../core/paths";
 import type { ActorContext } from "../core/actor";
 import { evaluateBackupLock } from "../core/backup-governance";
-import { findWorkspaceCompany, companyRootForSlug } from "../core/workspace";
+import { resolveWorkspaceCompany } from "../core/workspace-company-resolver";
 import type { ServerConfig } from "./config";
 import { ApiError } from "./errors";
 import type { Principal } from "./auth";
@@ -317,14 +315,16 @@ export async function withCompanyMutation<T extends CoreResult>(
 
   // (2) Company resolution. A registered slug whose ledger is missing on disk
   // is a 404 — the same shape the read routes return.
-  if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
+  const target = resolveWorkspaceCompany(config.workspaceRoot, slug, {
+    selection: "registered", archived: "allow", ledger: "required",
+  });
+  if (!target.ok && target.reason !== "LEDGER_MISSING") {
     throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
-  const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
-  const dbPath = companyPaths(companyRoot).db;
-  if (!existsSync(dbPath)) {
+  if (!target.ok) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
+  const { companyRoot, ledgerDbPath: dbPath } = target.company;
 
   const body = await readMutationBody(request, options.maxBodyBytes);
 
@@ -411,6 +411,9 @@ export async function withCompanyMutation<T extends CoreResult>(
 
     return result;
   } finally {
-    db.close();
+    // An HTTP mutation is complete before its response is observable. A
+    // strict close prevents Bun from deferring WAL cleanup until the next
+    // (possibly read-only) request in this long-lived server process.
+    db.close(true);
   }
 }

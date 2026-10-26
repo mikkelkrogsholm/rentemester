@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import { SITE } from "../../consts";
@@ -36,73 +37,73 @@ const jsonLd = {
     lead="Rentemester kører lokalt. Du skal bruge Bun og git — så kan du oprette en demo-virksomhed og køre smoke-flowet på få minutter."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <h2>Krav</h2>
-    <ul>
-      <li><strong>Bun</strong> version 1.2 eller nyere. Installér via <a href="https://bun.sh" rel="noopener" target="_blank">bun.sh</a> eller <code>brew install oven-sh/bun/bun</code>.</li>
-      <li><strong>Git</strong> til at hente koden.</li>
-      <li>En tom <strong>workspace-mappe</strong> der skal indeholde dine virksomheder (én eller flere virksomheder ligger som undermapper).</li>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Krav</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Bun</strong> version 1.2 eller nyere. Installér via <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="https://bun.sh" rel="noopener" target="_blank">bun.sh</a> eller <code {...sx.pages_sikkerhed_code1}>brew install oven-sh/bun/bun</code>.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Git</strong> til at hente koden.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>En tom <strong {...sx.pages_viden_frister_moms_strong1}>workspace-mappe</strong> der skal indeholde dine virksomheder (én eller flere virksomheder ligger som undermapper).</li>
     </ul>
-    <p>Det er det. Ingen Node, ingen Docker, ingen database-server. Bun og en lokal SQLite-fil er nok.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Det er det. Ingen Node, ingen Docker, ingen database-server. Bun og en lokal SQLite-fil er nok.</p>
 
-    <h3>Workspace eller standalone?</h3>
-    <p>Rentemester ledger-data ligger altid i en <em>company-mappe</em>. Du kan vælge mellem to layouts:</p>
-    <ul>
-      <li><strong>Med workspace (anbefalet):</strong> én ydre mappe indeholder en <code>workspace.json</code>-manifest og én eller flere virksomheder som undermapper. Det er det <strong>eneste</strong> layout cockpittet (<code>serve</code>) kan vise — uden workspace-registrering kan UI'en ikke se virksomheden. Vælg dette hvis du planlægger at bruge web-UI'en eller flere virksomheder.</li>
-      <li><strong>Standalone (kun CLI/MCP):</strong> spring <code>--workspace</code> over og brug kun <code>--company</code>. Fint hvis du udelukkende bruger kommandolinjen eller en AI-agent via MCP — men cockpittet vil ikke kunne finde virksomheden, og der findes i dag <strong>ingen</strong> "adopt"-kommando der efterregistrerer en eksisterende standalone-virksomhed i et workspace.</li>
+    <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Workspace eller standalone?</h3>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester ledger-data ligger altid i en <em {...sx.pages_docs_foersteFaktura_em1}>company-mappe</em>. Du kan vælge mellem to layouts:</p>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Med workspace (anbefalet):</strong> én ydre mappe indeholder en <code {...sx.pages_sikkerhed_code1}>workspace.json</code>-manifest og én eller flere virksomheder som undermapper. Det er det <strong {...sx.pages_viden_frister_moms_strong1}>eneste</strong> layout cockpittet (<code {...sx.pages_sikkerhed_code1}>serve</code>) kan vise — uden workspace-registrering kan UI'en ikke se virksomheden. Vælg dette hvis du planlægger at bruge web-UI'en eller flere virksomheder.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>Standalone (kun CLI/MCP):</strong> spring <code {...sx.pages_sikkerhed_code1}>--workspace</code> over og brug kun <code {...sx.pages_sikkerhed_code1}>--company</code>. Fint hvis du udelukkende bruger kommandolinjen eller en AI-agent via MCP — men cockpittet vil ikke kunne finde virksomheden, og der findes i dag <strong {...sx.pages_viden_frister_moms_strong1}>ingen</strong> "adopt"-kommando der efterregistrerer en eksisterende standalone-virksomhed i et workspace.</li>
     </ul>
-    <p>Denne guide bruger workspace-layoutet hele vejen igennem. Spring <code>--workspace</code>-flaget over hvis du bevidst vælger standalone.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Denne guide bruger workspace-layoutet hele vejen igennem. Spring <code {...sx.pages_sikkerhed_code1}>--workspace</code>-flaget over hvis du bevidst vælger standalone.</p>
 
-    <h2>1. Klon repoet</h2>
-    <pre><code>git clone {SITE.github}.git
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>1. Klon repoet</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>git clone {SITE.github}.git
 cd rentemester</code></pre>
 
-    <h2>2. Installer afhængigheder og byg cockpittet</h2>
-    <pre><code>bun install --frozen-lockfile
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>2. Installer afhængigheder og byg cockpittet</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun install --frozen-lockfile
 cd app
 bun install --frozen-lockfile
 bun run build
 cd ..</code></pre>
-    <p>Det første install klargør CLI'en og MCP-serveren. Det andet install og <code>bun run build</code> opretter <code>app/dist</code>, som <code>serve</code> leverer som cockpit-UI. Uden det build starter JSON-API'et stadig, men browseren har ingen færdig UI at vise.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Det første install klargør CLI'en og MCP-serveren. Det andet install og <code {...sx.pages_sikkerhed_code1}>bun run build</code> opretter <code {...sx.pages_sikkerhed_code1}>app/dist</code>, som <code {...sx.pages_sikkerhed_code1}>serve</code> leverer som cockpit-UI. Uden det build starter JSON-API'et stadig, men browseren har ingen færdig UI at vise.</p>
 
-    <h2>3. Opret workspace og første virksomhed</h2>
-    <p>Vælg en tom workspace-mappe — den bliver hjemstavn for alle dine virksomheder — og initialisér din første virksomhed som en undermappe:</p>
-    <pre><code>mkdir -p ./mit-workspace
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>3. Opret workspace og første virksomhed</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Vælg en tom workspace-mappe — den bliver hjemstavn for alle dine virksomheder — og initialisér din første virksomhed som en undermappe:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>mkdir -p ./mit-workspace
 bun run src/cli.ts init \
   --workspace ./mit-workspace \
   --company ./mit-workspace/min-virksomhed</code></pre>
-    <p>Det opretter <code>./mit-workspace/workspace.json</code> (manifestet cockpittet læser) og <code>./mit-workspace/min-virksomhed/</code> med SQLite-ledger, bilagsmapper og konfiguration. Virksomheden registreres automatisk i workspacet, så den er synlig næste gang du kører <code>serve</code>.</p>
-    <p>Vil du tilføje flere virksomheder senere — fx et holdingselskab og et driftsselskab side om side — kører du <code>company add --workspace ./mit-workspace --slug ny-virksomhed --name "..."</code>.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Det opretter <code {...sx.pages_sikkerhed_code1}>./mit-workspace/workspace.json</code> (manifestet cockpittet læser) og <code {...sx.pages_sikkerhed_code1}>./mit-workspace/min-virksomhed/</code> med SQLite-ledger, bilagsmapper og konfiguration. Virksomheden registreres automatisk i workspacet, så den er synlig næste gang du kører <code {...sx.pages_sikkerhed_code1}>serve</code>.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Vil du tilføje flere virksomheder senere — fx et holdingselskab og et driftsselskab side om side — kører du <code {...sx.pages_sikkerhed_code1}>company add --workspace ./mit-workspace --slug ny-virksomhed --name "..."</code>.</p>
 
-    <h2>4. Tjek at alt virker</h2>
-    <pre><code>bun run src/cli.ts system healthcheck --company ./mit-workspace/min-virksomhed</code></pre>
-    <p>Hvis healthcheck er grøn, er du installeret korrekt. Bekræft samtidig at virksomheden er registreret i workspacet:</p>
-    <pre><code>bun run src/cli.ts company list --workspace ./mit-workspace</code></pre>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>4. Tjek at alt virker</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts system healthcheck --company ./mit-workspace/min-virksomhed</code></pre>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Hvis healthcheck er grøn, er du installeret korrekt. Bekræft samtidig at virksomheden er registreret i workspacet:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts company list --workspace ./mit-workspace</code></pre>
 
-    <h2>5. Start cockpittet</h2>
-    <p>Cockpittet er Rentemesters lokale web-UI. Den kører kun mod et workspace — derfor er trin 3's <code>--workspace</code> påkrævet hvis du vil bruge den.</p>
-    <pre><code>bun run src/cli.ts serve --workspace ./mit-workspace</code></pre>
-    <p>Default-adressen er <code>http://127.0.0.1:4319</code>. Åbn den i din browser — virksomheden fra trin 3 vises i venstre-menuen. Override host/port med <code>--host</code>/<code>--port</code> eller miljøvariablerne <code>RENTEMESTER_APP_HOST</code> / <code>RENTEMESTER_APP_PORT</code>.</p>
-    <p>Sætter du <code>RENTEMESTER_WORKSPACE=./mit-workspace</code> i din shell, behøver du ikke passere <code>--workspace</code> på hver kommando.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>5. Start cockpittet</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Cockpittet er Rentemesters lokale web-UI. Den kører kun mod et workspace — derfor er trin 3's <code {...sx.pages_sikkerhed_code1}>--workspace</code> påkrævet hvis du vil bruge den.</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts serve --workspace ./mit-workspace</code></pre>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Default-adressen er <code {...sx.pages_sikkerhed_code1}>http://127.0.0.1:4319</code>. Åbn den i din browser — virksomheden fra trin 3 vises i venstre-menuen. Override host/port med <code {...sx.pages_sikkerhed_code1}>--host</code>/<code {...sx.pages_sikkerhed_code1}>--port</code> eller miljøvariablerne <code {...sx.pages_sikkerhed_code1}>RENTEMESTER_APP_HOST</code> / <code {...sx.pages_sikkerhed_code1}>RENTEMESTER_APP_PORT</code>.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Sætter du <code {...sx.pages_sikkerhed_code1}>RENTEMESTER_WORKSPACE=./mit-workspace</code> i din shell, behøver du ikke passere <code {...sx.pages_sikkerhed_code1}>--workspace</code> på hver kommando.</p>
 
-    <h2>6. Prøv et eksempel-flow</h2>
-    <p>Repoet indeholder eksempler du kan køre igennem for at se hele flowet:</p>
-    <pre><code>bun run smoke</code></pre>
-    <p>Det kører hele smoke-testen: opretter en virksomhed, importerer bilag, bogfører, fakturerer, beregner moms, eksporterer til revisor og verificerer. Når den ender med "OK" har du set Rentemester arbejde end-to-end.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>6. Prøv et eksempel-flow</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Repoet indeholder eksempler du kan køre igennem for at se hele flowet:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run smoke</code></pre>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Det kører hele smoke-testen: opretter en virksomhed, importerer bilag, bogfører, fakturerer, beregner moms, eksporterer til revisor og verificerer. Når den ender med "OK" har du set Rentemester arbejde end-to-end.</p>
 
-    <h2>MCP-server (for AI-klienter)</h2>
-    <p>Hvis du vil bruge Rentemester gennem en MCP-kompatibel klient:</p>
-    <pre><code>bun run mcp</code></pre>
-    <p>Og peg din klient mod den. Se <a href={`${SITE.github}/blob/main/docs/mcp-install.md`} rel="noopener" target="_blank">MCP-installationsguiden ↗</a> for klient-specifik opsætning.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>MCP-server (for AI-klienter)</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Hvis du vil bruge Rentemester gennem en MCP-kompatibel klient:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run mcp</code></pre>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Og peg din klient mod den. Se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/docs/mcp-install.md`} rel="noopener" target="_blank">MCP-installationsguiden ↗</a> for klient-specifik opsætning.</p>
 
-    <h2>Næste skridt</h2>
-    <ul>
-      <li>Læs <a href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for det fulde billede.</li>
-      <li>Læs <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank">CONTRIBUTING ↗</a> hvis du vil bidrage.</li>
-      <li>Åbn et <a href={`${SITE.github}/issues`} rel="noopener" target="_blank">issue ↗</a> hvis noget ikke virker.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for det fulde billede.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank">CONTRIBUTING ↗</a> hvis du vil bidrage.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Åbn et <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/issues`} rel="noopener" target="_blank">issue ↗</a> hvis noget ikke virker.</li>
     </ul>
 
-    <h2>Problemer?</h2>
-    <p>Den hurtigste vej er at åbne et issue på GitHub med output fra fejlen. Husk at sløre evt. private data først (bilag, banktransaktioner, CPR/CVR).</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Problemer?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Den hurtigste vej er at åbne et issue på GitHub med output fra fejlen. Husk at sløre evt. private data først (bilag, banktransaktioner, CPR/CVR).</p>
   </article>
 </BaseLayout>

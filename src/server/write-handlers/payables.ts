@@ -15,6 +15,7 @@ import {
 } from "../../core/payables";
 import type { ServerConfig } from "../config";
 import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../../core/direct-bank-purchase-payable-correction";
+import { applyLegacyPayablePaymentBackfill, planLegacyPayablePaymentBackfill } from "../../core/legacy-bank-payable-backfill";
 import { ApiError } from "../errors";
 import { withCockpitActor } from "../actor";
 import { withCompanyMutation } from "../mutations";
@@ -235,3 +236,7 @@ export async function handleDirectBankPurchasePayableApply(config: ServerConfig,
   }, { requireConfirm:true, keyIdempotent:"direct_bank_purchase_payable_correction_apply", requireIdempotencyKey:true });
   return okResponse({ correction: result, ...("idempotency" in result ? { idempotency: result.idempotency } : {}) });
 }
+
+function legacyBackfillInput(body:Record<string,unknown>){return {purchaseJournalEntryId:requireBodyPositiveInt(body,"purchaseJournalEntryId"),paymentJournalEntryId:requireBodyPositiveInt(body,"paymentJournalEntryId"),documentId:requireBodyPositiveInt(body,"documentId"),bankTransactionId:requireBodyPositiveInt(body,"bankTransactionId")};}
+export async function handleLegacyPayableBackfillPlan(config:ServerConfig,request:Request,slug:string):Promise<Response>{const body=await readJsonBody(request);const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);try{const result=planLegacyPayablePaymentBackfill(db,legacyBackfillInput(body));if(!result.ok)throw ApiError.conflict(result.errors.join("; "));return okResponse({plan:result.plan});}finally{db.close();}}
+export async function handleLegacyPayableBackfillApply(config:ServerConfig,request:Request,slug:string):Promise<Response>{const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{const p=ctx.principal;return applyLegacyPayablePaymentBackfill(ctx.db,{...legacyBackfillInput(body),planHash:requireBodyString(body,"planHash"),idempotencyKey:requireBodyString(body,"idempotencyKey"),actor:ctx.actor.createdBy,principal:p.serviceAccountId?{kind:"service-account" as const,subjectId:p.serviceAccountId}:{kind:"user" as const,subjectId:p.userId??p.id},confirm:true});},{requireConfirm:true,keyIdempotent:"payable_legacy_backfill_apply",requireIdempotencyKey:true});return okResponse({backfill:result,...("idempotency" in result?{idempotency:result.idempotency}:{})});}

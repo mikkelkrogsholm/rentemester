@@ -1,4 +1,4 @@
-/** Actual legacy canonical manifest writer/loader and native descriptor observation. */
+/** Historical native-v1 fixtures and current main-v2 writer vs native descriptor observation. */
 import assert from "node:assert/strict";
 import {
 	mkdtempSync,
@@ -48,9 +48,13 @@ const entry = {
 	createdAt: "2026-01-01T00:00:00.000Z",
 	archived: false,
 };
+// Frozen historical native-v1 fixture, NOT the current main writer contract.
+// Native admission intentionally remains v1-only until the explicit v2 port.
 const canonical = { version: 1 as const, companies: [entry] };
+const historicalNativeV1Json = `${JSON.stringify(canonical, null, 2)}\n`;
 const cases = [
-	{ id: "canonical-writer", allowed: true },
+	{ id: "historical-native-v1-canonical", allowed: true },
+	{ id: "main-v2-writer", mainWriter: true },
 	{
 		id: "alternate-json-format",
 		manifest: JSON.stringify(canonical),
@@ -176,6 +180,12 @@ try {
 		mkdirSync(dir);
 		mkdirSync(join(dir, ".rentemester"));
 		mkdirSync(join(dir, "a/data"), { recursive: true });
+		// Exercise the real writer before installing opaque descriptor-only DB bytes:
+		// its retirement fence must not be bypassed or asked to open those bytes.
+		if (test.mainWriter) {
+			saveWorkspaceManifest(dir, { version: 2, companies: [entry] });
+			assert.equal(JSON.parse(readFileSync(join(dir, "workspace.json"), "utf8")).version, 2);
+		}
 		writeFileSync(
 			join(dir, ".rentemester/workspace-control.sqlite"),
 			"synthetic control bytes; no SQLite open",
@@ -185,7 +195,8 @@ try {
 			"synthetic ledger bytes; no SQLite open",
 		);
 		if (!test.missing) {
-			saveWorkspaceManifest(dir, canonical);
+			if (!test.mainWriter)
+				writeFileSync(join(dir, "workspace.json"), historicalNativeV1Json);
 			if (test.manifest !== undefined)
 				writeFileSync(join(dir, "workspace.json"), test.manifest);
 		}
@@ -196,6 +207,7 @@ try {
 			legacyLoads = true;
 		} catch {}
 		assert.deepEqual(inventory(dir), before);
+		if (test.mainWriter) assert.equal(legacyLoads, true, "main-v2 writer round-trips through main loader");
 		const child = Bun.spawnSync(
 			[helper, "--ignored", "--exact", "local::layout::probe", "--nocapture"],
 			{
@@ -245,9 +257,10 @@ try {
 				ok: true,
 				checks: cases.length,
 				scope:
-					"actual canonical legacy manifest writer/loader vs native descriptor layout; exact source inventory preserved; no SQLite admission",
+					"historical native-v1 canonical fixture and actual main-v2 writer/loader vs native descriptor layout; exact source inventory preserved; no SQLite admission",
 				observations,
 				limits: [
+					"Main-v2 native port remains required; current main writer output is intentionally refused by native v1 admission",
 					"Loader acceptance is not legacy authorization; typed native profile intentionally stricter",
 					"Physical-layout observation only; arbitrary SQLite handle identity and writer authority remain unproven",
 					"No cross-device mount or hardware/platform qualification",

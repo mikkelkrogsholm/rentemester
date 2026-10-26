@@ -281,7 +281,7 @@ test("exact Dinero 64040/64060 reverse-charge controls override one matching acc
   const report = buildVatReport(db, "2026-05-01", "2026-05-31");
   expect(report.ok).toBe(true);
   expect(report.reverseChargePurchaseBase).toBe(100);
-  expect(report.rubrikker.rubrikA).toBe(100);
+  expect(report.rubrikker.rubrikAYdelser).toBe(100);
   expect(report.rubrikker.momsAfYdelseskobUdland).toBe(25);
   expect(report.rubrikker.kobsmoms).toBe(25);
   db.close(); rmSync(root, { recursive: true, force: true });
@@ -311,9 +311,9 @@ test("normalized Dinero VAT controls classify a blank-Momstype reverse-charge vo
   expect(report.ok).toBe(true);
   expect(report.reverseChargePurchaseBase).toBe(100.03);
   expect(report.rubrikker).toMatchObject({
-    rubrikA: 100.03,
-    momsAfYdelseskobUdland: 25.01,
-    kobsmoms: 25.01,
+    rubrikAYdelser: 100,
+    momsAfYdelseskobUdland: 25,
+    kobsmoms: 25,
   });
   db.close(); rmSync(root, { recursive: true, force: true });
 });
@@ -338,9 +338,9 @@ test("normalized Dinero VAT controls preserve an explicit non-EU service classif
   expect(report.reverseChargePurchaseBase).toBe(0);
   expect(report.nonEuServiceReverseChargePurchaseBase).toBe(100.03);
   expect(report.rubrikker).toMatchObject({
-    rubrikA: 0,
-    momsAfYdelseskobUdland: 25.01,
-    kobsmoms: 25.01,
+    rubrikAYdelser: 0,
+    momsAfYdelseskobUdland: 25,
+    kobsmoms: 25,
   });
   db.close(); rmSync(root, { recursive: true, force: true });
 });
@@ -363,7 +363,7 @@ test("report recovers the net base from Dinero's collapsed representation shape"
   expect(report.ok).toBe(true);
   expect(report.inputVat).toBe(15.10);
   expect(report.representationPurchaseBase).toBe(241.60);
-  expect(report.rubrikker.kobsmoms).toBe(15.10);
+  expect(report.rubrikker.kobsmoms).toBe(15);
   db.close(); rmSync(root, { recursive: true, force: true });
 });
 
@@ -467,7 +467,7 @@ test("report infers an exact reverse-charge base in an already-imported Dinero l
   const report = buildVatReport(db, "2026-05-01", "2026-05-31");
   expect(report.ok).toBe(true);
   expect(report.reverseChargePurchaseBase).toBe(100);
-  expect(report.rubrikker.rubrikA).toBe(100);
+  expect(report.rubrikker.rubrikAYdelser).toBe(100);
   expect(report.rubrikker.momsAfYdelseskobUdland).toBe(25);
   expect(report.rubrikker.salgsmoms).toBe(0);
   db.close(); rmSync(root, { recursive: true, force: true });
@@ -504,7 +504,7 @@ test("sanitized pre-normalization Dinero 64060 liability credit is trusted only 
   expect(report.inputVat).toBe(25);
   expect(report.reverseChargePurchaseBase).toBe(100.03);
   expect(report.rubrikker).toMatchObject({
-    rubrikA: 100.03,
+    rubrikAYdelser: 100,
     momsAfYdelseskobUdland: 25,
     kobsmoms: 25,
   });
@@ -628,11 +628,11 @@ test("legacy VAT roles are recovered from voucher evidence without depending on 
     netVatPayable: 3396.2,
   });
   expect(report.rubrikker).toMatchObject({
-    salgsmoms: 4457.25,
-    momsAfYdelseskobUdland: 62.5,
-    kobsmoms: 1123.55,
-    momstilsvar: 3396.2,
-    rubrikA: 250,
+    salgsmoms: 4457,
+    momsAfYdelseskobUdland: 62,
+    kobsmoms: 1123,
+    momsIAlt: 3396,
+    rubrikAYdelser: 250,
   });
 
   seedHistoricalClosedPeriod(db, {
@@ -813,8 +813,8 @@ test("a mixed Dinero voucher keeps ordinary sales VAT out of the reverse-charge 
     salgsmoms: 25,
     momsAfYdelseskobUdland: 25,
     kobsmoms: 25,
-    momstilsvar: 25,
-    rubrikA: 100,
+    momsIAlt: 25,
+    rubrikAYdelser: 100,
   });
   db.close(); rmSync(root, { recursive: true, force: true });
 });

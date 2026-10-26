@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import tailwind from "@astrojs/tailwind";
+import websiteStylex from "./scripts/stylex-integration";
 
 export default defineConfig({
   site: "https://rentemester.dk",
@@ -9,7 +9,7 @@ export default defineConfig({
     format: "file",
   },
   integrations: [
-    tailwind({ applyBaseStyles: false }),
+    websiteStylex(),
     sitemap({
       i18n: { defaultLocale: "da", locales: { da: "da-DK" } },
     }),

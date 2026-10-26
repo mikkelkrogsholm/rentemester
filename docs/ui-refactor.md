@@ -2,9 +2,31 @@
 
 Cockpit-appen bruger projektets lyse papir/blæk-design fra `DESIGN.md`. Marketingwebsitets særskilte design er et selvstændigt produktområde. Regnskabsregler, beløb, ledgerkontroller, planhash og adgangsafgørelser er fortsat serverens ansvar.
 
+## Aktuel integration og releasegate, 3. oktober 2026
+
+UI-arbejdet er integreret oven på `main` ved `69062fe`, så senere funktioner og kontroller bevares. Ruteregisteret er fortsat kanonisk; de 41 faste sider og fem flowruter inkluderer opmærksomhed, godkendelsespolitik, købsoverblik, parter og partsprofil. `DESIGN.md` dækker nu alle 63 offentlige komponentexports fra 33 fælles kildefiler.
+
+Den samlede `bun run verify:local`-kæde er bestået. Efter de sidste frontendrettelser er hele app- og browsermatricen samt relevante design-/evidenskontrakter genkørt. De oprindelige backend/MCP- og auditfejl i den historiske verifikation nedenfor er afhjulpet.
+
+| Kontrol | Aktuelt resultat |
+|---|---|
+| Backend | 2.879 tests, 0 fejl; 453 filer og 23.577 assertions |
+| App | 619 tests, 0 fejl; 74 filer og 2.296 assertions |
+| Chromium/WebKit | 177 tests, 0 fejl; alle 41 faste selskabssider samt de centrale flows |
+| Kandidatens UI-kontrakt | Alle 63 scenarier bestået i et lokalt preflight mod en kopi af det kompilerede cockpit med eksplicitte syntetiske API-fixtures; dette erstatter ikke workflowets digest-bundne containerbevis |
+| Runtime/app/E2E-typecheck, lint og token-/fixturekontrol | Bestået; lint omfatter 1.269 filer |
+| Discovery/MCP | Bestået; den registrerede MCP-surface har 249 tools, med komplet permission-map og kontrollerede dokumentationssubtotaler |
+| Dependencies | Frozen install, 0 advisories blandt 297 kontrollerede pakker, 173 godkendte produktionslicenser |
+| PDF-parser, CLI-smoke og MCP-smoke | Bestået med syntetiske data |
+| Container | Constrained non-root/read-only integration, fysisk read-only læseruter, PDF/cache og persistent genstart bestået; to rene OCI-exports er byte-identiske |
+
+Partsøgningen bevarer søgefelt og fokus under nye læsninger. Kvitteringen for «Markér som set» bliver stående, når den opdaterede liste bliver tom; både komponent- og browsertest dækker det. Navigation har særskilte direkte links og native disclosures uden indlejrede interaktive elementer. Lange planhashes ombrydes på mobil. Bankimportens native dialog bevarer kandidatkontraktens observerbare åbningstilstand.
+
+Serverens nyere planhash-/populationskontroller, policy-version ved review, nullable bankbalancer, partscoverage og separat afvikling af importerede tilgodehavender er bevaret. Ingen virksomhedsdata eller genererede Graphify-artefakter indgår i ændringen. Manuel skærmlæserkontrol og manuel browserzoom er fortsat særskilte acceptpunkter; automatiske axe-/keyboard-/reflow-resultater er ingen generel WCAG-attest.
+
 ## Dækningsmatrix
 
-Udgangspunktet var 48 view-filer og 37 virksomhedsindgange. Nogle filer indeholder flere tilstande, mens onboarding indlejres i porteføljen. Nye detalje- og oprettelsesruter er arbejdsflows under eksisterende destinationer og skal ikke duplikeres i navigationen.
+Det oprindelige UI-udgangspunkt havde 48 view-filer og 37 virksomhedsindgange. Integrationen med den aktuelle `main` omfatter 41 faste virksomhedsindgange og fem flowruter. Nogle filer indeholder flere tilstande, mens onboarding indlejres i porteføljen. Nye detalje- og oprettelsesruter er arbejdsflows under eksisterende destinationer og skal ikke duplikeres i navigationen.
 
 `R` betyder, at `routes.spec.ts` har en browsertest med en eksplicit, korrekt formet succesrespons og visningsspecifikt indhold. `M` betyder, at samme side har en 320 px-test for indhold, JavaScript-fejl og sidebredde samt et skærmbillede. `F` betyder en særskilt adfærdstest i `core-workflows.spec.ts` eller `auth-and-state.spec.ts`. Markeringerne beskriver den integrerede testdækning. En læsesmoke dokumenterer ikke i sig selv, at samtlige mutationer er browserverificeret.
 
@@ -16,7 +38,11 @@ Permissions i tabellen er forkortet: `read` = `company.read`, `documents.read/up
 | Posteringer | Søgning, kontofilter, bilag, CSV, dimensionsgennemgang og erstatning | read, export; ledger.post for bogføringsændringer | Regnskabsår | R, M |
 | Kladder | Opret, revidér, indsend, afvis, uafhængig godkendelse og bogføring | draft.write, review, ledger.post efter handling | Virksomhed | R, M |
 | Posteringsregler | Læs, foreslå, forklar, godkend, deaktivér og supersedér | read; eksisterende policy for hver regelhandling | Virksomhed | R, M |
-| Bogføringskø | Filter, plan, gem eksakt plan, godkend, anvend, varig historik og kvittering | read, draft.write, review, ledger.post efter trin | Eksplicit datointerval | R, M; workflow- og populationskontrol i komponenttests |
+| Kræver opmærksomhed | Prioriteret opgaveliste, evidens og næste opgave | read | Virksomhed | R, M |
+| Godkendelsespolitik | Læs og ændr en versioneret godkendelsespolitik | read; admin for ændringer | Virksomhed | R, M |
+| Købsoverblik | Kildebundne købscases, eksakt review og genvurdering | read, draft.write, review efter handling | Virksomhed og periode | R, M |
+| Parter og partsprofil | Søg canonical parter, eksplicitte koblinger, beregnede tal og research | read | Virksomhed og profilens periode | R, M for hub; profil i komponenttests |
+| Bogføringskø | Filter, plan, gem eksakt plan, godkend, anvend, varig historik og kvittering | read, draft.write, review, ledger.post efter trin | Kanonisk regnskabsår | R, M; workflow- og populationskontrol i komponenttests |
 | Bank | Søgning, import, afstemning, korrektion og bilag | read; master-data/ledger.post efter handling | Regnskabsår | R, M, F for skift og sene svar |
 | Bilag | Filter, indlæsning, filer, posteringer, partsreview og bogføring | documents.read/upload; review og ledger.post efter handling | Alle virksomhedens bilag; årsvalg er bogføringskontekst | R, M, F for roller og bogføring |
 | Leverandørfaktura | Registrér, betal, kreditér/ret efter eksisterende workflow, evidens | read; ledger.post efter handling | Virksomhed og forfaldsfilter | R, M |
@@ -37,7 +63,7 @@ Permissions i tabellen er forkortet: `read` = `company.read`, `documents.read/up
 | Likviditet | Pengestrøm, saldo, commitments, match, pause og afslutning | read; eksisterende policy for commitmenthandlinger | Regnskabsår og forecastdato | R, M |
 | Budget | Plan, beløb, sammenligning og dimensionsfordeling | read; admin for budgetændringer | Regnskabsår | R, M, F for læserens skrivebeskyttelse |
 | Flerår | Sammenlign år, arkiv/live og grafer | read | Flere regnskabsår | R, M |
-| Årsrapport | Vælg periode, serverens forudsætninger, regnskab og noter | read, export | Eksplicit regnskabsperiode | R, M for formularen; rapportresultater i komponenttests |
+| Årsrapport | Vælg periode, serverens forudsætninger, regnskab og noter | read, export | Kanonisk regnskabsår | R, M for formularen; rapportresultater i komponenttests |
 | Workspace-register | Parter, immutable records, assertions, ejerforhold, review og eksakt apply | knowledge.read/manage, ownership.read/manage efter handling | Virksomhed og pr. dato | R, M |
 | Fælles indbakke | Indlæs kilde, review, eksplicit virksomhedstildeling og separat handoff | documents.read/upload; eksisterende workspacepolicy | Workspace via autoriseret virksomhed | R, M |
 | Arkiv | Arkivforklaring og årsindgange | read | Virksomhed | R, M |
@@ -77,7 +103,7 @@ Permissions i tabellen er forkortet: `read` = `company.read`, `documents.read/up
 
 ## Implementerede fælles kontrakter
 
-`DESIGN.md` er tokenkilden. Generatoren afviser ukendte referencer og cykler og skriver TypeScript til statiske rapporter/diagrammer, StyleX-variabler til React og en CSS-bro til semantiske layouts. `design:check` afviser drift. Ingen virksomhedsdata indgår i tokens eller produktdefaults.
+`DESIGN.md` er tokenkilden. Generatoren afviser ukendte referencer og cykler og skriver TypeScript til statiske rapporter/diagrammer, StyleX-variabler til React; selvstændige dokumenter bruger prekompilerede StyleX-attributkort og CSS. `design:check` afviser drift. Ingen virksomhedsdata indgår i tokens eller produktdefaults.
 
 De fælles komponenter ejer native controls, varianter, fokus, beløb, overskrifter, status, sideskift og kvitteringer. Domænesiderne beholder deres eksisterende serverkontrakter. StyleX kompileres med den native Bun-adapter; transformkørsler serialiseres, fordi adapterens samtidige CSS-skrivninger ellers kan overskrive den sidste komplette fil. Produktionsbuildet afviser manglende designvariabler og linker den kompilerede CSS med indholdshash. Browserchecks undersøger den faktiske CSS: 248 px sidebar, Source Serif 4, 32 px H1, 44 px controls og designfarver.
 
@@ -97,7 +123,7 @@ Ugemte felter beskyttes ved navigation, kontekstskift, før browserlukning og ve
 
 Browserne kører mod det kompilerede `app/dist` på en særskilt server bundet til `127.0.0.1`. Serveren genbruger ingen eksisterende listener, sender ingen forespørgsler til Docker eller en virkelig workspace og afviser alle `/api/*`-kald uden browserinterception. Manglende fixtures fejler tests. Mutationer kræver deres egen eksplicitte fixture.
 
-`app/e2e/data/core.json` genereres deterministisk fra de typed, syntetiske Bun-fixtures. JSON-broen er nødvendig, fordi Playwright kører i Node og Bun-fixtures importerer `bun:test`. Efter en ændring i de fælles fixtures regenereres filen; `--check` afviser drift.
+`app/e2e/data/core.json` genereres deterministisk fra de typed, syntetiske Bun-fixtures. JSON-broen er nødvendig, fordi Playwright kører i Node og Bun-fixtures importerer `bun:test`. `app/e2e/data/routes.json` er samtidig en genereret projektion af det kanoniske ruteregister, som indeholder StyleX-komponenter. Begge filer kontrolleres for drift. Efter en ændring i de fælles fixtures regenereres filen; `--check` afviser drift.
 
 ```sh
 bun app/scripts/browser-fixtures.ts --check
@@ -117,7 +143,7 @@ Afslutning kræver også grønne isolerede komponenttests, typecheck, lint, toke
 
 Manuel skærmlæsergennemgang af navigation, fakturaoprettelse og bilagsbogføring samt manuel vurdering ved 200 % zoom skal registreres med browser, platform, tidspunkt og observationer. Automatiske axe-resultater er ikke en attest for fuld WCAG-overholdelse. Fuld browsermutationstest af hver administrationsfunktion og godkendte visuelle snapshots er særskilte acceptpunkter og må ikke markeres færdige alene på baggrund af læsesmoken.
 
-## Verificeret 3. oktober 2026
+## Oprindelig verifikation før integration med main, 3. oktober 2026
 
 | Kontrol | Resultat |
 |---|---|
@@ -129,22 +155,22 @@ Manuel skærmlæsergennemgang af navigation, fakturaoprettelse og bilagsbogføri
 | `bun run supply-chain:licenses` | Bestået; 132 produktionspakker, herunder OFL-fontlicenser |
 | Galleriet mod den faktiske Bun-devserver | Source Serif 4/32 px H1, 44 px controls og native dialog/fokus bestået i begge browsere; ingen JavaScript-fejl |
 | Visuel gennemgang | Syntetiske desktop-/mobilskærmbilleder af overblik, bilag, fakturaoprettelse og bogføringskø gennemgået; ingen godkendt snapshotbaseline erklæret |
-| `graphify update .` | AST-opdatering gennemført; 9.206 noder og 32.524 kanter. Parseren rapporterede delvis ekstraktion i 67 filer, bl.a. marketingwebsitets Astro-filer |
-| `bun run test:parallel` | 2.661 bestået, 0 fejl; 415 filer og 18.874 assertions |
-| `bun run supply-chain:audit` | 0 advisories; 259 kontrollerede pakker |
-| `bun run verify:local` | Bestået fra ende til anden: frozen install, discovery, typecheck, lint, audit/licenser, PDF-benchmark, backend-/app-/browsertests, CLI-/MCP-smoke, containerdrift og reproducerbare OCI-eksporter |
+| `graphify update .` | AST-opdatering gennemført; 9.205 noder og 32.516 kanter. Parseren rapporterede delvis ekstraktion i 67 filer, bl.a. marketingwebsitets Astro-filer |
+| `bun run test:parallel` | 2.652 bestået, 5 eksisterende fejl; 415 filer og 18.784 assertions |
+| `bun run supply-chain:audit` | 16 eksisterende advisories: 5 high, 11 moderate |
 
-De fem backendfejl blev først reproduceret på det uændrede udgangspunkt i en isoleret checkout og er efterfølgende rettet under kandidatforberedelsen. De angik discovery/MCP-kataloget: registrycoverage, service-principal-mappets fuldstændighed og tre dokumentationskontroller af toolantal. Discovery-baselines er nu gennemgået for `invoice_imported_receivables` og CLI-pendanten. Importworkflowet beskriver den sikre læsning og grænsen til native fakturahandlinger. Rettighedstesten sammenligner alle toolnavne med den faktiske registrering og kontrollerer tilladt virksomhed, afvist virksomhed og tilbagekaldte credentials. Dokumentationen stemmer med 214 tools: 91 reads, 122 almindelige writes og én destructive operation; delsummerne kontrolleres også fra live annotations.
+De fem backendfejl er reproduceret på det uændrede udgangspunkt i en isoleret checkout. De angår discovery/MCP-kataloget: registrycoverage, service-principal-mappets fuldstændighed og tre dokumentationskontroller af toolantal. UI-ændringen ændrer ikke toolregistreringerne eller disse assertions. De skal afklares før en samlet grøn releasegate; `verify:local` er derfor ikke erklæret bestået.
 
-De oprindelige 16 advisories i MCP-afhængighederne er fjernet med kompatible, låste opdateringer til [fast-uri 3.1.8](https://github.com/advisories/GHSA-hrr3-gc8f-f4qj), [hono 4.13.7](https://github.com/advisories/GHSA-hxh3-vqpv-xpqv), [ip-address 10.7.1](https://github.com/advisories/GHSA-h3mg-xc3c-68pw) og [qs 6.16.0](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g). Direkte dependencyranges er bevaret. Audit og lockfile-bundet supply-chain-evidens rapporterer nul advisories, og licenskontrollen består for 132 produktionspakker.
-
-Den fulde gate fandt også en manglende Docker-buildafhængighed: cockpitstadiet kopierer nu `DESIGN.md`, token-scriptet, de genererede roottokens og den fælles browseregnede rettighedspolitik før build. Containerkontrollen består med begrænset, netværksløst runtime, read-only filesystem, PDF-tekst/layout, cache og persistens efter genstart. To separate builds uden cache producerer samme OCI-manifest og byteidentiske arkiver. Dette er lokal verifikation; kandidatworkflowet binder senere et publiceret image til sit konkrete commit og releaseidentitet.
-
-To ustabile testopsætninger er repareret uden at svække assertions. CLI-testen får en ledig loopbackport fra operativsystemet; den tidligere tilfældige port kunne ramme port 5000, som bruges af en lokal systemtjeneste. Fejlen blev reproduceret med det tvungne gamle portvalg og bestod efter rettelsen. MCP-testens eventtæller læser nu et snapshot, så testens egen observation ikke åbner en skrivbar forbindelse og påvirker WAL/checkpoint eller den mtime, som kontrolleres. Kravet om uændret ledger-mtime og korrekt append-only/idempotent apply er bevaret.
+Auditresultatet vedrører de allerede installerede versioner af `fast-uri`, `hono`, `ip-address` og `qs` i MCP-afhængighederne. Disse versioner er uændrede af UI-arbejdet. Der er ikke udført en generel opgradering af backendens dependencytree som del af refaktoreringen.
 
 Manuel skærmlæserkontrol og faktisk 200 % browserzoom er endnu ikke udført. Mobilreflow, tastatur, inert/fokus og axe-checks er automatiseret; resultaterne dækker de anførte tests og syntetiske tilstande, ikke en generel attest for alle kombinationer eller fuld WCAG-overholdelse. Der er ikke deployet eller skrevet til virkelige virksomhedsdata.
 
 ## Ekstra designreview 3. oktober 2026
+
+Denne sektion er historisk evidens fra 3. oktober. Migreringen 8. oktober
+erstatter de nævnte canvasgrafer og CSS-tokenbroen med direkte StyleX og fælles
+SVG-komponenter. Den aktuelle metode, navigation og integrerede verifikation
+er dokumenteret i [StyleX-migreringen](stylex-migration.md).
 
 Den fælles designkontrakt er gennemgået med et uafhængigt komponent-/tilgængelighedsreview og efterfølgende integreret kontrol. `DESIGN.md` dokumenterer nu alle 52 offentlige React-komponenter fra 29 fælles kildefiler, deres familier og relevante helpers. Kataloget omfatter primitives, shell/navigation, kontomenu, alle domænedialoger/formularer, feedback, grafer, virksomhedskort/-formular og revisor-eksport. Det præciserer brug, varianter, datakontekst, responsive mønstre, tastatur, fokus, permissions og asynkrone tilstande.
 

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Rentemester har en deterministisk SAF-T-eksportpakke, men den skal beskrives som en afgrænset profil. Det er ikke det samme som at love fuld officiel SAF-T-compliance for alle cases."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       SAF-T er et maskinlæsbart eksportspor til kontrol og dataudveksling. For et open source-bogføringssystem er det vigtigt, at eksporten er periodestyret, reproducerbar og tydeligt markeret med profil og begrænsninger.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad eksporten indeholder</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad eksporten indeholder</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Grafen viser en SAF-T-eksportprofil med kontoplan, ledger, salgsfakturaer og purchase-dokumenter. Pakken skriver XML og manifest, og den er bundet til en konkret periode.
     </p>
 
-    <h2>Profilen er bevidst smal</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Profilen er bevidst smal</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Koden markerer eksporten med en Rentemester-profil, så den ikke ligner en generisk “færdig SAF-T”. Det er god content-disciplin: siden skal forklare hvad der er dækket, ikke overtage compliance-ansvar fra regler, tests og myndighedspraksis.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       `system export-saft` bygger en deterministisk pakke med `saft.xml`, manifest og audit-event. Virksomheden skal have nødvendige stamdata, og købsdokumenter i profilen skal have de felter, eksporten kræver.
     </p>
   </article>

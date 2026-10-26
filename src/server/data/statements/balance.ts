@@ -18,6 +18,7 @@ import {
   archiveTypedBalances,
   archiveYearRow,
 } from "../archive";
+import { dataCoverage } from "../../../data-coverage";
 
 export type BalanceLine = {
   accountNo: string;
@@ -140,7 +141,9 @@ function archivedBalanceForYear(
  */
 function liveBalanceForYear(db: Database, yearLabel: string): RawBalance {
   const yearNum = parseInt(yearLabel, 10);
-  const asOfDate = `${yearNum}-12-31`;
+  const latest = db.query(`SELECT MAX(transaction_date) AS date FROM journal_entries WHERE status = 'posted' AND transaction_date >= ? AND transaction_date <= ?`).get(`${yearNum}-01-01`, `${yearNum}-12-31`) as { date: string | null };
+  // A selected year is a filter, not evidence that future transactions exist.
+  const asOfDate = latest.date ?? `${yearNum}-01-01`;
   const bs = buildBalanceSheet(db, asOfDate);
   const toLines = (lines: { accountNo: string; name: string; amount: number }[]) =>
     lines.map((l) => ({ accountNo: l.accountNo, name: l.name, amount: l.amount }));
@@ -311,6 +314,7 @@ export function buildCompanyBalance(
         ? (prior?.totalLiabilitiesAndEquity ?? 0)
         : null,
       balanced: current.balanced,
+      coverage: dataCoverage(ctx.isArchivedOnly ? "final" : "current", current.asOfDate, priorPresent ? "available" : "not_comparable", ctx.isArchivedOnly ? "archived" : "native", ctx.isArchivedOnly ? ["Læsbar arkivsaldo; perioden er endelig/låst."] : ["Seneste bogførte journalpost i valgt regnskabsår."]),
     };
   } finally {
     ctx.db.close();

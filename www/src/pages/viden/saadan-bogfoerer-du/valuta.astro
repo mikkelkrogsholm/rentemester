@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sådan bogfører du" title="Valuta kræver både originalbeløb og DKK-grundlag" lead="Når et køb eller salg sker i anden valuta end DKK, bør bogføringen bevare original valuta og samtidig have et deterministisk DKK-grundlag." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Valutabilag bliver ofte uklare, fordi fakturaen viser én valuta, banken afregner i DKK, og bogføringen skal bruge et DKK-beløb. Hvis grundlaget ikke gemmes, bliver det svært at forklare moms og omkostning senere.
     </p>
 
@@ -33,17 +34,17 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad bør gemmes?</h2>
-    <ul>
-      <li>original valuta og originalt beløb</li>
-      <li>DKK-beløb brugt i ledgeren</li>
-      <li>kurs eller bankafregning som grundlag</li>
-      <li>dato for faktura og betaling</li>
-      <li>bilag der forklarer omregningen</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør gemmes?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>original valuta og originalt beløb</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>DKK-beløb brugt i ledgeren</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kurs eller bankafregning som grundlag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato for faktura og betaling</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag der forklarer omregningen</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har money helpers og testede foreign-currency journal- og expense-flows, der bevarer FX-basis. Systemet skal ikke gætte kursen ud fra fri tekst; der skal være et dokumenteret DKK-grundlag.
     </p>
   </article>

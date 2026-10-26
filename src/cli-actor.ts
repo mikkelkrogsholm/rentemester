@@ -3,9 +3,24 @@ import { join } from "node:path";
 import { companyPaths } from "./core/paths";
 
 export const MUTATING_COMMANDS = new Set([
+  "tasks create",
+  "tasks update",
+  "tasks move",
+  "tasks complete",
+  "tasks reopen",
+  "tasks sync",
+  "tasks reminder",
+  "tasks run",
+  "task-series save",
+  "task-series materialize",
+  "task-boards save",
+
   "workspace snapshot",
   "workspace restore",
   "workspace-access bootstrap-first",
+  "workspace-access bootstrap-local-service",
+  "workspace-access local-service-rotate",
+  "workspace-access local-service-revoke",
   "group apply-manifest",
   "group propose-mapping",
   "group approve-mapping",
@@ -58,6 +73,10 @@ export const MUTATING_COMMANDS = new Set([
   // gated. Samme actor-attribuerede skrivning skal gates ens.
   "system export-saft",
   "invoice issue",
+  "invoice imported-receivables-backfill-apply",
+  "invoice imported-receivable-settlement-apply",
+  "bank legacy-binding-apply",
+  "bank legacy-payable-backfill-apply",
   // #265: `invoice create` is the guided path that issues a real, locked,
   // immutable invoice through the SAME core as `invoice issue` — it MUST be
   // gated by the actor allowlist exactly like `invoice issue`.
@@ -100,10 +119,18 @@ export const MUTATING_COMMANDS = new Set([
   "bookkeeping-batch persist",
   "bookkeeping-batch approve",
   "bookkeeping-batch apply",
+  "purchase-case create",
+  "purchase-case review",
+  "purchase-case reassess",
+  "purchase-case group-review",
+  "approval-policy set",
   "party create",
   "party link-role",
   "party propose-merge",
   "party approve-merge",
+  "legacy-party-mapping apply",
+  "vendor-identity-enrichment apply",
+  "legacy-party-mapping supersede",
   "corporate-record ingest",
   "corporate-record link",
   "corporate-record enrich",
@@ -229,6 +256,18 @@ export const MUTATING_COMMANDS = new Set([
 
 /** Workspace handlers own target-company policy or trusted local control-plane preflight. */
 const HANDLER_OWNED_MUTATION_POLICY = new Set([
+  "tasks create",
+  "tasks update",
+  "tasks move",
+  "tasks complete",
+  "tasks reopen",
+  "tasks sync",
+  "tasks reminder",
+  "tasks run",
+  "task-series save",
+  "task-series materialize",
+  "task-boards save",
+
   "workspace snapshot", "workspace restore",
   "efaktura modtag-workspace", "recurring-invoice run-workspace",
   "group propose-mapping", "group approve-mapping", "group revoke-mapping",
@@ -243,7 +282,8 @@ const HANDLER_OWNED_MUTATION_POLICY = new Set([
 
 export function mutationPolicyScope(commandKey: string): "company" | "restore-target" | "workspace-bootstrap" | "group-policy" | "handler" {
   if (commandKey === "system restore-backup") return "restore-target";
-  if (commandKey === "workspace-access bootstrap-first") return "workspace-bootstrap";
+  if (commandKey === "workspace-access bootstrap-first" || commandKey === "workspace-access bootstrap-local-service" ||
+      commandKey === "workspace-access local-service-rotate" || commandKey === "workspace-access local-service-revoke") return "workspace-bootstrap";
   if (commandKey === "group apply-manifest") return "group-policy";
   if (HANDLER_OWNED_MUTATION_POLICY.has(commandKey) || commandKey.startsWith("party ") || commandKey.startsWith("corporate-record ")) return "handler";
   return "company";

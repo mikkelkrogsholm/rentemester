@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Debitorer" title="Refundering skal kobles til kreditnota og bank" lead="Når kunden skal have penge tilbage, bør refunderingen kobles til kreditnota, bankbetaling og åben kreditbalance. Ellers bliver debitorhistorikken uklar." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En refundering er ikke bare en negativ betaling. Den skal forklares: hvorfor skylder virksomheden kunden penge, hvilken kreditnota eller aftale ligger bag, og hvilken banktransaktion udbetalte beløbet?
     </p>
 
@@ -33,20 +34,20 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Praktisk flow</h2>
-    <ul>
-      <li>udsted eller registrér kreditnota</li>
-      <li>beregn åben kreditbalance</li>
-      <li>match bankudbetalingen mod refunderingen</li>
-      <li>bevar reference til faktura og kreditnota</li>
-      <li>kontrollér at kreditbalancen lukkes korrekt</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Praktisk flow</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>udsted eller registrér kreditnota</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beregn åben kreditbalance</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>match bankudbetalingen mod refunderingen</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bevar reference til faktura og kreditnota</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kontrollér at kreditbalancen lukkes korrekt</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har testet refund-bank flow, hvor bankudbetalingen kobles til fakturaens kreditbalance og bogføres sporbar. Det forhindrer, at en refundering bare bliver en løs bankpost uden relation til kunden.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Refundering bør derfor altid læses sammen med fakturastatus. Før pengene sendes retur, skal systemet kunne vise hvorfor kunden har et tilgodehavende, hvilke dokumenter der skabte det, og om bankposten lukker hele eller kun en del af kreditbalancen.
     </p>
   </article>

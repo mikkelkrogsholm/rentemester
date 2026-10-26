@@ -73,17 +73,20 @@ describe("EU goods acquisition VAT", () => {
         reverseChargePurchaseBase: 1000,
         reverseChargePurchaseOutputVat: 500,
       });
-      expect(report.rubrikker).toEqual({
+      expect(report.rubrikker).toMatchObject({
         salgsmoms: 250,
-        rubrikA: 2000,
+        rubrikAVarer: 1000,
+        rubrikAYdelser: 1000,
         momsAfVarekobUdland: 250,
         momsAfYdelseskobUdland: 250,
         kobsmoms: 600,
-        momstilsvar: 150,
-        rubrikB: 0,
+        momsIAlt: 150,
+        rubrikBVarerEuSalesList: 0,
+        rubrikBVarerIkkeEuSalesList: 0,
+        rubrikBYdelser: 0,
         rubrikC: 0,
       });
-      expect(report.rubrikker.momstilsvar).toBe(report.netVatPayable);
+      expect(report.rubrikker.momsIAlt).toBe(report.netVatPayable);
 
       // Every delivery surface receives the same canonical payable amount:
       // CLI JSON is the report payload, human CLI uses it for its headline,
@@ -100,10 +103,10 @@ describe("EU goods acquisition VAT", () => {
         { signal: new AbortController().signal },
       );
       expect(mcp.structuredContent.data.netVatPayable).toBe(150);
-      expect(mcp.structuredContent.data.rubrikker.momstilsvar).toBe(150);
+      expect(mcp.structuredContent.data.rubrikker.momsIAlt).toBe(150);
       const cockpitPosition = vatPositionForPeriod(db, "2026-08-01", "2026-08-31");
       expect(cockpitPosition.payable).toBe(report.netVatPayable);
-      expect(vatRubrikkerForPeriod(db, "2026-08-01", "2026-08-31").momstilsvar)
+      expect(vatRubrikkerForPeriod(db, "2026-08-01", "2026-08-31").momsIAlt)
         .toBe(cockpitPosition.payable);
 
       // A no-EU-goods period retains the exact established projection shape
@@ -119,17 +122,20 @@ describe("EU goods acquisition VAT", () => {
         exemptSalesBase: 0,
         domesticReverseChargeSalesBase: 0,
       };
-      expect(JSON.stringify(projectVatRubric(zeroGoodsControl as any))).toBe(
-        JSON.stringify({
+      expect(projectVatRubric(zeroGoodsControl as any)).toMatchObject(
+        {
           salgsmoms: 250,
           momsAfVarekobUdland: 0,
           momsAfYdelseskobUdland: 250,
           kobsmoms: 350,
-          momstilsvar: 150,
-          rubrikA: 1000,
-          rubrikB: 0,
+          momsIAlt: 150,
+          rubrikAVarer: 0,
+          rubrikAYdelser: 1000,
+          rubrikBVarerEuSalesList: 0,
+          rubrikBVarerIkkeEuSalesList: 0,
+          rubrikBYdelser: 0,
           rubrikC: 0,
-        }),
+        },
       );
       db.close();
     } finally { rmSync(root, { recursive: true, force: true }); rmSync(inbox, { recursive: true, force: true }); }

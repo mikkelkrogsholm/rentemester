@@ -1,11 +1,14 @@
-import { readFileSync } from "node:fs";
-import type { CommandDispatch } from "../cli-dispatch";
+import { readFileSync, realpathSync } from "node:fs";
+import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { openCommandDb } from "../cli-dispatch";
 import { formatKroner } from "../cli-format";
 import { migrate, openDb } from "../core/db";
 import { PDF_EVIDENCE_TAMPERED, PdfParseError, parseRegisteredPdfBatch, parseRegisteredPdfDocument, planCurrentPdfParses } from "../core/document-pdf-parser";
 import { enrichDocumentMetadata, ingestDocument, purchaseVatLinesFromPayload } from "../core/documents";
 import { setDocumentCompanyContext } from "../core/document-company-context";
+import { reviewIncompleteStandardPurchaseVatEvidence } from "../core/document-purchase-vat-evidence-review";
+import { reviewNonEuReverseChargeEvidence } from "../core/document-non-eu-reverse-charge-review";
+import { authorizeMcpTool, createMcpSecurityContextFromEnv } from "../mcp/security";
 import { recordException } from "../core/exceptions";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
 import { resolveDocumentMasterData } from "../core/master-data";
@@ -14,21 +17,54 @@ import { extractDocumentInvoice, invoiceExtractionSurface } from "../server/invo
 import { resolveConfiguredInvoiceExtractor } from "../server/invoice-extractor";
 import { documentPdfParsedText, documentPdfParseStatus } from "../server/router/documents";
 import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../core/workspace-control";
-import { resolveWorkspaceRoot } from "../core/workspace";
+import { resolveWorkspaceRoot, resolveWorkspaceSlug } from "../core/workspace";
 import { applyDocumentPartyLink, decideInternalNoExternalParty, inspectDocumentPartyLinks, listDocumentPartyLinks, planDocumentPartyLink, supersedeDocumentPartyLink, supersedeInternalNoExternalParty } from "../core/document-party-links";
+import { applyPartyCoverage, planPartyCoverage, projectPartyCoverage } from "../core/party-coverage";
 
 const parseSummary = (run: any) => ({ documentId: run?.documentId, status: run?.status, errorCode: run?.errorCode ?? null, cached: Boolean(run?.cached), pageCount: Array.isArray(run?.pages) ? run.pages.length : 0, itemCount: Array.isArray(run?.pages) ? run.pages.reduce((n: number, p: any) => n + (p.layout?.length ?? 0), 0) : 0, textLength: Array.isArray(run?.pages) ? run.pages.reduce((n: number, p: any) => n + (p.text?.length ?? 0), 0) : 0, resultHash: run?.resultHash });
 
+async function authenticatedDocumentPrincipal(ctx: CommandContext, tool: string) {
+  const security = createMcpSecurityContextFromEnv();
+  if (!security) ctx.fatal("requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
+  const authorized = await authorizeMcpTool(security!, tool, { company: ctx.companyRoot() });
+  if (!authorized) ctx.fatal("requires an active authenticated service principal with company.master-data membership");
+  const workspace = ctx.arg("--workspace");
+  if (workspace && realpathSync(workspace) !== realpathSync(security!.workspaceRoot)) ctx.fatal("workspace must match authenticated workspace");
+  const slug = ctx.arg("--company-slug");
+  if (slug) {
+    const root = resolveWorkspaceSlug(security!.workspaceRoot, slug);
+    if (!root || realpathSync(root) !== realpathSync(ctx.companyRoot())) ctx.fatal("company-slug must match authenticated company");
+  }
+  const principal = `${authorized!.principal.kind}:${authorized!.principal.subjectId}`;
+  if (ctx.arg("--principal") !== undefined && ctx.arg("--principal") !== principal) ctx.fatal("principal must match authenticated service-account subject");
+  return principal;
+}
+
 export function register(dispatch: CommandDispatch): void {
-  const partyInput = (ctx: any) => ({ documentId:Number(ctx.arg("--document-id")), companySlug:ctx.arg("--company-slug")!, role:ctx.arg("--role"), partyId:ctx.arg("--party-id"), jurisdiction:ctx.arg("--jurisdiction"), identifierKind:ctx.arg("--identifier-kind"), identifier:ctx.arg("--identifier"), legacyKind:ctx.arg("--legacy-kind"), legacyId:ctx.arg("--legacy-id"), reviewedLegacyReference:ctx.arg("--reviewed-legacy-reference") });
+  const partyInput = (ctx: any) => { const sourceReviewFile=ctx.arg("--source-review"); let sourceReview:any; if(sourceReviewFile){try{sourceReview=JSON.parse(readFileSync(sourceReviewFile,"utf8"));}catch{ctx.fatal("--source-review must be a readable JSON file");}} return { documentId:Number(ctx.arg("--document-id")), companySlug:ctx.arg("--company-slug")!, role:ctx.arg("--role"), partyId:ctx.arg("--party-id"), jurisdiction:ctx.arg("--jurisdiction"), identifierKind:ctx.arg("--identifier-kind"), identifier:ctx.arg("--identifier"), legacyKind:ctx.arg("--legacy-kind"), legacyId:ctx.arg("--legacy-id"), reviewedLegacyReference:ctx.arg("--reviewed-legacy-reference"), sourceReview }; };
   const registry = (ctx:any, write=false) => (write ? openWorkspaceControlDb : openWorkspaceControlReadOnlyDb)(resolveWorkspaceRoot(ctx.arg("--workspace")!));
-  dispatch.on("documents", "party-link-plan", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()), control=registry(ctx); try { ctx.emitResult(planDocumentPartyLink(ledger,control,partyInput(ctx)) as any); } finally {control.close();ledger.close();} });
-  dispatch.on("documents", "party-link-apply", (ctx) => { const ledger=openCommandDb(ctx), control=registry(ctx); migrate(ledger); try { ctx.emitResult(applyDocumentPartyLink(ledger,control,{...partyInput(ctx),planHash:ctx.arg("--plan-hash")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:ctx.arg("--principal"),idempotencyKey:ctx.arg("--idempotency-key")} ) as any); } finally {control.close();ledger.close();} });
-  dispatch.on("documents", "party-link-supersede", (ctx) => { const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(supersedeDocumentPartyLink(ledger,{documentId:Number(ctx.arg("--document-id")),role:ctx.arg("--role") as any,planHash:ctx.arg("--plan-hash")!,reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:ctx.arg("--principal")}) as any); } finally {ledger.close();} });
+  dispatch.on("documents", "party-link-plan", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()), control=registry(ctx); try { ctx.emitResult(planDocumentPartyLink(ledger,control,partyInput(ctx),ctx.companyRoot()) as any); } finally {control.close();ledger.close();} });
+  dispatch.on("documents", "party-link-apply", async (ctx) => {
+    const principal = await authenticatedDocumentPrincipal(ctx, "documents_party_link_apply");
+    const ledger = openCommandDb(ctx), control = registry(ctx);
+    try {
+      migrate(ledger);
+      ctx.emitResult(applyDocumentPartyLink(ledger, control, {
+        ...partyInput(ctx), planHash: ctx.arg("--plan-hash")!, confirm: ctx.arg("--confirm") === "yes",
+        actor: ctx.cliActor ?? ctx.inferredMutationActor() ?? undefined, principal,
+        idempotencyKey: ctx.arg("--idempotency-key"),
+      }, ctx.companyRoot()) as any);
+    } finally { control.close(); ledger.close(); }
+  });
+  dispatch.on("documents", "party-link-supersede", async (ctx) => { const principal = await authenticatedDocumentPrincipal(ctx, "documents_party_link_supersede"); const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(supersedeDocumentPartyLink(ledger,{documentId:Number(ctx.arg("--document-id")),role:ctx.arg("--role") as any,planHash:ctx.arg("--plan-hash")!,reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal}) as any); } finally {ledger.close();} });
   dispatch.on("documents", "party-link-inspect", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()); try { ctx.emitResult({ok:true,links:inspectDocumentPartyLinks(ledger,Number(ctx.arg("--document-id")))}); } finally {ledger.close();} });
   dispatch.on("documents", "party-link-list", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()); try { ctx.emitResult({ok:true,links:listDocumentPartyLinks(ledger,{status:ctx.arg("--status") as any})}); } finally {ledger.close();} });
-  dispatch.on("documents", "internal-no-external-party", (ctx) => { const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(decideInternalNoExternalParty(ledger,{documentId:Number(ctx.arg("--document-id")),reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:ctx.arg("--principal"),idempotencyKey:ctx.arg("--idempotency-key")}) as any); } finally {ledger.close();} });
-  dispatch.on("documents", "internal-no-external-party-supersede", (ctx) => { const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(supersedeInternalNoExternalParty(ledger,{documentId:Number(ctx.arg("--document-id")),decisionHash:ctx.arg("--decision-hash")!,reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:ctx.arg("--principal")}) as any); } finally {ledger.close();} });
+  const coverageInput=(ctx:any)=>{const decisionsFile=ctx.arg("--decisions");let decisions:any; if(decisionsFile){try{decisions=JSON.parse(readFileSync(decisionsFile,"utf8"));}catch{ctx.fatal("--decisions must be a readable JSON array");}}return {companySlug:ctx.arg("--company-slug")!,asOf:ctx.arg("--as-of"),bankAccountId:ctx.arg("--bank-account-id")?Number(ctx.arg("--bank-account-id")):undefined,decisions};};
+  dispatch.on("documents","party-coverage",ctx=>{const ledger=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db),control=registry(ctx);try{ctx.emitResult(projectPartyCoverage(ledger,control,coverageInput(ctx)) as any);}finally{control.close();ledger.close();}});
+  dispatch.on("documents","party-coverage-plan",ctx=>{const ledger=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db),control=registry(ctx);try{ctx.emitResult(planPartyCoverage(ledger,control,{...coverageInput(ctx),companyRoot:ctx.companyRoot()}) as any);}finally{control.close();ledger.close();}});
+  dispatch.on("documents","party-coverage-apply",async ctx=>{const principal=await authenticatedDocumentPrincipal(ctx,"party_coverage_apply"),ledger=openCommandDb(ctx),control=registry(ctx);try{migrate(ledger);ctx.emitResult(applyPartyCoverage(ledger,control,ctx.companyRoot(),{...coverageInput(ctx),planHash:ctx.arg("--plan-hash")!,idempotencyKey:ctx.arg("--idempotency-key")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??"",principal}) as any);}finally{control.close();ledger.close();}});
+  dispatch.on("documents", "internal-no-external-party", async (ctx) => { const principal = await authenticatedDocumentPrincipal(ctx, "documents_internal_no_external_party"); const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(decideInternalNoExternalParty(ledger,{documentId:Number(ctx.arg("--document-id")),reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal,idempotencyKey:ctx.arg("--idempotency-key")}) as any); } finally {ledger.close();} });
+  dispatch.on("documents", "internal-no-external-party-supersede", async (ctx) => { const principal = await authenticatedDocumentPrincipal(ctx, "documents_internal_no_external_party_supersede"); const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(supersedeInternalNoExternalParty(ledger,{documentId:Number(ctx.arg("--document-id")),decisionHash:ctx.arg("--decision-hash")!,reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal}) as any); } finally {ledger.close();} });
   dispatch.on("documents", "set-company-context", (ctx) => {
     const documentId = Number(ctx.arg("--document-id"));
     const sourceReference = ctx.arg("--source-reference");
@@ -40,6 +76,25 @@ export function register(dispatch: CommandDispatch): void {
     const db = openCommandDb(ctx); migrate(db);
     try { ctx.emitResult(setDocumentCompanyContext(db, { documentId, sourceReference: sourceReference!, businessUseReason: businessUseReason!, confirm: true, createdBy: ctx.cliActor ?? ctx.inferredMutationActor() ?? undefined, createdByProgram: ctx.cliActorVia ?? "rentemester-cli" })); }
     finally { db.close(); }
+  });
+  dispatch.on("documents", "review-purchase-vat-evidence", async (ctx) => {
+    const documentId=Number(ctx.arg("--document-id")), bankTransactionId=Number(ctx.arg("--bank-transaction-id"));
+    const businessEvidenceReference=ctx.arg("--business-evidence-reference"), businessEvidenceSha256=ctx.arg("--business-evidence-sha256"), rationale=ctx.arg("--rationale");
+    if(!Number.isInteger(documentId)||documentId<=0)ctx.fatal("Missing required --document-id <n>");
+    if(!Number.isInteger(bankTransactionId)||bankTransactionId<=0)ctx.fatal("Missing required --bank-transaction-id <n>");
+    if(!businessEvidenceReference||!businessEvidenceSha256||!rationale)ctx.fatal("Missing evidence reference/hash or rationale");
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("documents review-purchase-vat-evidence requires the exact confirmation --confirm yes");
+    const security=createMcpSecurityContextFromEnv();if(!security)ctx.fatal("documents review-purchase-vat-evidence requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
+    const authorized=await authorizeMcpTool(security!,"documents_review_purchase_vat_evidence",{company:ctx.companyRoot()});if(!authorized)ctx.fatal("documents review-purchase-vat-evidence requires an active authenticated service principal with company.master-data membership");
+    const db=openCommandDb(ctx);migrate(db);try{ctx.emitResult(reviewIncompleteStandardPurchaseVatEvidence(db,{documentId,bankTransactionId,businessEvidenceReference:businessEvidenceReference!,businessEvidenceSha256:businessEvidenceSha256!,rationale:rationale!,supersedesReviewSha256:ctx.arg("--supersedes-review-sha256"),principal:`${authorized!.principal.kind}:${authorized!.principal.subjectId}`,confirm:true,createdBy:ctx.cliActor??ctx.inferredMutationActor()??undefined,createdByProgram:ctx.cliActorVia??"rentemester-cli"}));}finally{db.close();}
+  });
+  dispatch.on("documents", "review-non-eu-reverse-charge-evidence", async (ctx) => {
+    const documentId=Number(ctx.arg("--document-id"));if(!Number.isInteger(documentId)||documentId<=0)ctx.fatal("Missing required --document-id <n>");
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("documents review-non-eu-reverse-charge-evidence requires the exact confirmation --confirm yes");
+    const security=createMcpSecurityContextFromEnv();if(!security)ctx.fatal("documents review-non-eu-reverse-charge-evidence requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
+    const authorized=await authorizeMcpTool(security!,"documents_review_non_eu_reverse_charge_evidence",{company:ctx.companyRoot()});if(!authorized)ctx.fatal("documents review-non-eu-reverse-charge-evidence requires an active authenticated service principal with company.master-data membership");
+    const fields=["--supplier-country-code","--actual-buyer-vat","--tax-period","--deduction-percent","--supplier-evidence-reference","--supplier-evidence-sha256","--buyer-evidence-reference","--buyer-evidence-sha256","--service-evidence-reference","--service-evidence-sha256","--formal-deficiencies","--rationale"];if(fields.some(f=>!ctx.arg(f)))ctx.fatal("Missing non-EU review evidence fields");
+    const db=openCommandDb(ctx);migrate(db);try{ctx.emitResult(reviewNonEuReverseChargeEvidence(db,{documentId,supplierCountryCode:ctx.arg("--supplier-country-code")!,actualBuyerVat:ctx.arg("--actual-buyer-vat")!,taxPeriod:ctx.arg("--tax-period")!,deductionPercent:Number(ctx.arg("--deduction-percent")),supplierEvidenceReference:ctx.arg("--supplier-evidence-reference")!,supplierEvidenceSha256:ctx.arg("--supplier-evidence-sha256")!,buyerEvidenceReference:ctx.arg("--buyer-evidence-reference")!,buyerEvidenceSha256:ctx.arg("--buyer-evidence-sha256")!,serviceEvidenceReference:ctx.arg("--service-evidence-reference")!,serviceEvidenceSha256:ctx.arg("--service-evidence-sha256")!,formalDeficiencies:ctx.arg("--formal-deficiencies")!.split(",").filter(Boolean),rationale:ctx.arg("--rationale")!,foreignVatCharged:false,supersedesReviewSha256:ctx.arg("--supersedes-review-sha256"),confirm:true,principal:`${authorized!.principal.kind}:${authorized!.principal.subjectId}`,createdBy:ctx.cliActor??ctx.inferredMutationActor()??undefined,createdByProgram:ctx.cliActorVia??"rentemester-cli"}));}finally{db.close();}
   });
   dispatch.on("documents", "enrich", (ctx) => {
     const id = Number(ctx.arg("--document-id"));
@@ -148,10 +203,16 @@ export function register(dispatch: CommandDispatch): void {
                 d.supplier_country_code, d.supplier_identifier_kind,
                 d.supplier_identity_status, d.payload_json,
                 ive.bank_transaction_id AS source_bank_transaction_id,
-                ive.accounting_rationale, ive.prepared_by,
-                ive.prepared_by_program
+                CASE WHEN legacy.document_id IS NOT NULL THEN 'legacy_opening_creditor_reclassification' WHEN ncc.document_id IS NOT NULL THEN 'non_cash_balance_correction' WHEN ive.document_id IS NOT NULL THEN 'bank_evidenced' ELSE NULL END AS internal_voucher_kind,
+                legacy.opening_journal_entry_id AS legacy_opening_journal_entry_id, legacy.opening_journal_line_id AS legacy_opening_journal_line_id,
+                COALESCE(ive.accounting_rationale,ncc.accounting_rationale) AS accounting_rationale,
+                COALESCE(ive.prepared_by,ncc.prepared_by) AS prepared_by,
+                COALESCE(ive.prepared_by_program,ncc.prepared_by_program) AS prepared_by_program,
+                COALESCE(ive.created_at,ncc.created_at) AS prepared_at
            FROM documents d
            LEFT JOIN internal_voucher_evidence ive ON ive.document_id = d.id
+           LEFT JOIN non_cash_balance_correction_evidence ncc ON ncc.document_id = d.id
+           LEFT JOIN legacy_opening_creditor_reclassification_evidence legacy ON legacy.document_id = d.id
           ORDER BY d.id DESC`,
       )
       .all() as Array<Record<string, unknown>>;
@@ -175,7 +236,7 @@ export function register(dispatch: CommandDispatch): void {
       console.log(`  Bilagsdato: ${row.invoice_date ?? "—"} | Kilde: ${row.source ?? "—"}`);
       if (row.document_type === "internal_voucher") {
         console.log(
-          `  Internt bilag: bankpost #${row.source_bank_transaction_id ?? "—"} | Udarbejdet af: ${row.prepared_by ?? "—"}`,
+          `  Internt bilag: ${row.internal_voucher_kind === "legacy_opening_creditor_reclassification" ? `legacy kreditor-primobalance #${row.legacy_opening_journal_entry_id ?? "—"}/linje #${row.legacy_opening_journal_line_id ?? "—"}` : row.internal_voucher_kind === "non_cash_balance_correction" ? "balancekorrektion — ingen bankbevægelse" : `bankpost #${row.source_bank_transaction_id ?? "—"}`} | Udarbejdet af: ${row.prepared_by ?? "—"} via ${row.prepared_by_program ?? "—"} · ${row.prepared_at ?? "—"}`,
         );
         console.log(`  Begrundelse: ${row.accounting_rationale ?? "—"}`);
       }

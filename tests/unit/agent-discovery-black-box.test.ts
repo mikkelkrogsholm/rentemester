@@ -42,7 +42,7 @@ async function call(method: string, params: Record<string, unknown> = {}): Promi
 }
 
 beforeAll(async () => {
-  proc = Bun.spawn(["bun", serverPath], { stdin: "pipe", stdout: "pipe", stderr: "pipe" });
+  proc = Bun.spawn(["bun", serverPath], { stdin: "pipe", stdout: "pipe", stderr: "pipe", env: { ...process.env, RENTEMESTER_MCP_PROFILE: "full" } });
   reader = proc.stdout.getReader();
 });
 
@@ -70,7 +70,7 @@ describe("black-box runtime agent discovery (#584/#585)", () => {
     expect(aboutData.ruleBundleVersion).not.toBe("");
     expect(aboutData.catalogue.schemaVersion).toBe("rentemester-agent-discovery-v1");
     expect(aboutData.catalogue.hash).toMatch(/^[a-f0-9]{64}$/);
-    expect(aboutData.catalogue.entryPoint).toContain("tools/list");
+    expect(aboutData.catalogue.entryPoint).toContain("system_server_about");
     expect(aboutData.catalogue.coverage.schemaVersion).toBe("rentemester-agent-discovery-coverage-v1");
     expect(aboutData.catalogue.coverage.rulesHash).toMatch(/^[a-f0-9]{64}$/);
 

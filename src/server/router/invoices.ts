@@ -5,12 +5,19 @@ import { ApiError } from "../errors";
 import { recordHostedDocumentAccess } from "../document-access-audit";
 import {
   buildCompanyInvoices,
+  buildCompanyImportedReceivables,
   buildCompanyRecurringInvoices,
   resolveCompanyIssuedInvoicePdf,
   resolveYearParam,
 } from "../data";
 import { okResponse } from "./_shared";
 import { responseBodyFromBytes } from "../response-body";
+import { openLedgerReadOnly } from "../../core/ledger-inspection";
+import { companyPaths } from "../../core/paths";
+import { companyRootForSlug } from "../../core/workspace";
+import { applyImportedReceivableBankSettlement, applyLegacyImportedReceivableBackfill, getImportedReceivableBankSettlement, planImportedReceivableBankSettlement, planLegacyImportedReceivableBackfill } from "../../core/imported-receivables";
+import { withCompanyMutation } from "../mutations";
+import { readJsonBody } from "./_shared";
 
 export function handleCompanyRecurringInvoices(
   config: ServerConfig,
@@ -60,4 +67,47 @@ export function handleCompanyInvoices(
   const year = resolveYearParam(url.searchParams.get("year"));
   const data = buildCompanyInvoices(config.workspaceRoot, slug, year);
   return okResponse({ invoices: data });
+}
+
+/** The imported/archive receivable schedule has a separate endpoint from
+ * issued invoices, mirroring CLI and MCP and preventing accidental summing. */
+export function handleCompanyImportedReceivables(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const asOf = url.searchParams.get("asOf") ?? new Date().toISOString().slice(0, 10);
+  return okResponse({ importedReceivables: buildCompanyImportedReceivables(config.workspaceRoot, slug, asOf) });
+}
+
+export async function handleCompanyImportedReceivablesBackfillPlan(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const body=await readJsonBody(request);const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);
+  try{return okResponse({backfill:planLegacyImportedReceivableBackfill(db,body as any)});}finally{db.close();}
+}
+
+export async function handleCompanyImportedReceivablesBackfillApply(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{
+    const p=ctx.principal;
+    const principal=p.serviceAccountId?{kind:"service-account" as const,subjectId:p.serviceAccountId}:{kind:"user" as const,subjectId:p.userId??p.id};
+    return applyLegacyImportedReceivableBackfill(ctx.db,{...(body as any),actor:ctx.actor.createdBy,principal,confirm:true});
+  },{requireConfirm:true});
+  return okResponse({backfill:result});
+}
+
+export async function handleCompanyImportedReceivableSettlementPlan(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const body=await readJsonBody(request);const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);
+  try{return okResponse({settlement:planImportedReceivableBankSettlement(db,body as any)});}finally{db.close();}
+}
+
+export async function handleCompanyImportedReceivableSettlementApply(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{
+    const p=ctx.principal;const principal=p.serviceAccountId?{kind:"service-account" as const,subjectId:p.serviceAccountId}:{kind:"user" as const,subjectId:p.userId??p.id};
+    return applyImportedReceivableBankSettlement(ctx.db,{...(body as any),actor:ctx.actor.createdBy,principal,confirm:true});
+  },{requireConfirm:true});
+  return okResponse({settlement:result});
+}
+
+export function handleCompanyImportedReceivableSettlementStatus(config:ServerConfig,slug:string,url:URL):Response{
+  const id=Number(url.searchParams.get("bankTransactionId"));const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);
+  try{return okResponse({settlement:getImportedReceivableBankSettlement(db,id)});}finally{db.close();}
 }

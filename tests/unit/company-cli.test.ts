@@ -45,12 +45,29 @@ describe("company CLI", () => {
   test("company list reports companies in the workspace", async () => {
     const ws = tmpRoot("company-cli-list");
     try {
-      await run(["company", "add", "--name", "Acme ApS"], { RENTEMESTER_WORKSPACE: ws });
-      await run(["company", "add", "--name", "Beta IVS"], { RENTEMESTER_WORKSPACE: ws });
+      await run(["company", "add", "--name", "Acme ApS", "--cvr", "DK10000001"], { RENTEMESTER_WORKSPACE: ws });
+      await run(["company", "add", "--name", "Beta IVS", "--cvr", "DK10000002"], { RENTEMESTER_WORKSPACE: ws });
       const res = await run(["company", "list"], { RENTEMESTER_WORKSPACE: ws });
       expect(res.exitCode).toBe(0);
       expect(res.stdout).toContain("acme-aps");
       expect(res.stdout).toContain("beta-ivs");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("company list fails closed on duplicate normalized CVR identity", async () => {
+    const ws = tmpRoot("company-cli-duplicate");
+    try {
+      await run(["company", "add", "--name", "Alpha ApS", "--cvr", "DK10000016"], { RENTEMESTER_WORKSPACE: ws });
+      await run(["company", "add", "--name", "Beta ApS", "--cvr", "10000016"], { RENTEMESTER_WORKSPACE: ws });
+      const res = await run(["company", "list"], { RENTEMESTER_WORKSPACE: ws });
+      expect(res.exitCode).toBe(2);
+      expect(res.stderr).toContain(
+        "WORKSPACE_DUPLICATE_LEGAL_IDENTITY:alpha-aps,WORKSPACE_DUPLICATE_LEGAL_IDENTITY:beta-aps",
+      );
+      expect(res.stdout).not.toContain("companies");
+      expect(`${res.stdout}${res.stderr}`).not.toContain("10000016");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

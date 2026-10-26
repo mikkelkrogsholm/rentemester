@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import { SITE } from "../../consts";
@@ -33,72 +34,72 @@ const jsonLd = {
     lead="Fra tom kundeliste til en valideret, bogført og afsendt dansk faktura — uden at omgå nogen regel."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <h2>Til hvem</h2>
-    <p>Til dig der har installeret Rentemester (<a href="/docs/installation">se installation</a>) og skal sende din første rigtige faktura til en kunde. Guiden viser begge veje — klik dig gennem cockpittet, eller kør CLI-kommandoer.</p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Til hvem</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Til dig der har installeret Rentemester (<a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">se installation</a>) og skal sende din første rigtige faktura til en kunde. Guiden viser begge veje — klik dig gennem cockpittet, eller kør CLI-kommandoer.</p>
 
-    <h2>Forudsætninger</h2>
-    <ul>
-      <li>Du har kørt <code>bun run src/cli.ts init --company ./min-virksomhed</code> og healthcheck er grøn.</li>
-      <li>Du har dit eget CVR-nummer og kundens CVR (eller adresse hvis kunden er en privatperson).</li>
-      <li>Du ved hvilken momskode der gælder for dit salg — almindeligt indenlandsk salg er 25 %; tjek <a href={`${SITE.github}/tree/main/rules/dk`} rel="noopener" target="_blank">rules/dk ↗</a> hvis du er i tvivl.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Forudsætninger</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Du har kørt <code {...sx.pages_sikkerhed_code1}>bun run src/cli.ts init --company ./min-virksomhed</code> og healthcheck er grøn.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Du har dit eget CVR-nummer og kundens CVR (eller adresse hvis kunden er en privatperson).</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Du ved hvilken momskode der gælder for dit salg — almindeligt indenlandsk salg er 25 %; tjek <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/tree/main/rules/dk`} rel="noopener" target="_blank">rules/dk ↗</a> hvis du er i tvivl.</li>
     </ul>
 
-    <h2>1. Start cockpittet (valgfrit)</h2>
-    <p>I én terminal kører du backend-serveren — i en anden cockpit-UI'en:</p>
-    <pre><code>bun run src/cli.ts serve --workspace .
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>1. Start cockpittet (valgfrit)</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>I én terminal kører du backend-serveren — i en anden cockpit-UI'en:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts serve --workspace .
 
 cd app &amp;&amp; bun install &amp;&amp; bun run dev
 # åbn http://localhost:5319</code></pre>
-    <p>I cockpittet bruger du venstre-menuens <strong>Fakturaer</strong> og <strong>Kontakter</strong>. Hvis du hellere vil køre rent CLI, skipper du dette skridt.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>I cockpittet bruger du venstre-menuens <strong {...sx.pages_viden_frister_moms_strong1}>Fakturaer</strong> og <strong {...sx.pages_viden_frister_moms_strong1}>Kontakter</strong>. Hvis du hellere vil køre rent CLI, skipper du dette skridt.</p>
 
-    <h2>2. Opret kunden</h2>
-    <p><strong>Cockpit:</strong> Gå til <em>Kontakter → Opret kunde</em>. Skriv CVR — Rentemester slår op i CVR-registret og udfylder navn, adresse og momspligt.</p>
-    <p><strong>CLI:</strong></p>
-    <pre><code>bun run src/cli.ts customer add \
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>2. Opret kunden</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>Cockpit:</strong> Gå til <em {...sx.pages_docs_foersteFaktura_em1}>Kontakter → Opret kunde</em>. Skriv CVR — Rentemester slår op i CVR-registret og udfylder navn, adresse og momspligt.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>CLI:</strong></p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts customer add \
   --company ./min-virksomhed \
   --cvr 12345678 \
   --name "Eksempel ApS"</code></pre>
 
-    <h2>3. Udfyld fakturaen</h2>
-    <p><strong>Cockpit:</strong> <em>Fakturaer → Ny faktura</em>. Vælg kunden, tilføj én eller flere varelinjer (beskrivelse, antal, enhedspris, momskode), og sæt en forfaldsdato. Cockpittet viser totalen og momsen løbende.</p>
-    <p><strong>CLI:</strong> Lav en JSON-fil — fx <code>min-faktura.json</code> — efter samme skema som <a href={`${SITE.github}/blob/main/examples/full-invoice.dk.json`} rel="noopener" target="_blank">examples/full-invoice.dk.json ↗</a>. Felter du skal udfylde: <code>customer</code>, <code>lines</code> (med <code>description</code>, <code>quantity</code>, <code>unit_price</code>, <code>vat_code</code>), <code>issue_date</code> og <code>due_date</code>.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>3. Udfyld fakturaen</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>Cockpit:</strong> <em {...sx.pages_docs_foersteFaktura_em1}>Fakturaer → Ny faktura</em>. Vælg kunden, tilføj én eller flere varelinjer (beskrivelse, antal, enhedspris, momskode), og sæt en forfaldsdato. Cockpittet viser totalen og momsen løbende.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>CLI:</strong> Lav en JSON-fil — fx <code {...sx.pages_sikkerhed_code1}>min-faktura.json</code> — efter samme skema som <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/examples/full-invoice.dk.json`} rel="noopener" target="_blank">examples/full-invoice.dk.json ↗</a>. Felter du skal udfylde: <code {...sx.pages_sikkerhed_code1}>customer</code>, <code {...sx.pages_sikkerhed_code1}>lines</code> (med <code {...sx.pages_sikkerhed_code1}>description</code>, <code {...sx.pages_sikkerhed_code1}>quantity</code>, <code {...sx.pages_sikkerhed_code1}>unit_price</code>, <code {...sx.pages_sikkerhed_code1}>vat_code</code>), <code {...sx.pages_sikkerhed_code1}>issue_date</code> og <code {...sx.pages_sikkerhed_code1}>due_date</code>.</p>
 
-    <h2>4. Validér før udstedelse</h2>
-    <p>Rentemester validerer fakturaen mod danske regler <em>før</em> den udstedes — manglende CVR, ugyldig momskode, dato uden for åbent regnskabsår og lignende afvises.</p>
-    <pre><code>bun run src/cli.ts invoice validate --input min-faktura.json</code></pre>
-    <p>I cockpittet sker valideringen automatisk når du trykker <em>Udsted</em> — fejl vises som røde notitser ved det felt der bryder reglen.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>4. Validér før udstedelse</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester validerer fakturaen mod danske regler <em {...sx.pages_docs_foersteFaktura_em1}>før</em> den udstedes — manglende CVR, ugyldig momskode, dato uden for åbent regnskabsår og lignende afvises.</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts invoice validate --input min-faktura.json</code></pre>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>I cockpittet sker valideringen automatisk når du trykker <em {...sx.pages_docs_foersteFaktura_em1}>Udsted</em> — fejl vises som røde notitser ved det felt der bryder reglen.</p>
 
-    <h2>5. Udsted og bogfør</h2>
-    <p>Udstedelsen gemmer et <strong>immutabelt snapshot</strong> af fakturaen (PDF + JSON) og giver den et fakturanummer fra din valgte serie.</p>
-    <pre><code>bun run src/cli.ts invoice issue \
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>5. Udsted og bogfør</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Udstedelsen gemmer et <strong {...sx.pages_viden_frister_moms_strong1}>immutabelt snapshot</strong> af fakturaen (PDF + JSON) og giver den et fakturanummer fra din valgte serie.</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts invoice issue \
   --company ./min-virksomhed \
   --input min-faktura.json
 
 bun run src/cli.ts invoice post \
   --company ./min-virksomhed \
   --invoice-number 2026-0001</code></pre>
-    <p><code>invoice post</code> skriver de tre posteringer (debitor, omsætning, salgsmoms) ind i ledgeren. I cockpittet sker udstedelse og bogføring i samme klik — knappen viser <em>Udsted &amp; bogfør</em>.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><code {...sx.pages_sikkerhed_code1}>invoice post</code> skriver de tre posteringer (debitor, omsætning, salgsmoms) ind i ledgeren. I cockpittet sker udstedelse og bogføring i samme klik — knappen viser <em {...sx.pages_docs_foersteFaktura_em1}>Udsted &amp; bogfør</em>.</p>
 
-    <h2>6. Send på e-mail</h2>
-    <p>Du kan vedhæfte PDF'en og sende direkte fra Rentemester:</p>
-    <pre><code>bun run src/cli.ts invoice send-email \
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>6. Send på e-mail</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Du kan vedhæfte PDF'en og sende direkte fra Rentemester:</p>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>bun run src/cli.ts invoice send-email \
   --company ./min-virksomhed \
   --invoice-number 2026-0001 \
   --to kunde@eksempel.dk</code></pre>
-    <p><strong>Bemærk:</strong> den indbyggede e-mailafsendelse kører i test-tilstand indtil du tilkobler din egen e-mailkanal — afsendelsen logges, men ingen rigtig e-mail forlader maskinen. Læs <a href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for konfiguration.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><strong {...sx.pages_viden_frister_moms_strong1}>Bemærk:</strong> den indbyggede e-mailafsendelse kører i test-tilstand indtil du tilkobler din egen e-mailkanal — afsendelsen logges, men ingen rigtig e-mail forlader maskinen. Læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for konfiguration.</p>
 
-    <h2>7. Når kunden betaler</h2>
-    <p>Importér bankudtoget (<a href="/docs/bank-import">se bank-import</a>), og afstem betalingen mod fakturaen. Rentemester foreslår matchet deterministisk; du bekræfter.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>7. Når kunden betaler</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Importér bankudtoget (<a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/bank-import">se bank-import</a>), og afstem betalingen mod fakturaen. Rentemester foreslår matchet deterministisk; du bekræfter.</p>
 
-    <h2>Fejlfinding</h2>
-    <ul>
-      <li><strong>"vat_code unknown"</strong> — kig i <code>rules/dk/vat-codes.json</code> for gyldige koder. <code>21</code> er standard indenlandsk salg med 25 % moms.</li>
-      <li><strong>"customer CVR not found"</strong> — CVR-opslaget bruger en offline-snapshot; kør <code>bun run src/cli.ts customer refresh --cvr 12345678</code>.</li>
-      <li><strong>"period closed"</strong> — fakturadatoen falder i en lukket periode. Vælg en dato i en åben periode, eller åbn perioden hvis den er fejlagtigt lukket.</li>
-      <li><strong>"invoice already issued"</strong> — du kan ikke udstede den samme faktura to gange. Hvis du har brug for at rette, lav en kreditnota.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Fejlfinding</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>"vat_code unknown"</strong> — kig i <code {...sx.pages_sikkerhed_code1}>rules/dk/vat-codes.json</code> for gyldige koder. <code {...sx.pages_sikkerhed_code1}>21</code> er standard indenlandsk salg med 25 % moms.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>"customer CVR not found"</strong> — CVR-opslaget bruger en offline-snapshot; kør <code {...sx.pages_sikkerhed_code1}>bun run src/cli.ts customer refresh --cvr 12345678</code>.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>"period closed"</strong> — fakturadatoen falder i en lukket periode. Vælg en dato i en åben periode, eller åbn perioden hvis den er fejlagtigt lukket.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><strong {...sx.pages_viden_frister_moms_strong1}>"invoice already issued"</strong> — du kan ikke udstede den samme faktura to gange. Hvis du har brug for at rette, lav en kreditnota.</li>
     </ul>
 
-    <p><a href="/docs">← Tilbage til docs-oversigten</a></p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs">← Tilbage til docs-oversigten</a></p>
   </article>
 </BaseLayout>

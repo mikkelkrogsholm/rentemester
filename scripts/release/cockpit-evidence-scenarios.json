@@ -1,0 +1,112 @@
+{
+  "profiles": [
+    {
+      "issue": 649,
+      "owner": "#649 task navigation and attention",
+      "route": "/companies/evidence-fixture/opmaerksomhed",
+      "endpoint": "/api/companies/evidence-fixture/attention",
+      "heading": "Opgaver der kræver opmærksomhed",
+      "coreAction": "Åbn næste opgave",
+      "data": "Syntetisk opgave",
+      "progressive": "Se grundlag for opgaven",
+      "taskOutcome": { "url": "/companies/evidence-fixture/batchbogfoering" },
+      "states": { "normal": "1 forhold kræver opmærksomhed", "loading": "Henter opgaver", "empty": "Ingen opgaver kræver opmærksomhed", "warning-or-blocked": "Opgaver er blokeret", "error": "Opgaver kunne ikke hentes" }
+    },
+    {
+      "issue": 650,
+      "owner": "#650 bookkeeping workbench",
+      "route": "/companies/evidence-fixture/batchbogfoering",
+      "endpoint": "/api/companies/evidence-fixture/fiscal-years",
+      "heading": "Bogføringsarbejdsbord",
+      "coreAction": "Forhåndsvis samlet dry run",
+      "data": "Klar til dry run",
+      "progressive": "Se bilag og kontering",
+      "taskOutcome": "Samlet dry run forhåndsvist",
+      "states": { "normal": "Bogføringskø klar", "loading": "Henter bogføringskø", "empty": "Ingen poster klar til bogføring", "warning-or-blocked": "Bogføring kræver afklaring", "error": "Bogføringskø kunne ikke hentes" }
+    },
+    {
+      "issue": 651,
+      "owner": "#651 adaptive portfolio overview",
+      "route": "/companies/evidence-fixture",
+      "endpoint": "/api/companies/evidence-fixture/changes-since?after=0",
+      "heading": "Siden sidst",
+      "coreAction": "Markér som set",
+      "data": "1 bilagsændring",
+      "progressive": "Evidens",
+      "taskOutcome": "Ændringer markeret som set",
+      "states": { "normal": "1 ny ændring siden dit seneste besøg.", "loading": "Henter ændringer…", "empty": "Ingen nye data- eller statusændringer siden dit seneste besøg.", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
+    },
+    {
+      "issue": 652,
+      "owner": "#652 journal explanation drilldown",
+      "route": "/companies/evidence-fixture/posteringer",
+      "endpoint": "/api/companies/evidence-fixture/journal",
+      "heading": "Posteringer",
+      "coreAction": "B-2026-0001",
+      "data": "Syntetisk journalpost",
+      "progressive": "Forklar posten",
+      "taskOutcome": "Forklaring åbnet",
+      "states": { "normal": "Posteringer klar", "loading": "Henter posteringer", "empty": "Ingen posteringer i perioden", "warning-or-blocked": "Postering kræver afklaring", "error": "Posteringer kunne ikke hentes" }
+    },
+    {
+      "issue": 653,
+      "owner": "#653 party hub",
+      "route": "/companies/evidence-fixture/parter",
+      "endpoint": "/api/companies/evidence-fixture/party-hub?query=",
+      "heading": "Parter",
+      "coreAction": "Syntetisk part",
+      "data": "3.051,20 kr.",
+      "progressive": "Søg og sortér canonical parter",
+      "taskOutcome": { "url": "/companies/evidence-fixture/parter/party-evidence" },
+      "states": { "normal": "Parter klar", "loading": "Henter parter", "empty": "Ingen parter endnu", "warning-or-blocked": "Part kræver afklaring", "error": "Parter kunne ikke hentes" }
+    },
+    {
+      "issue": 654,
+      "owner": "#654 balance report coverage",
+      "route": "/companies/evidence-fixture/balance",
+      "endpoint": "/api/companies/evidence-fixture/balance",
+      "heading": "Balance",
+      "coreAction": "55000",
+      "data": "Bank",
+      "progressive": "Se rapportgrundlag",
+      "taskOutcome": { "url": "/companies/evidence-fixture/posteringer?year=2026&account=55000" },
+      "states": { "normal": "Aktuel bogføring", "loading": "Henter balance", "empty": "Ingen balanceposter i perioden", "warning-or-blocked": "Ufuldstændigt grundlag", "error": "Balance kunne ikke hentes" }
+    },
+    {
+      "issue": 655,
+      "owner": "#655 shared UI baseline",
+      "route": "/companies/evidence-fixture/bank",
+      "endpoint": "/api/companies/evidence-fixture/bank",
+      "heading": "Bank",
+      "coreAction": "Importér kontoudtog",
+      "data": "Indbetaling faktura 1001",
+      "progressive": "Avancerede filtre",
+      "taskOutcome": "Importér kontoudtog",
+      "states": { "normal": "Bank klar til gennemgang", "loading": "Henter bankposter", "empty": "Ingen bankposter i perioden", "warning-or-blocked": "Bank kræver afstemning", "error": "Bankposter kunne ikke hentes" }
+    },
+    {
+      "issue": 656,
+      "owner": "#656 VAT and close readiness",
+      "route": "/companies/evidence-fixture/moms",
+      "endpoint": "/api/companies/evidence-fixture/vat",
+      "heading": "Moms og lukkeparathed",
+      "coreAction": "Gennemgå momsparathed",
+      "data": "Moms at betale",
+      "progressive": "Gennemgå momsparathed",
+      "taskOutcome": "Se lukkegrundlag",
+      "states": { "normal": "Momsparathed klar", "loading": "Henter momsparathed", "empty": "Ingen momsforpligtelser i perioden", "warning-or-blocked": "Moms kræver afklaring", "error": "Momsparathed kunne ikke hentes" }
+    },
+    {
+      "issue": 657,
+      "owner": "#657 administration grouping",
+      "route": "/companies/evidence-fixture/manage",
+      "endpoint": "/api/companies",
+      "heading": "Administration",
+      "coreAction": "Åbn daglig opsætning",
+      "data": "Virksomhedsprofil",
+      "progressive": "System- og livscyklusindstillinger",
+      "taskOutcome": { "url": "/companies/evidence-fixture/kontoplan" },
+      "states": { "normal": "Administration klar", "loading": "Henter virksomhedsprofil", "empty": "Ingen administrationsoplysninger endnu", "warning-or-blocked": "Virksomhedsprofil kræver afklaring", "error": "Virksomhedsprofil kunne ikke hentes" }
+    }
+  ]
+}

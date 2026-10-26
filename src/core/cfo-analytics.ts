@@ -13,6 +13,7 @@ import { companyPaths } from "./paths";
 import { companyRootForSlug, findWorkspaceCompany, listWorkspaceCompanies } from "./workspace";
 import { openWorkspaceControlReadOnlyDb } from "./workspace-control";
 import { openLedgerReadOnly } from "./ledger-inspection";
+import { importedReceivableBalanceOre } from "./imported-receivables";
 
 export const CFO_ANALYTICS_SCHEMA_VERSION = "rentemester-cfo-analytics-v1";
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -105,7 +106,10 @@ function readEvidenceCompleteness(companySlug:string,companyRoot:string,from:str
   const db=openLedgerReadOnly(dbPath); try {
     const journal=db.query("SELECT COUNT(*) AS count FROM journal_entries WHERE status='posted' AND reversal_of_entry_id IS NULL AND transaction_date BETWEEN ? AND ? AND document_id IS NULL").get(from,to) as {count:number};
     const exceptions=db.query("SELECT COUNT(*) AS count FROM exceptions WHERE status='open'").get() as {count:number};
-    return {companySlug,status:"ready" as const,postedWithoutDocument:journal.count,openExceptions:exceptions.count};
+    const imported=db.query("SELECT COUNT(*) AS count FROM imported_receivable_headers WHERE invoice_date<=?").get(to) as {count:number};
+    const controls=db.query("SELECT DISTINCT control_account_no AS accountNo FROM imported_receivable_headers ORDER BY control_account_no").all() as Array<{accountNo:string}>;
+    const importedOpenDkk=controls.reduce((sum,row)=>sum+Number(importedReceivableBalanceOre(db,to,row.accountNo).total)/100,0);
+    return {companySlug,status:"ready" as const,postedWithoutDocument:journal.count,openExceptions:exceptions.count,importedReceivableCount:imported.count,importedReceivableOpenDkk:importedOpenDkk};
   } finally { db.close(); }
 }
 

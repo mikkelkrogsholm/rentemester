@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Bilagsmail lyder simpelt: send en mail, få et bilag ind. I praksis skal systemet håndtere EML, vedhæftninger, dubletter, metadata og usikre mails uden at opfinde bogføringsgrundlag."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En god bilagsmail-pipeline starter med det kedelige: parse mailen stabilt, find brugbare vedhæftninger, hash indholdet, undgå dubletter og send uklare cases til review. Hvis systemet gætter leverandør, dato eller beløb uden grundlag, bliver automatiseringen en risiko.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Lokal EML og maildrop</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Lokal EML og maildrop</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den første sikre model er lokal: en enkelt EML-fil eller en maildrop-mappe. Rentemester kan indlæse mails i stabil rækkefølge, udtrække vedhæftninger og registrere message-id plus attachment hash, så samme mail ikke skaber nye bilag ved rerun.
     </p>
 
-    <h2>IMAP er transport, ikke bogføring</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>IMAP er transport, ikke bogføring</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Grafen indeholder også IMAP-intake. Det er polling oven på den eksisterende pipeline, ikke en ny bogføringsmodel. IMAP-konfiguration og adgang hører til transportlaget; dedup og bilagshåndtering skal stadig lande i samme append-only intake-spor.
     </p>
 
-    <h2>Exception-køen er en funktion</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Exception-køen er en funktion</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Mails uden brugbar vedhæftning, uden stabil identitet eller med uklare metadata bør ikke bogføres automatisk. Rentemester-reglerne siger eksplicit, at de skal fremhæves som exceptions til menneskelig review.
     </p>
   </article>

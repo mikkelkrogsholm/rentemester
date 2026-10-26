@@ -1,3 +1,4 @@
+import { pdfStrings, pdfText as extractPdfText } from "../fixtures/rendered-pdf-text";
 // Tests: src/core/company.ts (company profile), src/core/issued-invoices.ts,
 // src/cli/init.ts, src/cli/company.ts — #221 captures the company's own
 // identity + payment details once so they flow onto every issued invoice.
@@ -13,21 +14,7 @@ import {
   initialiseCompanyVolume,
 } from "../../src/core/company";
 import { issueInvoice } from "../../src/core/issued-invoices";
-import { readIssuedInvoicePdfText } from "../../src/core/invoice-pdf";
 
-/** Extract every PDF literal-string draw operation `( ... ) Tj` so a test can
- *  assert on the rendered text regardless of positioning. */
-function pdfStrings(pdf: Uint8Array | Buffer): string[] {
-  const text = Buffer.from(pdf).toString("latin1");
-  const out: string[] = [];
-  const re = /\(((?:[^()\\]|\\.)*)\) Tj/g;
-  let match = re.exec(text);
-  while (match !== null) {
-    out.push(match[1].replace(/\\([()\\])/g, "$1"));
-    match = re.exec(text);
-  }
-  return out;
-}
 
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
@@ -47,7 +34,7 @@ async function runCli(args: string[], env?: Record<string, string>) {
 }
 
 describe("company profile — captured once, flows onto every invoice (#221)", () => {
-  test("a profile set once supplies seller identity on the issued invoice without re-typing", () => {
+  test("a profile set once supplies seller identity on the issued invoice without re-typing", async () => {
     const root = tmpRoot("profile-seller");
     try {
       // Company initialised, then the profile edited once.
@@ -92,7 +79,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
     }
   });
 
-  test("an explicit seller value on the payload always wins over the profile", () => {
+  test("an explicit seller value on the payload always wins over the profile", async () => {
     const root = tmpRoot("profile-seller-override");
     try {
       initialiseCompanyVolume(root, {
@@ -126,7 +113,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
     }
   });
 
-  test("payment details captured at init appear on the at-issue invoice PDF", () => {
+  test("payment details captured at init appear on the at-issue invoice PDF", async () => {
     const root = tmpRoot("profile-payment-init");
     try {
       // init captures the company's bank account once.
@@ -156,12 +143,12 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
 
       // The PDF built AT ISSUE TIME — not only `invoice render` — carries the
       // BETALING block so the customer knows where to pay.
-      const pdfText = readIssuedInvoicePdfText(issued.pdfStoredPath!);
-      const strings = pdfStrings(readFileSync(issued.pdfStoredPath!)).join("\n");
-      expect(pdfText.startsWith("%PDF-")).toBe(true);
+      const pdfText = await extractPdfText(readFileSync(issued.pdfStoredPath!));
+      const strings = (await pdfStrings(readFileSync(issued.pdfStoredPath!))).join("\n");
+      expect(readFileSync(issued.pdfStoredPath!).subarray(0,5).toString()).toBe("%PDF-");
       expect(strings).toContain("BETALING");
       expect(strings).toContain("Danske Bank");
-      expect(strings).toContain("Reg.nr. 1234  Kontonr. 0001234567");
+      expect(strings).toContain("Reg.nr. 1234 Kontonr. 0001234567");
       expect(strings).toContain("IBAN: DK5000400440116243");
 
       // The persisted snapshot also carries the payment details so a later
@@ -176,7 +163,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
     }
   });
 
-  test("payment details added via the editable profile flow onto a later invoice + its PDF", () => {
+  test("payment details added via the editable profile flow onto a later invoice + its PDF", async () => {
     const root = tmpRoot("profile-payment-edit");
     try {
       initialiseCompanyVolume(root, { name: "Rentemester ApS", cvr: "DK12345678", address: "Testvej 1" });
@@ -199,10 +186,10 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       });
       expect(issued.ok).toBe(true);
 
-      const strings = pdfStrings(readFileSync(issued.pdfStoredPath!)).join("\n");
+      const strings = (await pdfStrings(readFileSync(issued.pdfStoredPath!))).join("\n");
       expect(strings).toContain("BETALING");
       expect(strings).toContain("Nordea");
-      expect(strings).toContain("Reg.nr. 5678  Kontonr. 0009876543");
+      expect(strings).toContain("Reg.nr. 5678 Kontonr. 0009876543");
 
       db.close();
     } finally {
@@ -210,7 +197,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
     }
   });
 
-  test("setCompanyProfile rejects an invalid CVR and an out-of-range payment term", () => {
+  test("setCompanyProfile rejects an invalid CVR and an out-of-range payment term", async () => {
     const root = tmpRoot("profile-invalid");
     try {
       initialiseCompanyVolume(root, { name: "Rentemester ApS" });
@@ -306,7 +293,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       expect(stored.seller.vatOrCvr).toBe("DK87654321");
       expect(stored.seller.address).toBe("Nyvej 5");
 
-      const strings = pdfStrings(readFileSync(issued.pdfStoredPath)).join("\n");
+      const strings = (await pdfStrings(readFileSync(issued.pdfStoredPath))).join("\n");
       expect(strings).toContain("BETALING");
       expect(strings).toContain("Jyske Bank");
     } finally {

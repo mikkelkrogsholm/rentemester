@@ -17,7 +17,9 @@ function tmpRoot(label: string) {
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = tmpRoot(label);
   initWorkspace(root);
-  for (const name of companyNames) createCompany(root, { name });
+  for (const [index, name] of companyNames.entries()) {
+    createCompany(root, { name, cvr: `DK${String(90000200 + index)}` });
+  }
   return root;
 }
 

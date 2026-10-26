@@ -1,7 +1,7 @@
-import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
-import { migrate, openDb } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { buildInvoiceList } from "../../../core/invoice-list";
+import { listImportedReceivables } from "../../../core/imported-receivables";
 import { companyPaths } from "../../../core/paths";
 import {
   companyRootForSlug,
@@ -19,6 +19,7 @@ import {
   roundKroner,
   statementCompanyBlock,
 } from "../shared";
+import { dataCoverage } from "../../../data-coverage";
 
 // --------------------------------------------------------------------------
 // Per-company issued invoices (Fakturaer, year-aware) — cockpit-redesign it. 5
@@ -44,7 +45,7 @@ export function resolveCompanyIssuedInvoicePdf(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = new Database(dbPath, { readonly: true });
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
     db.exec("PRAGMA query_only = ON");
     const invoice = db.query(
@@ -111,6 +112,8 @@ export type CompanyInvoiceRow = {
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  /** Explicit customer/recipient party relation on this invoice document. */
+  partyId: string | null;
   /**
    * Customer's e-mail when set on the kontaktkort (#429). Surfaced so the
    * cockpit can render a "Send på mail" action only on rows where there is
@@ -192,6 +195,7 @@ export function buildCompanyInvoices(
         totalGross: 0,
         totalOpen: 0,
         overdueCount: 0,
+        coverage: dataCoverage("final", `${ctx.selectedLabel}-12-31`, "not_comparable", "archived", ["Arkiveret periode har ingen native udstedte fakturaer."]),
       };
     }
 
@@ -277,6 +281,9 @@ export function buildCompanyInvoices(
       invoiceNo: r.invoiceNumber,
       invoiceDate: r.invoiceDate,
       customerName: r.customerName,
+      partyId: (ctx.db.query(`SELECT party_id AS partyId FROM current_document_party_links
+        WHERE document_id=? AND party_role IN ('customer','recipient','payer')
+        ORDER BY CASE party_role WHEN 'customer' THEN 0 WHEN 'recipient' THEN 1 WHEN 'payer' THEN 2 END, id DESC LIMIT 1`).get(r.documentId) as { partyId: string } | null)?.partyId ?? null,
       customerEmail: r.customerName
         ? customerEmailByName.get(r.customerName.trim()) ?? null
         : null,
@@ -322,8 +329,31 @@ export function buildCompanyInvoices(
       totalGross,
       totalOpen,
       overdueCount,
+      coverage: dataCoverage("current", list.asOfDate ?? null, "available", "native", ["Native, udstedte Rentemester-fakturaer."]),
     };
   } finally {
     ctx.db.close();
+  }
+}
+
+/** Read-only archive side of the receivables cut-over.  This deliberately
+ * does not join issued invoices: native invoices remain the other canonical
+ * read model and combining them here would make a cut-over double count easy.
+ */
+export function buildCompanyImportedReceivables(
+  workspaceRoot: string,
+  slug: string,
+  asOf: string,
+) {
+  const entry = findWorkspaceCompany(workspaceRoot, slug);
+  if (!entry) throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
+  const dbPath = companyPaths(companyRootForSlug(workspaceRoot, slug)).db;
+  if (!existsSync(dbPath)) throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
+  const db = openCurrentLedgerReadOnly(dbPath);
+  try {
+    db.exec("PRAGMA query_only = ON");
+    return listImportedReceivables(db, asOf);
+  } finally {
+    db.close();
   }
 }

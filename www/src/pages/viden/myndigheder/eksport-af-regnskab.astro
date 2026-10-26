@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Når regnskabsmateriale skal udleveres, er det ikke nok med en PDF. Eksporten bør samle periode, journal, dokumenter, bank, audit og manifest på en måde der kan kontrolleres."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Myndigheds- og revisorudlevering handler om sporbarhed. Den, der modtager materialet, skal kunne se hvilke posteringer der indgår, hvilke bilag der dokumenterer dem, og om audit-kæden stadig hænger sammen.
     </p>
 
@@ -37,18 +38,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad bør eksporten indeholde?</h2>
-    <ul>
-      <li>periode og tidspunkt for generering</li>
-      <li>journalposter og konti</li>
-      <li>bilag og fakturaer</li>
-      <li>banktransaktioner hvor relevant</li>
-      <li>manifest og checksums</li>
-      <li>audit-verifikation eller tydelige fejl</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør eksporten indeholde?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>periode og tidspunkt for generering</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>journalposter og konti</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag og fakturaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>banktransaktioner hvor relevant</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>manifest og checksums</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>audit-verifikation eller tydelige fejl</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har et testet authority export-flow, der samler en deterministisk periodepakke med journal, bank, dokumenter, exceptions, audit og manifest. Første SAF-T-slice er nu også live for ledger og salgsfakturaer, men den må stadig beskrives som en afgrænset eksport og ikke som fuld officiel SAF-T-compliance eller indsendelsesflow.
     </p>
   </article>

@@ -23,10 +23,12 @@ export type DocumentType =
   | "purchase_sale"
   | "cash_register_receipt"
   | "issued_invoice_pdf"
-  | "internal_voucher";
+  | "internal_voucher"
+  | "external_accounting_evidence";
 export type DocumentExemptionCode = "FOREIGN_PHYSICAL_ONLY" | null;
 export type PurchaseVatClassification = "dk_purchase_25" | "exempt";
 export type PurchaseVatLine = { classification: PurchaseVatClassification; netAmount: number; vatAmount?: number };
+export type InternalVoucherKind = "bank_evidenced" | "non_cash_balance_correction" | "legacy_opening_creditor_reclassification";
 
 export type DocumentMetadata = {
   source: string;
@@ -44,14 +46,26 @@ export type DocumentMetadata = {
   /** Human-confirmed invoice evidence required before a non-EU service can be
    * posted with automatic reverse-charge input-VAT deduction. */
   reverseChargeWordingConfirmed?: boolean;
+  /** Verbatim, source-bound evidence of the reverse-charge statement.  The
+   * original source and this payload are both integrity-hashed at ingest; this
+   * is intentionally not an inferred classification. */
+  reverseChargeWordingEvidence?: { excerpt: string; location: string };
   /** Explicit source fact: the issuer supplied a Danish simplified purchase invoice. */
   danishSimplifiedPurchaseInvoice?: boolean;
+  /** Source-preserving intake marker. It permits storage of a standard invoice
+   * with absent buyer fields, but never asserts VAT eligibility. */
+  incompleteStandardPurchaseInvoice?: boolean;
   paymentDetails?: string;
   exemptionCode?: DocumentExemptionCode;
   /** Imported bank row that is the immutable primary evidence for an internal voucher. */
   sourceBankTransactionId?: number;
+  /** Explicit evidence contract. Omitted legacy vouchers remain bank_evidenced. */
+  internalVoucherKind?: InternalVoucherKind;
+  legacyOpeningJournalEntryId?: number;
+  legacyOpeningJournalLineId?: number;
   /** Human accounting explanation for why the internal voucher is booked. */
   accountingRationale?: string;
+  externalAccountingEvidence?: { category: "payroll"; accountingPeriod: string; externalReference: string; totals: { debitAmount: number; creditAmount: number } };
 };
 
 export type DocumentValidationResult = {
@@ -378,8 +392,20 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
   if (metadata.reverseChargeWordingConfirmed !== undefined && typeof metadata.reverseChargeWordingConfirmed !== "boolean") {
     errors.push("reverseChargeWordingConfirmed must be a boolean when present");
   }
+  if (metadata.reverseChargeWordingEvidence !== undefined) {
+    const evidence = metadata.reverseChargeWordingEvidence;
+    if (!evidence || typeof evidence !== "object" || !hasText(evidence.excerpt) || !hasText(evidence.location)) {
+      errors.push("reverseChargeWordingEvidence requires non-empty excerpt and location");
+    }
+  }
   if (metadata.danishSimplifiedPurchaseInvoice !== undefined && typeof metadata.danishSimplifiedPurchaseInvoice !== "boolean") {
     errors.push("danishSimplifiedPurchaseInvoice must be a boolean when present");
+  }
+  if (metadata.incompleteStandardPurchaseInvoice !== undefined && typeof metadata.incompleteStandardPurchaseInvoice !== "boolean") {
+    errors.push("incompleteStandardPurchaseInvoice must be a boolean when present");
+  }
+  if (metadata.incompleteStandardPurchaseInvoice === true && metadata.danishSimplifiedPurchaseInvoice === true) {
+    errors.push("incompleteStandardPurchaseInvoice cannot be combined with danishSimplifiedPurchaseInvoice");
   }
   if (metadata.danishSimplifiedPurchaseInvoice === true) {
     appliedRules.splice(appliedRules.length - 1, 0, RULES.SIMPLIFIED_INVOICE);
@@ -394,6 +420,7 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
   errors.push(...validatePurchaseVatLines(metadata));
 
   if (documentType === "internal_voucher") {
+    const internalVoucherKind = metadata.internalVoucherKind ?? "bank_evidenced";
     if (!looksLikeIsoDate(metadata.issueDate)) {
       errors.push("internal voucher issueDate must be present in YYYY-MM-DD format");
     }
@@ -406,12 +433,20 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
     if (metadata.vatAmount !== 0) {
       errors.push("internal voucher vatAmount must be exactly 0");
     }
-    if (
-      !Number.isInteger(metadata.sourceBankTransactionId) ||
-      Number(metadata.sourceBankTransactionId) <= 0
-    ) {
+    if (!['bank_evidenced', 'non_cash_balance_correction', 'legacy_opening_creditor_reclassification'].includes(internalVoucherKind)) {
+      errors.push("internal voucher internalVoucherKind must be bank_evidenced, non_cash_balance_correction or legacy_opening_creditor_reclassification");
+    } else if (internalVoucherKind === "bank_evidenced" && (
+      !Number.isInteger(metadata.sourceBankTransactionId) || Number(metadata.sourceBankTransactionId) <= 0
+    )) {
       errors.push("internal voucher sourceBankTransactionId must be a positive integer");
+    } else if ((internalVoucherKind === "non_cash_balance_correction" || internalVoucherKind === "legacy_opening_creditor_reclassification") && metadata.sourceBankTransactionId !== undefined) {
+      errors.push("non-cash balance correction must not reference a bank transaction");
     }
+    if ((internalVoucherKind === "non_cash_balance_correction" || internalVoucherKind === "legacy_opening_creditor_reclassification") && (metadata.currency ?? "DKK").trim().toUpperCase() !== "DKK") {
+      errors.push("non-cash balance correction currency must be DKK");
+    }
+    if (internalVoucherKind === "legacy_opening_creditor_reclassification" && (!Number.isInteger(metadata.legacyOpeningJournalEntryId) || Number(metadata.legacyOpeningJournalEntryId) <= 0 || !Number.isInteger(metadata.legacyOpeningJournalLineId) || Number(metadata.legacyOpeningJournalLineId) <= 0)) errors.push("legacy opening creditor reclassification requires positive legacyOpeningJournalEntryId and legacyOpeningJournalLineId");
+    if (internalVoucherKind !== "legacy_opening_creditor_reclassification" && (metadata.legacyOpeningJournalEntryId !== undefined || metadata.legacyOpeningJournalLineId !== undefined)) errors.push("legacy opening journal references are only allowed for legacy_opening_creditor_reclassification");
     if (!hasText(metadata.accountingRationale)) {
       errors.push("internal voucher accountingRationale is required");
     }
@@ -421,15 +456,30 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
     if (metadata.reverseChargeWordingConfirmed !== undefined) {
       errors.push("internal voucher cannot contain reverseChargeWordingConfirmed");
     }
+    if (metadata.reverseChargeWordingEvidence !== undefined) {
+      errors.push("internal voucher cannot contain reverseChargeWordingEvidence");
+    }
     if (metadata.exemptionCode !== undefined && metadata.exemptionCode !== null) {
       errors.push("internal voucher cannot contain exemptionCode");
     }
+  }
+  if (documentType === "external_accounting_evidence") {
+    const evidence = metadata.externalAccountingEvidence;
+    if (!evidence || evidence.category !== "payroll") errors.push("external accounting evidence requires category payroll");
+    if (!evidence || !/^\d{4}-(0[1-9]|1[0-2])$/.test(evidence.accountingPeriod)) errors.push("external accounting evidence requires accountingPeriod YYYY-MM");
+    if (!evidence || !hasText(evidence.externalReference)) errors.push("external accounting evidence requires externalReference");
+    if (!evidence || !hasNonNegativeNumber(evidence.totals?.debitAmount) || !hasNonNegativeNumber(evidence.totals?.creditAmount) || evidence.totals.debitAmount <= 0 || Math.abs(evidence.totals.debitAmount - evidence.totals.creditAmount) > 0.00001) errors.push("external accounting evidence requires balanced positive debitAmount and creditAmount totals");
+    if (!looksLikeIsoDate(metadata.issueDate)) errors.push("external accounting evidence requires issueDate YYYY-MM-DD");
+    if (!hasText(metadata.sender?.name)) errors.push("external accounting evidence requires the external issuer name");
+    if (!hasText(metadata.recipient?.name)) errors.push("external accounting evidence requires the reported company name");
+    if (metadata.vatAmount !== 0) errors.push("external accounting evidence vatAmount must be exactly 0");
   }
 
   const exemptFromMinimumFields =
     documentType === "cash_register_receipt" ||
     documentType === "issued_invoice_pdf" ||
     documentType === "internal_voucher" ||
+    documentType === "external_accounting_evidence" ||
     exemptionCode === "FOREIGN_PHYSICAL_ONLY";
   if (!exemptFromMinimumFields) {
     if (!looksLikeIsoDate(metadata.issueDate)) errors.push("issueDate must be present in YYYY-MM-DD format");
@@ -447,8 +497,9 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
     // as supplied; company context is recorded separately after ingestion.
     if (metadata.danishSimplifiedPurchaseInvoice !== true) {
       if (!hasText(metadata.recipient?.name)) errors.push("recipient.name is required");
-      if (!hasText(metadata.recipient?.address)) errors.push("recipient.address is required");
-      if (!hasText(metadata.recipient?.vatOrCvr)) errors.push("recipient.vatOrCvr is required");
+      if (!hasText(metadata.recipient?.address) && metadata.incompleteStandardPurchaseInvoice !== true) errors.push("recipient.address is required");
+      // A buyer registration number is not a universal statutory field on a
+      // full invoice. Preserve its absence rather than fabricating it.
     }
     if (!hasNonNegativeNumber(metadata.vatAmount)) errors.push("vatAmount is required");
   }
@@ -565,9 +616,12 @@ function normalizedEnrichedMetadata(metadata: DocumentMetadata): DocumentMetadat
     vatAmount: metadata.vatAmount,
     purchaseVatLines: metadata.purchaseVatLines,
     reverseChargeWordingConfirmed: metadata.reverseChargeWordingConfirmed,
+    reverseChargeWordingEvidence: metadata.reverseChargeWordingEvidence,
     danishSimplifiedPurchaseInvoice: metadata.danishSimplifiedPurchaseInvoice,
+    incompleteStandardPurchaseInvoice: metadata.incompleteStandardPurchaseInvoice,
     paymentDetails: metadata.paymentDetails,
     exemptionCode: metadata.exemptionCode,
+    externalAccountingEvidence: metadata.externalAccountingEvidence,
   };
 }
 
@@ -667,7 +721,7 @@ function validateInternalVoucherBankEvidence(
   db: Database,
   metadata: DocumentMetadata,
 ): string[] {
-  if (metadata.documentType !== "internal_voucher") return [];
+  if (metadata.documentType !== "internal_voucher" || (metadata.internalVoucherKind ?? "bank_evidenced") !== "bank_evidenced") return [];
   const bankTransactionId = Number(metadata.sourceBankTransactionId);
   const bank = db.query(
     `SELECT id, transaction_date, amount, currency, transaction_hash,
@@ -894,18 +948,22 @@ function ingestDocumentSnapshot(
           createdBy: options.createdBy,
           createdByProgram: options.createdByProgram,
         });
-        db.query(
-          `INSERT INTO internal_voucher_evidence
-             (document_id, bank_transaction_id, accounting_rationale,
-              prepared_by, prepared_by_program)
-           VALUES (?, ?, ?, ?, ?)`,
-        ).run(
-          inserted.id,
-          metadata.sourceBankTransactionId!,
-          metadata.accountingRationale!.trim(),
-          actor.createdBy,
-          actor.createdByProgram,
-        );
+        if ((metadata.internalVoucherKind ?? "bank_evidenced") === "bank_evidenced") {
+          db.query(
+            `INSERT INTO internal_voucher_evidence
+               (document_id, bank_transaction_id, accounting_rationale,
+                prepared_by, prepared_by_program)
+             VALUES (?, ?, ?, ?, ?)`,
+          ).run(inserted.id, metadata.sourceBankTransactionId!, metadata.accountingRationale!.trim(), actor.createdBy, actor.createdByProgram);
+        } else {
+          db.query(
+            `INSERT INTO non_cash_balance_correction_evidence
+               (document_id, document_sha256, issue_date, amount, currency,
+                accounting_rationale, prepared_by, prepared_by_program)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          ).run(inserted.id, sha256, metadata.issueDate!, metadata.amountIncVat!, currency, metadata.accountingRationale!.trim(), actor.createdBy, actor.createdByProgram);
+          if (metadata.internalVoucherKind === "legacy_opening_creditor_reclassification") db.query("INSERT INTO legacy_opening_creditor_reclassification_evidence (document_id,opening_journal_entry_id,opening_journal_line_id) VALUES(?,?,?)").run(inserted.id, metadata.legacyOpeningJournalEntryId!, metadata.legacyOpeningJournalLineId!);
+        }
       }
 
       strengthenGdprErasureAliasesForIdentity(db, {

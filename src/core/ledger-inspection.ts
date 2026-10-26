@@ -7,7 +7,7 @@ import {
   supportedSchemaMigrations,
   type SchemaMigrationIdentity,
 } from "./schema-version";
-import { openSqliteReadOnlySnapshot } from "./sqlite-readonly-snapshot";
+import { openSqliteDisposableSnapshot, openSqliteReadOnlySnapshot } from "./sqlite-readonly-snapshot";
 
 export type LedgerInspection =
   | { status: "current"; currentVersion: number; requiredVersion: number; pending: [] }
@@ -99,6 +99,38 @@ export function repairCanonicalSchemaViews(db: Database): SchemaViewInspection {
  */
 export function openLedgerReadOnly(path: string): Database {
   return openSqliteReadOnlySnapshot(path);
+}
+
+/**
+ * Opens a byte-preserving snapshot and rejects anything except the exact,
+ * checksummed schema supported by this runtime. Read surfaces use this helper
+ * instead of running `migrate()` speculatively.
+ */
+export function openCurrentLedgerReadOnly(path: string): Database {
+  const db = openLedgerReadOnly(path);
+  const inspection = inspectOpenLedger(db);
+  if (inspection.status === "current") return db;
+  db.close();
+  const detail = inspection.status === "pending"
+    ? `current=${inspection.currentVersion} required=${inspection.requiredVersion}`
+    : inspection.error;
+  throw new Error(`ledger schema is ${inspection.status}: ${detail}`);
+}
+
+/**
+ * Opens a current ledger as a disposable writable copy for previews whose
+ * implementation intentionally writes and rolls back. Source bytes and
+ * sidecars remain untouched, and no schema setup is performed.
+ */
+export function openCurrentLedgerSimulation(path: string): Database {
+  const db = openSqliteDisposableSnapshot(path);
+  const inspection = inspectOpenLedger(db);
+  if (inspection.status === "current") return db;
+  db.close();
+  const detail = inspection.status === "pending"
+    ? `current=${inspection.currentVersion} required=${inspection.requiredVersion}`
+    : inspection.error;
+  throw new Error(`ledger schema is ${inspection.status}: ${detail}`);
 }
 
 function tableExists(db: Database, name: string): boolean {

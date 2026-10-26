@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Når en virksomhed flyttes ind i Rentemester, skal den ikke starte fra nul. Åbningsbalancen etablerer de eksisterende aktiver, passiver og egenkapital som én balanceret postering."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En åbningsbalance, eller primobalance, er den regnskabsmæssige bro fra et tidligere system eller tidligere manuel bogføring. Den skal balancere fra starten; ellers bliver alle efterfølgende rapporter bygget på et skævt grundlag.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Én cut-over dato</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Én cut-over dato</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Åbningsbalancen etableres pr. en cut-over dato. Det gør det tydeligt hvilke tal der kommer fra før Rentemester, og hvilke posteringer der er skabt efter overgangen.
     </p>
 
-    <h2>Balancen skal gå op</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Balancen skal gå op</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemesters kode afviser en primobalance, hvis debet og kredit ikke balancerer. Den kræver mindst to linjer og posterer resultatet som én journalentry med auditspor.
     </p>
 
-    <h2>Idempotens</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Idempotens</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En virksomhed bør kun have én åbningsbalance. Derfor er flowet idempotent: forsøger man at poste den igen, peger systemet på den eksisterende primopostering i stedet for at skabe en ny.
     </p>
   </article>

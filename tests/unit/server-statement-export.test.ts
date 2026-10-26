@@ -223,8 +223,10 @@ describe("#372 — Balance CSV-eksport (GET …/balance/export)", () => {
       expect(body).toContain("Egenkapital");
       expect(body).toContain("Passiver og egenkapital i alt");
       expect(body).toContain("Rapport;Balance");
-      // Ultimo-kolonnen bruger den faktiske ultimo-dato fra builderen.
-      expect(body).toContain("Pr. 2026-12-31");
+      // Current balance is as of the latest actual posted ledger date; no
+      // fabricated fiscal-year-end comparison is reported when it is absent.
+      expect(body).toContain("Pr. 2026-03-15");
+      expect(body).toContain("Pr. 2025-12-31");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

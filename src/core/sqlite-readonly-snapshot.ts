@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   lstatSync,
   mkdtempSync,
@@ -52,7 +52,7 @@ function sameState(left: SourceFile[], right: SourceFile[]): boolean {
  * journal byte untouched while retaining committed WAL frames. The bounded
  * retry fails closed when a writer changes the source during capture.
  */
-export function openSqliteReadOnlySnapshot(path: string): Database {
+function openSqliteSnapshot(path: string, readonly: boolean): Database {
   let captured: SourceFile[] | null = null;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const before = readSourceState(path);
@@ -65,7 +65,7 @@ export function openSqliteReadOnlySnapshot(path: string): Database {
   if (!captured) throw new Error("sqlite source changed during read-only snapshot");
 
   const snapshotRoot = mkdtempSync(join(tmpdir(), "rentemester-sqlite-readonly-"));
-  const snapshotPath = join(snapshotRoot, "snapshot.sqlite");
+  const snapshotPath = join(snapshotRoot, `snapshot-${randomUUID()}.sqlite`);
   try {
     for (const source of captured) {
       // SQLite rebuilds shared-memory coordination for the private copy.
@@ -73,29 +73,31 @@ export function openSqliteReadOnlySnapshot(path: string): Database {
       writeFileSync(`${snapshotPath}${source.suffix}`, source.bytes, { mode: 0o600 });
     }
 
-    // Let the disposable copy recover/checkpoint committed sidecars. A plain
-    // sidecar-free file is opened directly below so corrupt-file diagnostics
-    // remain the responsibility of the normal inspection contract.
     if (captured.some((source) => source.suffix === "-wal" || source.suffix === "-journal")) {
       const recovery = new Database(snapshotPath);
       try {
         recovery.query("SELECT 1 FROM sqlite_master LIMIT 1").get();
         recovery.run("PRAGMA wal_checkpoint(TRUNCATE)");
       } finally {
+        (recovery as Database & { clearQueryCache(): void }).clearQueryCache();
         recovery.close();
       }
     }
 
-    const db = new Database(snapshotPath, { readonly: true });
-    db.exec("PRAGMA query_only = ON; PRAGMA foreign_keys = ON");
+    const db = readonly
+      ? new Database(snapshotPath, { readonly: true })
+      : new Database(snapshotPath);
+    if (readonly) db.run("PRAGMA query_only = ON");
+    db.run("PRAGMA foreign_keys = ON");
     const close = db.close.bind(db);
     let closed = false;
     Object.defineProperty(db, "close", {
       value: () => {
         if (closed) return;
-        closed = true;
+        (db as Database & { clearQueryCache(): void }).clearQueryCache();
         try {
           close();
+          closed = true;
         } finally {
           rmSync(snapshotRoot, { recursive: true, force: true });
         }
@@ -106,4 +108,13 @@ export function openSqliteReadOnlySnapshot(path: string): Database {
     rmSync(snapshotRoot, { recursive: true, force: true });
     throw error;
   }
+}
+
+export function openSqliteReadOnlySnapshot(path: string): Database {
+  return openSqliteSnapshot(path, true);
+}
+
+/** Writable only inside its disposable copy; the source stays byte-identical. */
+export function openSqliteDisposableSnapshot(path: string): Database {
+  return openSqliteSnapshot(path, false);
 }

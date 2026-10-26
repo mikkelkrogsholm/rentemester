@@ -1,3 +1,4 @@
+import { canonicalJson } from "./canonical-json";
 /** Source-backed operating context (#574).  This is deliberately a small
  * assertion ledger, not a wiki and not an input to accounting decisions. */
 import { createHash, randomUUID } from "node:crypto";
@@ -10,8 +11,8 @@ export type KnowledgeReviewState = "proposed"|"approved"|"rejected"|"superseded"
 export type KnowledgePrincipal = { kind:"user"|"service_account"|"local_operator"; id:string };
 const sources: readonly KnowledgeSourceKind[]=["user","registry","party","corporate_record","external_snapshot","canonical_setting"];
 const singles=new Set<CompanyKnowledgePredicate>(["business_description","operating_status","canonical_reference"]);
-const canonical=(v:unknown):string=>v===null||typeof v!=="object"?JSON.stringify(v):Array.isArray(v)?`[${v.map(canonical).join(",")}]`:`{${Object.keys(v as object).sort().map(k=>`${JSON.stringify(k)}:${canonical((v as any)[k])}`).join(",")}}`;
-const hash=(v:unknown)=>createHash("sha256").update(typeof v==="string"?v:canonical(v)).digest("hex");
+const canonical = canonicalJson;
+const hash=(value:string)=>createHash("sha256").update(value).digest("hex");
 const text=(v:unknown,name:string,max=512)=>{const s=typeof v==="string"?v.trim():"";if(!s||s.length>max)throw new Error(`${name} is required and bounded`);return s;};
 const iso=(v:unknown,name:string)=>{const d=new Date(text(v,name,64));if(Number.isNaN(d.valueOf()))throw new Error(`${name} must be ISO date/time`);return d.toISOString();};
 const event=(db:Database,id:string,type:Exclude<KnowledgeReviewState,"conflict">,input:{actor:string;principal:KnowledgePrincipal;reason?:string;supersedesAssertionId?:string})=>db.query("INSERT INTO rm_company_knowledge_events(assertion_id,event_type,reason,supersedes_assertion_id,actor,principal_kind,principal_id,created_at) VALUES(?,?,?,?,?,?,?,?)").run(id,type,input.reason?.trim()||null,input.supersedesAssertionId?.trim()||null,text(input.actor,"actor",160),input.principal.kind,text(input.principal.id,"principal id",160),new Date().toISOString());

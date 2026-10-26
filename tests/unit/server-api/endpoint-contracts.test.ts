@@ -48,45 +48,34 @@ describe("cockpit API — endpoint contracts", () => {
     }
   });
 
-  test("GET /api/companies discovers a populated but unlisted company dir (#256)", async () => {
-    // An owner set the company up via the CLI: its directory + ledger sit in
-    // the workspace but the cockpit manifest never recorded it. Pre-#256 the
-    // cockpit showed "0 virksomheder" and a create-company would mint an empty
-    // ledger over it. The cockpit must instead discover and adopt it.
+  test("GET /api/companies never adopts a populated but unlisted company dir", async () => {
     const ws = makeWorkspace("ep-discover", ["Acme ApS"]);
     try {
       // Drop the company from the manifest, leaving the directory + ledger.
       const manifest = loadWorkspaceManifest(ws);
       saveWorkspaceManifest(ws, { ...manifest, companies: [] });
-      // Before discovery the manifest is empty…
       expect(loadWorkspaceManifest(ws).companies).toHaveLength(0);
 
       const res = await get(config({ workspaceRoot: ws }), "/api/companies");
       expect(res.status).toBe(200);
-      // …yet the cockpit surfaces the real company, not "0 virksomheder".
-      expect(res.body.count).toBe(1);
-      expect(res.body.companies[0].slug).toBe("acme-aps");
-      expect(res.body.companies[0].name).toBe("Acme ApS");
-      // The discovery is persisted: the manifest now records the company.
-      expect(loadWorkspaceManifest(ws).companies.map((c) => c.slug)).toEqual([
-        "acme-aps",
-      ]);
+      expect(res.body.count).toBe(0);
+      expect(res.body.companies).toEqual([]);
+      expect(loadWorkspaceManifest(ws).companies).toEqual([]);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
   });
 
-  test("GET /api/portfolio discovers an unlisted company dir (#256)", async () => {
-    // The portfolio is the cockpit's landing page — an owner who set a company
-    // up via the CLI must land on it, not on the empty-workspace onboarding.
+  test("GET /api/portfolio never adopts an unlisted company dir", async () => {
     const ws = makeWorkspace("ep-discover-pf", ["Acme ApS"]);
     try {
       const manifest = loadWorkspaceManifest(ws);
       saveWorkspaceManifest(ws, { ...manifest, companies: [] });
       const res = await get(config({ workspaceRoot: ws }), "/api/portfolio");
       expect(res.status).toBe(200);
-      expect(res.body.portfolio.companyCount).toBe(1);
-      expect(res.body.portfolio.companies[0].slug).toBe("acme-aps");
+      expect(res.body.portfolio.companyCount).toBe(0);
+      expect(res.body.portfolio.companies).toEqual([]);
+      expect(loadWorkspaceManifest(ws).companies).toEqual([]);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

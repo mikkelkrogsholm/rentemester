@@ -49,11 +49,11 @@ describe("rule and source metadata consistency", () => {
 
   test("ledger rule version reflects current YAML bundle versions", () => {
     const bundleVersion = currentRuleBundleVersion();
-    expect(bundleVersion).toContain("bookkeeping=dk-bookkeeping-v0.0.8");
+    expect(bundleVersion).toContain("bookkeeping=dk-bookkeeping-v0.0.10");
     expect(bundleVersion).toContain("documents=dk-documents-v0.0.3");
     expect(bundleVersion).toContain("gdpr=dk-gdpr-v0.0.1");
     expect(bundleVersion).toContain("invoices=dk-invoices-v0.0.11");
     expect(bundleVersion).toContain("peppol=dk-peppol-v0.0.4");
-    expect(bundleVersion).toContain("vat=dk-vat-v0.0.5");
+    expect(bundleVersion).toContain("vat=dk-vat-v0.0.6");
   });
 });

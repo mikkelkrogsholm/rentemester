@@ -18,11 +18,13 @@ import {
 import {
   MUTATING_COMMANDS,
   mutationPolicyScope,
-  requireMutationActorIdentity,
   enforceMutationActorPolicy,
   inferredMutationActor,
   trimToNull,
 } from "./cli-actor";
+import { register as registerTasks } from "./cli/tasks";
+import { register as registerTaskSeries } from "./cli/task-series";
+import { register as registerTaskBoards } from "./cli/task-boards";
 import { register as registerInit } from "./cli/init";
 import { register as registerAudit } from "./cli/audit";
 import { register as registerAccounts } from "./cli/accounts";
@@ -106,14 +108,14 @@ import { register as registerPostingRules } from "./cli/posting-rules";
 import { register as registerBookkeepingBatch } from "./cli/bookkeeping-batch";
 import { register as registerWorkspaceRegistry } from "./cli/workspace-registry";
 import { register as registerDimensions } from "./cli/dimensions";
+import { register as registerPurchaseCase } from "./cli/purchase-case";
 // ===== END PAYABLES / KREDITORSTYRING =====
 import {
-  findWorkspaceCompany,
   isValidSlug,
   resolveConfiguredWorkspaceRoot,
-  resolveWorkspaceSlug,
   resolveWorkspaceRoot,
 } from "./core/workspace";
+import { resolveWorkspaceCompany } from "./core/workspace-company-resolver";
 import { migrate, openDb } from "./core/db";
 import { companyPaths } from "./core/paths";
 import { evaluateBackupLock } from "./core/backup-governance";
@@ -176,8 +178,10 @@ function resolveCompanyRoot(): string {
       fatal(error instanceof Error ? error.message : String(error));
     }
     if (workspaceRoot) {
-      const fromSlug = resolveWorkspaceSlug(workspaceRoot, raw);
-      if (fromSlug) return fromSlug;
+      const target = resolveWorkspaceCompany(workspaceRoot, raw, {
+        selection: "registered", archived: "allow", ledger: "optional",
+      });
+      if (target.ok) return target.company.companyRoot;
       fatal(
         `--company '${raw}': no company with that slug in workspace ${workspaceRoot}. ` +
           `Run 'rentemester company list' or pass a path instead.`,
@@ -201,12 +205,14 @@ function resolveWorkspaceAccessPolicyRoot(): string {
   const workspaceRaw = trimToNull(parsedArgs.flags.get("--workspace") as string | undefined);
   const slug = trimToNull(parsedArgs.flags.get("--company") as string | undefined);
   if (!workspaceRaw || !slug || !isValidSlug(slug)) {
-    fatal("workspace-access bootstrap-first requires --workspace <dir> and a registered --company <slug>");
+    fatal("workspace-access command requires --workspace <dir> and a registered --company <slug>");
   }
   const workspace = resolveWorkspaceRoot(workspaceRaw);
-  const companyRoot = resolveWorkspaceSlug(workspace, slug);
-  if (!companyRoot) fatal("workspace-access bootstrap-first requires a registered initial company");
-  return companyRoot;
+  const target = resolveWorkspaceCompany(workspace, slug, {
+    selection: "registered", archived: "allow", ledger: "optional",
+  });
+  if (!target.ok) fatal("workspace-access command requires a registered company");
+  return target.company.companyRoot;
 }
 
 function resolveGroupPolicyRoot(): string {
@@ -214,11 +220,11 @@ function resolveGroupPolicyRoot(): string {
   const slug = trimToNull(parsedArgs.flags.get("--policy-company") as string | undefined);
   if (!workspaceRaw || !slug || !isValidSlug(slug)) fatal("group apply-manifest requires --workspace <dir> and --policy-company <slug>");
   const workspace = resolveWorkspaceRoot(workspaceRaw);
-  const entry = findWorkspaceCompany(workspace, slug);
-  if (!entry || entry.archived) fatal("group apply-manifest requires an active registered --policy-company");
-  const companyRoot = resolveWorkspaceSlug(workspace, slug);
-  if (!companyRoot) fatal("group apply-manifest requires a registered --policy-company");
-  return companyRoot;
+  const target = resolveWorkspaceCompany(workspace, slug, {
+    selection: "registered", archived: "deny", ledger: "optional",
+  });
+  if (!target.ok) fatal("group apply-manifest requires an active registered --policy-company");
+  return target.company.companyRoot;
 }
 
 const parsedArgs = parseCliArgs(Bun.argv);
@@ -276,12 +282,16 @@ const ctx: CommandContext = {
 const dispatch = new CommandDispatch();
 for (const registerFn of [
   registerInit,
+  registerTasks,
+  registerTaskSeries,
+  registerTaskBoards,
   registerAudit,
   registerAccounts,
   registerExceptions,
   registerInvoice,
   registerDocuments,
   registerDimensions,
+  registerPurchaseCase,
   registerBank,
   // ===== BANK CLUSTER (#187) =====
   registerBankAccount,
@@ -403,7 +413,9 @@ if (!cmd || cmd === "help") {
       case "restore-target": mutationRoot = trimToNull(parsedArgs.flags.get("--target-company") as string | undefined); break;
       case "workspace-bootstrap": mutationRoot = resolveWorkspaceAccessPolicyRoot(); break;
       case "group-policy": mutationRoot = resolveGroupPolicyRoot(); break;
-      case "handler": requireMutationActorIdentity(cliActor, fatal); mutationRoot = null; break;
+      // Workspace handlers own confirmation, target resolution and actor policy
+      // in their existing order, before opening a database for mutation.
+      case "handler": mutationRoot = null; break;
       case "company": mutationRoot = ctx.companyRoot(); break;
     }
     if (mutationRoot) {

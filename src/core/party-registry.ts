@@ -1,12 +1,8 @@
+import { canonicalJson } from "./canonical-json";
 import { createHash, randomUUID } from "node:crypto";
 import type { Database } from "bun:sqlite";
 import { resolveSupplierIdentity, type SupplierIdentifierKind } from "./supplier-identity";
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(object[key])}`).join(",")}}`;
-}
+
 
 export const PARTY_KINDS = ["person", "organization", "public_authority", "financial_institution"] as const;
 /** Roles are deliberately relationship roles, not a classification of the

@@ -47,7 +47,7 @@ class StdioMcpClient {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
-      env,
+      env: { ...env, RENTEMESTER_MCP_PROFILE: env.RENTEMESTER_MCP_PROFILE ?? "full" },
     });
     this.stdoutReader = this.proc.stdout.getReader();
   }
@@ -249,6 +249,30 @@ describe("MCP server scaffold", () => {
         arguments: { company: lockedRoot, enforced: true, graceDays: 0, confirm: true },
       });
       expect(lockResp.result?.structuredContent?.ok).toBe(true);
+
+      // Confirm is the first company-write gate after MCP service
+      // authorization. A missing confirm must not probe the backup lock or
+      // open the company database, otherwise a caller gets BACKUP_LOCKED
+      // instead of the documented CONFIRM_REQUIRED envelope.
+      const unconfirmed = await client.send("tools/call", {
+        name: "journal_post",
+        arguments: {
+          company: lockedRoot,
+          payload: {
+            transactionDate: "2026-05-18",
+            text: "Must stop at confirm",
+            lines: [
+              { accountNo: "2000", debitAmount: 100 },
+              { accountNo: "1000", creditAmount: 100 },
+            ],
+          },
+          confirm: false,
+        },
+      });
+      const unconfirmedStructured = unconfirmed.result?.structuredContent;
+      expect(unconfirmedStructured?.ok).toBe(false);
+      expect(unconfirmedStructured?.code).toBe("CONFIRM_REQUIRED");
+      expect(unconfirmedStructured?.code).not.toBe("BACKUP_LOCKED");
 
       // A bookkeeping write tool is refused — the lock holds on the agent surface.
       const blocked = await client.send("tools/call", {
