@@ -126,12 +126,60 @@ fn source_owner_real_bank_original_all_pages_receipt_revocation_and_selection() 
         .outcome
         .unwrap();
     assert_eq!(replay, result);
+    owner
+        .held
+        .0
+        .as_mut()
+        .unwrap()
+        .company
+        .as_mut()
+        .unwrap()
+        .execute_batch("ALTER TABLE companies ADD COLUMN unsupported_source_field TEXT")
+        .unwrap();
+    let unknown = owner
+        .tasks(
+            &SystemClock,
+            Authority::Cookie {
+                cookies: &cookies,
+                proof: &proof,
+            },
+            Action::Sync(&input),
+            Some("foreign-source-schema"),
+            None,
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(unknown["sync"]["errors"].as_array().unwrap().len(), 1);
+    assert_eq!(unknown["sync"]["created"], 0);
+    let unknown_tasks = owner
+        .tasks(
+            &SystemClock,
+            Authority::Cookie {
+                cookies: &cookies,
+                proof: &proof,
+            },
+            Action::List(&json!({})),
+            None,
+            None,
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert!(
+        unknown_tasks["tasks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|t| t["source"]["state"] == "unknown" && t["status"] != "done")
+    );
+    assert_eq!(owner.slug, "a");
     let connection = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
     assert_eq!(
         connection
             .query_row::<i64, _, _>("SELECT count(*) FROM rm_task_events", [], |r| r.get(0))
             .unwrap(),
-        before
+        before + unknown["sync"]["updated"].as_i64().unwrap()
     );
     connection.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('author','a','revoke',NULL,'user:author')").unwrap();
     let refused = owner

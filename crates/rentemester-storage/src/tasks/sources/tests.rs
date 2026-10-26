@@ -158,6 +158,42 @@ fn sources_native_vat_zero_refund_cadences_and_actual_reported_reference() {
         );
         if has_reference {
             assert_eq!(actual.evidence[0].kind, "period");
+            let mut draft = sample("open", "real-ledger").draft;
+            draft["source"]["identity"] = json!(format!(
+                "{}:vat_filing:2026-07-01:2026-09-30",
+                uuid(&tx).unwrap()
+            ));
+            let (task, _) = tasks::sources::synchronize(None, &draft, None, NOW, &[]).unwrap();
+            assert_eq!(
+                check(&tx, "synthetic", &task, NOW, Ok(vec![]))
+                    .unwrap()
+                    .state,
+                "resolved"
+            );
+            assert_eq!(
+                check(
+                    &tx,
+                    "synthetic",
+                    &task,
+                    NOW,
+                    Err(Error::new("original_unavailable", "missing original"))
+                )
+                .unwrap()
+                .state,
+                "unknown"
+            );
+            assert_eq!(
+                check(
+                    &tx,
+                    "synthetic",
+                    &task,
+                    NOW,
+                    Ok(vec![json!({"documentId":1,"error":"changed original"})])
+                )
+                .unwrap()
+                .state,
+                "unknown"
+            );
         }
     }
 }

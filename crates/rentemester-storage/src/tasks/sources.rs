@@ -17,6 +17,10 @@ pub const COVERAGE: &[&str] = &[
     "Momsfrister bruger produktets ML §57-regel, verificeret mod SKATs fristoversigt 2026/27 den 8. oktober 2026. Andre myndighedsfrister kræver særskilt vedligeholdt regelgrundlag.",
 ];
 const VAT_BASIS: &str = "Momsloven §57; SKAT: https://skat.dk/erhverv/moms/frister-indberet-og-betal-moms (verificeret 2026-10-08)";
+/// Read admission validates native migration lineage and exact supported schema without migrating.
+pub fn require_current(db: &Connection) -> Result<(), Error> {
+    crate::journal_preview::require_current(db)
+}
 pub struct ReadContext<'a> {
     pub slug: &'a str,
     pub as_of: &'a str,

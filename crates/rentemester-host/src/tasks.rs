@@ -53,7 +53,8 @@ impl Sources<'_> {
                     )
                 })?;
             let initial = read.total_changes();
-            let result = work(&read, self.guard);
+            let result = rentemester_storage::tasks::sources::require_current(&read)
+                .and_then(|_| work(&read, self.guard));
             let unchanged = read.total_changes() == initial;
             if read.rollback().is_err() || !unchanged {
                 self.poisoned = true;
