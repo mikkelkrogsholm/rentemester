@@ -1,0 +1,3309 @@
+{
+  "sources": {
+    "src/core/task-series.ts": "733cccd3b202908654fc117093ddecb55fccfa0d0e12b7bba8615f5f68aca057",
+    "src/core/tasks-types.ts": "2f26fb66dd8b844510dd415ff63d5282c0c829fb2670c9fdb68f7c40766adae4",
+    "src/core/dates.ts": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e"
+  },
+  "cases": [
+    {
+      "name": "monthly",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-010a3c673f8220d66c34dff0885e75a9",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-632b8b84f104ec22d37f139571d1c5f6",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-e89c3cf5df6ba85643890b55ec15f036",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-603d64f9eef625c3de3740e8b3a9f6a5",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-7fbf54d3e02eefd2a8abad0f7e7d214a",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-a0255ef6b5c53c2cc6e76271ebed52c2",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-f58230a73b1e5818e91b35062b3c0083",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-fd5908870e25b0a4ff58792a61ddba5a",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-656f0d1beed032f556a5a62b85deec05",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-12ea7830ab11c69a6b5fc849ca9b3fe8",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "fiscal",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "fiscal",
+            "cadence": "quarter",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 7,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-07-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-07-01",
+        "to": "2027-06-30"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-1aaba872e66043b8fbc5026c747f5e20",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-09-30",
+            "label": "2026-07-01 – 2026-09-30"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-9f89a80320ab38293e337400d46f84db",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-12-31",
+            "label": "2026-10-01 – 2026-12-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-06bc99f0bab4ba2ddcd7c86e59d44b7b",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2027-01-01",
+            "to": "2027-03-31",
+            "label": "2027-01-01 – 2027-03-31"
+          },
+          "workDate": "2027-01-01",
+          "deadline": {
+            "date": "2027-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-1632d1d937597bb10049026bd2d8a1b1",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2027-04-01",
+            "to": "2027-06-30",
+            "label": "2027-04-01 – 2027-06-30"
+          },
+          "workDate": "2027-04-01",
+          "deadline": {
+            "date": "2027-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "custom",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "custom",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 2,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-04159d597d79c5977140b38592627e2c",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-02-28",
+            "label": "2026-01-01 – 2026-02-28"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-834fb3c70a7dd7b89b3ff084d93f2604",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-04-30",
+            "label": "2026-03-01 – 2026-04-30"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-7e8b20e8a9ba821f04ffe1dc1a94e0c6",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-06-30",
+            "label": "2026-05-01 – 2026-06-30"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-aeee3ed80ed54d5fe40a91a919df0324",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-08-31",
+            "label": "2026-07-01 – 2026-08-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ca2f8ffdee8b30fe63846b21e9e278ae",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-10-31",
+            "label": "2026-09-01 – 2026-10-31"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-21881631ea4c6b145952bcc939a0cbe5",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-12-31",
+            "label": "2026-11-01 – 2026-12-31"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "offset",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": -1,
+            "endDate": "2026-02-01",
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-10",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 9
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-10",
+          "deadline": {
+            "date": "2025-12-31",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-10",
+          "deadline": {
+            "date": "2026-01-31",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "revision",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          },
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Ny rutine",
+            "updatedAt": "2026-03-01T00:00:00.000Z",
+            "version": 2,
+            "workDayOffset": 9
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-010a3c673f8220d66c34dff0885e75a9",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-10",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-632b8b84f104ec22d37f139571d1c5f6",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-10",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-e89c3cf5df6ba85643890b55ec15f036",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-10",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-603d64f9eef625c3de3740e8b3a9f6a5",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-10",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-7fbf54d3e02eefd2a8abad0f7e7d214a",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-10",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-a0255ef6b5c53c2cc6e76271ebed52c2",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-10",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-f58230a73b1e5818e91b35062b3c0083",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-10",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-fd5908870e25b0a4ff58792a61ddba5a",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-10",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-656f0d1beed032f556a5a62b85deec05",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-10",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-12ea7830ab11c69a6b5fc849ca9b3fe8",
+          "seriesId": "monthly",
+          "title": "Ny rutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-10",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "concrete-cadence",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          },
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "quarter",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Kvartalsrutine",
+            "updatedAt": "2026-04-01T00:00:00.000Z",
+            "version": 2,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-26T14:00:41.399Z",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": "2026-01-01:2026-01-31",
+          "origin": "manual",
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "references": [],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "seriesId": "monthly",
+          "source": null,
+          "status": "open",
+          "taskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "title": "Månedlig afstemning",
+          "type": "routine",
+          "updatedAt": "2026-10-26T14:00:41.399Z",
+          "verificationRequired": false,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": "2026-01-01",
+          "workspaceColumnId": null
+        },
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-26T14:00:41.400Z",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-02-15",
+            "kind": "internal"
+          },
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": "2026-02-01:2026-02-28",
+          "origin": "manual",
+          "period": {
+            "from": "2026-02-01",
+            "label": "2026-02-01 – 2026-02-28",
+            "to": "2026-02-28"
+          },
+          "references": [],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "seriesId": "monthly",
+          "source": null,
+          "status": "open",
+          "taskId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "title": "Månedlig afstemning",
+          "type": "routine",
+          "updatedAt": "2026-10-26T14:00:41.400Z",
+          "verificationRequired": false,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": "2026-02-01",
+          "workspaceColumnId": null
+        }
+      ],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85"
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "label": "2026-02-01 – 2026-02-28",
+            "to": "2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-02-15",
+            "kind": "internal"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": "occurrence-4888b75cc72de870ea4b1123511cb0dc"
+        },
+        {
+          "projectionId": "occurrence-010a3c673f8220d66c34dff0885e75a9",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-35cdb3d67314760f02b4b7f3c607e24f",
+          "seriesId": "monthly",
+          "title": "Kvartalsrutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-06-30",
+            "label": "2026-04-01 – 2026-06-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-1aaba872e66043b8fbc5026c747f5e20",
+          "seriesId": "monthly",
+          "title": "Kvartalsrutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-09-30",
+            "label": "2026-07-01 – 2026-09-30"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-9f89a80320ab38293e337400d46f84db",
+          "seriesId": "monthly",
+          "title": "Kvartalsrutine",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-12-31",
+            "label": "2026-10-01 – 2026-12-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          },
+          {
+            "active": false,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Paused",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 2,
+            "workDayOffset": 9
+          }
+        ]
+      ],
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-26T14:00:41.417Z",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": "2026-01-01:2026-01-31",
+          "origin": "manual",
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "references": [],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "seriesId": "monthly",
+          "source": null,
+          "status": "open",
+          "taskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "title": "Månedlig afstemning",
+          "type": "routine",
+          "updatedAt": "2026-10-26T14:00:41.417Z",
+          "verificationRequired": false,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": "2026-01-01",
+          "workspaceColumnId": null
+        },
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-26T14:00:41.418Z",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-02-15",
+            "kind": "internal"
+          },
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": "2026-02-01:2026-02-28",
+          "origin": "manual",
+          "period": {
+            "from": "2026-02-01",
+            "label": "2026-02-01 – 2026-02-28",
+            "to": "2026-02-28"
+          },
+          "references": [],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "seriesId": "monthly",
+          "source": null,
+          "status": "open",
+          "taskId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "title": "Månedlig afstemning",
+          "type": "routine",
+          "updatedAt": "2026-10-26T14:00:41.418Z",
+          "verificationRequired": false,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": "2026-02-01",
+          "workspaceColumnId": null
+        }
+      ],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85"
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "label": "2026-02-01 – 2026-02-28",
+            "to": "2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-02-15",
+            "kind": "internal"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": "occurrence-4888b75cc72de870ea4b1123511cb0dc"
+        }
+      ]
+    },
+    {
+      "name": "activity",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "activity",
+            "scope": {
+              "companySlug": "synthetic",
+              "kind": "company"
+            },
+            "seriesId": "monthly",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlug": "synthetic",
+                "kind": "company"
+              },
+              "title": "Månedlig afstemning"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-26T14:00:41.435Z",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": "2026-01-01:2026-01-31",
+          "origin": "manual",
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "references": [],
+          "relevance": "unknown",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "seriesId": "monthly",
+          "source": null,
+          "status": "open",
+          "taskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "title": "Månedlig afstemning",
+          "type": "routine",
+          "updatedAt": "2026-10-26T14:00:41.435Z",
+          "verificationRequired": true,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": "2026-01-01",
+          "workspaceColumnId": null
+        }
+      ],
+      "query": {
+        "companySlugs": null,
+        "includeWorkspace": false,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "label": "2026-01-01 – 2026-01-31",
+            "to": "2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed",
+            "date": "2026-01-15",
+            "kind": "internal"
+          },
+          "relevance": "unknown",
+          "concreteTaskId": "occurrence-cf05c9a09659a9c6a84f8b47a6883f85"
+        },
+        {
+          "projectionId": "occurrence-4888b75cc72de870ea4b1123511cb0dc",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-010a3c673f8220d66c34dff0885e75a9",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-632b8b84f104ec22d37f139571d1c5f6",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-e89c3cf5df6ba85643890b55ec15f036",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-603d64f9eef625c3de3740e8b3a9f6a5",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-7fbf54d3e02eefd2a8abad0f7e7d214a",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-a0255ef6b5c53c2cc6e76271ebed52c2",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-f58230a73b1e5818e91b35062b3c0083",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-fd5908870e25b0a4ff58792a61ddba5a",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-656f0d1beed032f556a5a62b85deec05",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-12ea7830ab11c69a6b5fc849ca9b3fe8",
+          "seriesId": "monthly",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlug": "synthetic",
+            "kind": "company"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "activity",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "selection-synthetic",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [
+                "synthetic",
+                "other"
+              ],
+              "kind": "workspace"
+            },
+            "seriesId": "shared",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [
+                  "synthetic",
+                  "other"
+                ],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ],
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [],
+              "kind": "workspace"
+            },
+            "seriesId": "workspace",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": [
+          "synthetic"
+        ],
+        "includeWorkspace": true,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-de1257620a7c74968cd39c213adb915e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-5f33c0e6afed6a35fdd1cfa291f70d32",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ce062a8f38e7bad8fecc01ebc457162f",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-df10e98b984c09b9bc8e8c4e45ddd0a6",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ee44968d7acf8a476f73af1dd2da2566",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4304bfb7f9da26fe0ee5dc62b064e582",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-9387857daf9e4ddabf10c606404c5551",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ad7cf74be18b164462a32d12f44c1bfd",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-906be8944471222f100ad52862d4ed0e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-db88a64c6b2bd0059fd6f9b983cc5c89",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-2c53e69e418f47a3d15ffaaaff203cce",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-aa5ef3a7aa97f4c03510f5383abeaf1b",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "selection-synthetic-other",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [
+                "synthetic",
+                "other"
+              ],
+              "kind": "workspace"
+            },
+            "seriesId": "shared",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [
+                  "synthetic",
+                  "other"
+                ],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ],
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [],
+              "kind": "workspace"
+            },
+            "seriesId": "workspace",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": [
+          "synthetic",
+          "other"
+        ],
+        "includeWorkspace": true,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-7a97d739480b9e1dc02c198ff227e8d1",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-de1257620a7c74968cd39c213adb915e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4a66c1d42dc10954e5feecf160cbeb80",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-5f33c0e6afed6a35fdd1cfa291f70d32",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-3737c6047012cfb94bff2815abdb1d64",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ce062a8f38e7bad8fecc01ebc457162f",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-209812dcac619033d09e4a73b73f111b",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-df10e98b984c09b9bc8e8c4e45ddd0a6",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-1f756f9beff9888a99e6b41689a5820e",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ee44968d7acf8a476f73af1dd2da2566",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4304bfb7f9da26fe0ee5dc62b064e582",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-53b768c63a5cb21b2f5abcd94d8f1129",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-9387857daf9e4ddabf10c606404c5551",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-dbba2a09731affd8384ec4ba658626fa",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-45c9c63d0d59952d285c63d3b442f940",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ad7cf74be18b164462a32d12f44c1bfd",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-906be8944471222f100ad52862d4ed0e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-fb6c232fca2c1d6f6fd1ad6882fb13a7",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-253793bc541e6decf6ddd6bf383cce57",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-db88a64c6b2bd0059fd6f9b983cc5c89",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-2c53e69e418f47a3d15ffaaaff203cce",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-78a4206f0e47d54f48cd79d197541c5c",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-87e899048d60bf1f4ccfb3b706cf45d0",
+          "seriesId": "shared",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [
+              "synthetic",
+              "other"
+            ],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-aa5ef3a7aa97f4c03510f5383abeaf1b",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    },
+    {
+      "name": "selection-",
+      "histories": [
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [
+                "synthetic",
+                "other"
+              ],
+              "kind": "workspace"
+            },
+            "seriesId": "shared",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [
+                  "synthetic",
+                  "other"
+                ],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ],
+        [
+          {
+            "active": true,
+            "anchor": "calendar",
+            "cadence": "month",
+            "deadlineDayOffset": 14,
+            "endDate": null,
+            "every": 1,
+            "fiscalYearStartMonth": 1,
+            "relevance": "relevant",
+            "scope": {
+              "companySlugs": [],
+              "kind": "workspace"
+            },
+            "seriesId": "workspace",
+            "startDate": "2026-01-01",
+            "template": {
+              "scope": {
+                "companySlugs": [],
+                "kind": "workspace"
+              },
+              "title": "Fælles opgave"
+            },
+            "title": "Månedlig afstemning",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "version": 1,
+            "workDayOffset": 0
+          }
+        ]
+      ],
+      "tasks": [],
+      "query": {
+        "companySlugs": [],
+        "includeWorkspace": true,
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "expected": [
+        {
+          "projectionId": "occurrence-de1257620a7c74968cd39c213adb915e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-01-01",
+            "to": "2026-01-31",
+            "label": "2026-01-01 – 2026-01-31"
+          },
+          "workDate": "2026-01-01",
+          "deadline": {
+            "date": "2026-01-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-5f33c0e6afed6a35fdd1cfa291f70d32",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-02-01",
+            "to": "2026-02-28",
+            "label": "2026-02-01 – 2026-02-28"
+          },
+          "workDate": "2026-02-01",
+          "deadline": {
+            "date": "2026-02-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ce062a8f38e7bad8fecc01ebc457162f",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-03-01",
+            "to": "2026-03-31",
+            "label": "2026-03-01 – 2026-03-31"
+          },
+          "workDate": "2026-03-01",
+          "deadline": {
+            "date": "2026-03-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-df10e98b984c09b9bc8e8c4e45ddd0a6",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-04-01",
+            "to": "2026-04-30",
+            "label": "2026-04-01 – 2026-04-30"
+          },
+          "workDate": "2026-04-01",
+          "deadline": {
+            "date": "2026-04-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ee44968d7acf8a476f73af1dd2da2566",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-05-01",
+            "to": "2026-05-31",
+            "label": "2026-05-01 – 2026-05-31"
+          },
+          "workDate": "2026-05-01",
+          "deadline": {
+            "date": "2026-05-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-4304bfb7f9da26fe0ee5dc62b064e582",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-06-01",
+            "to": "2026-06-30",
+            "label": "2026-06-01 – 2026-06-30"
+          },
+          "workDate": "2026-06-01",
+          "deadline": {
+            "date": "2026-06-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-9387857daf9e4ddabf10c606404c5551",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31",
+            "label": "2026-07-01 – 2026-07-31"
+          },
+          "workDate": "2026-07-01",
+          "deadline": {
+            "date": "2026-07-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-ad7cf74be18b164462a32d12f44c1bfd",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "label": "2026-08-01 – 2026-08-31"
+          },
+          "workDate": "2026-08-01",
+          "deadline": {
+            "date": "2026-08-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-906be8944471222f100ad52862d4ed0e",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-09-01",
+            "to": "2026-09-30",
+            "label": "2026-09-01 – 2026-09-30"
+          },
+          "workDate": "2026-09-01",
+          "deadline": {
+            "date": "2026-09-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-db88a64c6b2bd0059fd6f9b983cc5c89",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-10-01",
+            "to": "2026-10-31",
+            "label": "2026-10-01 – 2026-10-31"
+          },
+          "workDate": "2026-10-01",
+          "deadline": {
+            "date": "2026-10-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-2c53e69e418f47a3d15ffaaaff203cce",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-11-01",
+            "to": "2026-11-30",
+            "label": "2026-11-01 – 2026-11-30"
+          },
+          "workDate": "2026-11-01",
+          "deadline": {
+            "date": "2026-11-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        },
+        {
+          "projectionId": "occurrence-aa5ef3a7aa97f4c03510f5383abeaf1b",
+          "seriesId": "workspace",
+          "title": "Månedlig afstemning",
+          "scope": {
+            "companySlugs": [],
+            "kind": "workspace"
+          },
+          "period": {
+            "from": "2026-12-01",
+            "to": "2026-12-31",
+            "label": "2026-12-01 – 2026-12-31"
+          },
+          "workDate": "2026-12-01",
+          "deadline": {
+            "date": "2026-12-15",
+            "kind": "internal",
+            "basis": "Den valgte rutines frist",
+            "certainty": "unconfirmed"
+          },
+          "relevance": "relevant",
+          "concreteTaskId": null
+        }
+      ]
+    }
+  ]
+}
