@@ -1,0 +1,9 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.78s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_engine-ed745ee6d15ebdc4)
+
+running 1 test
+test tasks::sources::tests::current_main_source_transition_snapshots_match ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 257 filtered out; finished in 0.07s
+

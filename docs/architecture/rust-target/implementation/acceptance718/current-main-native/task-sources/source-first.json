@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "syntheticOnly": true,
+  "browser": [
+    "native discovery",
+    "unresolved completion refused",
+    "closed is not reported",
+    "recorded reference updates actual source",
+    "product_verified with native evidence"
+  ],
+  "clients": [
+    "tasks sync",
+    "tasks_sync"
+  ],
+  "errors": []
+}

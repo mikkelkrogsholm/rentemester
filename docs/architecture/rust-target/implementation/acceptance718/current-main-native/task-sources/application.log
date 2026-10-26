@@ -1,0 +1,30 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.66s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_application-616d094866af0072)
+
+running 17 tests
+test tasks::tests::routine_service_charges_once_per_admitted_request_including_nested_occurrences_and_replay ... ok
+test tasks::tests::fresh_session_and_every_company_scope_are_checked_before_receipt ... ok
+test tasks::tests::scoped_service_has_no_human_mfa_requirement_and_charges_each_admitted_attempt_once ... ok
+test tasks::tests::source_sync_current_selection_and_historical_receipt_scope_before_any_probe ... ok
+test tasks::tests::task_roles_archived_live_and_nonlive_are_distinct_from_financial_access ... ok
+test tasks::tests::board_meaning_requires_fresh_preview_and_cannot_bypass_documented_completion ... ok
+test tasks::tests::routine_materialization_rolls_back_all_tasks_receipts_when_later_recipient_is_unready ... ok
+test tasks::tests::routine_scope_public_bounds_and_empty_selection_remain_explicit ... ok
+test tasks::tests::rejects_internal_authority_fields_and_inaccessible_assignees_without_effect ... ok
+test tasks::tests::scope_changes_filter_history_but_never_move_completion_evidence_outside_scope ... ok
+test tasks::tests::revoked_assignee_can_be_removed_and_historical_receipt_still_replays ... ok
+test tasks::tests::board_exact_replay_does_not_reapply_later_populated_column_rules ... ok
+test tasks::tests::routine_manage_and_concrete_current_scopes_are_checked_before_cached_results ... ok
+test tasks::tests::board_journey_previews_relocates_preserves_evidence_and_replays_after_restart ... ok
+test tasks::tests::manual_journey_replays_exact_result_survives_restart_and_preserves_audit ... ok
+test tasks::tests::routine_journey_projects_materializes_completes_pauses_and_replays_after_reopen ... ok
+test tasks::tests::workspace_board_structure_checks_all_membership_without_inaccessible_workload_disclosure ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 231 filtered out; finished in 59.96s
+

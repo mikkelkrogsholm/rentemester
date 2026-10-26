@@ -1,0 +1,36 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-host)
+warning: unused import: `serde_json::Value`
+  --> crates/rentemester-host/src/portable_backup.rs:10:5
+   |
+10 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib) generated 1 warning (run `cargo fix --lib -p rentemester-host` to apply 1 suggestion)
+   Compiling rentemester-server v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-task-source-journey-20261026T180615.701751000/integration/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 51.67s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_server-c088b78a004bfe1f)
+
+running 4 tests
+test product_http::tasks::tests::boards_preview_is_read_only_while_save_requires_confirmation_and_safe_version ... ok
+test product_http::tasks::tests::exact_public_envelopes_and_repeated_company_query ... ok
+test product_http::tasks::tests::source_sync_strict_confirmed_unversioned_input ... ok
+test product_http::tasks::tests::routine_public_dtos_keep_exact_keys_confirmation_versions_and_empty_selection ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 132 filtered out; finished in 0.01s
+

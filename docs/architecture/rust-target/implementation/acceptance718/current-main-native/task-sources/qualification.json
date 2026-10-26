@@ -1,0 +1,185 @@
+{
+  "format": "rentemester-native-task-sources-qualification/1",
+  "qualifiedAt": "2026-10-26T18:15:04.239503+00:00",
+  "issue": 718,
+  "runId": "issue718-native-task-source-journey-20261026T180615.701751000",
+  "sourceCommit": "8e6bb92e0b1c20ed46711676f79c506ea37e5f40",
+  "sourceTree": "541eb3434acb38e10daf5668e185af72148c8810",
+  "wholeIssueAccepted": false,
+  "originalIssues": {
+    "closed": 43,
+    "open": 12
+  },
+  "review": {
+    "performedBy": "responsible main plus independent readonly native_task_source_seams",
+    "findingsRepaired": [
+      "Original integrity unavailable must never product_verify any source kind",
+      "Ordinary target read failure preserves unknown and scoped errors after safe restoration",
+      "Annual resolved fact with unknown relevance must update without false complete/transaction refusal"
+    ],
+    "whole718Accepted": false
+  },
+  "sourceFiles": {
+    "crates/rentemester-application/src/bookkeeping_batch.rs": "b93b5d08e1716c82bd6e6e5ea238222f6231ffd5df7f6a6b76aefbb16f81b733",
+    "crates/rentemester-application/src/tasks.rs": "454d3fd07abddd0d8c5ebb9bec09222ae0a76030b1ef26cc141ecbef34d07445",
+    "crates/rentemester-application/src/tasks/boards.rs": "3e1e29eb48b97de5d2ddbaec3bbee728df6b13993c575afa80128c907a64a60e",
+    "crates/rentemester-application/src/tasks/sources.rs": "87a8c4f3cb6f368f1394d5e29dfd3c83fb8f5f4cf8b1ce5d62596f81585c34e9",
+    "crates/rentemester-application/src/tasks/tests.rs": "d256125e9423894d3d820e760b01f759ea181f3b62fe36b3f7574383546bdb62",
+    "crates/rentemester-cli/src/tasks.rs": "6dff53617bf721fea0d0dff3136c829b9ae9b4c6c1ab9309a410a9ba6e3bd4b3",
+    "crates/rentemester-client/src/tasks-input.json": "a7889df75902269bd8be1e0472cb5a4b35e7098906f4b878e0d92e83593d1c34",
+    "crates/rentemester-client/src/tasks.rs": "39df493121cf6ebae2285b0798ff20eeeaa42404218d05c7f0bec34ad06a7a7a",
+    "crates/rentemester-engine/src/tasks/mod.rs": "d35c46c569fcfeb75eb48655e6c811bbea9888acea2eb3bf5ff1ebb67956d7c9",
+    "crates/rentemester-engine/src/tasks/sources.rs": "34386a2513828ecc3e4cde00627c405dd10600d42b76115d906cb593c94abc70",
+    "crates/rentemester-engine/src/tasks/sources/generate-main.ts": "b84dbe0b37cc9f8794351d012054e7eee70d28c8957db97e3b2fa1d06da50e67",
+    "crates/rentemester-engine/src/tasks/sources/main-sources.json": "29f0505546c925978eb9badbcc8f9e9efd48b121b4d6ed0fa32266baf8c64cc0",
+    "crates/rentemester-engine/src/tasks/sources/tests.rs": "2cdb769b13fb90e173ff70a703e8454c198d8cde0a5dfe8c9f26fcd2fc53b522",
+    "crates/rentemester-host/src/tasks.rs": "4f111e32c0d2786bf9dc142bcbe2765ac63a3f18bbf5a59bfb6745ac4f334d8d",
+    "crates/rentemester-host/src/tasks/tests.rs": "9e77154e35c61f42468435d4711e85f901b5d982082fb6bbcfda18f6dcb615a5",
+    "crates/rentemester-mcp/src/tasks.rs": "df388c4249b45e1b26f30968dffc27520f9315d9cac6f7b97b10b8c0d7746454",
+    "crates/rentemester-server/src/product_http.rs": "2cbe89d4f1c5f6b850e1c6cd92d0836c3a3ff74180496d4f26157fa772d22e52",
+    "crates/rentemester-server/src/product_http/tasks.rs": "e09b08b1d1c1b4addc351e9684afe4282b08fd2a0760d33ffd37c23ba48597cb",
+    "crates/rentemester-storage/src/portable_backup/tasks.rs": "4a4cb2754db38df8a09b050784712c5651c11e000c689985f4b6788d6280fc34",
+    "crates/rentemester-storage/src/portable_backup/tasks/sources.rs": "6c0277ee22fb839c9a0ae1077aaa975fd9d038ac70e2505600ab344a57b8aabf",
+    "crates/rentemester-storage/src/tasks/mod.rs": "7e68ed6d328243450245b015b766e10b9b45c3a6fdb27907ffd5f7ed4b0b78c8",
+    "crates/rentemester-storage/src/tasks/series.rs": "79c60e5f0a5945b833698d104ed52bff42c698c01df0bce24980af4121362447",
+    "crates/rentemester-storage/src/tasks/sources.rs": "1dd30f4f1d3db7f5b284ea3f4a388a00411c8444ce9fc78afd3bd7cb9c06e07b",
+    "crates/rentemester-storage/src/tasks/sources/tests.rs": "03f7a6ac574f775ca0f7f51d75cda01bb252d5e08ff2e1595bac7d9903fb7afb",
+    "docs/cli-contract.md": "ec3da2337eb55e06766be58cae25c069a7536837abc322689866807a924bdbe2",
+    "protocol/http-v1.json": "d4d7f45390d4b73302274a7140361a147fcf05bf595c5fdf87d15a213e469309",
+    "scripts/rust/check-native-task-sources.ts": "9cd38843033098fc70606c9e4f0ac2c62b25471c2837c935f7a931349046720f",
+    "scripts/rust/check-native-tasks.py": "ffcb6c39a96a65b7292ce69a6490487613871619d33c72a0c2184d6330f26ba6"
+  },
+  "checks": [
+    {
+      "check": "clients",
+      "receiptKey": "0c9a38eec42595286ae2e5d9ac47d32c65991592a8bab5157246457edc5ad2bf",
+      "log": "clients.log",
+      "sha256": "68b968881130af3bfbff5d734081820a210ccea7519eb061055adf1bffb8da94",
+      "passed": true,
+      "result": [
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 68 filtered out; finished in 0.03s"
+      ]
+    },
+    {
+      "check": "application",
+      "receiptKey": "12f19005600e2b27b3dd6d5bcdd66014e0b75278b48cdfcf13566c7cdbaa39d4",
+      "log": "application.log",
+      "sha256": "7697f3561970561ce4ddc368ee1faa8141ddcdcd87074ca1ee4f6225b5a28ac4",
+      "passed": true,
+      "result": [
+        "test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 231 filtered out; finished in 59.96s"
+      ]
+    },
+    {
+      "check": "engine",
+      "receiptKey": "1aa3c2fecc2508c6c8af10450149a249465f81930b5bca94a9c70fb2e47a3ab7",
+      "log": "engine.log",
+      "sha256": "24a1a65d3cc2bd1e578b17be90cb9440eda593d816d0b6efb9ed77a1cc6166c6",
+      "passed": true,
+      "result": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 257 filtered out; finished in 0.07s"
+      ]
+    },
+    {
+      "check": "mcp",
+      "receiptKey": "1df30a7fcbaafde9d8034f2b104273dc6e0a1add94460418b7e26f1ed0f9c6ec",
+      "log": "mcp.log",
+      "sha256": "e40170e6b83119174c02603a29152fc9c48c77e9e8143c660fd4496f51f7ff4b",
+      "passed": true,
+      "result": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.02s"
+      ]
+    },
+    {
+      "check": "recovery",
+      "receiptKey": "7bed4ff1468c34998f6c500c2cadcb3e6b84bfaaa24d5e1580f5d7913cfcd9d2",
+      "log": "recovery.log",
+      "sha256": "693c7a993ca9e27eca59c66a0848214b27f428d1d41e76e64ad2a956a99f7a3f",
+      "passed": true,
+      "result": [
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 728 filtered out; finished in 6.60s"
+      ]
+    },
+    {
+      "check": "sources",
+      "receiptKey": "9f06dc1f5b69d62024cea2ed61cf0027fc54b943a35cf4148df8734e3c6619c0",
+      "log": "sources.log",
+      "sha256": "1120f8f370ee880efcd28086c44f253e2fe59f682fb3a38767492105d0339bc0",
+      "passed": true,
+      "result": [
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 730 filtered out; finished in 12.63s"
+      ]
+    },
+    {
+      "check": "cli",
+      "receiptKey": "b4b88bddeed7d9fb50c814873e65ca0c056dda60cdd03ce10304c29fc433d704",
+      "log": "cli.log",
+      "sha256": "4683a80069e2688a5e38f243ca6eb60976687f523da25aa5729f199e1ea6c96c",
+      "passed": true,
+      "result": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 0.02s"
+      ]
+    },
+    {
+      "check": "http",
+      "receiptKey": "c4b42689e40d8184bd50ece53199b67a316b7bc1af0ca346e845218e06bb673a",
+      "log": "http.log",
+      "sha256": "7b7948156ead2eebf0d48f7ece8cbbad870453da759286eb179d97dcd72d9495",
+      "passed": true,
+      "result": [
+        "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 132 filtered out; finished in 0.01s"
+      ]
+    },
+    {
+      "check": "host",
+      "receiptKey": "ebdaf901a26da2c81b43683af0d74aa16e60a159c7b7ebb827f6154e2dc78eb6",
+      "log": "host.log",
+      "sha256": "d9fb12b8fd92a87470517535dfc7451e0728e0841b1b192f112005ddcb145eba",
+      "passed": true,
+      "result": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 189 filtered out; finished in 6.97s"
+      ]
+    },
+    {
+      "check": "manifest",
+      "receiptKey": "f1b38861d2083808ac27636c7f9b8e2d840c7508847de434442e7321ca185ea8",
+      "log": "manifest.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": true,
+      "result": []
+    }
+  ],
+  "binaries": {
+    "rentemester-server": "ac2440c01f467e07a6e37423a1382b33ca854543b8d3fb7d92028707837a223c",
+    "rentemester-rust": "554f060d8aa16381815f4890e7ea8bbced69ca33d5434001cc05c207512c220f",
+    "rentemester-mcp": "9426d598a4fe35609723f00a4b042bb1c578bfbe69fbcf67baf45453ce0297b6"
+  },
+  "webIndexSha256": "bbe91bd5ef2a63c081177a86a8ec67f9925fb0f5f1dac202d6b26a275c69c140",
+  "actualJourney": [
+    "Ordinary private first owner, email verification and MFA",
+    "Unchanged React Opdatér fra kilder discovers actual native VAT sources, including zero period; annual unknown relevance stays open",
+    "Unresolved source completion returns422 source_unresolved without event/effect",
+    "Actual native period readiness/review/closed; subsequent sync leaves VAT task open",
+    "Actual native period records synthetic reference through original CLI; UI source sync produces product_verified completion with native period reference",
+    "Original tasks sync CLI and tasks_sync MCP operate once on the same server; no duplicates",
+    "Server stopped/restarted; existing React verified evidence persists and all three original UI sync keys return exact historical results without source/effect replay"
+  ],
+  "sourceControls": [
+    "Current selected and historical receipt scope before any physical ledger read",
+    "Native original integrity before any verified source result; unknown source never resolved by absence",
+    "All101bank workbench rows across pages and one actual retained physical CSV original through host",
+    "Native exceptions, period controls/lifecycle, month/quarter/half-year VAT and latest batch approval reads; annual fiscal scope and explicit relevance",
+    "One IMMEDIATE control transaction/savepoint, one service charge per admitted request; no source callback from public DTO",
+    "Source change reopens completed task preserving history; unknown annual relevance records fact without false completion",
+    "Codec4 exact historical source snapshots/no-event receipts/scoped summaries and atomic downgrade/refusal; old manual1/routine2/board3 coverage and bytes preserved"
+  ],
+  "limits": [
+    "Synthetic native period reference is recorded locally; no actual external filing claimed",
+    "No financial/provider effects from historical acceptance were replayed",
+    "Automatic reminders/runtime and protected task-linked knowledge still required",
+    "Remaining approved main financial/party/evidence operations and full lineage-aware adoption still required",
+    "Broad UI failure qualification, current release/platform/cutover and installed native/Tauri acceptance remain; original manual desktop gates LAST"
+  ],
+  "retainedPrivateEvidence": ".sgd/observations/main-integration/task-sources",
+  "retainedBinaries": ".sgd/accepted/issue718-native-task-source-journey-20261026T180615.701751000"
+}
