@@ -187,6 +187,13 @@ pub struct NamespaceGuard {
     layout: WorkspaceLayout,
 }
 impl NamespaceGuard {
+    /// Identity comes from the continuously retained lease descriptor, after all
+    /// namespace/ACL/ABA observations. A caller path is never identity authority.
+    pub fn held_root_identity(&mut self) -> Result<RootIdentity, Error> {
+        self.ensure_current()?;
+        self.layout.held_root_identity().map_err(|_| Error::Changed)
+    }
+
     pub fn acquire(root: &Path, uid: u32, workspace: &str, slug: &str) -> Result<Self, Error> {
         Self::acquire_with_profile(root, uid, workspace, slug, NamespaceProfile::DedicatedLinux)
     }

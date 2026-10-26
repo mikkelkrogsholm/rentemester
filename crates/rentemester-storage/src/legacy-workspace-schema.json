@@ -153,5 +153,10 @@
     "id": 31,
     "name": "rentemester-workspace-mail-intake-v31",
     "checksum": "d526f52a7c5a428df2656556cf876b166f35e44c7bc8219ae0591b395c599549"
+  },
+  {
+    "id": 32,
+    "name": "rentemester-namespace-custody-v32",
+    "checksum": "73ae70d618b1f5df308464c0ad01376986a7eda740b25ac0025000722aa2c837"
   }
 ]

@@ -627,7 +627,7 @@ impl Owner {
             &stage, uid, workspace, primary, profile, artifact,
         )
         .map_err(OwnerError::Namespace)?;
-        let mut owner = Self::open_guarded(&stage, workspace, primary, guard)?;
+        let mut owner = Self::open_private_guarded(&stage, workspace, primary, guard)?;
         owner.reusable = false;
         let archive_hash = rentemester_runtime::backup_keys::digest(artifact.manifest_bytes());
         let slots = owner.held.0.as_mut().unwrap();
@@ -676,6 +676,8 @@ impl Owner {
             false,
         )
         .map_err(|_| OwnerError::Database)?;
+        let identity = slots.guard.held_root_identity().map_err(OwnerError::Namespace)?;
+        rentemester_storage::namespace_custody::initialize_private(slots.control.as_mut().unwrap(), rentemester_storage::namespace_custody::Identity { device: identity.device, inode: identity.inode }).map_err(|_| OwnerError::Database)?;
         // Close every SQLite descriptor while retaining guard + lease. A BUSY result
         // stays owned/quarantined and can never publish a completed target.
         if !slots.close() {

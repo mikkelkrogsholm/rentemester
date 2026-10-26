@@ -189,10 +189,17 @@ impl Backend {
     pub fn upgrade_mail_control(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         let text = Zeroizing::new(std::fs::read_to_string(path)?);
         let config: Config = serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
-        let mut owner = Owner::open_with_profile(&config.root, config.broker_uid,
-            &config.workspace, &config.company_slug, config.runtime_profile)?;
-        owner.upgrade_mail_control_schema()?;
-        owner.try_close().map_err(|_| "schema owner close refused")?;
+        Owner::maintain_mail_schema(&config.root, config.broker_uid, &config.workspace, &config.company_slug, config.runtime_profile)?;
+        Ok(())
+    }
+    pub fn enroll_namespace_custody(path:&Path, confirmed:&Path)->Result<(),Box<dyn std::error::Error>> {
+        let text=Zeroizing::new(std::fs::read_to_string(path)?);
+        let config:Config=serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
+        if confirmed != config.root { return Err("exact configured root required".into()); }
+        let actor=config.first_owner.as_ref().map(|x|x.actor.as_str()).or(config.setup_actor.as_deref()).ok_or("configured operator required")?;
+        if config.setup_actor.as_deref().is_some_and(|a|a!=actor) {return Err("ambiguous operator".into());}
+        let operator=rentemester_runtime::bootstrap::Operator::from_policy(&config.workspace,actor,&config.operator_actors)?;
+        Owner::enroll_namespace_custody(&config.root,confirmed,config.broker_uid,&config.workspace,&config.company_slug,config.runtime_profile,&operator)?;
         Ok(())
     }
     pub fn load(
@@ -757,3 +764,22 @@ pub(crate) mod original716_schema;
 
 #[path = "original716_cli/transfer.rs"]
 pub(crate) mod original716_transfer;
+
+#[cfg(test)]
+mod namespace_custody_tests {
+    use super::*;
+    #[test]
+    fn namespace_custody_operator_actor_and_exact_root_refuse_without_effects() {
+        let token=rentemester_runtime::auth::new_token().unwrap();
+        let path=std::env::temp_dir().join(format!("namespace-custody-{}.json",token.as_str()));
+        let root=std::env::temp_dir().join(format!("namespace-custody-{}",token.as_str()));
+        let mut value=serde_json::json!({"root":root,"brokerUid":10001,"workspace":"w","companySlug":"a","companyName":"Synthetic","cookieKey":"synthetic","mfaKey":"synthetic","setupActor":"agent:denied","operatorActors":["agent:allowed"]});
+        std::fs::write(&path,serde_json::to_vec(&value).unwrap()).unwrap();
+        assert!(Backend::enroll_namespace_custody(&path,&root).is_err());
+        value["setupActor"]=serde_json::json!("agent:allowed");
+        std::fs::write(&path,serde_json::to_vec(&value).unwrap()).unwrap();
+        assert!(Backend::enroll_namespace_custody(&path,&root.join("wrong")).is_err());
+        assert!(!root.exists());
+        std::fs::remove_file(path).unwrap();
+    }
+}

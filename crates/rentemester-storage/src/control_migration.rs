@@ -89,10 +89,18 @@ fn failed(error: impl std::fmt::Display) -> Error {
     Error::new("migration_failed", error.to_string())
 }
 fn catalogue() -> Result<Vec<Migration>, Error> {
+    native_catalogue().map(|mut entries| { entries.truncate(31); entries })
+}
+fn native_catalogue() -> Result<Vec<Migration>, Error> {
     serde_json::from_str(include_str!("legacy-workspace-schema.json")).map_err(invalid)
 }
+fn native_steps() -> Result<Vec<Step>, Error> {
+    let mut raw = ARTIFACTS.to_vec();
+    raw.push(include_str!("native-workspace-migrations/0032-namespace-custody-v32.json"));
+    steps(&raw, &native_catalogue()?)
+}
 fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
-    if expected.len() != ARTIFACTS.len() || raw.len() != ARTIFACTS.len() {
+    if expected.is_empty() || raw.len() != expected.len() {
         return Err(unsupported("control catalogue size differs"));
     }
     raw.iter()
@@ -125,8 +133,8 @@ pub(super) fn initialize_empty(db: &mut Connection) -> Result<(), Error> {
     if !schema(db)?.is_empty() {
         return Err(unsupported("native control requires an empty database"));
     }
-    let expected = catalogue()?;
-    let steps = steps(&ARTIFACTS, &expected)?;
+    let expected = native_catalogue()?;
+    let steps = native_steps()?;
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(failed)?;
@@ -135,8 +143,8 @@ pub(super) fn initialize_empty(db: &mut Connection) -> Result<(), Error> {
         tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version,applied_by_commit) VALUES (?1,?2,?3,?4,NULL)",params![step.identity.id,step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
     }
     integrity(&tx)?;
-    if schema(&tx)? != reference(&steps, ARTIFACTS.len())?
-        || strict_history(&tx, "workspace_schema_migrations", &expected)?.len() != ARTIFACTS.len()
+    if schema(&tx)? != reference(&steps, expected.len())?
+        || strict_history(&tx, "workspace_schema_migrations", &expected)?.len() != expected.len()
     {
         return Err(unsupported("fresh control schema or history differs"));
     }
@@ -291,6 +299,13 @@ pub(super) fn convert_adoption_copy(
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
     let report = rehearse(db, &steps, &expected)?;
+    {
+        let step = native_steps()?.remove(31);
+        let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).map_err(failed)?;
+        tx.execute_batch(&step.sql).map_err(failed)?;
+        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(32,?1,?2,'native-private-conversion')", params![step.identity.name,step.identity.checksum]).map_err(failed)?;
+        tx.commit().map_err(failed)?;
+    }
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(failed)?;
@@ -302,16 +317,49 @@ pub(super) fn convert_adoption_copy(
 /// Accept only the immediately preceding complete schema or the current one;
 /// never use this as an adoption route for older source databases.
 pub fn upgrade_mail_control(db: &mut Connection) -> Result<(), Error> {
+    if history(db, &native_catalogue()?)?.len() == 32 {
+        return validate_current_control(db);
+    }
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
     let version = history(db, &expected)?.len();
     if version == expected.len() {
-        return validate_current_control(db);
+        return validate_v31(db);
     }
     if version != 30 || schema(db)? != reference(&steps, 30)? {
         return Err(unsupported("mail schema upgrade requires complete v30 control"));
     }
     rehearse(db, &steps, &expected).map(|_| ())
+}
+fn validate_v31(db: &Connection) -> Result<(), Error> {
+    let expected = catalogue()?;
+    let steps = steps(&ARTIFACTS, &expected)?;
+    if history(db, &expected)?.len() != 31
+        || crate::document_access::strip_schema(db, &schema(db)?)? != reference(&steps, 31)?
+    {
+        return Err(unsupported("complete v31 required"));
+    }
+    integrity(db)
+}
+/// Private new schema or explicit stopped enrollment only. Migration and binding
+/// share one transaction; no ordinary admission calls this function.
+pub(crate) fn bind_namespace(db: &mut Connection, identity: crate::namespace_custody::Identity, enroll: bool) -> Result<(), Error> {
+    let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).map_err(failed)?;
+    let expected = native_catalogue()?;
+    let all = native_steps()?;
+    let version = history(&tx, &expected)?.len();
+    if version == 31 {
+        validate_v31(&tx)?;
+        if enroll { crate::workspace_transfer::require_business_write(&tx)?; }
+        let step = &all[31];
+        tx.execute_batch(&step.sql).map_err(failed)?;
+        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(32,?1,?2,?3)", params![step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
+    } else if version != 32 { return Err(unsupported("complete v31 or v32 required")); }
+    validate_current_control(&tx)?;
+    if enroll { crate::workspace_transfer::require_business_write(&tx)?; }
+    if enroll && version == 32 { crate::namespace_custody::verify(&tx, identity)?; }
+    else { crate::namespace_custody::insert_or_verify(&tx, identity)?; }
+    tx.commit().map_err(failed)
 }
 /// Deliberately sanitize every public refusal: control copies may contain credentials.
 fn public_error(error: Error) -> Error {
@@ -343,8 +391,8 @@ fn test_checkpoint(step: i64, phase: &str) {
 
 /// Complete current control admission for an already held transaction, without migration.
 pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
-    let expected = catalogue()?;
-    let steps = steps(&ARTIFACTS, &expected)?;
+    let expected = native_catalogue()?;
+    let steps = native_steps()?;
     if history(db, &expected)?.len() != expected.len()
         || crate::document_access::strip_schema(db, &schema(db)?)? != reference(&steps, expected.len())?
     {
@@ -391,6 +439,76 @@ mod tests {
             INSERT INTO workspace_audit(event_type,entity_type,actor) VALUES ('synthetic','test','agent:synthetic');").unwrap();
     }
     #[test]
+    fn namespace_custody_enrollment_refuses_frozen_and_missing_v32_without_repair() {
+        use crate::namespace_custody::{Identity,enroll_stopped};
+        let id=Identity{device:7,inode:9};
+        let mut db=Connection::open_in_memory().unwrap(); fixture(&db,31);
+        let initial=crate::workspace_transfer::current(&db).unwrap();
+        let event=serde_json::json!({"version":1,"previousStateHash":initial.state_hash,"actor":"user:synthetic","at":"2026-01-01T00:00:00.000Z","fact":{"kind":"frozen","transfer_id":"a".repeat(32),"source_instance_id":"b".repeat(32),"workspace_id":"w","destination":"Synthetic destination","reason":"Explicit synthetic transfer review","companies":[{"slug":"synthetic","ledgerUuid":"c".repeat(32)}]}});
+        // Event serialization order is itself checked by the typed reader.
+        #[derive(Deserialize,Serialize)]
+        #[serde(rename_all="camelCase")]
+        struct FixtureEvent {version:u32,previous_state_hash:String,actor:String,at:String,fact:crate::workspace_transfer::Fact}
+        let event:FixtureEvent=serde_json::from_value(event).unwrap();
+        let raw=serde_json::to_string(&event).unwrap();
+        db.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor,created_at) VALUES('native_workspace_transfer_frozen','native_workspace_transfer_v1',?1,'user:synthetic','2026-01-01T00:00:00.000Z')",[raw]).unwrap();
+        assert_eq!(crate::workspace_transfer::current(&db).unwrap().mode,"frozen");
+        let before=schema(&db).unwrap(); assert!(enroll_stopped(&mut db,id).is_err()); assert_eq!(schema(&db).unwrap(),before);
+        let mut db=Connection::open_in_memory().unwrap(); initialize_empty(&mut db).unwrap();
+        assert!(enroll_stopped(&mut db,id).is_err());
+        assert_eq!(db.query_row("SELECT count(*) FROM rm_namespace_custody",[],|r|r.get::<_,i64>(0)).unwrap(),0);
+    }
+    #[test]
+    fn namespace_custody_v31_enrollment_preserves_history_sessions_and_is_atomic() {
+        use crate::namespace_custody::{Identity, enroll_stopped, verify};
+        let id=Identity{device:7,inode:9};
+        let mut db=Connection::open_in_memory().unwrap();
+        fixture(&db,31); users(&db);
+        let old=history(&db,&catalogue().unwrap()).unwrap();
+        let before=digest(&db,&["user".into(),"session".into(),"workspace_audit".into()]).unwrap();
+        // A real SQL fault after DDL must roll back migration and history too.
+        db.execute_batch("CREATE TEMP TRIGGER reject_custody_history BEFORE INSERT ON main.workspace_schema_migrations WHEN NEW.id=32 BEGIN SELECT RAISE(ABORT,'synthetic fault'); END;").unwrap();
+        assert!(enroll_stopped(&mut db,id).is_err());
+        assert_eq!(history(&db,&catalogue().unwrap()).unwrap(),old);
+        assert_eq!(schema(&db).unwrap(),reference(&steps(&ARTIFACTS,&catalogue().unwrap()).unwrap(),31).unwrap());
+        db.execute_batch("DROP TRIGGER reject_custody_history").unwrap();
+        enroll_stopped(&mut db,id).unwrap(); verify(&db,id).unwrap();
+        assert_eq!(digest(&db,&["user".into(),"session".into(),"workspace_audit".into()]).unwrap(),before);
+        assert_eq!(history(&db,&native_catalogue().unwrap()).unwrap()[..31],old);
+        let changes=db.total_changes(); enroll_stopped(&mut db,id).unwrap(); assert_eq!(changes,db.total_changes());
+        assert!(enroll_stopped(&mut db,Identity{device:7,inode:10}).is_err());
+        verify(&db,id).unwrap();
+    }
+    #[test]
+    fn namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop() {
+        let mut current = Connection::open_in_memory().unwrap();
+        initialize_empty(&mut current).unwrap();
+        let tx = current.transaction().unwrap();
+        crate::document_access::install(&tx).unwrap();
+        tx.commit().unwrap();
+        let mut extension: Vec<_> = schema(&current).unwrap().into_iter()
+            .filter(|o| o.name.starts_with("native_service_document_access_")).collect();
+        extension.sort_by_key(|o| (o.kind != "table", o.name.clone()));
+        assert_eq!(extension.len(), 3);
+        let mut db = Connection::open_in_memory().unwrap();
+        fixture(&db, 31); users(&db);
+        for object in extension { db.execute_batch(&object.sql).unwrap(); }
+        db.execute("INSERT INTO native_service_document_access_events(actor,company_slug,resource_type,resource_id,outcome,reason_code) VALUES('service_account:synthetic','synthetic','document_file',1,'served','authorized')", []).unwrap();
+        let tables: Vec<_> = schema(&db).unwrap().into_iter()
+            .filter(|o| o.kind == "table" && o.name != "workspace_schema_migrations")
+            .map(|o| o.name).collect();
+        let before = digest(&db, &tables).unwrap();
+        let id = crate::namespace_custody::Identity { device: 7, inode: 9 };
+        crate::namespace_custody::enroll_stopped(&mut db, id).unwrap();
+        assert_eq!(digest(&db, &tables).unwrap(), before);
+        crate::namespace_custody::verify(&db, id).unwrap();
+        let changes = db.total_changes();
+        upgrade_mail_control(&mut db).unwrap();
+        assert_eq!(db.total_changes(), changes);
+        assert_eq!(digest(&db, &tables).unwrap(), before);
+        assert!(db.execute("DELETE FROM native_service_document_access_events", []).is_err());
+    }
+    #[test]
     fn ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence() {
         for (table, insert) in [
             (
@@ -406,8 +524,8 @@ mod tests {
                 "INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(?1,'workspace','session_invalidate','agent:synthetic')",
             ),
         ] {
-            let db = Connection::open_in_memory().unwrap();
-            fixture(&db, ARTIFACTS.len());
+            let mut db = Connection::open_in_memory().unwrap();
+            initialize_empty(&mut db).unwrap();
             users(&db);
             db.execute(insert, [i64::MAX - 1]).unwrap();
             validate_current_control(&db).unwrap();
@@ -427,8 +545,8 @@ mod tests {
             assert!(validate_current_control(&db).is_err());
             assert_eq!(db.total_changes(), before);
         }
-        let db = Connection::open_in_memory().unwrap();
-        fixture(&db, ARTIFACTS.len());
+        let mut db = Connection::open_in_memory().unwrap();
+        initialize_empty(&mut db).unwrap();
         users(&db);
         db.execute("INSERT INTO rm_workspace_auth_state_events(id,state_transition,user_id) VALUES(?1,'credential_updated','synthetic-enabled')", [i64::MAX]).unwrap();
         validate_current_control(&db).unwrap();
@@ -466,7 +584,7 @@ mod tests {
                 assert_eq!(schema(&db).unwrap(), before);
             } else {
                 result.unwrap();
-                validate_current_control(&db).unwrap();
+                validate_v31(&db).unwrap();
                 let changes = db.total_changes();
                 upgrade_mail_control(&mut db).unwrap();
                 assert_eq!(db.total_changes(), changes);

@@ -1,0 +1,5 @@
+{
+  "id": 32,
+  "name": "rentemester-namespace-custody-v32",
+  "sql": "CREATE TABLE rm_namespace_custody (id INTEGER PRIMARY KEY CHECK(id=1), device TEXT NOT NULL CHECK(length(device)>0), inode TEXT NOT NULL CHECK(length(inode)>0)) STRICT;\nCREATE TRIGGER rm_namespace_custody_no_update BEFORE UPDATE ON rm_namespace_custody BEGIN SELECT RAISE(ABORT,'namespace custody is immutable'); END;\nCREATE TRIGGER rm_namespace_custody_no_delete BEFORE DELETE ON rm_namespace_custody BEGIN SELECT RAISE(ABORT,'namespace custody is immutable'); END;"
+}

@@ -131,7 +131,7 @@ def assemble(args):
             subprocess.run(["python3", str(root / "scripts/release/sign-native-update.py"),
                 "--bundle", str(stage), "--key", str(update_flags[0]), "--public-key", str(update_flags[1]),
                 "--sequence", str(update_flags[2]), "--platform", "macos-" + args.architecture,
-                "--api-epoch", "1", "--control-schema", "31", "--company-schema", "36"], check=True,
+                "--api-epoch", "1", "--control-schema", "32", "--company-schema", "36"], check=True,
                 stdout=subprocess.DEVNULL)
         previous = Path(temporary) / "previous.app"
         if output.exists():
