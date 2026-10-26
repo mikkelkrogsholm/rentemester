@@ -1,0 +1,125 @@
+{
+  "nativeSchema32BuildInfo": {
+    "apiEpoch": 1,
+    "companySchema": 36,
+    "controlSchema": 32,
+    "format": "rentemester-native-server/1",
+    "platform": "macos-aarch64",
+    "version": "0.2.0"
+  },
+  "passed": true,
+  "sourceCommit": "8e41bbc942e0043e7432c48c8a49300fe758d3e6",
+  "sourceTree": "1448942e81588ca9cd6f4797af3a286cc6d7f169",
+  "bundle": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app",
+  "bundleManifestSha256": "0012b7d11625090714209e472cc2a1e9d08380f07d049c239690551c79ee01de",
+  "files": 13,
+  "manifest": {
+    "build": {
+      "architecture": "arm64",
+      "desktopToolchain": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+      "profile": "dev",
+      "serverToolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "target": null
+    },
+    "files": [
+      {
+        "path": "Contents/Info.plist",
+        "sha256": "e5b513706ab27bfe0c0456ae14ace047f47fd7f1820cc420eb622f3d2fa47c82",
+        "size": 671
+      },
+      {
+        "path": "Contents/MacOS/rentemester-desktop",
+        "sha256": "ad2f93b06d1fd207c3109344f8fcc7638d2145c85f62ed7d215746e1d687736b",
+        "size": 52915416
+      },
+      {
+        "path": "Contents/MacOS/rentemester-server",
+        "sha256": "f0192ace4eb0cb5b25d10b98fad9cd6197844d9511b2846dd7d90433608c3c0b",
+        "size": 116433312
+      },
+      {
+        "path": "Contents/MacOS/rentemester-update",
+        "sha256": "542d4b7a666397175f3185d844b92dad840af6fe344d97a2fd38f698f0faa289",
+        "size": 2622608
+      },
+      {
+        "path": "Contents/Resources/Rentemester.icns",
+        "sha256": "1fd04904d73314114b511381bbd9dc3a13f81ca062ce5ec3edd1db663f8878d7",
+        "size": 1555494
+      },
+      {
+        "path": "Contents/Resources/web/chunk-4e1mjnxp.js",
+        "sha256": "06fe325bf20fb52d2ae7bc4d46dd10ae2e2d70fbc9ae7299800f1257b42590f3",
+        "size": 1848566
+      },
+      {
+        "path": "Contents/Resources/web/chunk-4e1mjnxp.js.map",
+        "sha256": "a7474935c8b2e9a966c313ee05e75485c339a5ab080f3f8da6cdea1fb23dc0d6",
+        "size": 5721794
+      },
+      {
+        "path": "Contents/Resources/web/chunk-jt95pfwt.css",
+        "sha256": "c658657c64be1690d1b7b891242fe79696a23d5c9b75b11ad89979270eb0c09c",
+        "size": 549182
+      },
+      {
+        "path": "Contents/Resources/web/index.html",
+        "sha256": "29ad18494e1d74099eb0b4c8a78bf3a97aa288353ec6fe14db3e12a35571efc0",
+        "size": 741
+      },
+      {
+        "path": "Contents/Resources/web/licenses/ibm-plex-mono.txt",
+        "sha256": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f",
+        "size": 5299
+      },
+      {
+        "path": "Contents/Resources/web/licenses/ibm-plex-sans.txt",
+        "sha256": "d0283623ef57e722fd0eb688a8041589670c608ab780cd3612d06ba6f153d3fd",
+        "size": 4429
+      },
+      {
+        "path": "Contents/Resources/web/licenses/source-serif-4.txt",
+        "sha256": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+        "size": 4314
+      },
+      {
+        "path": "Contents/Resources/web/stylex-fb5ae53142308d22.css",
+        "sha256": "fb5ae53142308d2204394ddfe01cff4119a6727f7132c9284606036d1c32edd7",
+        "size": 8954
+      }
+    ],
+    "format": "rentemester-native-macos/1",
+    "signing": "unsigned",
+    "source": {
+      "dirty": false,
+      "revision": "8e41bbc942e0043e7432c48c8a49300fe758d3e6"
+    },
+    "version": "0.2.0"
+  },
+  "headlessBinaryIdentity": {
+    "rentemester-desktop": {
+      "exit": 0,
+      "sha256": "ad2f93b06d1fd207c3109344f8fcc7638d2145c85f62ed7d215746e1d687736b",
+      "file": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app/Contents/MacOS/rentemester-desktop: Mach-O 64-bit executable arm64"
+    },
+    "rentemester-server": {
+      "exit": 0,
+      "sha256": "f0192ace4eb0cb5b25d10b98fad9cd6197844d9511b2846dd7d90433608c3c0b",
+      "file": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app/Contents/MacOS/rentemester-server: Mach-O 64-bit executable arm64"
+    },
+    "rentemester-update": {
+      "exit": 0,
+      "sha256": "542d4b7a666397175f3185d844b92dad840af6fe344d97a2fd38f698f0faa289",
+      "file": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app/Contents/MacOS/rentemester-update: Mach-O 64-bit executable arm64"
+    }
+  },
+  "acceptedWebSource": "d0420fbbacd55c0795844f9e857da85bdc45f851",
+  "acceptedWebIndexSha256": "29ad18494e1d74099eb0b4c8a78bf3a97aa288353ec6fe14db3e12a35571efc0",
+  "actualPackagedServerManagedFaults": true,
+  "installedAppTouched": false,
+  "nativeGuiLaunched": false,
+  "appleSigningPerformed": false,
+  "promotionPerformed": false,
+  "whole724Accepted": false,
+  "scope": "CurrentcleanmacOSarm64candidate exactbytes/pinnedcompilers/sharedReact/icon + realownedpackagedserver lifecycle only. OriginalclaimedOSCPU/signingnotarization/offlineinstalled/updateuninstall/J07 andindependentreview gates retained."
+}

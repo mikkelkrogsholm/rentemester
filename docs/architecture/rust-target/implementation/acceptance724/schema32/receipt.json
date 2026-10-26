@@ -1,0 +1,18 @@
+{
+  "acceptance": [
+    {
+      "check": "package724",
+      "key": "e3db5868b09b67ab64c6fdcf348c76e27b9646fbbc1e7399cb0694e386f33e1a",
+      "argv": [
+        "python3",
+        "/tmp/issue724-schema32-package-check.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue724-native32-macos-20261026T015014.727799000/acceptance/e3db5868b09b67ab64c6fdcf348c76e27b9646fbbc1e7399cb0694e386f33e1a/package724.log"
+    }
+  ],
+  "message": "Agreed checks passed on the combined result. Deliver the result; no further tasks. publish can fast-forward the original checkout.",
+  "phase": "done",
+  "result_branch": "sgd/issue724-native32-macos-20261026T015014.727799000/integration"
+}

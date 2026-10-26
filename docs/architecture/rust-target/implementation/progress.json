@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original727 independent onboarding/MCP/current agent and owner/operator support guides completed against accepted Rust contracts; no runtime removal. Full retirement remains blocked on original parity/release/cutover/final native gates.",
+  "current_increment": "Original724 necessary current32 MacARM64 candidate qualified and retained after custody change; same React/icon and exact actual packagedserver Managed test pass. Full signing/native/release gates remain.",
   "code_revision": "f471cd8b54ca401078990ef320f21672e792e74a",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original727_documentation_handover_partial_accept",
+  "state": "original724_current32_mac_candidate_partial_accept",
   "issues_closed": 43,
-  "next": "Original remaining qualified release/cutover/platform/user gates; no legacy removal or production promotion before prerequisites.",
+  "next": "Required matching current32 Linux server candidate through existing725 packaging; original release/cutover/native gates remain.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16889,6 +16889,70 @@
         },
         "scope": "No workspace/credentials/network. Actual output lacks source commit; guide explicitly obtains revision/checksums from package manifest."
       }
+    },
+    "issue724_current32_mac_package": {
+      "sourceRevision": "8e41bbc942e0043e7432c48c8a49300fe758d3e6",
+      "sourceTree": "1448942e81588ca9cd6f4797af3a286cc6d7f169",
+      "sgdRun": "issue724-native32-macos-20261026T015014.727799000",
+      "sgdPhase": "done",
+      "checkedAt": "2026-10-26T02:00:14.587467+00:00",
+      "artifact": {
+        "bundle": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/accepted/issue724-schema32/Rentemester Desktop.app",
+        "source": "8e41bbc942e0043e7432c48c8a49300fe758d3e6",
+        "manifestSha256": "0012b7d11625090714209e472cc2a1e9d08380f07d049c239690551c79ee01de",
+        "physicalControlSchema": 32,
+        "companySchema": 36,
+        "apiEpoch": 1,
+        "binarySha256": {
+          "rentemester-desktop": "ad2f93b06d1fd207c3109344f8fcc7638d2145c85f62ed7d215746e1d687736b",
+          "rentemester-server": "f0192ace4eb0cb5b25d10b98fad9cd6197844d9511b2846dd7d90433608c3c0b",
+          "rentemester-update": "542d4b7a666397175f3185d844b92dad840af6fe344d97a2fd38f698f0faa289"
+        },
+        "webIndexSha256": "29ad18494e1d74099eb0b4c8a78bf3a97aa288353ec6fe14db3e12a35571efc0",
+        "signedRelease": false,
+        "installedDesktopAccepted": false
+      },
+      "actualPackagedServerManagedTest": "One actual owned packagedserver test PASS: fresh create, competing owner exclusion, crash and private-profile reopen; no GUI or financial/provider replay.",
+      "actualBuildInfo": {
+        "apiEpoch": 1,
+        "companySchema": 36,
+        "controlSchema": 32,
+        "format": "rentemester-native-server/1",
+        "platform": "macos-aarch64",
+        "version": "0.2.0"
+      },
+      "review": "Reviewed exact13file inventory/modes/SHA/source-clean/pinned compilers, same acceptedReact29ad1849 and approvedicon. All3 native binary help/MachOARM64 identities pass. New current32 package is distinct from preserved older31 evidence; no signing/install/native acceptance claim.",
+      "proofs": {
+        "native-artifact-manifest.json": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/native-artifact-manifest.json",
+          "sha256": "0012b7d11625090714209e472cc2a1e9d08380f07d049c239690551c79ee01de"
+        },
+        "rentemester-desktop-help.log": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/rentemester-desktop-help.log",
+          "sha256": "58af2e74b97db0a041b101f6f5ba391c2c2f764b83185e799b9851e37117fa6b"
+        },
+        "rentemester-server-help.log": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/rentemester-server-help.log",
+          "sha256": "cf17eeec302cc349d3d004c79e3cf0fc22aad8b6c21816375a567369618e3d44"
+        },
+        "rentemester-update-help.log": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/rentemester-update-help.log",
+          "sha256": "a614c978438f022eb03ae2f7ee2411c0b84839c5e462eb642ba92d0f6fef30ab"
+        },
+        "package.json": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/package.json",
+          "sha256": "749dd00b79b7bbe599438b57b6eeb3c7ee7c48270dd28fd25c9ead3052e031a2"
+        },
+        "package.log": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/package.log",
+          "sha256": "fd7a7c58cf4af2dccdd64ecaac5ee617894c8465cf335ac46e2a79b331caa0e7"
+        },
+        "receipt.json": {
+          "path": "docs/architecture/rust-target/implementation/acceptance724/schema32/receipt.json",
+          "sha256": "effda6f625b7cf3e486da074da7678b3d822a9237907b9093e1712c4ace1b64a"
+        }
+      },
+      "wholeIssueAccepted": false
     }
   },
   "verified_history": [

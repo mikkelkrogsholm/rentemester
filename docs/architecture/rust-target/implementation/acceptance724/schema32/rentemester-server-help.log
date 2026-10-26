@@ -1,0 +1,17 @@
+rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create] [--origin http://localhost:4319]
+Build identity: --build-info (alone; no workspace, credentials or network)
+Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)
+Custody enrollment: --enroll-namespace-custody --config PRIVATE.json --confirm-target EXACTROOT (exclusive stopped operator v31 to v32; retire old binaries and copies under sole-source cutover)
+Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)
+Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.
+--local-runtime-dir PRIVATE_PROFILE enables a same-user private UNIX socket beside the admitted local-user-macos config; normal authentication remains required.
+Build the cockpit first: cd app && bun run build
+Without --config, serve the cockpit and health endpoint only.
+--config defaults to runtimeProfile=dedicated-linux; run as its dedicated UID with no capabilities, no-new-privileges and umask077.
+macOS local operation requires config runtimeProfile=local-user-macos, equal nonroot real/effective/saved IDs, APFS, umask077 and safe owner/root ancestry (only non-inheriting deny-delete ACLs) and strict private ACL-free workspace paths. All code under that local account is trusted; it is not the Linux dedicated broker isolation profile.
+--create exclusively creates a new workspace. Omit it for reopen or bootstrap recovery.
+HTTPS origins require private config authMail gateway; local HTTP uses private verification/reset/invitation files.
+Verify independently: --verify-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY
+Fresh restore: --config NEW_PRIVATE.json --restore-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --source-unavailable (explicit declaration, no global single-use guarantee)
+Legacy adoption: --adopt-legacy SOURCE --config NEW_PRIVATE.json --confirm-target EXACT_CONFIG_ROOT --legacy-source-stopped (stop and drain every TS server, CLI, MCP and job first; two exact review hashes must be confirmed on stdin; exits after adoption, then start normally for fresh owner/MFA)
+Stage handoff: --config NEW_PRIVATE.json --restore-backup OFFERED_ARCHIVE --trusted-backup-key SOURCE_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --restore-transfer (requires transferTrustedKeyFile; remains read-only until reviewed source release activation)

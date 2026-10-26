@@ -1,0 +1,657 @@
+{"cache": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue724-native32-macos-20261026T015014.727799000/mac-target", "freeGiB": 89.23, "minimumFreeGiB": 30, "criticalFreeGiB": 15, "buildAllowed": true}
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling libc v0.2.191
+   Compiling syn v3.0.9
+   Compiling cfg-if v1.0.5
+   Compiling jobserver v0.1.35
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling cc v1.8.0
+   Compiling synstructure v0.14.0
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling zerofrom-derive v0.1.8
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling stable_deref_trait v1.2.1
+   Compiling typenum v1.20.1
+   Compiling smallvec v1.16.3
+   Compiling portable-atomic v1.15.0
+   Compiling yoke v0.8.3
+   Compiling errno v0.3.14
+   Compiling pkg-config v0.3.34
+   Compiling pin-project-lite v0.2.17
+   Compiling zerovec-derive v0.11.6
+   Compiling subtle v2.6.1
+   Compiling zeroize v1.9.1
+   Compiling bytes v1.12.1
+   Compiling zerovec v0.11.8
+   Compiling displaydoc v0.2.7
+   Compiling futures-core v0.3.34
+   Compiling critical-section v1.2.0
+   Compiling once_cell v1.21.4
+   Compiling crypto-common v0.1.7
+   Compiling memchr v2.8.3
+   Compiling serde_core v1.0.229
+   Compiling autocfg v1.5.1
+   Compiling bitflags v2.13.2
+   Compiling num-traits v0.2.19
+   Compiling tinystr v0.8.4
+   Compiling signal-hook-registry v1.4.8
+   Compiling cmake v0.1.58
+   Compiling tokio-macros v2.7.2
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.4
+   Compiling fs_extra v1.3.0
+   Compiling itoa v1.0.18
+   Compiling litemap v0.8.3
+   Compiling serde v1.0.229
+   Compiling dunce v1.0.5
+   Compiling writeable v0.6.4
+   Compiling icu_locale_core v2.3.0
+   Compiling aws-lc-sys v0.46.0
+   Compiling tokio v1.53.3
+   Compiling zerotrie v0.2.5
+   Compiling potential_utf v0.1.6
+   Compiling serde_derive v1.0.229
+   Compiling futures-sink v0.3.34
+   Compiling getrandom v0.4.3
+   Compiling icu_normalizer_data v2.3.0
+   Compiling rand_core v0.10.1
+   Compiling icu_properties_data v2.3.0
+   Compiling utf8_iter v1.0.4
+   Compiling icu_collections v2.3.0
+   Compiling icu_provider v2.3.1
+   Compiling percent-encoding v2.3.2
+   Compiling ring v0.17.14
+   Compiling futures-macro v0.3.34
+   Compiling futures-io v0.3.34
+   Compiling aws-lc-rs v1.18.2
+   Compiling equivalent v1.0.3
+   Compiling futures-task v0.3.34
+   Compiling scopeguard v1.2.0
+   Compiling slab v0.4.12
+   Compiling futures-util v0.3.34
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling http v1.5.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling core-foundation-sys v0.8.7
+   Compiling http-body v1.1.0
+   Compiling idna_adapter v1.2.2
+   Compiling ipnet v2.12.2
+   Compiling tracing-core v0.1.36
+   Compiling block-buffer v0.10.4
+   Compiling getrandom v0.2.17
+   Compiling syn v2.0.119
+   Compiling untrusted v0.9.0
+   Compiling glob v0.3.4
+   Compiling rustversion v1.0.23
+   Compiling clang-sys v1.9.1
+   Compiling digest v0.10.7
+   Compiling tracing v0.1.44
+   Compiling idna v1.1.0
+   Compiling form_urlencoded v1.2.2
+   Compiling log v0.4.34
+   Compiling foldhash v0.2.0
+   Compiling rustls v0.23.46
+   Compiling tower-service v0.3.3
+   Compiling crossbeam-utils v0.8.23
+   Compiling httparse v1.10.1
+   Compiling tinyvec v1.13.3
+   Compiling hashbrown v0.17.1
+   Compiling url v2.5.8
+   Compiling rustls-webpki v0.103.15
+   Compiling futures-channel v0.3.34
+   Compiling parking_lot_core v0.9.12
+   Compiling cfg_aliases v0.2.2
+   Compiling try-lock v0.2.5
+   Compiling minimal-lexical v0.2.1
+   Compiling httpdate v1.0.3
+   Compiling regex-syntax v0.8.11
+   Compiling thiserror v2.0.21
+   Compiling regex-automata v0.4.18
+   Compiling nom v7.1.3
+   Compiling want v0.3.2
+   Compiling nix v0.31.3
+   Compiling encoding_rs v0.8.42
+   Compiling chacha20 v0.10.2
+   Compiling sync_wrapper v1.0.2
+   Compiling inout v0.1.4
+   Compiling libloading v0.8.9
+   Compiling thiserror-impl v2.0.21
+   Compiling cpufeatures v0.2.17
+   Compiling crossbeam-epoch v0.9.21
+   Compiling crc32fast v1.5.2
+   Compiling either v1.19.0
+   Compiling mime v0.3.17
+   Compiling atomic-waker v1.1.2
+   Compiling tower-layer v0.3.3
+   Compiling system-configuration-sys v0.6.0
+   Compiling zmij v1.0.23
+   Compiling vcpkg v0.2.15
+   Compiling base64 v0.23.1
+   Compiling bindgen v0.72.1
+   Compiling unicase v2.10.0
+   Compiling prefix-trie v0.8.4
+   Compiling mime_guess v2.0.5
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling hyper v1.12.0
+   Compiling itertools v0.13.0
+   Compiling indexmap v2.14.2
+   Compiling cipher v0.4.4
+   Compiling rand v0.10.3
+   Compiling cexpr v0.6.0
+   Compiling regex v1.13.1
+   Compiling http-body-util v0.1.5
+   Compiling lock_api v0.4.14
+   Compiling uuid v1.28.0
+   Compiling async-trait v0.1.92
+   Compiling rustix v1.1.5
+   Compiling serde_json v1.0.154
+   Compiling zlib-rs v0.6.8
+   Compiling data-encoding v2.11.1
+   Compiling simdutf8 v0.1.5
+   Compiling rustc-hash v2.1.3
+   Compiling multiversion_no_op v1.0.0
+   Compiling shlex v1.3.0
+   Compiling hickory-proto v0.26.3
+   Compiling flate2 v1.1.10
+   Compiling parking_lot v0.12.5
+   Compiling hashify v0.2.9
+   Compiling hyper-util v0.1.21
+   Compiling tower v0.5.3
+   Compiling sha2 v0.10.9
+   Compiling crossbeam-channel v0.5.17
+   Compiling tokio-rustls v0.26.6
+   Compiling core-foundation v0.9.4
+   Compiling security-framework-sys v2.17.0
+   Compiling core-foundation v0.10.1
+   Compiling num-integer v0.1.47
+   Compiling time-core v0.1.9
+   Compiling typed-path v0.12.4
+   Compiling tagptr v0.2.0
+   Compiling deranged v0.5.9
+   Compiling powerfmt v0.2.1
+   Compiling num-conv v0.2.2
+   Compiling siphasher v1.0.4
+   Compiling phf_shared v0.12.1
+   Compiling time v0.3.55
+   Compiling moka v0.12.16
+   Compiling zip v9.0.5
+   Compiling num-bigint v0.5.1
+   Compiling security-framework v3.7.0
+   Compiling system-configuration v0.7.0
+   Compiling mail-parser v0.11.9
+   Compiling hickory-net v0.26.3
+   Compiling libproc v0.14.11
+   Compiling hashlink v0.12.2
+   Compiling unicode-normalization v0.1.25
+   Compiling hmac v0.12.1
+   Compiling tokio-util v0.7.20
+   Compiling universal-hash v0.5.1
+   Compiling opaque-debug v0.3.1
+   Compiling chrono-tz v0.10.4
+   Compiling unicode-properties v0.1.4
+   Compiling exacl v0.13.0
+   Compiling http-range-header v0.4.2
+   Compiling fallible-iterator v0.3.0
+   Compiling roxmltree v0.20.0
+   Compiling resolv-conf v0.7.6
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling base64 v0.22.1
+   Compiling ryu-js v1.0.3
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/vendor/rusqlite-0.40.2)
+   Compiling hickory-resolver v0.26.3
+   Compiling tower-http v0.6.11
+   Compiling poly1305 v0.8.0
+   Compiling pbkdf2 v0.12.2
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling phf v0.12.1
+   Compiling hyper-rustls v0.27.10
+   Compiling chacha20 v0.9.1
+   Compiling salsa20 v0.10.2
+   Compiling webpki-roots v1.0.9
+   Compiling chrono v0.4.45
+   Compiling nom v8.0.0
+   Compiling aead v0.5.2
+   Compiling email_address v0.2.9
+   Compiling fastrand v2.5.0
+   Compiling tempfile v3.27.0
+   Compiling lettre v0.11.23
+   Compiling chacha20poly1305 v0.10.1
+   Compiling scrypt v0.11.0
+   Compiling reqwest v0.13.5
+   Compiling sha1 v0.10.7
+   Compiling webpki-root-certs v1.0.9
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-application)
+   Compiling axum-core v0.5.6
+   Compiling matchit v0.8.4
+   Compiling axum v0.8.9
+   Compiling rentemester-host v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-host)
+   Compiling rentemester-server v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+    Finished `dev` profile [unoptimized] target(s) in 3m 21s
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling syn v3.0.9
+   Compiling libc v0.2.191
+   Compiling cfg-if v1.0.5
+   Compiling serde_core v1.0.229
+   Compiling synstructure v0.14.0
+   Compiling memchr v2.8.3
+   Compiling zerofrom-derive v0.1.8
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling jobserver v0.1.35
+   Compiling serde_derive v1.0.229
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling cc v1.8.0
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling writeable v0.6.4
+   Compiling litemap v0.8.3
+   Compiling itoa v1.0.18
+   Compiling utf8_iter v1.0.4
+   Compiling syn v2.0.119
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_properties_data v2.3.0
+   Compiling siphasher v1.0.4
+   Compiling version_check v0.9.5
+   Compiling bitflags v2.13.2
+   Compiling serde v1.0.229
+   Compiling phf_shared v0.13.1
+   Compiling bytes v1.12.1
+   Compiling zmij v1.0.23
+   Compiling dunce v1.0.5
+   Compiling stable_deref_trait v1.2.1
+   Compiling autocfg v1.5.1
+   Compiling fastrand v2.5.0
+   Compiling phf_generator v0.13.1
+   Compiling yoke v0.8.3
+   Compiling log v0.4.34
+   Compiling generic-array v0.14.7
+   Compiling smallvec v1.16.3
+   Compiling zerovec v0.11.8
+   Compiling equivalent v1.0.3
+   Compiling thiserror v2.0.21
+   Compiling typenum v1.20.1
+   Compiling thiserror-impl v2.0.21
+   Compiling parking_lot_core v0.9.12
+   Compiling tinystr v0.8.4
+   Compiling http v1.5.0
+   Compiling portable-atomic v1.15.0
+   Compiling time-core v0.1.9
+   Compiling num-conv v0.2.2
+   Compiling icu_locale_core v2.3.0
+   Compiling crypto-common v0.1.7
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling aho-corasick v1.1.5
+   Compiling regex-syntax v0.8.11
+   Compiling powerfmt v0.2.1
+   Compiling glob v0.3.4
+   Compiling deranged v0.5.9
+   Compiling regex-automata v0.4.18
+   Compiling icu_provider v2.3.1
+   Compiling icu_collections v2.3.0
+   Compiling phf_macros v0.13.1
+   Compiling base64 v0.23.1
+   Compiling objc2-encode v4.1.0
+   Compiling regex v1.13.1
+   Compiling objc2-exception-helper v0.1.1
+   Compiling percent-encoding v2.3.2
+   Compiling pkg-config v0.3.34
+   Compiling critical-section v1.2.0
+   Compiling once_cell v1.21.4
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling phf_codegen v0.13.1
+   Compiling strsim v0.11.1
+   Compiling subtle v2.6.1
+   Compiling ident_case v1.0.1
+   Compiling winnow v1.0.4
+   Compiling rand_core v0.10.1
+   Compiling serde_json v1.0.154
+   Compiling getrandom v0.4.3
+   Compiling typeid v1.0.3
+   Compiling zeroize v1.9.1
+   Compiling pin-project-lite v0.2.17
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling darling_core v0.24.1
+   Compiling idna_adapter v1.2.2
+   Compiling toml_writer v1.1.3+spec-1.1.0
+   Compiling erased-serde v0.4.10
+   Compiling objc2 v0.6.5
+   Compiling idna v1.1.0
+   Compiling darling_macro v0.24.1
+   Compiling form_urlencoded v1.2.2
+   Compiling fnv v1.0.7
+   Compiling new_debug_unreachable v1.0.6
+   Compiling simd-adler32 v0.3.10
+   Compiling scopeguard v1.2.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling web-time v1.1.0
+   Compiling rustc-hash v2.1.3
+   Compiling lock_api v0.4.14
+   Compiling url v2.5.8
+   Compiling darling v0.24.1
+   Compiling phf v0.13.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling cmake v0.1.58
+   Compiling precomputed-hash v0.1.1
+   Compiling crc32fast v1.5.2
+   Compiling adler2 v2.0.1
+   Compiling fs_extra v1.3.0
+   Compiling hashbrown v0.17.1
+   Compiling alloc-no-stdlib v3.0.0
+   Compiling futures-core v0.3.34
+   Compiling alloc-stdlib v0.3.0
+   Compiling indexmap v2.14.2
+   Compiling aws-lc-sys v0.46.0
+   Compiling web_atoms v0.2.6
+   Compiling parking_lot v0.12.5
+   Compiling serde_with_macros v3.24.0
+   Compiling block-buffer v0.10.4
+   Compiling num-traits v0.2.19
+   Compiling semver v1.0.28
+   Compiling quick-xml v0.42.0
+   Compiling mio v1.2.4
+   Compiling socket2 v0.6.5
+   Compiling tokio-macros v2.7.2
+   Compiling anyhow v1.0.104
+   Compiling tokio v1.53.3
+   Compiling string_cache v0.9.0
+   Compiling brotli-decompressor v6.0.1
+   Compiling miniz_oxide v0.9.1
+   Compiling block2 v0.6.2
+   Compiling serde_spanned v1.1.2
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling ring v0.17.14
+   Compiling crossbeam-utils v0.8.23
+   Compiling dtoa v1.0.11
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling dtoa-short v0.3.5
+   Compiling toml v1.1.8+spec-1.1.0
+   Compiling brotli v9.0.0
+   Compiling uuid v1.28.0
+   Compiling objc2-core-foundation v0.3.2
+   Compiling tendril v0.5.1
+   Compiling selectors v0.38.0
+   Compiling indexmap v1.9.3
+   Compiling derive_more-impl v2.1.1
+   Compiling cssparser-macros v0.7.1
+   Compiling foldhash v0.2.0
+   Compiling option-ext v0.2.0
+   Compiling aws-lc-rs v1.18.2
+   Compiling futures-sink v0.3.34
+   Compiling ctor v1.0.13
+   Compiling camino v1.2.6
+   Compiling cssparser v0.37.0
+   Compiling derive_more v2.1.1
+   Compiling markup5ever v0.39.0
+   Compiling objc2-foundation v0.3.2
+   Compiling swift-rs v1.0.9
+   Compiling rustls-pki-types v1.15.1
+   Compiling time-macros v0.2.32
+   Compiling servo_arc v0.4.3
+   Compiling serde_derive_internals v0.29.1
+   Compiling futures-macro v0.3.34
+   Compiling futures-io v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling slab v0.4.12
+   Compiling bit-vec v0.8.0
+   Compiling schemars v0.8.22
+   Compiling hashbrown v0.12.3
+   Compiling bit-set v0.8.0
+   Compiling futures-util v0.3.34
+   Compiling schemars_derive v0.8.22
+   Compiling time v0.3.55
+   Compiling objc2-quartz-core v0.3.2
+   Compiling html5ever v0.39.0
+   Compiling cfb v0.14.0
+   Compiling core-foundation v0.10.1
+   Compiling jsonptr v0.7.1
+   Compiling cargo-platform v0.1.9
+   Compiling getrandom v0.2.17
+   Compiling tauri-utils v2.10.2
+   Compiling untrusted v0.9.0
+   Compiling base64 v0.21.7
+   Compiling dyn-clone v1.0.20
+   Compiling dom_query v0.28.0
+   Compiling cargo_metadata v0.19.2
+   Compiling plist v1.10.2
+   Compiling json-patch v4.2.0
+   Compiling serde-untagged v0.1.9
+   Compiling infer v0.22.0
+   Compiling objc2-app-kit v0.3.2
+   Compiling crossbeam-channel v0.5.17
+   Compiling urlpattern v0.6.0
+   Compiling serde_with v3.24.0
+   Compiling tracing-core v0.1.36
+   Compiling ipnet v2.12.2
+   Compiling rustls v0.23.46
+   Compiling tracing v0.1.44
+   Compiling rustls-webpki v0.103.15
+   Compiling rustc_version v0.4.1
+   Compiling digest v0.10.7
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling clang-sys v1.9.1
+   Compiling http-body v1.1.0
+   Compiling httparse v1.10.1
+   Compiling tinyvec v1.13.3
+   Compiling rustversion v1.0.23
+   Compiling embed-resource v3.0.12
+   Compiling futures-channel v0.3.34
+   Compiling dirs-sys v0.5.0
+   Compiling chacha20 v0.10.2
+   Compiling raw-window-handle v0.6.2
+   Compiling heck v0.5.0
+   Compiling try-lock v0.2.5
+   Compiling tower-service v0.3.3
+   Compiling zlib-rs v0.6.8
+   Compiling either v1.19.0
+   Compiling minimal-lexical v0.2.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling system-configuration-sys v0.6.0
+   Compiling nom v7.1.3
+   Compiling prefix-trie v0.8.4
+   Compiling flate2 v1.1.10
+   Compiling want v0.3.2
+   Compiling rand v0.10.3
+   Compiling dirs v7.0.0
+   Compiling tauri-winres v0.3.7
+   Compiling cargo_toml v1.0.1
+   Compiling inout v0.1.4
+   Compiling dpi v0.1.2
+   Compiling cookie v0.18.2
+   Compiling cpufeatures v0.2.17
+   Compiling libloading v0.8.9
+   Compiling async-trait v0.1.92
+   Compiling data-encoding v2.11.1
+   Compiling atomic-waker v1.1.2
+   Compiling static_vcruntime v3.0.0
+   Compiling cfg_aliases v0.2.2
+   Compiling bindgen v0.72.1
+   Compiling itertools v0.13.0
+   Compiling nix v0.31.3
+   Compiling tauri-build v2.7.3
+   Compiling hyper v1.12.0
+   Compiling hickory-proto v0.26.3
+   Compiling cipher v0.4.4
+   Compiling encoding_rs v0.8.42
+   Compiling cexpr v0.6.0
+   Compiling tokio-rustls v0.26.6
+   Compiling sync_wrapper v1.0.2
+   Compiling core-foundation v0.9.4
+   Compiling security-framework-sys v2.17.0
+   Compiling foreign-types-macros v0.2.4
+   Compiling tagptr v0.2.0
+   Compiling foreign-types-shared v0.3.1
+   Compiling bitflags v1.3.2
+   Compiling tower-layer v0.3.3
+   Compiling shlex v1.3.0
+   Compiling vcpkg v0.2.15
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/vendor/libsqlite3-sys-0.38.2)
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[16981]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `libsqlite3-sys` (build script) generated 1 warning
+   Compiling tower v0.5.3
+   Compiling png v0.17.16
+   Compiling foreign-types v0.5.0
+   Compiling moka v0.12.16
+   Compiling security-framework v3.7.0
+   Compiling system-configuration v0.7.0
+   Compiling wry v0.57.0
+   Compiling hickory-net v0.26.3
+   Compiling hyper-util v0.1.21
+   Compiling sha2 v0.10.9
+   Compiling objc2-web-kit v0.3.2
+   Compiling core-graphics-types v0.2.0
+   Compiling dispatch2 v0.3.1
+   Compiling errno v0.3.14
+   Compiling rustix v1.1.5
+   Compiling resolv-conf v0.7.6
+   Compiling multiversion_no_op v1.0.0
+   Compiling tauri-runtime v2.12.2
+   Compiling simdutf8 v0.1.5
+   Compiling byteorder v1.5.0
+   Compiling ico v0.5.0
+   Compiling hickory-resolver v0.26.3
+   Compiling core-graphics v0.25.0
+   Compiling hyper-rustls v0.27.10
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling tower-http v0.6.11
+   Compiling libproc v0.14.11
+   Compiling tauri v2.12.4
+   Compiling png v0.18.1
+   Compiling http-body-util v0.1.5
+   Compiling hmac v0.12.1
+   Compiling num-integer v0.1.47
+   Compiling hashify v0.2.9
+   Compiling universal-hash v0.5.1
+   Compiling phf_shared v0.12.1
+   Compiling opaque-debug v0.3.1
+   Compiling getrandom v0.3.4
+   Compiling tauri-runtime-wry v2.12.2
+   Compiling chrono-tz v0.10.4
+   Compiling typed-path v0.12.4
+   Compiling exacl v0.13.0
+   Compiling muda v0.20.0
+   Compiling base64 v0.22.1
+   Compiling zip v9.0.5
+   Compiling poly1305 v0.8.0
+   Compiling phf v0.12.1
+   Compiling mail-parser v0.11.9
+   Compiling num-bigint v0.5.1
+   Compiling pbkdf2 v0.12.2
+   Compiling reqwest v0.13.5
+   Compiling tauri-codegen v2.7.3
+   Compiling tao v0.37.1
+   Compiling salsa20 v0.10.2
+   Compiling chacha20 v0.9.1
+   Compiling unicode-normalization v0.1.25
+   Compiling webpki-roots v1.0.9
+   Compiling hashlink v0.12.2
+   Compiling chrono v0.4.45
+   Compiling aead v0.5.2
+   Compiling keyboard-types v0.8.3
+   Compiling serialize-to-javascript-impl v0.1.2
+   Compiling nom v8.0.0
+   Compiling email_address v0.2.9
+   Compiling roxmltree v0.20.0
+   Compiling unicode-properties v0.1.4
+   Compiling fallible-iterator v0.3.0
+   Compiling ryu-js v1.0.3
+   Compiling rfd v0.17.2
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-engine)
+   Compiling lettre v0.11.23
+   Compiling serialize-to-javascript v0.1.2
+   Compiling chacha20poly1305 v0.10.1
+   Compiling scrypt v0.11.0
+   Compiling tauri-macros v2.7.3
+   Compiling rentemester-desktop v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-desktop)
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[18194]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `rentemester-desktop` (build script) generated 1 warning
+   Compiling sha1 v0.10.7
+   Compiling window-vibrancy v0.8.1
+   Compiling webpki-root-certs v1.0.9
+   Compiling serde_repr v0.1.21
+   Compiling mime v0.3.17
+   Compiling embed_plist v1.2.2
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-runtime)
+   Compiling rentemester-client v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-client)
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[18407]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `rentemester-desktop` (bin "rentemester-desktop") generated 1 warning
+    Finished `dev` profile [unoptimized] target(s) in 4m 02s
+/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[16981]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `libsqlite3-sys` (build script) generated 1 warning
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[18194]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `rentemester-desktop` (build script) generated 1 warning
+   Compiling rentemester-desktop v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/crates/rentemester-desktop)
+warning: stripping debug info with `rust-objcopy` failed: signal: 6 (SIGABRT)
+  |
+  = note: dyld[18470]: Library not loaded: @rpath/libLLVM.dylib
+            Referenced from: <D6B3C499-A2AF-3E42-8F77-C42BD658AAB5> /Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-objcopy
+            Reason: tried: '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file), '/Users/mikkelfreltoftkrogsholm/.rustup/toolchains/1.99.1-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/../lib/libLLVM.dylib' (no such file)
+          
+
+warning: `rentemester-desktop` (bin "rentemester-desktop" test) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 2.29s
+     Running unittests src/shell.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue724-native32-macos-20261026T015014.727799000/mac-target/debug/deps/rentemester_desktop-37614086b6b7f36f)
+
+running 1 test
+test local_backend::tests::actual_owned_server_creates_excludes_competing_owner_and_reopens_private_profile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 4.75s
+
+{"passed": true, "report": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/issue724/issue724-native32-macos-20261026T015014.727799000/package.json", "files": 13, "bundle": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue724-native32-macos-20261026T015014.727799000/integration/target/native/Rentemester Desktop.app", "whole724Accepted": false}
