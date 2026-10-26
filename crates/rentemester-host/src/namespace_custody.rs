@@ -46,7 +46,7 @@ mod tests {
         let uid=std::str::from_utf8(&uid.stdout).unwrap().trim().parse().unwrap();
         let profile=NamespaceProfile::LocalUserMacos;
         let (owner,metadata)=Owner::create_new_with_profile(&root,uid,"w","a","Synthetic","2026-01-01T00:00:00Z",profile).unwrap();
-        assert_eq!(metadata.control_version,32);
+        assert_eq!(metadata.control_version,34);
         let op=Operator::from_policy("w","agent:test", &["agent:test".into()]).unwrap();
         assert!(Owner::enroll_namespace_custody(&root,&root,uid,"w","a",profile,&op).is_err());
         owner.try_close().unwrap();

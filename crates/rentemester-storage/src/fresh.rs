@@ -76,7 +76,7 @@ pub fn initialize_empty_pair(
     integrity(control).map_err(|_| refused())?;
     integrity(company).map_err(|_| refused())?;
     Ok(Initialized {
-        control_version: 33,
+        control_version: 34,
         company_version: 36,
         control_schema_sha256: fingerprint(control).map_err(|_| refused())?,
         company_schema_sha256: fingerprint(company).map_err(|_| refused())?,
