@@ -7,6 +7,10 @@ enum Credentials {
 }
 enum Command {
     List(Value),
+    SeriesList(Value),
+    SeriesProject(Value),
+    SeriesSave(Value),
+    SeriesMaterialize(Value),
     Get(String),
     History(String),
     Receipt(String),
@@ -80,16 +84,35 @@ fn command(
             .and_then(|v| v.as_str().map(str::to_owned))
             .ok_or("idempotency_key_required")?;
         rentemester_engine::tasks::id(&json!(key)).map_err(|_| "invalid_input")?;
+        let series_save = path == "/api/task-series";
         let version = object.remove("expectedVersion");
         let expected = version
             .as_ref()
             .map(|v| {
                 v.as_u64()
-                    .filter(|n| (1..=9_007_199_254_740_991).contains(n))
+                    .filter(|n| *n <= 9_007_199_254_740_991 && (series_save || *n >= 1))
                     .ok_or("version_required")
             })
             .transpose()?;
-        let operation = if parts.len() == 3 && parts[2] == "tasks" {
+        let operation = if series_save {
+            if expected.is_none() {
+                return Err("version_required");
+            }
+            let series = object.remove("series").ok_or("invalid_input")?;
+            if !object.is_empty() {
+                return Err("invalid_input");
+            }
+            Command::SeriesSave(series)
+        } else if path == "/api/task-series/materialize" {
+            if expected.is_some()
+                || object
+                    .keys()
+                    .any(|k| !["companySlugs", "asOfDate"].contains(&k.as_str()))
+            {
+                return Err("invalid_input");
+            }
+            Command::SeriesMaterialize(body)
+        } else if parts.len() == 3 && parts[2] == "tasks" {
             if expected.is_some() {
                 return Err("invalid_input");
             }
@@ -125,6 +148,12 @@ fn command(
         Ok((operation, Some(key), expected))
     } else {
         let cmd = match parts.as_slice() {
+            ["", "api", "task-series"] => {
+                Command::SeriesList(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
+            }
+            ["", "api", "task-series", "project"] => {
+                Command::SeriesProject(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
+            }
             ["", "api", "tasks"] => {
                 Command::List(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
             }
@@ -209,6 +238,10 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         let action = match &command {
             Command::List(q) => Action::List(q),
+            Command::SeriesList(q) => Action::SeriesList(q),
+            Command::SeriesProject(q) => Action::SeriesProject(q),
+            Command::SeriesSave(v) => Action::SeriesSave(v),
+            Command::SeriesMaterialize(v) => Action::SeriesMaterialize(v),
             Command::Get(id) => Action::Get(id),
             Command::History(id) => Action::History(id),
             Command::Receipt(k) => Action::Receipt(k),
@@ -255,6 +288,55 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn routine_public_dtos_keep_exact_keys_confirmation_versions_and_empty_selection() {
+        assert!(matches!(
+            command(
+                "/api/task-series",
+                Some(
+                    json!({"series":{},"expectedVersion":0,"idempotencyKey":"save","confirm":true})
+                ),
+                None
+            )
+            .unwrap()
+            .0,
+            Command::SeriesSave(_)
+        ));
+        assert!(
+            command(
+                "/api/task-series",
+                Some(json!({"series":{},"idempotencyKey":"save","confirm":true})),
+                None
+            )
+            .is_err()
+        );
+        for value in [json!(-1), json!(1.5), json!("0")] {
+            assert!(command("/api/task-series",Some(json!({"series":{},"expectedVersion":value,"idempotencyKey":"save","confirm":true})),None).is_err());
+        }
+        assert!(command("/api/task-series",Some(json!({"series":{},"expectedVersion":0,"idempotencyKey":"save","confirm":true,"actor":"user:owner"})),None).is_err());
+        assert!(
+            command(
+                "/api/task-series/materialize",
+                Some(json!({"idempotencyKey":"bulk","confirm":true,"expectedVersion":1})),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            command(
+                "/api/task-series/materialize",
+                Some(json!({"idempotencyKey":"bulk","confirm":false})),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            matches!(command("/api/task-series/materialize",Some(json!({"companySlugs":[],"idempotencyKey":"bulk","confirm":true})),None).unwrap().0,Command::SeriesMaterialize(v) if v==json!({"companySlugs":[]}))
+        );
+        assert!(
+            matches!(command("/api/task-series/project",None,Some("companySlugs=&from=2026-01-01&to=2026-12-31")).unwrap().0,Command::SeriesProject(v) if v["companySlugs"]==json!([]))
+        );
+    }
     #[test]
     fn exact_public_envelopes_and_repeated_company_query() {
         assert_eq!(

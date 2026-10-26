@@ -6,6 +6,7 @@ import {createHmac} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const base=process.env.RM_TASK_ORIGIN!,out=process.env.RM_TASK_OUTPUT!,reopen=process.env.RM_TASK_PHASE==='reopen',continueClients=process.env.RM_TASK_PHASE==='clients';
 if(!base?.startsWith('http://127.0.0.1:')||!out)throw Error('Use check-native-tasks.py with its fresh synthetic workspace');
+if(process.env.RM_TASK_MODE==='routine'){await import('./check-native-task-series');process.exit(0);}
 const browser=await chromium.launch({headless:true});
 function totp(uri:string){const secret=new URL(uri).searchParams.get('secret')!;let bits=0,count=0;const bytes:number[]=[];for(const c of secret){const n='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(c);if(n<0)throw Error('base32');bits=(bits<<5)|n;count+=5;if(count>=8){count-=8;bytes.push((bits>>>count)&255);}}const ctr=Buffer.alloc(8);ctr.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));const digest=createHmac('sha1',Buffer.from(bytes)).update(ctr).digest();const i=digest[19]&15;return String((digest.readUInt32BE(i)&0x7fffffff)%1000000).padStart(6,'0');}
 function save(name:string,value:unknown){const path=join(out,name);writeFileSync(path,JSON.stringify(value,null,2)+'\n',{mode:0o600});chmodSync(path,0o600);}

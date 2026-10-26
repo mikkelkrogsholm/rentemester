@@ -371,6 +371,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/reviewed-bank",
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
+        .route("/api/task-series",get(tasks::handle).post(tasks::handle))
+        .route("/api/task-series/project",get(tasks::handle))
+        .route("/api/task-series/materialize",post(tasks::handle))
         .route("/api/tasks",get(tasks::handle).post(tasks::handle))
         .route("/api/tasks/operations/{key}",get(tasks::handle))
         .route("/api/tasks/{id}",get(tasks::handle))

@@ -659,3 +659,501 @@ fn scoped_service_has_no_human_mfa_requirement_and_charges_each_admitted_attempt
         1
     );
 }
+fn routine() -> Value {
+    json!({"seriesId":"monthly","title":"Synthetic routine","scope":{"kind":"company","companySlug":"a"},"template":{"title":"Synthetic routine","scope":{"kind":"company","companySlug":"a"},"evidenceRequired":true},"cadence":"month","every":1,"anchor":"calendar","startDate":"2026-01-01","endDate":null,"fiscalYearStartMonth":1,"workDayOffset":0,"deadlineDayOffset":14,"relevance":"relevant","active":true})
+}
+#[test]
+fn routine_journey_projects_materializes_completes_pauses_and_replays_after_reopen() {
+    let (dir, mut c, cookies, p, cat) = fixture();
+    let input = routine();
+    let first = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&input),
+        Some("series-save"),
+        Some(0),
+    )
+    .unwrap();
+    assert_eq!(first["series"]["version"], 1);
+    let projection = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesProject(&json!({"from":"2026-01-01","to":"2026-12-31"})),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(projection["projections"].as_array().unwrap().len(), 12);
+    let materialize = json!({"companySlugs":["a"],"asOfDate":"2026-02-01"});
+    let created = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesMaterialize(&materialize),
+        Some("materialize"),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        created["scope"],
+        json!({"kind":"workspace","companySlugs":["a"]})
+    );
+    assert_eq!(created["includesWorkspace"], false);
+    assert_eq!(created["materialized"]["created"], 2);
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&materialize),
+            Some("materialize"),
+            None
+        )
+        .unwrap(),
+        created
+    );
+    let duplicate = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesMaterialize(&materialize),
+        Some("duplicate"),
+        None,
+    )
+    .unwrap();
+    assert_eq!(duplicate["materialized"]["created"], 0);
+    assert_eq!(duplicate["materialized"]["existing"], 2);
+    let id = created["materialized"]["taskIds"][0].as_str().unwrap();
+    call(&mut c,&cookies,&p,&cat,Action::Complete{id,input:&json!({"outcome":"completed","note":"Synthetic evidence checked","references":[{"kind":"document","ref":"synthetic-proof","companySlug":"a"}]})},Some("complete"),Some(1)).unwrap();
+    let before = call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap();
+    let mut paused = input.clone();
+    paused["active"] = json!(false);
+    paused["title"] = json!("Future title");
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&paused),
+        Some("pause"),
+        Some(1),
+    )
+    .unwrap();
+    assert_eq!(
+        call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap(),
+        before
+    );
+    let view = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::List(&json!({"showDone":true,"from":"2026-01-01","to":"2026-12-31"})),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(view["series"][0]["active"], false);
+    assert_eq!(view["projections"].as_array().unwrap().len(), 2);
+    drop(c);
+    let mut c = Connection::open(dir.path().join("control")).unwrap();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&input),
+            Some("series-save"),
+            Some(0)
+        )
+        .unwrap(),
+        first
+    );
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&materialize),
+            Some("materialize"),
+            None
+        )
+        .unwrap(),
+        created
+    );
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Receipt("series-save"),
+            None,
+            None
+        )
+        .unwrap()["receipt"],
+        json!({"operation":"series-save","version":1})
+    );
+}
+#[test]
+fn routine_manage_and_concrete_current_scopes_are_checked_before_cached_results() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let input = routine();
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&input),
+        Some("save"),
+        Some(0),
+    )
+    .unwrap();
+    let request = json!({"companySlugs":["a"],"asOfDate":"2026-01-01"});
+    let result = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesMaterialize(&request),
+        Some("bulk"),
+        None,
+    )
+    .unwrap();
+    let id = result["materialized"]["taskIds"][0].as_str().unwrap();
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Update {
+            id,
+            patch: &json!({"scope":{"kind":"company","companySlug":"b"}}),
+        },
+        Some("move-scope"),
+        Some(1),
+    )
+    .unwrap();
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','b','revoke',NULL,'user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&request),
+            Some("bulk"),
+            None
+        )
+        .is_err()
+    );
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&request),
+            Some("new-bulk"),
+            None
+        )
+        .is_err()
+    );
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Receipt("bulk"),
+            None,
+            None
+        )
+        .is_err()
+    );
+    let view = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesProject(&json!({"from":"2026-01-01","to":"2026-01-31","companySlugs":["a"]})),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(view["projections"], json!([]));
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','a','grant','reviewer','user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&input),
+            Some("save"),
+            Some(0)
+        )
+        .is_err()
+    );
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&json!({"companySlugs":[]})),
+            Some("empty"),
+            None
+        )
+        .is_err()
+    );
+}
+#[test]
+fn routine_materialization_rolls_back_all_tasks_receipts_when_later_recipient_is_unready() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('recipient','Synthetic recipient','recipient@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('recipient','activate','member','user:human-one');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('recipient','a','grant','reader','user:human-one');").unwrap();
+    let input = routine();
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&input),
+        Some("first"),
+        Some(0),
+    )
+    .unwrap();
+    let mut assigned = input.clone();
+    assigned["seriesId"] = json!("z-assigned");
+    assigned["template"]["assignee"] =
+        json!({"kind":"member","userId":"recipient","name":"Synthetic recipient"});
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&assigned),
+        Some("second"),
+        Some(0),
+    )
+    .unwrap();
+    c.execute(
+        "UPDATE user SET twoFactorEnabled=0 WHERE id='recipient'",
+        [],
+    )
+    .unwrap();
+    let result = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesMaterialize(&json!({"companySlugs":["a"],"asOfDate":"2026-01-01"})),
+        Some("bulk"),
+        None,
+    );
+    assert_eq!(result.unwrap_err().error.code, "invalid_assignee");
+    assert_eq!(
+        c.query_row::<i64, _, _>("SELECT count(*) FROM rm_task_events", [], |r| r.get(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        c.query_row::<i64, _, _>("SELECT count(*) FROM rm_task_receipts", [], |r| r.get(0))
+            .unwrap(),
+        2
+    );
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&assigned),
+            Some("second"),
+            Some(0)
+        )
+        .is_ok(),
+        "Historical receipt does not reapply old assignee readiness"
+    );
+}
+#[test]
+fn routine_scope_public_bounds_and_empty_selection_remain_explicit() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let mut input = routine();
+    input["workDayOffset"] = json!(367);
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&input),
+            Some("too-far"),
+            Some(0)
+        )
+        .is_err()
+    );
+    input["workDayOffset"] = json!(0);
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&input),
+            Some("missing-version"),
+            None
+        )
+        .is_err()
+    );
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesSave(&input),
+        Some("save"),
+        Some(0),
+    )
+    .unwrap();
+    let empty = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::SeriesProject(&json!({"companySlugs":[],"from":"2026-01-01","to":"2026-12-31"})),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(empty["projections"], json!([]));
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesMaterialize(&json!({"companySlugs":["a","unavailable"]})),
+            Some("bad-selection"),
+            None
+        )
+        .is_err()
+    );
+    let mut moved = input.clone();
+    moved["scope"] = json!({"kind":"company","companySlug":"b"});
+    moved["template"]["scope"] = moved["scope"].clone();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::SeriesSave(&moved),
+            Some("move"),
+            Some(1)
+        )
+        .is_err()
+    );
+}
+#[test]
+fn routine_service_charges_once_per_admitted_request_including_nested_occurrences_and_replay() {
+    use rentemester_runtime::service_key::ServiceKey;
+    let (_d, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','workspace_owner','user:human-one');").unwrap();
+    let receipt = crate::service_lifecycle::execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &crate::service_lifecycle::Operation::Create {
+            display_name: "Synthetic routine agent".into(),
+            operation_id: None,
+            expires_in_seconds: None,
+        },
+    )
+    .unwrap();
+    let issued: Value = serde_json::from_str(receipt.as_json()).unwrap();
+    let subject = issued["serviceAccountId"].as_str().unwrap();
+    let credential = issued["credentialId"].as_str().unwrap();
+    let key = ServiceKey::new("w", issued["secret"].as_str().unwrap()).unwrap();
+    c.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'activate','member','user:human-one')",[subject]).unwrap();
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:human-one')",[subject]).unwrap();
+    c.execute("UPDATE apikey SET remaining=10 WHERE id=?1", [credential])
+        .unwrap();
+    let input = routine();
+    let first = execute(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Service(&key),
+        Action::SeriesSave(&input),
+        Some("save"),
+        Some(0),
+    )
+    .unwrap();
+    assert_eq!(
+        execute(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::SeriesSave(&input),
+            Some("save"),
+            Some(0)
+        )
+        .unwrap(),
+        first
+    );
+    let request = json!({"companySlugs":["a"],"asOfDate":"2026-02-01"});
+    let result = execute(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Service(&key),
+        Action::SeriesMaterialize(&request),
+        Some("bulk"),
+        None,
+    )
+    .unwrap();
+    assert_eq!(result["materialized"]["created"], 2);
+    assert_eq!(
+        c.query_row::<i64, _, _>(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        7
+    );
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','reviewer','user:human-one')",[subject]).unwrap();
+    assert!(
+        execute(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::SeriesMaterialize(&request),
+            Some("bulk"),
+            None
+        )
+        .is_err()
+    );
+    assert_eq!(
+        c.query_row::<i64, _, _>(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        7
+    );
+}

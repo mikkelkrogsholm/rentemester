@@ -3383,6 +3383,36 @@
     },
     {
       "method": "GET",
+      "path": "/api/task-series",
+      "capability": "GET /api/task-series"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/task-series",
+      "capability": "HEAD /api/task-series"
+    },
+    {
+      "method": "POST",
+      "path": "/api/task-series",
+      "capability": "POST /api/task-series"
+    },
+    {
+      "method": "POST",
+      "path": "/api/task-series/materialize",
+      "capability": "POST /api/task-series/materialize"
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-series/project",
+      "capability": "GET /api/task-series/project"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/task-series/project",
+      "capability": "HEAD /api/task-series/project"
+    },
+    {
+      "method": "GET",
       "path": "/api/tasks",
       "capability": "GET /api/tasks"
     },
@@ -3587,5 +3617,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "ad5e4e3ca7b2e8e6a15a0bd819a64c1dfdc8628916c7d833b904d3b9f888cc82"
+  "manifestId": "01812c77eef99abe5f6abd930490c625c87cd88f331034441c16fb9bb90e3b09"
 }
