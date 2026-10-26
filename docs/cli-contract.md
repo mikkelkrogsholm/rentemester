@@ -39,6 +39,23 @@ returneres. Tomt workspace-scope kræver workspace owner; en eksplicit tom
 de oprindelige rutinenøgler. Materialisering er eksplicit; denne leverance
 starter ingen automatisk runner.
 
+### Brugerdefinerede opgaveboards gennem Rust-serveren
+
+`rentemester-rust task-boards list|preview|save` og MCP `task_boards_list`,
+`task_boards_preview`, `task_boards_save` bruger samme private servertransport.
+`preview` tager `board` og valgfri `expectedVersion`; den læser kun og afviser
+bekræftelse og skrivefelter. `save` kræver `board`, `expectedVersion` (`0` ved
+oprettelse), callerens `idempotencyKey` og eksplicit bekræftelse. Hjælp viser
+de oprindelige typede JSON-skemaer.
+
+Hvert statusområde skal have præcis én standardkolonne. Fjernes en befolket
+kolonne, kræves en eksplicit relocation. Ændret statusbetydning kræver det
+aktuelle `previewHash`; ændringer kan aldrig omgå dokumenteret afslutning
+eller genåbning. Strukturelle workspaceændringer kræver aktuel adgang til
+alle berørte selskaber, uanset om deres opgaver er synlige. Opgave-, board-
+og receipt-events gemmes atomisk. Et identisk gemt resultat genbruger sin
+oprindelige version efter aktuel adgangskontrol, også efter senere kolonner.
+
 ### Lokal original `system healthcheck` (Rust)
 
 `rentemester-rust system healthcheck --company PATH [--json | --format json|human]`

@@ -1,0 +1,112 @@
+{
+  "format": "rentemester-native-custom-board-qualification/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "sgdRun": "issue718-native-custom-board-journey-20261026T170340.302470000",
+  "sourceRevision": "2b922f71f1df1b90314e6c8158ea282540697ed8",
+  "sourceTree": "3ff902721a55cb7af8263103d437bfa01588cf95",
+  "sourceFiles": {
+    "crates/rentemester-application/src/tasks.rs": "94cef5c658e9e8a336aef718c40df7b742a98fcf40065b40040ea9555e81d033",
+    "crates/rentemester-application/src/tasks/boards.rs": "14e52b878f8fce44c711d5322b88f325b16e7d487e0f4fc56cbd81c2a91bdbf0",
+    "crates/rentemester-application/src/tasks/tests.rs": "913fcaec7a44bd534530faf32e7011ef8f1a58d8f567e7e7ad6915fe0792cd62",
+    "crates/rentemester-cli/src/main.rs": "6e664488f593e39da807bec6386b536710f2e2e0650a3610e7bfc6c107c98b70",
+    "crates/rentemester-cli/src/original_discovery.rs": "0ef51e212b3311c2ee72986e50919c5b16c2edb24f32af71740cca02f7ca60ee",
+    "crates/rentemester-cli/src/tasks.rs": "b0371e17994c3e6aa129f568bd0492d5a9640f0dbed4339a56708c9fb88b4cea",
+    "crates/rentemester-client/src/tasks-input.json": "6b3c3f2c18bc493c61865bb1b6f390195af8b4b8675c7c3b2bed2dd60a968e03",
+    "crates/rentemester-client/src/tasks.rs": "87c1ec750b6abc518779c071cdf2b21a944764d6d99f231172834fdcba769269",
+    "crates/rentemester-engine/src/tasks/boards.rs": "9eb7f258c17aeaa21adb07544d01a1fe7ed2c3e56550e554eabcdb414b34ada3",
+    "crates/rentemester-engine/src/tasks/boards/generate-main.ts": "99bba1117feb1fdd67de4e403f9d334ca8bbaed8d8f6828f546164836d796402",
+    "crates/rentemester-engine/src/tasks/boards/main-boards.json": "17a7ef897e326f81f714c5eb264d852804d506377d42f127ae863d6c1ab5bfa3",
+    "crates/rentemester-engine/src/tasks/boards/tests.rs": "bfc2569c9a8600a5eb7382b88ac5fd3884f3dc4d365c2c12a549a4e111f298c7",
+    "crates/rentemester-engine/src/tasks/mod.rs": "a24e40f2fe4a9d1adf83b10f3e58bb1fed71f30151a49832eece85637d225226",
+    "crates/rentemester-mcp/src/tasks.rs": "68c54a39d08857d9c7d67bd0c364fbfc8bbe3dc25744347640532d2a602268b3",
+    "crates/rentemester-server/src/product_http.rs": "4077dc990b250ecb35473cb2e489e4ce2420209b8cd9d1fc613830cf9840b497",
+    "crates/rentemester-server/src/product_http/tasks.rs": "c0b62ecb3c6b5bdef5b8cb4c2d1d0a7522bd52041c4979d920b71022af5dee66",
+    "crates/rentemester-storage/src/portable_backup/tasks.rs": "7cc6063507f19561d22caa1c3f1dcfc8eb2e4352c68ab5d9cda4de4901485a27",
+    "crates/rentemester-storage/src/portable_backup/tasks/boards.rs": "4a5a20c93863fb8222ffb256cc211e57060ade863473c0c5f5b692d8492a788d",
+    "crates/rentemester-storage/src/portable_backup/tasks/boards/tests.rs": "532c758ce2bcef509060a2c65f5905200bc2be6d8ea722b2613973113938a8a5",
+    "crates/rentemester-storage/src/tasks/boards.rs": "dbb779edc5b8be50ba25e6f06a16eafec35842ccfd50cb56f323f47163034c06",
+    "crates/rentemester-storage/src/tasks/mod.rs": "deb02b5becca33ef2061621a7bf051a6315967f5ffbee79ee4ef7540b93b6018",
+    "protocol/http-v1.json": "d1c4127036fe071f39521cf22731c32d509e49314ba3ea7372fe79a7f121adfc",
+    "scripts/rust/check-native-task-boards.ts": "1b7085577e92d25e755dbff0a3aa4be07fdc67b9bb6c9cd130abb7b8a3ea542c",
+    "scripts/rust/check-native-tasks.py": "07a87a5cd510ece13afa50cbcd6f75aed8a3de8b1642d3b4ce12d042bba2ebe8"
+  },
+  "checks": {
+    "engine": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/engine.log",
+      "sha256": "2ad7ffdc64c9e2849a369863ac355946c77274bb0bff4c6aba7c0510aeedfc0d",
+      "checkKey": "0b5b41dd1bc5cb1bf5f66b24eec318eee3f9400de7d74262d6dee1f5aa1f8288",
+      "passedCases": 1
+    },
+    "application": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/application.log",
+      "sha256": "dfb5d0d80f7733a29db7439dfcff795d13090f8a50726d913a59db8d3339bb05",
+      "checkKey": "211da24d9ae180f52915599ba0c908166bf50cdf5e3703dcce6bcebb26604a9d",
+      "passedCases": 16
+    },
+    "clients": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/clients.log",
+      "sha256": "3ea4f24326f46b3fd44af130ea0d15b41547c8c3c82450a2ab17b150f609d72b",
+      "checkKey": "3536f488faefae982d80f3e005c4aaad1ada9181496f8eb65ae4290eaeed4b35",
+      "passedCases": 3
+    },
+    "cli": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/cli.log",
+      "sha256": "50320a47cccfeea0442d0846fbf455c3edef4b2e93f718568ffa8ba0d1e872a4",
+      "checkKey": "36a6f08d8bd839edf05f012f8035be5540319a217669c1177fdc4036d67136b8",
+      "passedCases": 1
+    },
+    "manifest": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/manifest.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checkKey": "72f4d6dc58cd713e48a6d03d2d9307cf25650b5c2fddf4b077def1bda3796918",
+      "passedCases": null
+    },
+    "recovery": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/recovery.log",
+      "sha256": "a5ca75612582526acb7c7ccbe2e5be7c8e0654a929b4a29b40ecdaf6ab077814",
+      "checkKey": "b73a734c1e9134ef6db9434c98f992456c339a09568fd70c39e2f28560d2d280",
+      "passedCases": 7
+    },
+    "mcp": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/mcp.log",
+      "sha256": "bad972f91846ce3afaf3f1efb3a7c29e9983161a46eb3ca50902d220afef10f7",
+      "checkKey": "c0f75edfea88f8c50788f55adfee212ab28831b9c32a798933d601dd3a7a1aca",
+      "passedCases": 1
+    },
+    "http": {
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/http.log",
+      "sha256": "ab75e341fc568ef983cd36abd58bb26ee260b29f53c9cbb7de9c33dd50dc0dcc",
+      "checkKey": "e78b62d03f5d832d05c6dda518a9a45dfc50660bb444ff09d00f364d53391ca8",
+      "passedCases": 3
+    }
+  },
+  "engineOracleScenarios": 9,
+  "binaries": {
+    "rentemester-server": {
+      "sha256": "697c9f2d8c66080ee2bf12642f6dd27fbeef407130047acffb245294ebbe4d58",
+      "sourceRevision": "2b922f71f1df1b90314e6c8158ea282540697ed8"
+    },
+    "rentemester-rust": {
+      "sha256": "08f50a77c54d203486e58ff532546d125489c167aeed0bd952b21a676810c449",
+      "sourceRevision": "2b922f71f1df1b90314e6c8158ea282540697ed8"
+    },
+    "rentemester-mcp": {
+      "sha256": "61252e830b44deb55639512adbd2ce33fbff753025ceade1b5353ddaaeff39c7",
+      "sourceRevision": "2b922f71f1df1b90314e6c8158ea282540697ed8"
+    }
+  },
+  "webIndexSha256": "bbe91bd5ef2a63c081177a86a8ec67f9925fb0f5f1dac202d6b26a275c69c140",
+  "actualBrowser": {
+    "first": "board-first.json",
+    "restart": "board-reopen.json",
+    "runtime": "runtime.json",
+    "scope": "Existing unchanged React/StyleX custom column preview/apply, task move, populated column removal with explicit relocation, preserved references/history; original CLI board list/MCP preview; native server stop/restart and exact original receipts/no duplicate. Synthetic fixture stopped and removed, zero financial/provider actions."
+  },
+  "review": {
+    "method": "Primary compared actual board engine/storage/application/HTTP/SDK/CLI/MCP/recovery diff against current-main TS, independent9exact TS oracle previews/hashes/results/refusals, plus focused read-only review. Green tests were not the review.",
+    "finding": "Full mutable relocation preview before receipt could reject an original saved board after a later populated column. Separate current structural/all-company authority admission from mutable new-effect validation; exact result still requires current scope. Main fixed and concrete later-column/revoked-scope regression passed in final16application cases.",
+    "otherControls": "Nonstructural hashes exclude workload; structural workspace access before private workload; single admitted writer/savepoint for all relocation/board/receipt events; current version+preview, evidence/reopen fences, original call keys/strict128KiBDTOs. Explicit codec3 exact historical board receipt/principal/event and relocation evidence; old manualcodec1/routinecodec2 export bytes preserved and restored, no grants/runtime import."
+  },
+  "remaining": "Whole718/all55/fullmain current tasks sources/reminders/runtime/protected knowledge, financial/party/evidence/adoption and original native/platform/release/cutover gates remain. Actual43closed12open. This is not installed Tauri or release/promotion acceptance."
+}

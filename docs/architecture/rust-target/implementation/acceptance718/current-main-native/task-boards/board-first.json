@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "syntheticOnly": true,
+  "browser": [
+    "custom column preview/apply",
+    "task move",
+    "populated column removal preview/relocation",
+    "evidence/history retained"
+  ],
+  "clients": [
+    "task-boards list",
+    "task_boards_preview"
+  ],
+  "errors": []
+}

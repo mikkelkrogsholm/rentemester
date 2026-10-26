@@ -871,5 +871,12 @@
     "report": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-series/qualification.json",
     "sha256": "9404c762ca6a4e4cc5b9162083d0f5c02739983ece4dbcbdf3fa34a2e8a8e339",
     "scope": "Actual existing React routine lifecycle and restart/receipts through shared Rust server/CLI/MCP, with versioned recovery; source/runtime/boards/knowledge/financial main parity and final native gates remain."
+  },
+  "currentMainNativeCustomBoards": {
+    "whole_issue_accepted": false,
+    "source_revision": "2b922f71f1df1b90314e6c8158ea282540697ed8",
+    "report": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/qualification.json",
+    "sha256": "d70f2e87dc8b457e286215d7593f430a1f66c5d095aae7845ddbfbf82c7bc13a",
+    "scope": "Actual native shared React board preview/apply/relocation/taskmove/CLI/MCP/restart/receipts and explicit source-free codec3, preserving legacy codecs and full remaining scope."
   }
 }
