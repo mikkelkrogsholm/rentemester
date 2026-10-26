@@ -18,6 +18,7 @@ use rusqlite::{Connection, Transaction, TransactionBehavior};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 
+mod series;
 pub enum Authority<'a> {
     Cookie {
         cookies: &'a CookieVerifier,
@@ -27,6 +28,10 @@ pub enum Authority<'a> {
 }
 pub enum Action<'a> {
     List(&'a Value),
+    SeriesList(&'a Value),
+    SeriesProject(&'a Value),
+    SeriesSave(&'a Value),
+    SeriesMaterialize(&'a Value),
     Get(&'a str),
     History(&'a str),
     Receipt(&'a str),
@@ -40,7 +45,9 @@ impl Action<'_> {
     fn writes(&self) -> bool {
         matches!(
             self,
-            Self::Create(_)
+            Self::SeriesSave(_)
+                | Self::SeriesMaterialize(_)
+                | Self::Create(_)
                 | Self::Update { .. }
                 | Self::Move { .. }
                 | Self::Complete { .. }
@@ -275,6 +282,7 @@ fn view(
     catalog: &Catalog,
     id: &Identity,
     access: &Access,
+    now: &str,
 ) -> Result<Value, Error> {
     let query = input.as_object().ok_or_else(|| error("invalid_input"))?;
     let allowed = [
@@ -432,15 +440,7 @@ fn view(
             Err(e) => return Err(e),
         }
     }
-    // These workers are not enabled yet. Never hide already stored unported series.
-    let series: i64 = tx
-        .query_row("SELECT count(*) FROM rm_task_series_events", [], |r| {
-            r.get(0)
-        })
-        .map_err(|_| error("invalid_control"))?;
-    if series != 0 {
-        return Err(error("task_series_unavailable"));
-    }
+    let (series, projections) = series::metadata(tx, input, catalog, access, now)?;
     let notifications: i64 = tx
         .query_row("SELECT count(*) FROM rm_task_notifications", [], |r| {
             r.get(0)
@@ -450,7 +450,7 @@ fn view(
         return Err(error("task_notifications_unavailable"));
     }
     Ok(
-        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":[],"projections":[],"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":{"running":false,"lastTickAt":null,"lastError":null},"notifications":[],"sourceCoverage":["Manuelle opgaver. Automatisk opfølgning er ikke aktiveret."]}),
+        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":series,"projections":projections,"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":{"running":false,"lastTickAt":null,"lastError":null},"notifications":[],"sourceCoverage":["Manuelle opgaver. Automatisk opfølgning er ikke aktiveret."]}),
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -478,6 +478,7 @@ pub fn execute(
         let stamp = rentemester_engine::company_knowledge::timestamp(now)?;
         let identity = observe(&tx, catalog, &authority, now)?;
         let access = access_for(&tx, &identity.subject, catalog)?;
+        series::preadmit(&tx, &action, &access, expected)?;
         let writes = action.writes();
         if writes {
             rentemester_storage::workspace_transfer::require_business_write(&tx)?;
@@ -539,7 +540,10 @@ pub fn execute(
             }
         }
         let read = match &action {
-            Action::List(q) => Some(view(&tx, q, catalog, &identity, &access)?),
+            Action::List(q) => Some(view(&tx, q, catalog, &identity, &access, &stamp)?),
+            Action::SeriesList(_) | Action::SeriesProject(_) => {
+                Some(series::read(&tx, &action, catalog, &access, &stamp)?)
+            }
             Action::Get(id) => {
                 let task = get_current(&tx, id, catalog, &access, false)?;
                 let history = visible_history(&tx, id, catalog, &access)?;
@@ -550,7 +554,7 @@ pub fn execute(
                 Some(json!({"history":visible_history(&tx,id,catalog,&access)?}))
             }
             Action::Receipt(key) => Some(
-                json!({"receipt":store::receipt(&tx,&identity.principal,key,|t|authorize_task(&tx,catalog,&access,t,false))?}),
+                json!({"receipt":store::series::receipt(&tx,&identity.principal,key,|scope|if scope_allowed(&access,scope,false){Ok(())}else{Err(denied())},|t|authorize_task(&tx,catalog,&access,t,false))?}),
             ),
             _ => None,
         };
@@ -582,36 +586,41 @@ pub fn execute(
             now: &stamp,
             source_check: None,
         };
-        let command = match &action {
-            Action::Create(_) => store::Command::Create {
-                input: draft.as_ref().unwrap(),
-                generated_id: &generated,
-            },
-            Action::Update { id, patch } => store::Command::Update { id, patch },
-            Action::Move { id, input } => store::Command::Move { id, input },
-            Action::Complete { id, input } => store::Command::Complete { id, input },
-            Action::Reopen { id, reason } => store::Command::Reopen { id, reason },
-            _ => unreachable!(),
+        let result = if matches!(action, Action::SeriesSave(_) | Action::SeriesMaterialize(_)) {
+            series::mutate(&tx, &action, &ctx, catalog, &access)
+        } else {
+            let command = match &action {
+                Action::Create(_) => store::Command::Create {
+                    input: draft.as_ref().unwrap(),
+                    generated_id: &generated,
+                },
+                Action::Update { id, patch } => store::Command::Update { id, patch },
+                Action::Move { id, input } => store::Command::Move { id, input },
+                Action::Complete { id, input } => store::Command::Complete { id, input },
+                Action::Reopen { id, reason } => store::Command::Reopen { id, reason },
+                _ => unreachable!(),
+            };
+            store::mutate_in_tx_checked(
+                &tx,
+                command,
+                ctx,
+                |tx, t| authorize_task(tx, catalog, &access, t, true),
+                |tx, t| {
+                    if matches!(action, Action::Create(_) | Action::Update { .. }) {
+                        recipients(tx, catalog, t)
+                    } else {
+                        Ok(())
+                    }
+                },
+            )
+            .map(|out| json!({"task":out.task}))
         };
-        let result = store::mutate_in_tx_checked(
-            &tx,
-            command,
-            ctx,
-            |tx, t| authorize_task(tx, catalog, &access, t, true),
-            |tx, t| {
-                if matches!(action, Action::Create(_) | Action::Update { .. }) {
-                    recipients(tx, catalog, t)
-                } else {
-                    Ok(())
-                }
-            },
-        );
         match result {
             Ok(out) => {
                 tx.execute_batch("RELEASE task_effect")
                     .map_err(|_| error("connection_refused"))?;
                 savepoint_safe = true;
-                Ok(json!({"task":out.task}))
+                Ok(out)
             }
             Err(e) => {
                 tx.execute_batch("ROLLBACK TO task_effect; RELEASE task_effect")
