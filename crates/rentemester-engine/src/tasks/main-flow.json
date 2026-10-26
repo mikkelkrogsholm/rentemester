@@ -1,0 +1,341 @@
+{
+  "format": "rentemester-task-main-oracle/1",
+  "sources": {
+    "src/core/tasks.ts": "24c691caa766e9d0e3f46a3651fed7dbc69f7ac5a7677ede472d80a3a65bc4d2",
+    "src/core/tasks-types.ts": "2f26fb66dd8b844510dd415ff63d5282c0c829fb2670c9fdb68f7c40766adae4",
+    "src/core/canonical-json.ts": "ce017146fd6a3ed9aa01d5f952ce90bbafb7842bb099ae4bd0993f616a449423",
+    "src/core/workspace-migrations/0034-tasks-v34.json": "040a92f2d11cacc9aec7415313c844554e33b4e4a3b23372ba3d0d82ea5c4bcf"
+  },
+  "steps": [
+    {
+      "operation": "create",
+      "input": {
+        "taskId": "task-synthetic",
+        "title": " Kontrollér perioden ",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic"
+        },
+        "evidenceRequired": true,
+        "workDate": "2026-10-26",
+        "deadline": {
+          "date": "2026-11-01",
+          "kind": "agreement",
+          "certainty": "confirmed",
+          "basis": "Aftalt kontrol"
+        }
+      },
+      "expectedVersion": null,
+      "now": "2026-10-26T11:00:00.000Z",
+      "expected": {
+        "taskId": "task-synthetic",
+        "version": 1,
+        "title": "Kontrollér perioden",
+        "description": "",
+        "nextAction": "",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic"
+        },
+        "type": "ad_hoc",
+        "origin": "manual",
+        "status": "open",
+        "columnId": "open",
+        "workspaceColumnId": null,
+        "assignee": null,
+        "waitingOn": "",
+        "workDate": "2026-10-26",
+        "deadline": {
+          "date": "2026-11-01",
+          "kind": "agreement",
+          "certainty": "confirmed",
+          "basis": "Aftalt kontrol"
+        },
+        "period": null,
+        "references": [],
+        "source": null,
+        "evidenceRequired": true,
+        "relevance": "relevant",
+        "verificationRequired": false,
+        "completion": null,
+        "seriesId": null,
+        "occurrenceKey": null,
+        "reminders": [],
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "updatedAt": "2026-10-26T11:00:00.000Z"
+      }
+    },
+    {
+      "operation": "update",
+      "input": {
+        "description": "Bilag og kvittering skal stemme",
+        "nextAction": "Åbn den beskyttede kilde",
+        "waitingOn": "",
+        "references": [
+          {
+            "kind": "document",
+            "ref": "doc:synthetic:7",
+            "companySlug": "synthetic"
+          }
+        ]
+      },
+      "expectedVersion": 1,
+      "now": "2026-10-26T11:01:00.000Z",
+      "expected": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": {
+          "basis": "Aftalt kontrol",
+          "certainty": "confirmed",
+          "date": "2026-11-01",
+          "kind": "agreement"
+        },
+        "description": "Bilag og kvittering skal stemme",
+        "evidenceRequired": true,
+        "nextAction": "Åbn den beskyttede kilde",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "doc:synthetic:7",
+            "companySlug": "synthetic"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "task-synthetic",
+        "title": "Kontrollér perioden",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:01:00.000Z",
+        "verificationRequired": false,
+        "version": 2,
+        "waitingOn": "",
+        "workDate": "2026-10-26",
+        "workspaceColumnId": null
+      }
+    },
+    {
+      "operation": "move",
+      "input": {
+        "status": "in_progress",
+        "workspaceColumnId": "in_progress"
+      },
+      "expectedVersion": 2,
+      "now": "2026-10-26T11:02:00.000Z",
+      "expected": {
+        "assignee": null,
+        "columnId": "in_progress",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": {
+          "basis": "Aftalt kontrol",
+          "certainty": "confirmed",
+          "date": "2026-11-01",
+          "kind": "agreement"
+        },
+        "description": "Bilag og kvittering skal stemme",
+        "evidenceRequired": true,
+        "nextAction": "Åbn den beskyttede kilde",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "companySlug": "synthetic",
+            "kind": "document",
+            "ref": "doc:synthetic:7"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "in_progress",
+        "taskId": "task-synthetic",
+        "title": "Kontrollér perioden",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:02:00.000Z",
+        "verificationRequired": false,
+        "version": 3,
+        "waitingOn": "",
+        "workDate": "2026-10-26",
+        "workspaceColumnId": "in_progress"
+      }
+    },
+    {
+      "operation": "complete",
+      "input": {
+        "outcome": "completed",
+        "note": "Kvittering og bilag er kontrolleret",
+        "references": [
+          {
+            "kind": "document",
+            "ref": "doc:synthetic:7",
+            "companySlug": "synthetic"
+          }
+        ]
+      },
+      "expectedVersion": 3,
+      "now": "2026-10-26T11:03:00.000Z",
+      "expected": {
+        "assignee": null,
+        "columnId": "done",
+        "completion": {
+          "outcome": "completed",
+          "note": "Kvittering og bilag er kontrolleret",
+          "references": [
+            {
+              "kind": "document",
+              "ref": "doc:synthetic:7",
+              "companySlug": "synthetic"
+            }
+          ],
+          "assurance": "user_reported",
+          "at": "2026-10-26T11:03:00.000Z",
+          "actor": "user:synthetic"
+        },
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": {
+          "basis": "Aftalt kontrol",
+          "certainty": "confirmed",
+          "date": "2026-11-01",
+          "kind": "agreement"
+        },
+        "description": "Bilag og kvittering skal stemme",
+        "evidenceRequired": true,
+        "nextAction": "Åbn den beskyttede kilde",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "companySlug": "synthetic",
+            "kind": "document",
+            "ref": "doc:synthetic:7"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "done",
+        "taskId": "task-synthetic",
+        "title": "Kontrollér perioden",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:03:00.000Z",
+        "verificationRequired": false,
+        "version": 4,
+        "waitingOn": "",
+        "workDate": "2026-10-26",
+        "workspaceColumnId": "done"
+      }
+    },
+    {
+      "operation": "reopen",
+      "input": "Efterfølgende bilag ændrer vurderingen",
+      "expectedVersion": 4,
+      "now": "2026-10-26T11:04:00.000Z",
+      "expected": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": {
+          "basis": "Aftalt kontrol",
+          "certainty": "confirmed",
+          "date": "2026-11-01",
+          "kind": "agreement"
+        },
+        "description": "Bilag og kvittering skal stemme",
+        "evidenceRequired": true,
+        "nextAction": "Åbn den beskyttede kilde",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "companySlug": "synthetic",
+            "kind": "document",
+            "ref": "doc:synthetic:7"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "task-synthetic",
+        "title": "Kontrollér perioden",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:04:00.000Z",
+        "verificationRequired": false,
+        "version": 5,
+        "waitingOn": "",
+        "workDate": "2026-10-26",
+        "workspaceColumnId": "open"
+      }
+    }
+  ],
+  "hashes": [
+    {
+      "input": {
+        "payload": {
+          "scope": {
+            "kind": "workspace",
+            "companySlugs": [
+              "beta",
+              "alpha"
+            ]
+          },
+          "title": "Kontrol"
+        },
+        "expectedVersion": null
+      },
+      "canonical": "{\"expectedVersion\":null,\"payload\":{\"scope\":{\"companySlugs\":[\"beta\",\"alpha\"],\"kind\":\"workspace\"},\"title\":\"Kontrol\"}}",
+      "sha256": "9eec54e8a30d2aeef60cc358682a10807e6aceae1bb951115aa10ca234d1b043"
+    },
+    {
+      "input": {
+        "": 4,
+        "😀": 1e-7,
+        "a": 0,
+        "b": 1e+21
+      },
+      "canonical": "{\"a\":0,\"b\":1e+21,\"😀\":1e-7,\"\":4}",
+      "sha256": "353d860a659b9c1e7baa2cd045d71201a815f76bcf1b139d4495c620f48ca6bc"
+    },
+    {
+      "input": [
+        true,
+        null,
+        "æ\n\t",
+        100000000000000000000
+      ],
+      "canonical": "[true,null,\"æ\\n\\t\",100000000000000000000]",
+      "sha256": "fc73e71451dcf7d09bb0c4bd383baf27c61c64cac220712f3e5cf0e2536193fe"
+    }
+  ]
+}

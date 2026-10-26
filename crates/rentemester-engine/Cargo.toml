@@ -19,6 +19,8 @@ time = "0.3"
 serde.workspace = true
 serde_json.workspace = true
 unicode-normalization = "=0.1.25"
+regex = "=1.13.1"
+chrono-tz = { version = "=0.10.4", default-features = false }
 
 [lints]
 workspace = true

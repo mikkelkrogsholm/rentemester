@@ -31,6 +31,7 @@ pub mod document_pdf;
 pub mod invoice_extraction;
 pub mod corporate_records;
 pub mod company_knowledge;
+pub mod tasks;
 pub mod parties;
 use rentemester_engine::{
     Error,

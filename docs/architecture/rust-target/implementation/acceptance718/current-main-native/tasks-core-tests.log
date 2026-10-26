@@ -1,0 +1,40 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.77s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_engine-002f901a00a75899)
+
+running 9 tests
+test tasks::tests::completed_state_requires_note_evidence_and_explicit_reopen ... ok
+test tasks::tests::documented_manual_task_flow_matches_current_main ... ok
+test tasks::tests::canonical_hash_matches_main_including_utf16_key_order_and_js_numbers ... ok
+test tasks::tests::scope_references_and_source_cannot_widen_access ... ok
+test tasks::tests::company_board_ambiguity_requires_choice_and_workspace_projection_follows_status ... ok
+test tasks::tests::unknown_relevance_external_verification_and_statutory_basis_stay_guarded ... ok
+test tasks::tests::privacy_guards_preserve_product_references_and_utf16_limits ... ok
+test tasks::tests::source_resolution_is_fresh_authoritative_and_evidenced ... ok
+test tasks::tests::version_input_calendar_and_reminder_validation_fail_closed ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.08s
+
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 6 tests
+test tasks::tests::two_connections_same_command_append_once_under_writer_lock ... ok
+test tasks::tests::stale_or_denied_proposals_leave_no_partial_event_or_receipt ... ok
+test tasks::tests::scope_change_checks_old_new_and_receipt_current_scopes ... ok
+test tasks::tests::create_receipt_replay_does_not_reapply_changed_board_placement ... ok
+test tasks::tests::durable_receipt_replay_is_exact_and_requires_current_authority_first ... ok
+test tasks::tests::append_only_manual_flow_survives_reopen_and_matches_main_snapshots ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 714 filtered out; finished in 0.08s
+
+     Running tests/company_creation_profile85.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/company_creation_profile85-8b75ea8768f532e9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/company_name_profile85.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/company_name_profile85-f07d66627c5d1b75)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s

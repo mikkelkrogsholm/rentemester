@@ -1,5 +1,6 @@
 //! Pure accounting values and read projections. No filesystem, SQL or transport.
 pub mod workspace_manifest;
+pub mod tasks;
 pub mod invoice_validation;
 pub mod invoice_compensation;
 pub mod invoice_interest;

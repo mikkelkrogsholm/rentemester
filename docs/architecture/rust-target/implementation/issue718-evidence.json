@@ -28,8 +28,9 @@
     }
   },
   "remaining": [
-    "Only retained original J03 native/Tauri boundary and original #712 dependency remain after source-bound browser disposition. Installed manual native/menu/Keychain/WebKit-cookie/close-reopen/cancel acceptance remains LAST; no GPUI/mock substitute or hidden fallback.",
-    "Whole #718 stays OPEN until that original gate is actually accepted; browser completion does not waive dependencies or release/cutover requirements."
+    "Current approved main-native parity, including task/knowledge/approval/party/accounting gaps, needs actual native application and recovery acceptance; new task engine/storage is staged only.",
+    "Current-main broad UI failures remain incompletely qualified; no assertion/protocol/identity bypass or unchanged full-suite rerun.",
+    "Original #712 dependency and J03 native/Tauri boundary: native/menu/Keychain/WebKit-cookie/close-reopen/cancel/manual installed acceptance LAST; all release/cutover gates retained."
   ],
   "series": "autonomous-closeout.md",
   "automatic_followup": "rentemester-luk-resterende-rust-issues",
@@ -836,8 +837,17 @@
     "broaderUiAcceptance": "Not accepted; stopped broad probe and exact prepatch4failure comparison preserved. Other failures remain unqualified."
   },
   "currentMainNativeSelectorRepair": {
-    "status": "sourcecheck repair only; actualbrowserrequalification pending",
+    "status": "Selector source repair qualified; next actual packaged4df CI passes that boundary but stops at missing runner pdftotext. poppler-utils installation added; final browser qualification still pending.",
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/selector-qualification.json",
     "wholeIssueAccepted": false
-  }
+  },
+  "currentMainNativeTasksCore": {
+    "status": "accepted staged engine/storage core only; runtime not enabled",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/tasks-core-qualification.json",
+    "wholeIssueAccepted": false
+  },
+  "historicalRemainingBeforeMainPort": [
+    "Only retained original J03 native/Tauri boundary and original #712 dependency remain after source-bound browser disposition. Installed manual native/menu/Keychain/WebKit-cookie/close-reopen/cancel acceptance remains LAST; no GPUI/mock substitute or hidden fallback.",
+    "Whole #718 stays OPEN until that original gate is actually accepted; browser completion does not waive dependencies or release/cutover requirements."
+  ]
 }

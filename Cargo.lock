@@ -6949,8 +6949,10 @@ name = "rentemester-engine"
 version = "0.3.1"
 dependencies = [
  "base64 0.22.1",
+ "chrono-tz",
  "mail-parser",
  "num-bigint 0.5.1",
+ "regex",
  "roxmltree 0.20.0",
  "ryu-js",
  "serde",
