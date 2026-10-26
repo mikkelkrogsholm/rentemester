@@ -10,7 +10,7 @@ fn invalid(s: &str) -> Failure {
     (2, Error::new("invalid_input", s))
 }
 pub fn help() -> Value {
-    json!({"usage":"tasks list|get|history|receipt|sync|create|update|move|complete|reopen --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input task.json] [--confirm]. Global --local-profile joins an existing local server instead. Input is original typed JSON, from --input or stdin (list defaults to {}).","policy":"Current verified identity and all company memberships before receipt replay; caller idempotencyKey and positive expectedVersion on existing-task writes. No caller actor/local grant, ledger opening, background workers, generated keys or automatic retry. After outcome_unknown retain the exact input/key; inspect receipt/history before another action. Source sync and completion recheck actual native facts, recorded references and original integrity; calculated/closed is not filed. Custom boards use explicit scoped preview and confirmed versioned save; automatic runtime remains unfinished. Series use explicit projection/materialization, never automatic retries.","inputSchemas":TASK_OPERATIONS.iter().filter(|op| !op.starts_with("series-") && !op.starts_with("boards-")).map(|op|(*op,task_input_schema(op))).collect::<BTreeMap<_,_>>()})
+    json!({"usage":"tasks list|get|history|receipt|sync|create|update|move|complete|reopen|reminder-set|notifications|runtime|run --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input task.json] [--confirm]. Global --local-profile joins an existing local server instead. Input is original typed JSON, from --input or stdin (list defaults to {}).","policy":"Current verified identity and all company memberships before receipt replay; caller idempotencyKey and positive expectedVersion on existing-task writes. No caller actor/local grant, ledger opening, background workers, generated keys or automatic retry. After outcome_unknown retain the exact input/key; inspect receipt/history before another action. Source sync and completion recheck actual native facts, recorded references and original integrity; calculated/closed is not filed. Custom boards use explicit scoped preview and confirmed versioned save; automatic runtime requires paired server-worker/current transient service credentials. Series use explicit projection/materialization, never automatic retries.","inputSchemas":TASK_OPERATIONS.iter().filter(|op| !op.starts_with("series-") && !op.starts_with("boards-")).map(|op|(*op,task_input_schema(op))).collect::<BTreeMap<_,_>>()})
 }
 pub fn series_help() -> Value {
     let mut value = help();
@@ -74,7 +74,12 @@ fn run_operation(args: &[String]) -> Result<Value, Failure> {
     if args.is_empty() || args == ["--help"] || args.get(1).is_some_and(|s| s == "--help") {
         return Ok(help());
     }
-    let op = &args[0];
+    let runtime_alias = "runtime-status".to_owned();
+    let op = if args[0] == "runtime" {
+        &runtime_alias
+    } else {
+        &args[0]
+    };
     if !TASK_OPERATIONS.contains(&op.as_str()) {
         return Err(invalid(
             "unsupported native task operation; see tasks --help",
@@ -129,8 +134,10 @@ fn run_operation(args: &[String]) -> Result<Value, Failure> {
             .take(MAX_TASK_BODY as u64 + 1)
             .read_to_end(&mut bytes)
             .map_err(|_| invalid("cannot read task input"))?;
-    } else if !matches!(op.as_str(), "list" | "series-list" | "boards-list")
-        || !std::io::IsTerminal::is_terminal(&std::io::stdin())
+    } else if !matches!(
+        op.as_str(),
+        "notifications" | "runtime-status" | "list" | "series-list" | "boards-list"
+    ) || !std::io::IsTerminal::is_terminal(&std::io::stdin())
     {
         std::io::stdin()
             .take(MAX_TASK_BODY as u64 + 1)
@@ -140,8 +147,11 @@ fn run_operation(args: &[String]) -> Result<Value, Failure> {
     if bytes.len() > MAX_TASK_BODY {
         return Err(invalid("task input exceeds128KiB"));
     }
-    let input = if bytes.is_empty() && matches!(op.as_str(), "list" | "series-list" | "boards-list")
-    {
+    let input = if bytes.is_empty()
+        && matches!(
+            op.as_str(),
+            "notifications" | "runtime-status" | "list" | "series-list" | "boards-list"
+        ) {
         json!({})
     } else {
         serde_json::from_slice(&bytes).map_err(|_| invalid("task JSON required"))?

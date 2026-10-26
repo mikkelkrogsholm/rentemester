@@ -3448,6 +3448,16 @@
     },
     {
       "method": "GET",
+      "path": "/api/tasks/notifications",
+      "capability": "GET /api/tasks/notifications"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks/notifications",
+      "capability": "HEAD /api/tasks/notifications"
+    },
+    {
+      "method": "GET",
       "path": "/api/tasks/operations/{key}",
       "capability": "GET /api/tasks/operations/{key}"
     },
@@ -3455,6 +3465,21 @@
       "method": "HEAD",
       "path": "/api/tasks/operations/{key}",
       "capability": "HEAD /api/tasks/operations/{key}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/run",
+      "capability": "POST /api/tasks/run"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/runtime",
+      "capability": "GET /api/tasks/runtime"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/tasks/runtime",
+      "capability": "HEAD /api/tasks/runtime"
     },
     {
       "method": "POST",
@@ -3490,6 +3515,11 @@
       "method": "POST",
       "path": "/api/tasks/{id}/move",
       "capability": "POST /api/tasks/{id}/move"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id}/reminder",
+      "capability": "POST /api/tasks/{id}/reminder"
     },
     {
       "method": "POST",
@@ -3642,5 +3672,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "e403730cc8f9f7abba722b7d72298fc81cf2c3120361e816800aba6d437e693a"
+  "manifestId": "051d2ed2ce765854b55d346f668d2c1150d215f06f2fe5bc6f99ce295973d4d8"
 }

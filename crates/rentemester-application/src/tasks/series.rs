@@ -10,7 +10,7 @@ fn fields(value: &Value, allowed: &[&str]) -> Result<(), Error> {
     }
     Ok(())
 }
-fn manage(access: &Access, scope: &Scope) -> Result<(), Error> {
+pub(super) fn manage(access: &Access, scope: &Scope) -> Result<(), Error> {
     let slugs = scope.companies();
     if if slugs.is_empty() {
         access.owner

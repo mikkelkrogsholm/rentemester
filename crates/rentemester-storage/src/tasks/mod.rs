@@ -1,6 +1,7 @@
 //! Workspace task streams and receipts. The caller supplies current authority, never JSON grants.
 //! These primitives require the task schema. They do not migrate/adopt a workspace or enable routes.
 pub mod boards;
+pub mod reminders;
 pub mod series;
 pub mod sources;
 use crate::invalid;
@@ -403,3 +404,21 @@ where
 
 #[cfg(test)]
 mod tests;
+
+pub fn runtime_receipt(
+    tx: &Transaction<'_>,
+    ctx: &Context<'_>,
+    operation: &str,
+    input: &Value,
+) -> Result<Option<Value>, Error> {
+    series::fence(tx, ctx)?;
+    series::prior(tx, ctx, operation, input)
+}
+pub fn append_runtime_receipt(
+    tx: &Transaction<'_>,
+    ctx: &Context<'_>,
+    input: &Value,
+    result: &Value,
+) -> Result<(), Error> {
+    series::append_receipt(tx, ctx, "runtime-run", input, result)
+}

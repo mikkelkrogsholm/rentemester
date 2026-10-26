@@ -2,6 +2,7 @@
 //! Callers must hold current scope authority across receipt lookup, transition and append.
 pub mod boards;
 mod input;
+pub mod reminders;
 pub mod series;
 pub mod sources;
 mod transition;

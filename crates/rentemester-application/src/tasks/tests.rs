@@ -1662,3 +1662,497 @@ fn source_sync_current_selection_and_historical_receipt_scope_before_any_probe()
     );
     assert_eq!(reader.0, 2);
 }
+
+struct ReminderSourceWitness(usize);
+impl SourceReader for ReminderSourceWitness {
+    fn observe(
+        &mut self,
+        _: &Transaction<'_>,
+        _: SourceRequest<'_>,
+    ) -> Result<(Vec<domain::sources::Observation>, bool), Error> {
+        self.0 += 1;
+        Ok((vec![], false))
+    }
+    fn check(
+        &mut self,
+        _: &Transaction<'_>,
+        _: &str,
+        _: &Task,
+        _: i64,
+    ) -> Result<domain::SourceCheck, Error> {
+        panic!("manual reminder must not invent source verification")
+    }
+}
+#[test]
+fn reminder_native_delivery_replay_current_scope_disable_completion_and_restart() {
+    let (d, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','workspace_owner','user:human-one')").unwrap();
+    let created = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Create(&draft()),
+        Some("reminder-create"),
+        None,
+    )
+    .unwrap();
+    let id = created["task"]["taskId"].as_str().unwrap().to_owned();
+    let mut reminder = json!({"reminderId":"follow","recipientId":"human-one","enabled":true,"kind":"follow_up","followUpDate":"2026-01-01","frequency":"once","timeZone":"Europe/Copenhagen"});
+    let configured = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Reminder {
+            id: &id,
+            reminder: &reminder,
+        },
+        Some("reminder-enable"),
+        Some(1),
+    )
+    .unwrap();
+    assert_eq!(configured["task"]["version"], 2);
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Reminder {
+                id: &id,
+                reminder: &reminder
+            },
+            Some("reminder-enable"),
+            Some(1)
+        )
+        .unwrap(),
+        configured
+    );
+    let mut witness = ReminderSourceWitness(0);
+    let input = json!({"companySlugs":["a"],"asOfDate":"2026-01-01"});
+    let run = execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Cookie {
+            cookies: &cookies,
+            proof: &p,
+        },
+        Action::Run(&input),
+        Some("reminder-run"),
+        None,
+        Some(&mut witness),
+    )
+    .unwrap();
+    assert_eq!(run["run"]["delivered"], 1);
+    assert_eq!(witness.0, 1);
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Notifications,
+            None,
+            None
+        )
+        .unwrap()["notifications"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        execute_with_sources(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Cookie {
+                cookies: &cookies,
+                proof: &p
+            },
+            Action::Run(&input),
+            Some("reminder-run"),
+            None,
+            Some(&mut witness)
+        )
+        .unwrap(),
+        run
+    );
+    assert_eq!(witness.0, 1);
+    let again = execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Cookie {
+            cookies: &cookies,
+            proof: &p,
+        },
+        Action::Run(&input),
+        Some("reminder-run-again"),
+        None,
+        Some(&mut witness),
+    )
+    .unwrap();
+    assert_eq!(again["run"]["delivered"], 0);
+    // A prior run also covered B's readable notification scopes. Revocation cannot reveal its receipt.
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','b','revoke',NULL,'user:human-one')").unwrap();
+    let probes = witness.0;
+    assert_eq!(
+        execute_with_sources(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Cookie {
+                cookies: &cookies,
+                proof: &p
+            },
+            Action::Run(&input),
+            Some("reminder-run"),
+            None,
+            Some(&mut witness)
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "access_denied"
+    );
+    assert_eq!(witness.0, probes);
+    reminder["enabled"] = json!(false);
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Reminder {
+            id: &id,
+            reminder: &reminder,
+        },
+        Some("reminder-disable"),
+        Some(2),
+    )
+    .unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Notifications,
+            None,
+            None
+        )
+        .unwrap()["notifications"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    reminder["enabled"] = json!(true);
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Reminder {
+            id: &id,
+            reminder: &reminder,
+        },
+        Some("reminder-reenable"),
+        Some(3),
+    )
+    .unwrap();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Notifications,
+            None,
+            None
+        )
+        .unwrap()["notifications"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    call(&mut c,&cookies,&p,&cat,Action::Complete{id:&id,input:&json!({"outcome":"completed","note":"Synthetic task done","references":[{"kind":"document","ref":"synthetic-evidence","companySlug":"a"}]})},Some("reminder-complete"),Some(4)).unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Notifications,
+            None,
+            None
+        )
+        .unwrap()["notifications"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    drop(c);
+    let mut c = Connection::open(d.path().join("control")).unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Notifications,
+            None,
+            None
+        )
+        .unwrap()["notifications"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        c.query_row::<i64, _, _>("SELECT count(*) FROM rm_task_notifications", [], |r| r
+            .get(0))
+            .unwrap(),
+        1
+    );
+}
+#[test]
+fn reminder_current_recipients_before_new_effect_but_revoked_labels_can_be_disabled() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('recipient','Synthetic recipient','recipient@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('recipient','activate','member','user:human-one');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('recipient','a','grant','reader','user:human-one');").unwrap();
+    let first = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Create(&draft()),
+        Some("recipient-task"),
+        None,
+    )
+    .unwrap();
+    let id = first["task"]["taskId"].as_str().unwrap();
+    let mut reminder = json!({"reminderId":"recipient","recipientId":"recipient","enabled":true,"kind":"follow_up","followUpDate":"2026-01-01","frequency":"daily","timeZone":"Europe/Copenhagen"});
+    let configured = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Reminder {
+            id,
+            reminder: &reminder,
+        },
+        Some("recipient-enable"),
+        Some(1),
+    )
+    .unwrap();
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('recipient','disable',NULL,'user:human-one')").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Reminder {
+                id,
+                reminder: &reminder
+            },
+            Some("recipient-new"),
+            Some(2)
+        )
+        .is_err()
+    );
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Reminder {
+                id,
+                reminder: &reminder
+            },
+            Some("recipient-enable"),
+            Some(1)
+        )
+        .unwrap(),
+        configured
+    );
+    reminder["enabled"] = json!(false);
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Reminder {
+            id,
+            reminder: &reminder,
+        },
+        Some("recipient-disable"),
+        Some(2),
+    )
+    .unwrap();
+    assert_eq!(
+        call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap()["task"]["version"],
+        3
+    );
+    reminder["reminderId"] = json!("new-ghost");
+    reminder["recipientId"] = json!("nonexistent");
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Reminder {
+                id,
+                reminder: &reminder
+            },
+            Some("ghost-disable"),
+            Some(3)
+        )
+        .is_err()
+    );
+}
+#[test]
+fn reminder_service_claim_lease_and_maintenance_charge_once_and_revoke_before_sources() {
+    use rentemester_runtime::service_key::ServiceKey;
+    let (_d, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','workspace_owner','user:human-one')").unwrap();
+    let issued = crate::service_lifecycle::execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &crate::service_lifecycle::Operation::Create {
+            display_name: "Synthetic task worker".into(),
+            operation_id: None,
+            expires_in_seconds: None,
+        },
+    )
+    .unwrap();
+    let issued: Value = serde_json::from_str(issued.as_json()).unwrap();
+    let subject = issued["serviceAccountId"].as_str().unwrap();
+    let credential = issued["credentialId"].as_str().unwrap();
+    let key = ServiceKey::new("w", issued["secret"].as_str().unwrap()).unwrap();
+    c.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'activate','member','user:human-one')",[subject]).unwrap();
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:human-one')",[subject]).unwrap();
+    c.execute("UPDATE apikey SET remaining=10 WHERE id=?1", [credential])
+        .unwrap();
+    assert!(
+        execute(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::Run(&json!({})),
+            Some("public-run"),
+            None
+        )
+        .is_err()
+    );
+    assert_eq!(
+        execute(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::ClaimRuntime { owner: "lease-one" },
+            None,
+            None
+        )
+        .unwrap()["acquired"],
+        true
+    );
+    assert_eq!(
+        execute(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::ClaimRuntime { owner: "lease-two" },
+            None,
+            None
+        )
+        .unwrap()["acquired"],
+        false
+    );
+    assert_eq!(
+        c.query_row::<i64, _, _>(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        10
+    );
+    let mut witness = ReminderSourceWitness(0);
+    execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Service(&key),
+        Action::Maintain { owner: "lease-one" },
+        Some("tick-one"),
+        None,
+        Some(&mut witness),
+    )
+    .unwrap();
+    assert_eq!(witness.0, 1);
+    assert_eq!(
+        c.query_row::<i64, _, _>(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        9
+    );
+    assert!(store::reminders::runtime_status(&c).unwrap()["lastError"].is_null());
+    execute(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Service(&key),
+        Action::ClaimRuntime {
+            owner: "lease-after",
+        },
+        None,
+        None,
+    )
+    .unwrap();
+    c.execute("UPDATE apikey SET enabled=0 WHERE id=?1", [credential])
+        .unwrap();
+    assert!(
+        execute_with_sources(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Service(&key),
+            Action::Maintain {
+                owner: "lease-after"
+            },
+            Some("revoked-tick"),
+            None,
+            Some(&mut witness)
+        )
+        .is_err()
+    );
+    assert_eq!(witness.0, 1);
+    record_runtime_failure(&mut c, &Fixed, "lease-after").unwrap();
+    assert!(
+        store::reminders::runtime_status(&c).unwrap()["lastError"]
+            .as_str()
+            .is_some()
+    );
+    assert_eq!(
+        c.query_row::<Option<String>, _, _>(
+            "SELECT lease_owner FROM rm_task_runtime WHERE id=1",
+            [],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        None
+    );
+}

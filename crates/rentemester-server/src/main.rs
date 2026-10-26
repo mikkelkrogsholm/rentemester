@@ -19,6 +19,7 @@ mod protocol;
 mod report_export;
 mod setup_http;
 mod shutdown;
+mod task_worker;
 mod managed_parent;
 use axum::{
     Router,
@@ -104,6 +105,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut scheduled_stdin = false;
     let mut mail_worker = false;
     let mut mail_stdin = false;
+    let mut task_worker = false;
+    let mut task_stdin = false;
     let mut upgrade_mail_schema = false;
     let mut enroll_namespace_custody = false;
     let mut adopt_legacy = None;
@@ -124,6 +127,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "--legacy-source-stopped" => legacy_source_stopped = true,
             "--enroll-namespace-custody" => enroll_namespace_custody = true,
             "--upgrade-mail-schema" => upgrade_mail_schema = true,
+            "--task-worker" => task_worker = true,
+            "--task-service-key-stdin" => task_stdin = true,
             "--mail-worker" => mail_worker = true,
             "--mail-service-key-stdin" => mail_stdin = true,
             "--scheduled-worker" => scheduled_worker = true,
@@ -161,6 +166,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
                 println!("Custody enrollment: --enroll-namespace-custody --config PRIVATE.json --confirm-target EXACTROOT (exclusive stopped operator v31 to v32; retire old binaries and copies under sole-source cutover)");
                 println!("Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)");
+                println!("Task reminders: --task-worker --task-service-key-stdin --config PRIVATE.json (ordinary reopen, transient current service key;60-second ticks/55-second lease, no saved session/local grants). Paired workers share the one transient stdin key.");
                 println!("Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.");
                 println!("--local-runtime-dir PRIVATE_PROFILE enables a same-user private UNIX socket beside the admitted local-user-macos config; normal authentication remains required.");
                 println!("Build the cockpit first: cd app && bun run build");
@@ -189,12 +195,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     if enroll_namespace_custody {
-        namespace_custody_cli::validate(create || upgrade_mail_schema || adopt_legacy.is_some() || legacy_source_stopped || restore_archive.is_some() || verify_archive.is_some() || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer || trusted_backup_key.is_some() || source_unavailable || local_runtime_dir.is_some() || managed_parent_stdin, config.is_some(), confirmed_target.is_some())?;
+        namespace_custody_cli::validate(create || upgrade_mail_schema || adopt_legacy.is_some() || legacy_source_stopped || restore_archive.is_some() || verify_archive.is_some() || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || task_worker || task_stdin || restore_transfer || trusted_backup_key.is_some() || source_unavailable || local_runtime_dir.is_some() || managed_parent_stdin, config.is_some(), confirmed_target.is_some())?;
         backend::Backend::enroll_namespace_custody(config.as_deref().unwrap(),confirmed_target.as_deref().unwrap())?;
         println!("Namespace custody enrolled; server remains stopped. Retire old software and copies under the existing sole-source cutover procedure.");
         return Ok(());
     }
-    managed_parent::validate_flags(managed_parent_stdin, local_runtime_dir.is_some(), scheduled_stdin || mail_stdin)?;
+    managed_parent::validate_flags(managed_parent_stdin, local_runtime_dir.is_some(), scheduled_stdin || mail_stdin || task_stdin)?;
     if let Some(profile) = &local_runtime_dir {
         if adopt_legacy.is_some()
             || upgrade_mail_schema
@@ -212,7 +218,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if let Some(source) = adopt_legacy {
         if create || upgrade_mail_schema || restore_archive.is_some() || verify_archive.is_some()
-            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer
+            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || task_worker || task_stdin || restore_transfer
             || trusted_backup_key.is_some() || source_unavailable || !legacy_source_stopped {
             return Err("legacy adoption is exclusive and requires --legacy-source-stopped".into());
         }
@@ -225,7 +231,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if legacy_source_stopped { return Err("--legacy-source-stopped requires --adopt-legacy".into()); }
     if upgrade_mail_schema {
         if create || restore_archive.is_some() || verify_archive.is_some()
-            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer
+            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || task_worker || task_stdin || restore_transfer
             || trusted_backup_key.is_some() || confirmed_target.is_some() || source_unavailable {
             return Err("--upgrade-mail-schema is an exclusive configured operator action".into());
         }
@@ -235,6 +241,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
     hosted_worker::validate_flags(scheduled_worker, scheduled_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
+    task_worker::validate_flags(task_worker,task_stdin,config.is_some(),create || restore_archive.is_some() || verify_archive.is_some())?;
     mail_worker::validate_flags(mail_worker, mail_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
     if let Some(archive) = verify_archive {
         if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable || restore_transfer {
@@ -306,7 +313,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .map(|backend| (Some(backend), None))
                 .or_else(|e| {
-                    if !create && restore.is_none() && !scheduled_worker && !mail_worker {
+                    if !create && restore.is_none() && !scheduled_worker && !mail_worker && !task_worker {
                         if let Some(rentemester_host::OwnerError::StorageUnusable(readiness)) = e.downcast_ref::<rentemester_host::OwnerError>() {
                             return Ok((None, Some(*readiness)));
                         }
@@ -318,12 +325,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .await?
     .map_err(|e| format!("workspace startup refused: {e}"))?;
-    if scheduled_worker || mail_worker {
+    if scheduled_worker || mail_worker || task_worker {
         let backend = native.as_mut().ok_or("scheduled worker requires configured workspace")?;
         let backend = std::sync::Arc::get_mut(backend).ok_or("scheduled worker startup refused")?;
         let key=hosted_worker::read_key(std::io::stdin().lock(),backend.cookies.workspace())?;
         let key = std::sync::Arc::new(key);
         if scheduled_worker { backend.scheduled_executor=Some(key.clone()); }
+        if task_worker { backend.task_executor=Some(key.clone()); }
         if mail_worker { backend.mail_executor=Some(key); }
     }
     let identity = native
@@ -371,6 +379,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut mail = if mail_worker {
         Some(mail_worker::Worker::start(native.as_ref().ok_or("mail worker requires workspace")?.clone()))
     } else { None };
+    let mut tasks = if task_worker {
+        Some(task_worker::Worker::start(
+            native
+                .as_ref()
+                .ok_or("task worker requires workspace")?
+                .clone(),
+        ))
+    } else {
+        None
+    };
+    let task_stop = tasks.as_mut().and_then(|worker| worker.take_stop_signal());
     let mail_stop = mail.as_mut().and_then(|worker| worker.take_stop_signal());
     let scheduled_stop = worker.as_mut().and_then(|worker| worker.take_stop_signal());
     let (stop, stopped) = tokio::sync::watch::channel(false);
@@ -410,6 +429,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let control = async move {
         tokio::select! {_=shutdown.wait()=>{},_=managed_parent::lost(parent_lost)=>{},_=local_runtime::stopped(stopped)=>{}}
         let _ = stop.send(true);
+        if let Some(stop) = task_stop { let _ = stop.send(()); }
         if let Some(stop) = mail_stop {
             let _ = stop.send(());
         }
@@ -419,6 +439,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let (tcp_result, unix_result, ()) = tokio::join!(tcp, unix, control);
     tokio::join!(
+        async { if let Some(tasks) = tasks { tasks.stop().await; } },
         async {
             if let Some(mail) = mail {
                 mail.stop().await;

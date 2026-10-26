@@ -20,9 +20,17 @@ pub fn operation(name: &str) -> Option<&str> {
             _ => None,
         };
     }
+    if name == "tasks_runtime" {
+        return Some("runtime-status");
+    }
     let op = name.strip_prefix("tasks_")?;
     let op = if op == "operation_receipt" {
         "receipt"
+    } else {
+        op
+    };
+    let op = if op == "reminder_set" {
+        "reminder-set"
     } else {
         op
     };
@@ -30,7 +38,7 @@ pub fn operation(name: &str) -> Option<&str> {
         .then_some(op)
 }
 pub fn tools() -> Vec<Value> {
-    TASK_OPERATIONS.iter().map(|op|{let mut schema=task_input_schema(op);if task_writes(op){schema["properties"]["confirm"]=json!({"const":true});schema["required"].as_array_mut().unwrap().push(json!("confirm"));}tool(&if let Some(suffix) = op.strip_prefix("series-") { format!("task_series_{suffix}") } else if let Some(suffix)=op.strip_prefix("boards-"){format!("task_boards_{suffix}")} else { format!("tasks_{}", if *op=="receipt"{"operation_receipt"}else{op}) },"Tasks, custom boards and explicit routine series operations through the shared Rust server. Current identity/all-company rights before receipt; writes require confirm, original idempotencyKey and expectedVersion for existing tasks. No actor/local grants, financial effects, generated keys or automatic retry. After unknown result read exact receipt/history before another action. Board preview and series projection are read-only; board save and materialization are explicit. Source sync uses current native ledger facts; automatic runtime is not enabled by this tool.",schema,!task_writes(op))}).collect()
+    TASK_OPERATIONS.iter().map(|op|{let mut schema=task_input_schema(op);if task_writes(op){schema["properties"]["confirm"]=json!({"const":true});schema["required"].as_array_mut().unwrap().push(json!("confirm"));}tool(&if let Some(suffix) = op.strip_prefix("series-") { format!("task_series_{suffix}") } else if let Some(suffix)=op.strip_prefix("boards-"){format!("task_boards_{suffix}")} else { format!("tasks_{}", if *op=="receipt"{"operation_receipt"}else if *op=="runtime-status"{"runtime"}else if *op=="reminder-set"{"reminder_set"}else{op}) },"Tasks, custom boards and explicit routine series operations through the shared Rust server. Current identity/all-company rights before receipt; writes require confirm, original idempotencyKey and expectedVersion for existing tasks. No actor/local grants, financial effects, generated keys or automatic retry. After unknown result read exact receipt/history before another action. Board preview and series projection are read-only; board save and materialization are explicit. Source sync uses current native ledger facts; automatic runtime requires explicit current server-worker credentials.",schema,!task_writes(op))}).collect()
 }
 pub async fn call(
     api: &ApiClient,
@@ -54,7 +62,7 @@ mod tests {
     #[test]
     fn tools_keep_original_shapes_and_explicit_confirmation() {
         let all = tools();
-        assert_eq!(all.len(), 17);
+        assert_eq!(all.len(), 21);
         for suffix in ["list", "preview", "save"] {
             let name = format!("task_boards_{suffix}");
             assert!(operation(&name).is_some());
@@ -81,6 +89,8 @@ mod tests {
         }
         assert!(operation("task_series_run").is_none());
         assert!(operation("tasks_series-save").is_none());
-        assert!(operation("tasks_run").is_none());
+        assert_eq!(operation("tasks_run"), Some("run"));
+        assert_eq!(operation("tasks_runtime"), Some("runtime-status"));
+        assert_eq!(operation("tasks_reminder_set"), Some("reminder-set"));
     }
 }

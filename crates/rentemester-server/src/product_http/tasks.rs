@@ -18,6 +18,10 @@ enum Command {
     History(String),
     Receipt(String),
     Sync(Value),
+    Run(Value),
+    Notifications,
+    RuntimeStatus,
+    Reminder(String, Value),
     Create(Value),
     Update(String, Value),
     Move(String, Value),
@@ -139,7 +143,7 @@ fn command(
                 return Err("invalid_input");
             }
             Command::SeriesMaterialize(body)
-        } else if path == "/api/tasks/sync" {
+        } else if path == "/api/tasks/sync" || path == "/api/tasks/run" {
             if expected.is_some()
                 || object
                     .keys()
@@ -147,7 +151,11 @@ fn command(
             {
                 return Err("invalid_input");
             }
-            Command::Sync(body)
+            if path == "/api/tasks/run" {
+                Command::Run(body)
+            } else {
+                Command::Sync(body)
+            }
         } else if parts.len() == 3 && parts[2] == "tasks" {
             if expected.is_some() {
                 return Err("invalid_input");
@@ -168,6 +176,13 @@ fn command(
                         return Err("invalid_input");
                     }
                     Command::Update(id, patch)
+                }
+                "reminder" => {
+                    let r = object.remove("reminder").ok_or("invalid_input")?;
+                    if !object.is_empty() {
+                        return Err("invalid_input");
+                    }
+                    Command::Reminder(id, r)
                 }
                 "move" => Command::Move(id, body),
                 "complete" => Command::Complete(id, body),
@@ -196,6 +211,8 @@ fn command(
             ["", "api", "tasks"] => {
                 Command::List(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
             }
+            ["", "api", "tasks", "notifications"] if raw_query.is_none() => Command::Notifications,
+            ["", "api", "tasks", "runtime"] if raw_query.is_none() => Command::RuntimeStatus,
             ["", "api", "tasks", id] if raw_query.is_none() => Command::Get(decode(id)),
             ["", "api", "tasks", "operations", key] if raw_query.is_none() => {
                 Command::Receipt(decode(key))
@@ -288,15 +305,23 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::History(id) => Action::History(id),
             Command::Receipt(k) => Action::Receipt(k),
             Command::Sync(v) => Action::Sync(v),
+            Command::Run(v) => Action::Run(v),
+            Command::Notifications => Action::Notifications,
+            Command::RuntimeStatus => Action::RuntimeStatus,
+            Command::Reminder(id, r) => Action::Reminder { id, reminder: r },
             Command::Create(v) => Action::Create(v),
             Command::Update(id, v) => Action::Update { id, patch: v },
             Command::Move(id, v) => Action::Move { id, input: v },
             Command::Complete(id, v) => Action::Complete { id, input: v },
             Command::Reopen(id, v) => Action::Reopen { id, reason: v },
         };
-        owner
+        let mut result = owner
             .tasks(&SystemClock, authority, action, key.as_deref(), expected)
-            .map_err(|_| ())
+            .map_err(|_| ())?;
+        if let Ok(value) = &mut result.outcome {
+            crate::task_worker::metadata(&state.native, value);
+        }
+        Ok::<_, ()>(result)
     })
     .await;
     match result {
@@ -455,6 +480,42 @@ mod tests {
         );
         assert!(
             matches!(command("/api/task-series/project",None,Some("companySlugs=&from=2026-01-01&to=2026-12-31")).unwrap().0,Command::SeriesProject(v) if v["companySlugs"]==json!([]))
+        );
+    }
+    #[test]
+    fn reminder_original_routes_confirm_version_scope_and_no_internal_authority() {
+        assert!(matches!(
+            command("/api/tasks/notifications", None, None).unwrap().0,
+            Command::Notifications
+        ));
+        assert!(matches!(
+            command("/api/tasks/runtime", None, None).unwrap().0,
+            Command::RuntimeStatus
+        ));
+        assert!(command("/api/tasks/runtime", None, Some("owner=system")).is_err());
+        let reminder =
+            json!({"reminder":{},"expectedVersion":1,"idempotencyKey":"exact","confirm":true});
+        assert!(matches!(
+            command("/api/tasks/one/reminder", Some(reminder.clone()), None)
+                .unwrap()
+                .0,
+            Command::Reminder(..)
+        ));
+        for field in ["confirm", "expectedVersion", "idempotencyKey"] {
+            let mut v = reminder.clone();
+            v.as_object_mut().unwrap().remove(field);
+            assert!(command("/api/tasks/one/reminder", Some(v), None).is_err());
+        }
+        assert!(
+            command(
+                "/api/tasks/run",
+                Some(json!({"confirm":true,"idempotencyKey":"run","owner":"system"})),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            matches!(command("/api/tasks/run",Some(json!({"companySlugs":[],"confirm":true,"idempotencyKey":"run"})),None).unwrap().0,Command::Run(v)if v["companySlugs"]==json!([]))
         );
     }
     #[test]

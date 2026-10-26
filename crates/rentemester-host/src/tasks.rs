@@ -199,3 +199,17 @@ impl Owner {
 
 #[cfg(test)]
 mod tests;
+
+impl Owner {
+    /// Internal process observation for a previously acquired opaque lease. No business grant.
+    pub fn fail_task_runtime(
+        &mut self,
+        clock: &dyn Clock,
+        lease_owner: &str,
+    ) -> AuthAttempt<serde_json::Value> {
+        let workspace = self.catalog()?.workspace;
+        self.control_auth(&workspace, |db| {
+            tasks::record_runtime_failure(db, clock, lease_owner)
+        })
+    }
+}

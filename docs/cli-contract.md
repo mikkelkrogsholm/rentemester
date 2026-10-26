@@ -19,8 +19,35 @@ oprindelige input og nøglen; `tasks receipt` med `{"idempotencyKey":"original-k
 viser kun en kvittering, som stadig er synlig med de aktuelle rettigheder.
 Kontrollér også `get`/`history`, før en ny handling startes. Klienten gentager
 aldrig automatisk en skrivning. Historiske ansvarlige eller receipts giver ingen
-adgang. Automatisk runtime, påmindelser og beskyttede task-linked knowledge-forløb
-er endnu ikke porteret.
+adgang. Beskyttede task-linked knowledge-forløb er endnu ikke porteret.
+
+### Påmindelser og live runtime gennem Rust-serveren
+
+`tasks reminder-set` / MCP `tasks_reminder_set` kræver `taskId`, den præcise
+`reminder`, positiv `expectedVersion`, callerens `idempotencyKey` og bekræftelse.
+`tasks notifications` / `tasks_notifications` og `tasks runtime` / `tasks_runtime`
+er reads uden inputfelter. De viser kun aktuelt autoriserede påmindelser og en
+faktisk registreret worker; et gemt heartbeat alene betyder ikke running.
+
+`tasks run` / `tasks_run` er et eksplicit bekræftet tick for workspace owner med
+`companySlugs?`, `asOfDate?`, `idempotencyKey`. Det starter ingen baggrundsproces.
+Aktuel adgang til både kildescope og det historiske notificationscope kontrolleres
+før receipt-replay. Ingen brugeridentitet kan komme fra input.
+
+Kontinuerlig kørsel kræver serverens parrede `--task-worker
+--task-service-key-stdin --config PRIVATE.json` ved almindelig genåbning.
+Nøglen læses én gang fra stdin og holdes kun i hukommelsen. Den eksisterende
+servicekonto skal have aktuelle task-rettigheder; ingen local/System-grant,
+gemt human cookie eller automatisk oprettet konto. Kørsel hvert 60. sekund bruger
+en holdbar 55-sekunders lease og præcis én servicecharge pr. vedligeholdelsestick.
+Kilder, rutiner og levering committes atomisk. Revokeret credential/recipient
+eller mistet scope stopper virkningen; disabled/done-planer vises ikke.
+
+Engangs- og daglige slots bruger modtagerens IANA-tidszone og nuværende dag uden
+backlogburst. Genstart gentager ikke et leveret slot. Task-business-codec5 bevarer
+notification-slots og brugbare reminder/run-receipts; gamle codec1–4 beholder egne
+bytes/kontroller. Runtimelease, heartbeat, fejlmetadata, keys og adgangsgrants
+aktiveres aldrig ved recovery. Kanalen er kun Rentemesters egen brugerflade.
 
 ### Autoritative opgavekilder gennem Rust-serveren
 

@@ -19,6 +19,7 @@ use serde_json::{Value, json};
 use std::collections::BTreeSet;
 
 mod boards;
+mod reminders;
 mod series;
 mod sources;
 pub struct SourceRequest<'a> {
@@ -53,6 +54,20 @@ pub enum Authority<'a> {
 pub enum Action<'a> {
     List(&'a Value),
     Sync(&'a Value),
+    Reminder {
+        id: &'a str,
+        reminder: &'a Value,
+    },
+    Notifications,
+    RuntimeStatus,
+    Run(&'a Value),
+    /// Internal process lifecycle only; never decoded from HTTP/CLI/MCP input.
+    ClaimRuntime {
+        owner: &'a str,
+    },
+    Maintain {
+        owner: &'a str,
+    },
     BoardsList(&'a Value),
     BoardsPreview(&'a Value),
     BoardsSave(&'a Value),
@@ -64,16 +79,32 @@ pub enum Action<'a> {
     History(&'a str),
     Receipt(&'a str),
     Create(&'a Value),
-    Update { id: &'a str, patch: &'a Value },
-    Move { id: &'a str, input: &'a Value },
-    Complete { id: &'a str, input: &'a Value },
-    Reopen { id: &'a str, reason: &'a Value },
+    Update {
+        id: &'a str,
+        patch: &'a Value,
+    },
+    Move {
+        id: &'a str,
+        input: &'a Value,
+    },
+    Complete {
+        id: &'a str,
+        input: &'a Value,
+    },
+    Reopen {
+        id: &'a str,
+        reason: &'a Value,
+    },
 }
 impl Action<'_> {
     fn writes(&self) -> bool {
         matches!(
             self,
-            Self::Sync(_)
+            Self::Reminder { .. }
+                | Self::Run(_)
+                | Self::ClaimRuntime { .. }
+                | Self::Maintain { .. }
+                | Self::Sync(_)
                 | Self::BoardsSave(_)
                 | Self::SeriesSave(_)
                 | Self::SeriesMaterialize(_)
@@ -471,16 +502,10 @@ fn view(
         }
     }
     let (series, projections) = series::metadata(tx, input, catalog, access, now)?;
-    let notifications: i64 = tx
-        .query_row("SELECT count(*) FROM rm_task_notifications", [], |r| {
-            r.get(0)
-        })
-        .map_err(|_| error("invalid_control"))?;
-    if notifications != 0 {
-        return Err(error("task_notifications_unavailable"));
-    }
+    let notifications = reminders::notifications(tx, catalog, id, access)?;
+    let runtime = store::reminders::runtime_status(tx)?;
     Ok(
-        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":series,"projections":projections,"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":{"running":false,"lastTickAt":null,"lastError":null},"notifications":[],"sourceCoverage":store::sources::COVERAGE}),
+        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":series,"projections":projections,"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":runtime,"notifications":notifications,"sourceCoverage":store::sources::COVERAGE}),
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -526,6 +551,7 @@ pub fn execute_with_sources(
         if let Action::Sync(input) = &action {
             sources::preadmit(input, &access, expected)?;
         }
+        reminders::preadmit(&action, &access, expected)?;
         let writes = action.writes();
         if writes {
             rentemester_storage::workspace_transfer::require_business_write(&tx)?;
@@ -549,6 +575,7 @@ pub fn execute_with_sources(
             Action::Update { id, .. }
             | Action::Move { id, .. }
             | Action::Complete { id, .. }
+            | Action::Reminder { id, .. }
             | Action::Reopen { id, .. } => Some(get_current(&tx, id, catalog, &access, true)?),
             _ => None,
         };
@@ -587,6 +614,15 @@ pub fn execute_with_sources(
             }
         }
         let read = match &action {
+            Action::Notifications => Some(
+                json!({"notifications":reminders::notifications(&tx,catalog,&identity,&access)?}),
+            ),
+            Action::RuntimeStatus => {
+                Some(json!({"runtime":store::reminders::runtime_status(&tx)?}))
+            }
+            Action::ClaimRuntime { owner } => {
+                Some(json!({"acquired":store::reminders::claim(&tx,owner,&stamp)?}))
+            }
             Action::List(q) => Some(view(&tx, q, catalog, &identity, &access, &stamp)?),
             Action::SeriesList(_) | Action::SeriesProject(_) => {
                 Some(series::read(&tx, &action, catalog, &access, &stamp)?)
@@ -609,7 +645,9 @@ pub fn execute_with_sources(
             ),
             _ => None,
         };
-        if let Authority::Service(key) = &authority {
+        if let Authority::Service(key) = &authority
+            && !matches!(action, Action::ClaimRuntime { .. })
+        {
             if rentemester_storage::workspace_transfer::current(&tx)?.mode == "active" {
                 let observed = rentemester_storage::service_context::charge(
                     &tx,
@@ -655,7 +693,20 @@ pub fn execute_with_sources(
             now: &stamp,
             source_check: source_check.as_ref(),
         };
-        let result = if let Action::Sync(input) = &action {
+        let result = if let Action::Reminder { id, reminder } = &action {
+            reminders::configure(&tx, id, reminder, &ctx, catalog, &access)
+        } else if matches!(action, Action::Run(_) | Action::Maintain { .. }) {
+            reminders::maintain(
+                &tx,
+                &action,
+                &ctx,
+                catalog,
+                &identity,
+                &access,
+                now,
+                &mut reader,
+            )
+        } else if let Action::Sync(input) = &action {
             sources::mutate(&tx, input, &ctx, catalog, &access, now, &mut reader)
         } else if let Action::BoardsSave(input) = &action {
             boards::save(&tx, input, &ctx, catalog, &access)
@@ -729,3 +780,28 @@ pub fn execute_with_sources(
 
 #[cfg(test)]
 mod tests;
+
+/// Process observation only: conditional metadata for an already acquired opaque lease, no business grant.
+pub fn record_runtime_failure(
+    db: &mut Connection,
+    clock: &dyn Clock,
+    lease_owner: &str,
+) -> Result<Value, Failure> {
+    crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| failure(error("control_busy_or_unavailable"), false))?;
+    rentemester_storage::workspace_transfer::require_business_write(&tx)
+        .map_err(|e| failure(e, true))?;
+    let now = clock
+        .now_unix_ms()
+        .map_err(|_| failure(error("invalid_auth_clock"), true))?;
+    let at = rentemester_engine::company_knowledge::timestamp(now).map_err(|e| failure(e, true))?;
+    store::reminders::finish_lease(&tx, lease_owner, &at, true).map_err(|e| failure(e, false))?;
+    tx.commit().map_err(|_| Failure {
+        stage: FailureStage::OutcomeUnknown,
+        error: error("commit_outcome_unknown"),
+        connection_reusable: false,
+    })?;
+    Ok(json!({"recorded":true}))
+}

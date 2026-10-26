@@ -3,12 +3,16 @@ use crate::{ApiClient, Error};
 use reqwest::Method;
 use serde_json::{Value, json};
 pub const MAX_TASK_BODY: usize = 128 * 1024;
-pub const TASK_OPERATIONS: [&str; 17] = [
+pub const TASK_OPERATIONS: [&str; 21] = [
     "list",
     "get",
     "history",
     "receipt",
     "sync",
+    "run",
+    "runtime-status",
+    "notifications",
+    "reminder-set",
     "create",
     "update",
     "move",
@@ -25,7 +29,9 @@ pub const TASK_OPERATIONS: [&str; 17] = [
 pub fn task_writes(op: &str) -> bool {
     matches!(
         op,
-        "sync"
+        "reminder-set"
+            | "run"
+            | "sync"
             | "create"
             | "update"
             | "move"
@@ -115,6 +121,8 @@ impl ApiClient {
                 .to_owned()
             } else if op == "series-materialize" {
                 "/api/task-series/materialize".to_owned()
+            } else if op == "run" {
+                "/api/tasks/run".to_owned()
             } else if op == "sync" {
                 "/api/tasks/sync".to_owned()
             } else if op == "create" {
@@ -128,7 +136,11 @@ impl ApiClient {
                         "positive safe expectedVersion required",
                     ));
                 }
-                let path = format!("/api/tasks/{}/{}", id(&input["taskId"])?, op);
+                let path = format!(
+                    "/api/tasks/{}/{}",
+                    id(&input["taskId"])?,
+                    if op == "reminder-set" { "reminder" } else { op }
+                );
                 body.as_object_mut().unwrap().remove("taskId");
                 path
             };
@@ -138,6 +150,8 @@ impl ApiClient {
             return self.request(Method::POST, &path, &[], Some(bytes)).await;
         }
         match op {
+            "notifications" => self.get("/api/tasks/notifications", &[]).await,
+            "runtime-status" => self.get("/api/tasks/runtime", &[]).await,
             "boards-preview" => {
                 self.request(
                     Method::POST,
@@ -229,7 +243,35 @@ mod tests {
             thread,
         };
         for (op, input, expected, body) in [
-            ("sync",json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key"}),"POST /api/tasks/sync",Some(json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key","confirm":true}))),
+            (
+                "notifications",
+                json!({}),
+                "GET /api/tasks/notifications",
+                None,
+            ),
+            ("runtime-status", json!({}), "GET /api/tasks/runtime", None),
+            (
+                "run",
+                json!({"companySlugs":[],"idempotencyKey":"runtime-key"}),
+                "POST /api/tasks/run",
+                Some(json!({"companySlugs":[],"idempotencyKey":"runtime-key","confirm":true})),
+            ),
+            (
+                "reminder-set",
+                json!({"taskId":"one","reminder":{"enabled":false},"expectedVersion":1,"idempotencyKey":"reminder-key"}),
+                "POST /api/tasks/one/reminder",
+                Some(
+                    json!({"reminder":{"enabled":false},"expectedVersion":1,"idempotencyKey":"reminder-key","confirm":true}),
+                ),
+            ),
+            (
+                "sync",
+                json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key"}),
+                "POST /api/tasks/sync",
+                Some(
+                    json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key","confirm":true}),
+                ),
+            ),
             (
                 "boards-list",
                 json!({"companySlugs":[]}),
@@ -352,7 +394,7 @@ mod tests {
     }
     #[test]
     fn series_schema_is_bounded_and_does_not_expose_runtime_or_authority() {
-        assert_eq!(TASK_OPERATIONS.len(), 17);
+        assert_eq!(TASK_OPERATIONS.len(), 21);
         let save = task_input_schema("series-save");
         assert_eq!(
             save["properties"]["series"]["properties"]["workDayOffset"]["maximum"],
@@ -361,12 +403,12 @@ mod tests {
         assert_eq!(save["properties"]["expectedVersion"]["minimum"], 0);
         assert_eq!(save["additionalProperties"], false);
         assert!(save["properties"].get("actor").is_none());
-        let sync=task_input_schema("sync");
-        assert_eq!(sync["additionalProperties"],false);
-        assert_eq!(sync["properties"]["companySlugs"]["maxItems"],200);
+        let sync = task_input_schema("sync");
+        assert_eq!(sync["additionalProperties"], false);
+        assert_eq!(sync["properties"]["companySlugs"]["maxItems"], 200);
         assert!(sync["properties"].get("expectedVersion").is_none());
-        assert_eq!(sync["required"],json!(["idempotencyKey"]));
-        assert!(task_input_schema("run").is_null());
+        assert_eq!(sync["required"], json!(["idempotencyKey"]));
+        assert!(task_input_schema("unrecognized").is_null());
     }
     #[tokio::test]
     async fn refuses_authority_and_unconfirmed_mutations_before_network() {

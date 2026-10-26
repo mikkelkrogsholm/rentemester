@@ -1,0 +1,972 @@
+[
+  {
+    "mode": "deadline-once",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "deadline",
+      "daysBefore": 2,
+      "frequency": "once",
+      "timeZone": "Europe/Copenhagen"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": true,
+          "kind": "deadline",
+          "frequency": "once",
+          "timeZone": "Europe/Copenhagen",
+          "daysBefore": 2
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-04326199e778c405bf00ea6b202f2616",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "da8dd215ba2be850a3f6ecc0:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-04326199e778c405bf00ea6b202f2616",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "da8dd215ba2be850a3f6ecc0:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-04326199e778c405bf00ea6b202f2616",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "da8dd215ba2be850a3f6ecc0:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "deadline-default",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "deadline",
+      "frequency": "once",
+      "timeZone": "Europe/Copenhagen"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": true,
+          "kind": "deadline",
+          "frequency": "once",
+          "timeZone": "Europe/Copenhagen",
+          "daysBefore": 0
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-7f0dca28911652fe8e4d76e54ab744d8",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "d7ffe073c5e1caffa86c4fb9:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-7f0dca28911652fe8e4d76e54ab744d8",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "d7ffe073c5e1caffa86c4fb9:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-7f0dca28911652fe8e4d76e54ab744d8",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "d7ffe073c5e1caffa86c4fb9:once",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "daily-copenhagen-dst",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "follow_up",
+      "daysBefore": 2,
+      "frequency": "daily",
+      "timeZone": "Europe/Copenhagen",
+      "followUpDate": "2026-03-29"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": true,
+          "kind": "follow_up",
+          "frequency": "daily",
+          "timeZone": "Europe/Copenhagen",
+          "followUpDate": "2026-03-29"
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-04-04T12:00:00.000Z",
+            "notificationId": "notification-9f22944177f43da498dbb15c8fcede92",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-04-04",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          },
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "daily-newyork",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "follow_up",
+      "daysBefore": 2,
+      "frequency": "daily",
+      "timeZone": "America/New_York",
+      "followUpDate": "2026-03-29"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": true,
+          "kind": "follow_up",
+          "frequency": "daily",
+          "timeZone": "America/New_York",
+          "followUpDate": "2026-03-29"
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-28",
+        "delivered": 0,
+        "notifications": []
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-03-29T12:00:00.000Z",
+            "notificationId": "notification-b385d666426644daf35ed35d4eee457a",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "bfde462fa08b889248d0c701:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-04-04T12:00:00.000Z",
+            "notificationId": "notification-7f3c4399fd75b13606aaafd65db9897a",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "bfde462fa08b889248d0c701:2026-04-04",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          },
+          {
+            "createdAt": "2026-03-29T12:00:00.000Z",
+            "notificationId": "notification-b385d666426644daf35ed35d4eee457a",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "bfde462fa08b889248d0c701:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "followup-with-optional-days",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "follow_up",
+      "daysBefore": 2,
+      "frequency": "daily",
+      "timeZone": "Europe/Copenhagen",
+      "followUpDate": "2026-03-29"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": true,
+          "kind": "follow_up",
+          "frequency": "daily",
+          "timeZone": "Europe/Copenhagen",
+          "followUpDate": "2026-03-29"
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": [
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 1,
+        "notifications": [
+          {
+            "createdAt": "2026-04-04T12:00:00.000Z",
+            "notificationId": "notification-9f22944177f43da498dbb15c8fcede92",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-04-04",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          },
+          {
+            "createdAt": "2026-03-28T23:30:00.000Z",
+            "notificationId": "notification-2944bf72c3207285289721d994b8282c",
+            "recipientId": "user-one",
+            "reminderId": "deadline",
+            "slotKey": "b20abe4975e476b3ab330bf0:2026-03-29",
+            "taskId": "task-reminder",
+            "title": "Synthetic reminder"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "disabled",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": false,
+      "kind": "deadline",
+      "daysBefore": 2,
+      "frequency": "once",
+      "timeZone": "Europe/Copenhagen"
+    },
+    "configured": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "deadline": {
+        "basis": "Synthetic deadline",
+        "certainty": "confirmed",
+        "date": "2026-03-29",
+        "kind": "internal"
+      },
+      "description": "",
+      "evidenceRequired": false,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "manual",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [
+        {
+          "reminderId": "deadline",
+          "recipientId": "user-one",
+          "enabled": false,
+          "kind": "deadline",
+          "frequency": "once",
+          "timeZone": "Europe/Copenhagen",
+          "daysBefore": 2
+        }
+      ],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": null,
+      "status": "open",
+      "taskId": "task-reminder",
+      "title": "Synthetic reminder",
+      "type": "ad_hoc",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "error": null,
+    "probes": [
+      {
+        "now": "2026-03-28T23:30:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": []
+      },
+      {
+        "now": "2026-03-29T12:00:00.000Z",
+        "today": "2026-03-29",
+        "delivered": 0,
+        "notifications": []
+      },
+      {
+        "now": "2026-04-04T12:00:00.000Z",
+        "today": "2026-04-04",
+        "delivered": 0,
+        "notifications": []
+      }
+    ]
+  },
+  {
+    "mode": "no-deadline",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": null,
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "deadline",
+      "daysBefore": 2,
+      "frequency": "once",
+      "timeZone": "Europe/Copenhagen"
+    },
+    "configured": null,
+    "error": "invalid_input",
+    "probes": []
+  },
+  {
+    "mode": "invalid-zone",
+    "prior": {
+      "taskId": "task-reminder",
+      "version": 1,
+      "title": "Synthetic reminder",
+      "description": "",
+      "nextAction": "",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "ad_hoc",
+      "origin": "manual",
+      "status": "open",
+      "columnId": "open",
+      "workspaceColumnId": null,
+      "assignee": null,
+      "waitingOn": "",
+      "workDate": null,
+      "deadline": {
+        "date": "2026-03-29",
+        "kind": "internal",
+        "certainty": "confirmed",
+        "basis": "Synthetic deadline"
+      },
+      "period": null,
+      "references": [],
+      "source": null,
+      "evidenceRequired": false,
+      "relevance": "relevant",
+      "verificationRequired": false,
+      "completion": null,
+      "seriesId": null,
+      "occurrenceKey": null,
+      "reminders": [],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    "reminder": {
+      "reminderId": "deadline",
+      "recipientId": "user-one",
+      "enabled": true,
+      "kind": "deadline",
+      "daysBefore": 2,
+      "frequency": "once",
+      "timeZone": "invalid-zone"
+    },
+    "configured": null,
+    "error": "invalid_input",
+    "probes": []
+  }
+]

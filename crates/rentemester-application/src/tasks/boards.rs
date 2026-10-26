@@ -135,6 +135,18 @@ pub(super) fn receipt(
     domain::id(&json!(key))?;
     let row:Option<(String,String)>=tx.query_row("SELECT operation,result_json FROM rm_task_receipts WHERE principal=?1 AND idempotency_key=?2",rusqlite::params![principal,key],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(|_|error("invalid_control"))?;
     if let Some((operation, raw)) = &row {
+        if operation == "runtime-run" {
+            let result: store::reminders::MaintenanceResult =
+                serde_json::from_str(raw).map_err(|_| error("invalid_control"))?;
+            reminders::admit_result(tx, &result, catalog, access)?;
+            return Ok(Some(json!({"operation":operation})));
+        }
+        if operation == "reminder-set" {
+            let t: Task = serde_json::from_str(raw).map_err(|_| error("invalid_control"))?;
+            get_current(tx, &t.task_id, catalog, access, false)?;
+            authorize_task(tx, catalog, access, &t, false)?;
+            return Ok(Some(json!({"operation":operation,"version":t.version})));
+        }
         if operation == "sources-sync" {
             let result: store::sources::SyncResult =
                 serde_json::from_str(raw).map_err(|_| error("invalid_control"))?;

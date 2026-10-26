@@ -13,9 +13,29 @@ pub fn latest_date(now_ms: i64, max_future_days: u32) -> Result<String, AuthErro
     }
     Ok(date.format("%Y-%m-%d").to_string())
 }
+/// Recipient-local date from trusted UTC milliseconds and an explicit validated IANA zone.
+pub fn recipient_date(now_ms: i64, zone: &str) -> Result<String, AuthError> {
+    rentemester_engine::tasks::reminders::recipient_date(now_ms, zone)
+        .map_err(|_| AuthError::InvalidClock)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn recipients_use_explicit_iana_dates_across_dst_and_different_days() {
+        let now = chrono::DateTime::parse_from_rfc3339("2026-03-28T23:30:00Z")
+            .unwrap()
+            .timestamp_millis();
+        assert_eq!(
+            recipient_date(now, "Europe/Copenhagen").unwrap(),
+            "2026-03-29"
+        );
+        assert_eq!(
+            recipient_date(now, "America/New_York").unwrap(),
+            "2026-03-28"
+        );
+        assert!(recipient_date(now, "invalid-zone").is_err());
+    }
     #[test]
     fn danish_midnight_dst_and_configured_horizon_are_trusted_arithmetic() {
         for (utc, days, expected) in [
