@@ -28,6 +28,14 @@
     "activation-receipt.json": {
       "path": "docs/architecture/rust-target/implementation/acceptance726/activation-receipt.json",
       "sha256": "df0ca0b58d0201754dd9b15676c60ab6e5e49998ece7b919351a5ce9e73b635e"
+    },
+    "pre-freeze-copy.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/pre-freeze-copy.json",
+      "sha256": "821978bc3634883190f95900aa0af92e1da3bd194098c7a8cdc7de8e0781c0a6"
+    },
+    "pre-freeze-copy.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/pre-freeze-copy.log",
+      "sha256": "640979f5f7bd376a6a491ec6584e192491830223679115255a9e6352548e80ce"
     }
   },
   "review": "Reviewed actual6a21fd45 test-only diff:3 typed schedules exercise queued/completed/unresolved history across signed offered/staged/released/active/reopen states. Exact workspace_transfer_fenced dispatch refusals preserve docs/generations; fresh target consent cannot clear unknown attempts or redispatch completed generation, queued work requires separate reviewed selection. Accepted target-only12.34 balanced journal and exact readmodel/history/generations survive independently verified fresh recovery/reopen. Unique synthetic buyer only fixture correction; no production API/control/guard changes. Frozen guarded host receipt3testsPASS and worker AST observed. Qualifies finite component only; original activation-crash/older-clone/platform/native/release matrix remains open. Main reviewed214line existing-pattern activation process helper/parent: public synthetic key, own exact child signal9/reap, durable status equality, source moved fence, staged-only reviewed resume and no active-case blind retry. Frozen4testsPASS, component timings373/366ms; no production hook/manager or guard weakening.",
@@ -81,7 +89,7 @@
       "remaining": "Original full claimed hosted/platform/external-effect composed qualification."
     }
   ],
-  "nextNecessaryAcceptance": "One original pre-freeze raw-copy admission/write diagnostic, distinct from staged nonce/inode ABA tests. Source review found no persistent clone binding; preserve original full gate rather than inferring safety.",
+  "nextNecessaryAcceptance": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked.",
   "closed55OriginalIssues": 43,
   "remaining55OriginalIssues": 12,
   "activation_process_death_recovery_accepted": true,
@@ -105,5 +113,23 @@
       "sourceMode": "moved"
     }
   ],
-  "worker_source_tree": "85e0e1d042938fb41c8dbd37d37522e091c22515"
+  "worker_source_tree": "85e0e1d042938fb41c8dbd37d37522e091c22515",
+  "preFreezeCopyDefect": {
+    "issue": 726,
+    "accepted": false,
+    "defectReproduced": true,
+    "originalSourceMode": "moved",
+    "targetMode": "active",
+    "rawPreFreezeCloneMode": "active",
+    "rawCloneWriteGateAdmitted": true,
+    "financialEffects": 0,
+    "sourceProductRevision": "50756de9",
+    "testSourceSha256": "64fa555cc54ff362730551d0ffd18634f5590046b561ae6bbbfcf710abea3927",
+    "test": "workspace_transfer::tests::pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved",
+    "exitCode": 101,
+    "preservedSyntheticFixture": "/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/.tmpEF3qy9",
+    "logSha256": "640979f5f7bd376a6a491ec6584e192491830223679115255a9e6352548e80ce",
+    "diagnosis": "Namespace lease/layout binds only current descriptors; a complete pre-freeze copy has separate inode/lock and lacks the later moved tombstone. Its ordinary current Owner opens as active and transfer write admission succeeds. This is not staged nonce, hardlink, ABA or privileged SQL tampering.",
+    "nextNecessaryChange": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked."
+  }
 }

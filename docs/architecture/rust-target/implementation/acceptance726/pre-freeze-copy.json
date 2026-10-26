@@ -1,0 +1,18 @@
+{
+  "issue": 726,
+  "accepted": false,
+  "defectReproduced": true,
+  "originalSourceMode": "moved",
+  "targetMode": "active",
+  "rawPreFreezeCloneMode": "active",
+  "rawCloneWriteGateAdmitted": true,
+  "financialEffects": 0,
+  "sourceProductRevision": "50756de9",
+  "testSourceSha256": "64fa555cc54ff362730551d0ffd18634f5590046b561ae6bbbfcf710abea3927",
+  "test": "workspace_transfer::tests::pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved",
+  "exitCode": 101,
+  "preservedSyntheticFixture": "/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/.tmpEF3qy9",
+  "logSha256": "640979f5f7bd376a6a491ec6584e192491830223679115255a9e6352548e80ce",
+  "diagnosis": "Namespace lease/layout binds only current descriptors; a complete pre-freeze copy has separate inode/lock and lacks the later moved tombstone. Its ordinary current Owner opens as active and transfer write admission succeeds. This is not staged nonce, hardlink, ABA or privileged SQL tampering.",
+  "nextNecessaryChange": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked."
+}

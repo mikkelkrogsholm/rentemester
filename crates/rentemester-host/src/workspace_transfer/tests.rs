@@ -1150,3 +1150,121 @@ fn activation_process_death_reopens_known_authority_without_old_source_writer() 
         target.try_close().unwrap();
     }
 }
+
+#[test]
+#[ignore = "explicit original726 raw pre-freeze copy qualification; never infer from staged nonce tests"]
+fn pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved() {
+    fn copy_tree(from: &std::path::Path, to: &std::path::Path) {
+        std::fs::create_dir(to).unwrap();
+        std::fs::set_permissions(to, std::fs::metadata(from).unwrap().permissions()).unwrap();
+        for entry in std::fs::read_dir(from).unwrap() {
+            let entry = entry.unwrap();
+            let kind = entry.file_type().unwrap();
+            assert!(
+                !kind.is_symlink(),
+                "synthetic clone contains no symlink substitution"
+            );
+            let target = to.join(entry.file_name());
+            if kind.is_dir() {
+                copy_tree(&entry.path(), &target);
+            } else {
+                assert!(kind.is_file());
+                std::fs::copy(entry.path(), target).unwrap();
+            }
+        }
+    }
+    let (d, source, cookies, proof, uid) = setup();
+    let root = d.path().canonicalize().unwrap();
+    let source_path = root.join("workspace");
+    let clone_path = root.join("pre-freeze-copy");
+    source.try_close().unwrap();
+    copy_tree(&source_path, &clone_path); // Complete stopped, current-schema copy; no forged data.
+    let mut source = Owner::open_with_profile(
+        &source_path,
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+    )
+    .unwrap();
+    let frozen = freeze(&mut source, &cookies, &proof);
+    let key = key();
+    let trusted = TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
+    let export =
+        serde_json::from_value(json!({"expectedStateHash":frozen["stateHash"],"confirm":true}))
+            .unwrap();
+    let wire = source
+        .export_workspace_transfer(&cookies, &Fixed(NOW), &proof, &export, &key)
+        .unwrap()
+        .outcome
+        .unwrap();
+    let artifact = rentemester_runtime::backup_artifact::verify(&wire, &trusted).unwrap();
+    let offered = status(&mut source, &cookies, &proof);
+    let op = rentemester_runtime::bootstrap::Operator::from_policy(
+        "w",
+        "system:synthetic-transfer",
+        &["system:synthetic-transfer".into()],
+    )
+    .unwrap();
+    let mut target = Owner::stage_transfer_new(
+        &root.join("clone-probe-target"),
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+        &artifact,
+        &op,
+        &store::digest(&wire),
+        "https://clone-probe.example.invalid",
+    )
+    .unwrap();
+    let target_proof = install_target_identity(&mut target, &cookies);
+    let staged = status(&mut target, &cookies, &target_proof);
+    let release = serde_json::from_value(json!({"expectedStateHash":offered["stateHash"],"challenge":staged["challenge"],"reason":"Reviewed raw-copy refusal qualification target","confirm":true})).unwrap();
+    let moved = source
+        .release_workspace_transfer(&cookies, &Fixed(NOW), &proof, &release, &key)
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(moved["mode"], "moved");
+    let activate = serde_json::from_value(json!({"expectedStateHash":staged["stateHash"],"release":moved["release"],"reason":"Reviewed sole-authority target activation","confirm":true})).unwrap();
+    target
+        .activate_workspace_transfer(&cookies, &Fixed(NOW), &target_proof, &activate, &trusted)
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(
+        status(&mut target, &cookies, &target_proof)["mode"],
+        "active"
+    );
+    assert!(
+        store::require_business_write(source.held.0.as_ref().unwrap().control.as_ref().unwrap())
+            .is_err()
+    );
+    match Owner::open_with_profile(&clone_path, uid, "w", "a", NamespaceProfile::LocalUserMacos) {
+        Err(reason) => eprintln!("pre_freeze_copy_probe admission_refused={reason:?}"),
+        Ok(mut clone) => {
+            let mode = status(&mut clone, &cookies, &proof)["mode"].clone();
+            let writable = store::require_business_write(
+                clone.held.0.as_ref().unwrap().control.as_ref().unwrap(),
+            )
+            .is_ok();
+            eprintln!(
+                "pre_freeze_copy_probe original=moved target=active clone_mode={mode} clone_write_gate={writable} financial_effects=0"
+            );
+            clone.try_close().unwrap();
+            source.try_close().unwrap();
+            target.try_close().unwrap();
+            if writable {
+                let kept = d.keep();
+                eprintln!(
+                    "pre_freeze_copy_probe preserved_synthetic_fixture={}",
+                    kept.display()
+                );
+                panic!(
+                    "Original726 refuses a second writer: ordinary pre-freeze copy retained active write admission after source moved"
+                );
+            }
+        }
+    }
+}

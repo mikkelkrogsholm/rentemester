@@ -1,0 +1,34 @@
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-application v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+   Compiling rentemester-host v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 31.35s
+     Running unittests src/lib.rs (.sgd/builds/checks/nonempty_jobs/debug/deps/rentemester_host-c590957fefcaca24)
+
+running 1 test
+pre_freeze_copy_probe original=moved target=active clone_mode="active" clone_write_gate=true financial_effects=0
+pre_freeze_copy_probe preserved_synthetic_fixture=/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/.tmpEF3qy9
+
+thread 'workspace_transfer::tests::pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved' (55859416) panicked at crates/rentemester-host/src/workspace_transfer/tests.rs:1264:17:
+Original726 refuses a second writer: ordinary pre-freeze copy retained active write admission after source moved
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test workspace_transfer::tests::pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved ... FAILED
+
+failures:
+
+failures:
+    workspace_transfer::tests::pre_freeze_raw_copy_cannot_admit_a_second_writer_after_original_moved
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 183 filtered out; finished in 8.85s
+
+error: test failed, to rerun pass `-p rentemester-host --lib`

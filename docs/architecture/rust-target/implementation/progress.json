@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original726 nonempty jobs, target-only signed recovery and actual activation-owner SIGKILL/reopen acceptance passed; original raw pre-freeze-copy gate next.",
+  "current_increment": "Original726 activation/jobs/recovery accepted, but raw pre-freeze-copy diagnostic reproduced active write admission after original moved. No financial effects. Current scope is this original guard defect.",
   "code_revision": "0c7c41a6dbbd3093ae938cc513e582cb2e2b7d06",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original726_nonempty_jobs_and_target_recovery_accepted_restaccept_active",
+  "state": "original726_actual_pre_freeze_clone_defect_reproduced",
   "issues_closed": 43,
-  "next": "One original pre-freeze raw-copy admission/write diagnostic, distinct from staged nonce/inode ABA tests. Source review found no persistent clone binding; preserve original full gate rather than inferring safety.",
+  "next": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
