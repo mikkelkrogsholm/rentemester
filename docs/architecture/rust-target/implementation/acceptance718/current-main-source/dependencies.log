@@ -1,0 +1,16 @@
+bun install v1.4.0 (34cbb9a40)
+
++ @babel/core@7.29.7
++ @biomejs/biome@2.5.10
++ @stylexjs/babel-plugin@0.19.1
++ @types/bun@1.4.0
++ typescript@5.9.3
++ @better-auth/api-key@1.7.1
++ @modelcontextprotocol/sdk@1.32.2
++ @stylexjs/stylex@0.19.1
++ better-auth@1.7.1
++ pdfjs-dist@6.2.108
++ takumi-pdf@0.15.0
++ zod@4.4.3
+
+242 packages installed [551.00ms]

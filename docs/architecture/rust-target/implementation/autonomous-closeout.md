@@ -1,3 +1,9 @@
+## Approved main-source checkpoint — 2026-10-26
+
+The user approved integrating current main72d80e17 and porting its missing functionality. Reviewed source9f4a3f0e passes frozen install, source checks, sharedUI build,94actual app-workspace tests, StyleX, runtime typing and61release/workspace tests. See acceptance718/current-main-source/qualification.json. Actual main merge retains both histories and reviewed combined resolutions. Prior failed/cancelled receipts remain; no financial/provider effects were replayed.
+
+This is source integration, not native parity or whole718 completion. Next necessary boundary is native workspacev2/purpose: strict parsing, live-only ordinary selection and complete retained backup/transfer inventory. Main company56/native36 and maincontrol34/native32 are distinct migration/adoption boundaries. Task/routine/calendar/kanban/protectedknowledge, approval/purchase/legacy-party/bank/payable/importedreceivable/evidence/read functionality still require actual native implementation and composed qualification. Changed bundled rules/assets also need applicable new-source qualification. Existing55 scopes/J01-J07/native/platform/release/cutover/retirement gates remain; installed manual desktop acceptance stays last.43of55closed,12open; no new closure is claimed for this component.
+
 # Autonomous closeout after #716
 
 User mandate: finish the remaining work without repeated “continue” messages, one

@@ -1,0 +1,2 @@
+$ bun scripts/check-stylex.ts && bun scripts/document-styles.ts --check
+StyleX ownership verified across cockpit, site, documents and generators

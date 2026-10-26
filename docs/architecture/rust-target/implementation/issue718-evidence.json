@@ -166,5 +166,145 @@
       "basis": "Retained full #689/J04 actual calculated\u2192reviewed/locked\u2192externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
     }
   ],
-  "browser_portion_accepted": true
+  "browser_portion_accepted": true,
+  "currentMainSourceIntegration": {
+    "format": "rentemester-current-main-source/1",
+    "issue": 718,
+    "reviewedSource": "9f4a3f0eebfce0c6d2bcb8df2b4ee1d4c62c94db",
+    "mainParent": "72d80e17abd7e064dcf1a08c933d41e0f781a0fa",
+    "run_id": "issue718-reviewed-main-source-20261026T082202.941848000",
+    "qualification": "Shared SOURCE integration only; not native support for new main functions or whole718 acceptance",
+    "review": "Preserved mainStyleX/sharedcontrols/tasks/navigation/importedreceivable/party/approval source alongside native refund/publiceinvoice/confirmedplan/unknownwrite/cursor/archive/auth/origin contracts. Contacts uses company.read; writes remain native authorized. Actual scoped source diffs reviewed; syntax alone was rejected. Root lock reconciled without locked dependency upgrades. Bunv1 cockpit hashes kept v1-only; Rustv2 independent/candidate checks retained. Historicalv1 descriptor fixture explicit; actualmainv2 currently rejected.",
+    "checks": [
+      {
+        "check": "dependencies",
+        "argv": [
+          "bun",
+          "install",
+          "--frozen-lockfile"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/dependencies.log",
+        "sha256": "52e2ca39a1e3686dcfb839e57ca697168cb1eb88620a9959cb49fe430c0a961a"
+      },
+      {
+        "check": "source_runtime",
+        "argv": [
+          "python3",
+          "/tmp/issue718-remainder-tools.py",
+          "check",
+          "runtime-repair"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/source_runtime.log",
+        "sha256": "4d410c15cefc3b1cdb0cb544e420fb1f624b10ace2398eca6e39e27e918ac931"
+      },
+      {
+        "check": "source_ui",
+        "argv": [
+          "python3",
+          "/tmp/issue718-remainder-tools.py",
+          "check",
+          "shared-ui-remainder"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/source_ui.log",
+        "sha256": "3cbdb38746fcae543a7aab3a17075cd7e2d404ea84127067a1721b953ba21f64"
+      },
+      {
+        "check": "ui_build",
+        "argv": [
+          "bun",
+          "run",
+          "--cwd",
+          "app",
+          "build"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ui_build.log",
+        "sha256": "46fa355276abb9432d55ba11a56d1a0142f54fb4fbcddc473c72a23ea0e3aaf0"
+      },
+      {
+        "check": "ui_behavior",
+        "argv": [
+          "bun",
+          "run",
+          "--cwd",
+          "app",
+          "test",
+          "src/components/ConfirmDialog.test.tsx",
+          "src/views/JournalView.test.tsx",
+          "src/views/InvoicesView.test.tsx",
+          "src/views/TasksView.test.tsx",
+          "src/lib/api/read-options.test.ts"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ui_behavior.log",
+        "sha256": "6cc323c0dee69fce3c443b456f46c6f954abf4a1543e188388039e128bae1749"
+      },
+      {
+        "check": "stylex",
+        "argv": [
+          "bun",
+          "run",
+          "stylex:check"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/stylex.log",
+        "sha256": "783014e6413d9cde1dad8a0f15807fc68932f24fcad542a21a635832f4922fbf"
+      },
+      {
+        "check": "runtime_types",
+        "argv": [
+          "bun",
+          "run",
+          "typecheck:runtime"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/runtime_types.log",
+        "sha256": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d"
+      },
+      {
+        "check": "release_workspace",
+        "argv": [
+          "bun",
+          "test",
+          "tests/unit/release-scripts.test.ts",
+          "tests/unit/release-workflows.test.ts",
+          "tests/unit/workspace.test.ts",
+          "tests/unit/workspace-control.test.ts"
+        ],
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/release_workspace.log",
+        "sha256": "1a048cde162c584acaebcd877e5e3b706ba7b16920ab51bb7daf2e23e5db9b1c"
+      }
+    ],
+    "additionalActualEvidence": {
+      "nativeRepairUI": "164tests493assertions0fail on candidate-local deps; logs retained locally, no financial/provider effects",
+      "rootReleaseWorkspace": "61tests354assertions0fail; repeated by frozen acceptance",
+      "layout": "23actual descriptor cases; mainv2 invalid_manifest remains a pending port, not compatibility",
+      "cancellation": "Both supersededsource runs/errors/DockerDNS/nativecapacity/failedzero-matchroot-test receipt retained; new snapshot acceptance explicitly uses actual main app workspace/preloads"
+    },
+    "wholeIssueAccepted": false,
+    "remainingNativeScope": [
+      "Workspace manifestv2/purpose including retained backup/transfer inventory and live-only discovery",
+      "Main company56 and distinct control34 lineage with explicit native migration/adoption/backup codecs",
+      "Task/routine/calendar/kanban/protectedknowledge and additional main accounting/party/evidence/read operations",
+      "Current-source browser/native, platform, independent release/signing, fencedcutover/retirement and originalJ01-J07 gates"
+    ],
+    "original55ScopesRetained": true,
+    "wholeIssueCount": {
+      "closed": 43,
+      "open": 12
+    },
+    "embeddedInputNote": "Main rules/design assets also changed; old native binaries/proofs remain bound to their original source, not automatic qualification of new source."
+  }
 }

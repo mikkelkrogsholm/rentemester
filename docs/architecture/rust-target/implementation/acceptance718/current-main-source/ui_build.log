@@ -1,0 +1,2 @@
+$ bun run design:check && tsc --noEmit && bun run scripts/build.ts
+$ bun run ../scripts/design-tokens.ts --check

@@ -1,0 +1,75 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/release-workflows.test.ts:
+(pass) release workflow security contract > pins every privileged third-party action to a full commit [0.28ms]
+(pass) release workflow security contract > keeps full suites local while GitHub builds the cockpit [0.07ms]
+(pass) release workflow security contract > makes the strict runtime typecheck a merge and release gate [0.02ms]
+(pass) release workflow security contract > makes the pinned Biome lint policy a merge and release gate [0.02ms]
+(pass) release workflow security contract > runs Cockpit evidence through a loopback proxy to one internal-only application [0.09ms]
+(pass) release workflow security contract > makes the production license allowlist a merge and release gate
+(pass) release workflow security contract > blocks advisories and binds audit, licenses and lockfile into release evidence [0.07ms]
+(pass) release workflow security contract > uses the required smoke check only for image build and runtime verification
+(pass) release workflow security contract > publishes evidence only after the candidate image is attested [0.06ms]
+(pass) release workflow security contract > smokes the published digest before attestation and evidence [0.28ms]
+(pass) release workflow security contract > uses the generator's fail-closed Cockpit evidence verification [0.03ms]
+(pass) release workflow security contract > binds the release manifest to raw Cockpit artifact files [0.02ms]
+(pass) release workflow security contract > binds promotion to one successful trusted run and its attestation [0.07ms]
+(pass) release workflow security contract > completes all immutable preflights before either external write [0.02ms]
+(pass) release workflow security contract > marks promoted SemVer prereleases as GitHub prereleases [0.02ms]
+(pass) container release inputs > pins the Docker frontend and Bun base and runs non-root [0.07ms]
+(pass) container release inputs > smokes registered CLI examples from the built container [0.02ms]
+(pass) container release inputs > keeps Docker's actual Bun base digest aligned with release runtime identity [0.04ms]
+(pass) container release inputs > requires a digest pin and keeps the no-login cockpit on host loopback [0.01ms]
+
+tests/unit/workspace.test.ts:
+(pass) workspace model > detects when no workspace exists yet [1.09ms]
+(pass) workspace model > initWorkspace creates an empty manifest at the root [0.53ms]
+(pass) workspace model > manifest round-trips through save/load deterministically [1.11ms]
+(pass) workspace model > loads legacy v1 entries as live but never accepts purpose under v1 [0.42ms]
+(pass) workspace model > slugifyCompanyName produces filesystem-safe deterministic slugs [0.11ms]
+(pass) createCompany > creates the full directory structure and an initialised ledger DB [295.17ms]
+(pass) createCompany > registers the new company in the workspace manifest [230.09ms]
+(pass) createCompany > rejects a duplicate slug [236.57ms]
+(pass) createCompany > honours an explicit slug and fiscal-year settings [287.91ms]
+(pass) slug resolution > resolves a known slug to its company directory [226.22ms]
+(pass) slug resolution > returns null for an unknown slug [0.75ms]
+(pass) canonical live-company resolution > uses only registered unique live CVRs and excludes sibling copies [722.19ms]
+(pass) adoption of an unlisted company directory > adopts a present-but-unlisted company directory into the manifest [244.37ms]
+(pass) adoption of an unlisted company directory > refuses to adopt a directory without a ledger [0.66ms]
+(pass) registerCompanyDirIntoWorkspace (#216 init/cockpit unification) > detects whether a company directory sits inside a workspace [0.16ms]
+(pass) registerCompanyDirIntoWorkspace (#216 init/cockpit unification) > registers an init-created company so the workspace can see it [231.47ms]
+(pass) registerCompanyDirIntoWorkspace (#216 init/cockpit unification) > is idempotent — re-registering the same company is a no-op [233.27ms]
+(pass) registerCompanyDirIntoWorkspace (#216 init/cockpit unification) > a company directory outside the workspace is left untouched [219.69ms]
+
+tests/unit/release-scripts.test.ts:
+(pass) release evidence scripts > classifies only GHCR HTTP 404 as an absent manifest [0.47ms]
+(pass) release evidence scripts > rejects SemVer forms with leading zeroes or numeric prerelease zeroes [78.83ms]
+(pass) release evidence scripts > creates a manifest and accepts only an exactly bound Digisense approval [209.29ms]
+(pass) release evidence scripts > records the raw SHA-256 values of the Cockpit evidence fixtures [25.07ms]
+(pass) release evidence scripts > refuses release evidence without an explicit runtime identity [22.78ms]
+(pass) release evidence scripts > refuses release evidence without a checksum for the extracted SBOM [19.40ms]
+(pass) release evidence scripts > refuses release evidence without the lockfile-bound supply-chain checksum [19.32ms]
+(pass) release evidence scripts > refuses release evidence without the digest-bound agent-discovery checksum [19.53ms]
+
+tests/unit/workspace-control.test.ts:
+(pass) workspace control database > MAIN task lineage is distinct from native mail and custody versions [0.56ms]
+(pass) workspace control database > creates a private, checksummed control database without touching a company ledger [18.24ms]
+(pass) workspace control database > is idempotent, transactional, and protects workspace audit records [21.61ms]
+(pass) workspace control database > serializes immediate writers so a retried workspace audit event is not lost [21.20ms]
+(pass) workspace control database > rejects a same-name group table whose reviewed constraints were replaced [24.57ms]
+(pass) workspace control database > rejects a weakened intercompany event table despite same names and append-only triggers [24.28ms]
+(pass) workspace control database > rejects unknown, newer, missing, and tampered migration history [60.45ms]
+(pass) workspace control database > binds the migration checksum to its immutable artifact [0.44ms]
+(pass) workspace control database > v6 records only authoritative auth state transitions append-only [17.90ms]
+(pass) workspace control database > v8 records bounded secret-free document access evidence append-only [15.68ms]
+(pass) workspace control database > v12 preserves auth telemetry and permits only secret-free recovery endpoint evidence [15.38ms]
+(pass) workspace control database > v13 records bounded authorization denials without raw request data [16.18ms]
+(pass) workspace control database > v14 provides append-only, replay-protected invitation evidence [15.74ms]
+(pass) workspace control database > upgrades a checksummed v1 control database to the reviewed Better Auth v2 schema [18.39ms]
+(pass) workspace control database > upgrades a checksummed v2 control database to the append-only access v3 schema [23.81ms]
+(pass) workspace control database > upgrades v4 with a fail-closed MFA session boundary [33.05ms]
+
+ 61 pass
+ 0 fail
+ 354 expect() calls
+Ran 61 tests across 4 files. [3.70s]
