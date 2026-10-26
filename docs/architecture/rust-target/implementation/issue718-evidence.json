@@ -837,7 +837,7 @@
     "broaderUiAcceptance": "Not accepted; stopped broad probe and exact prepatch4failure comparison preserved. Other failures remain unqualified."
   },
   "currentMainNativeSelectorRepair": {
-    "status": "Selector source repair qualified; next actual packaged4df CI passes that boundary but stops at missing runner pdftotext. poppler-utils installation added; final browser qualification still pending.",
+    "status": "Actual4c packaged browser/server qualification PASS after exact selector and host PDF-tool fixes. This does not qualify the unported native task/main scope or later native33 changes.",
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/selector-qualification.json",
     "wholeIssueAccepted": false
   },
@@ -849,5 +849,15 @@
   "historicalRemainingBeforeMainPort": [
     "Only retained original J03 native/Tauri boundary and original #712 dependency remain after source-bound browser disposition. Installed manual native/menu/Keychain/WebKit-cookie/close-reopen/cancel acceptance remains LAST; no GPUI/mock substitute or hidden fallback.",
     "Whole #718 stays OPEN until that original gate is actually accepted; browser completion does not waive dependencies or release/cutover requirements."
-  ]
+  ],
+  "currentMainNativeTaskRecovery": {
+    "status": "accepted current manual-task backend recovery only; native task API not yet enabled",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/qualification.json",
+    "wholeIssueAccepted": false
+  },
+  "currentMainPackagedCi": {
+    "status": "actual7of7PASS on4c; exact GitHub tested merge has identical tree; historical before native33 recovery changes",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/packaged-4c/qualification.json",
+    "wholeIssueAccepted": false
+  }
 }

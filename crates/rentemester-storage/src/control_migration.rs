@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
-const ARTIFACTS: [&str; 31] = [
+pub(crate) const ARTIFACTS: [&str; 31] = [
     include_str!("../../../src/core/workspace-migrations/0001-workspace-control-baseline.json"),
     include_str!("../../../src/core/workspace-migrations/0002-better-auth-foundation.json"),
     include_str!("../../../src/core/workspace-migrations/0003-workspace-access-events.json"),
@@ -97,6 +97,7 @@ fn native_catalogue() -> Result<Vec<Migration>, Error> {
 fn native_steps() -> Result<Vec<Step>, Error> {
     let mut raw = ARTIFACTS.to_vec();
     raw.push(include_str!("native-workspace-migrations/0032-namespace-custody-v32.json"));
+    raw.push(include_str!("native-workspace-migrations/0033-workspace-tasks-v33.json"));
     steps(&raw, &native_catalogue()?)
 }
 fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
@@ -300,10 +301,11 @@ pub(super) fn convert_adoption_copy(
     let steps = steps(&ARTIFACTS, &expected)?;
     let report = rehearse(db, &steps, &expected)?;
     {
-        let step = native_steps()?.remove(31);
         let tx = db.transaction_with_behavior(TransactionBehavior::Immediate).map_err(failed)?;
-        tx.execute_batch(&step.sql).map_err(failed)?;
-        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(32,?1,?2,'native-private-conversion')", params![step.identity.name,step.identity.checksum]).map_err(failed)?;
+        for step in native_steps()?.iter().skip(31) {
+            tx.execute_batch(&step.sql).map_err(failed)?;
+            tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(?1,?2,?3,'native-private-conversion')", params![step.identity.id,step.identity.name,step.identity.checksum]).map_err(failed)?;
+        }
         tx.commit().map_err(failed)?;
     }
     let tx = db
@@ -317,8 +319,13 @@ pub(super) fn convert_adoption_copy(
 /// Accept only the immediately preceding complete schema or the current one;
 /// never use this as an adoption route for older source databases.
 pub fn upgrade_mail_control(db: &mut Connection) -> Result<(), Error> {
-    if history(db, &native_catalogue()?)?.len() == 32 {
-        return validate_current_control(db);
+    let native = native_catalogue()?;
+    let version = history(db, &native)?.len();
+    if version >= 32 {
+        if crate::document_access::strip_schema(db, &schema(db)?)? != reference(&native_steps()?, version)? {
+            return Err(unsupported("native control prefix schema differs"));
+        }
+        return integrity(db);
     }
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
@@ -348,16 +355,21 @@ pub(crate) fn bind_namespace(db: &mut Connection, identity: crate::namespace_cus
     let expected = native_catalogue()?;
     let all = native_steps()?;
     let version = history(&tx, &expected)?.len();
-    if version == 31 {
-        validate_v31(&tx)?;
-        if enroll { crate::workspace_transfer::require_business_write(&tx)?; }
-        let step = &all[31];
+    if !(31..=expected.len()).contains(&version)
+        || crate::document_access::strip_schema(&tx, &schema(&tx)?)? != reference(&all, version)? {
+        return Err(unsupported("complete native control prefix required"));
+    }
+    integrity(&tx)?;
+    if enroll { crate::workspace_transfer::require_business_write(&tx)?; }
+    // Existing custody is checked BEFORE any suffix migration. Never rebind a copied namespace.
+    if version >= 32 && (enroll || version < expected.len()) { crate::namespace_custody::verify(&tx, identity)?; }
+    for step in all.iter().skip(version) {
         tx.execute_batch(&step.sql).map_err(failed)?;
-        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(32,?1,?2,?3)", params![step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
-    } else if version != 32 { return Err(unsupported("complete v31 or v32 required")); }
+        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(?1,?2,?3,?4)", params![step.identity.id,step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
+    }
     validate_current_control(&tx)?;
     if enroll { crate::workspace_transfer::require_business_write(&tx)?; }
-    if enroll && version == 32 { crate::namespace_custody::verify(&tx, identity)?; }
+    if enroll && version >= 32 { crate::namespace_custody::verify(&tx, identity)?; }
     else { crate::namespace_custody::insert_or_verify(&tx, identity)?; }
     tx.commit().map_err(failed)
 }
@@ -417,6 +429,43 @@ pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn native32() -> Connection {
+        let db=Connection::open_in_memory().unwrap();
+        for step in native_steps().unwrap().iter().take(32) {
+            db.execute_batch(&step.sql).unwrap();
+            db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(?1,?2,?3,'historical-native32')",params![step.identity.id,step.identity.name,step.identity.checksum]).unwrap();
+        }
+        crate::namespace_custody::insert_or_verify(&db,crate::namespace_custody::Identity{device:7,inode:8}).unwrap();db
+    }
+    #[test]
+    fn task_suffix_requires_existing_custody_before_any_change_and_retains_prefix() {
+        let mut db=native32();
+        let old=history(&db,&native_catalogue().unwrap()).unwrap();
+        let changes=db.total_changes();
+        assert!(crate::namespace_custody::enroll_stopped(&mut db,crate::namespace_custody::Identity{device:7,inode:9}).is_err());
+        assert_eq!(db.total_changes(),changes);
+        assert_eq!(history(&db,&native_catalogue().unwrap()).unwrap(),old);
+        assert!(db.prepare("SELECT * FROM rm_task_events").is_err());
+        crate::namespace_custody::enroll_stopped(&mut db,crate::namespace_custody::Identity{device:7,inode:8}).unwrap();
+        let current=history(&db,&native_catalogue().unwrap()).unwrap();
+        assert_eq!(&current[..32],old); assert_eq!(current.len(),33);
+        validate_current_control(&db).unwrap();
+        assert_eq!(db.query_row::<i64,_,_>("SELECT count(*) FROM rm_task_events",[],|r|r.get(0)).unwrap(),0);
+    }
+    #[test]
+    fn main_knowledge31_is_not_native_mail31_or_a_task_upgrade_source() {
+        let mut db=Connection::open_in_memory().unwrap();
+        for step in native_steps().unwrap().iter().take(30) {
+            db.execute_batch(&step.sql).unwrap();db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(?1,?2,?3,'synthetic-main')",params![step.identity.id,step.identity.name,step.identity.checksum]).unwrap();
+        }
+        let raw=include_str!("../../../src/core/workspace-migrations/0031-knowledge-pages-v31.json");
+        let a:Artifact=serde_json::from_str(raw).unwrap();db.execute_batch(&a.sql).unwrap();
+        db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version) VALUES(31,?1,?2,'synthetic-main')",params![a.name,format!("{:x}",Sha256::digest(raw.as_bytes()))]).unwrap();
+        let changes=db.total_changes();
+        assert!(crate::namespace_custody::enroll_stopped(&mut db,crate::namespace_custody::Identity{device:7,inode:8}).is_err());
+        assert_eq!(db.total_changes(),changes);
+        assert!(db.prepare("SELECT * FROM rm_namespace_custody").is_err());
+    }
     use std::{
         process::{Child, Command, Stdio},
         time::{Duration, Instant},

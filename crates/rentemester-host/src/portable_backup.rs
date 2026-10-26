@@ -182,6 +182,7 @@ impl Owner {
                     .collect::<Vec<_>>(),
             )?;
             let mut entries = vec![];
+            store::tasks::validate_companies(&tx, &catalog.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;
             let mut companies = vec![];
             let mut activity_ids = std::collections::BTreeMap::new();
             add(
@@ -363,6 +364,10 @@ impl Owner {
                     bytes: business.consolidation_bytes,
                 },
             )?;
+            add(&mut entries, artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness { section: artifact::BusinessSection::Tasks },
+                path: "control/tasks.json".into(), bytes: business.task_bytes,
+            })?;
             let unsupported = business
                 .unsupported
                 .into_iter()
@@ -392,6 +397,7 @@ impl Owner {
                         artifact::BusinessSection::Ownership,
                         artifact::BusinessSection::Intercompany,
                         artifact::BusinessSection::Consolidation,
+                        artifact::BusinessSection::Tasks,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -756,6 +762,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::Ownership
                     | artifact::BusinessSection::Intercompany
                     | artifact::BusinessSection::Consolidation
+                    | artifact::BusinessSection::Tasks
             )
         })
     {
@@ -955,6 +962,9 @@ fn restore_business(
                 .map(|c| c.slug.clone())
                 .collect::<Vec<_>>(),
         )?;
+    }
+    if a.manifest().context.coverage.included.contains(&artifact::BusinessSection::Tasks) {
+        store::tasks::initialize(control,entry(artifact::BusinessSection::Tasks)?.bytes(),&a.manifest().context.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;
     }
     Ok(())
 }
@@ -1409,6 +1419,38 @@ mod tests {
         let key = signing_key();
         let trust = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
         artifact::verify(&artifact::create(context, entries, &key).unwrap(), &trust).unwrap()
+    }
+    #[test]
+    fn signed_tasks_restore_exact_history_receipts_without_runtime_or_grants() {
+        let base=signed(false,false,false,false,false,None);
+        assert_eq!(base.manifest().format,artifact::FORMAT);
+        let mut source=Connection::open_in_memory().unwrap();
+        store::initialize_control(&mut source,base.entries().iter().find(|e|e.path()=="control/workspace-audit.json").unwrap().bytes(),&"b".repeat(64)).unwrap();
+        let corpus:Value=serde_json::from_str(include_str!("../../rentemester-engine/src/tasks/main-flow.json")).unwrap();
+        use rentemester_storage::tasks::{self,Command,Context};
+        for (index,row) in corpus["steps"].as_array().unwrap().iter().enumerate() {
+            let input=&row["input"];let command=match row["operation"].as_str().unwrap() {
+                "create"=>Command::Create{input,generated_id:"unused-id"},
+                "update"=>Command::Update{id:"task-synthetic",patch:input},
+                "move"=>Command::Move{id:"task-synthetic",input},
+                "complete"=>Command::Complete{id:"task-synthetic",input},
+                "reopen"=>Command::Reopen{id:"task-synthetic",reason:input},_=>unreachable!(),
+            };
+            let key=format!("step-{index}");tasks::mutate(&mut source,command,Context{actor:"user:synthetic",principal:"synthetic-member",idempotency_key:&key,expected_version:row["expectedVersion"].as_u64(),now:row["now"].as_str().unwrap(),source_check:None},|_,_|Ok(())).unwrap();
+        }
+        source.execute("UPDATE rm_task_runtime SET lease_owner='historical-owner',lease_until='2099-01-01T00:00:00Z',last_tick_at='2026-10-26T11:00:00Z'",[]).unwrap();
+        let tx=source.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();let bytes=store::export_control(&tx).unwrap().task_bytes;tx.rollback().unwrap();
+        let mut context=base.manifest().context.clone();context.coverage.included.push(artifact::BusinessSection::Tasks);
+        let mut entries=base.entries().iter().map(|e|artifact::Snapshot{kind:e.kind().clone(),path:e.path().into(),bytes:e.bytes().to_vec()}).collect::<Vec<_>>();
+        entries.push(artifact::Snapshot{kind:artifact::EntryKind::ControlBusiness{section:artifact::BusinessSection::Tasks},path:"control/tasks.json".into(),bytes:bytes.clone()});
+        let archive=verified(context,entries);assert_eq!(archive.manifest().format,artifact::FORMAT_V2);validate(&archive).unwrap();
+        let mut target=Connection::open_in_memory().unwrap();restore_business(&mut target,&archive,&"c".repeat(64)).unwrap();
+        let history=tasks::history(&target,"task-synthetic",|_|Ok(())).unwrap();assert_eq!(history.len(),5);assert_eq!(history[4].task.version,5);
+        let tx=target.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();assert_eq!(store::export_control(&tx).unwrap().task_bytes,bytes);tx.rollback().unwrap();
+        for table in ["user","session","apikey","rm_company_membership_events"] {assert_eq!(target.query_row::<i64,_,_>(&format!("SELECT count(*) FROM {table}"),[],|r|r.get(0)).unwrap(),0);}
+        assert_eq!(target.query_row::<Option<String>,_,_>("SELECT lease_owner FROM rm_task_runtime",[],|r|r.get(0)).unwrap(),None);
+        let mut legacy_target=Connection::open_in_memory().unwrap();restore_business(&mut legacy_target,&base,&"d".repeat(64)).unwrap();
+        assert_eq!(legacy_target.query_row::<i64,_,_>("SELECT count(*) FROM rm_task_events",[],|r|r.get(0)).unwrap(),0);
     }
     #[test]
     fn signed_gdpr_hold_history_restore_remains_complete() {

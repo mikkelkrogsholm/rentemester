@@ -404,7 +404,7 @@ fn native_profile(
             .try_close()
             .map_err(|_| "snapshot owner close failed; output retained")?;
         Ok(
-            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":artifact::FORMAT,"snapshotPath":out,"sha256":hash,"sha256Path":sidecar,"companyCount":count,"errors":[]}),
+            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":verified.manifest().format,"snapshotPath":out,"sha256":hash,"sha256Path":sidecar,"companyCount":count,"errors":[]}),
         )
     } else {
         let target = Path::new(
@@ -449,7 +449,7 @@ fn native_profile(
             .try_close()
             .map_err(|_| "published restore close failed; inspect target before another action")?;
         Ok(
-            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":artifact::FORMAT,"targetWorkspaceRoot":target,"companyCount":verified.manifest().context.companies.len(),"nextStep":"bootstrap-owner-then-reinvite","errors":[]}),
+            json!({"ok":true,"outputVersion":"rentemester-cli-workspace/2","artifactFormat":verified.manifest().format,"targetWorkspaceRoot":target,"companyCount":verified.manifest().context.companies.len(),"nextStep":"bootstrap-owner-then-reinvite","errors":[]}),
         )
     }
 }

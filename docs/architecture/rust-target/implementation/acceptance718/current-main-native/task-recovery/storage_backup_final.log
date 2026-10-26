@@ -1,0 +1,57 @@
+warning: variable does not need to be mutable
+   --> crates/rentemester-storage/src/legacy_control_adoption.rs:221:19
+    |
+221 |         let (dir, mut db) = fixture(31);
+    |                   ----^^
+    |                   |
+    |                   help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-storage` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-storage --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 34 tests
+test portable_backup::intercompany::tests::signed_company_set_is_exact_for_all_historical_refs_and_failure_rolls_back_both_tables ... ok
+test portable_backup::intercompany::tests::full_history_canonical_unicode_hashes_states_and_actors_roundtrip_without_authority ... ok
+test portable_backup::intercompany::tests::removed_historical_group_member_still_requires_signed_company_identity ... ok
+test portable_backup::consolidation::tests::all_history_versions_statuses_dates_and_original_actors_roundtrip_exactly ... ok
+test portable_backup::intercompany::tests::v1_compatibility_decodes_empty_dispositions_without_rewriting_old_bytes ... ok
+test portable_backup::intercompany::tests::valid_group_and_mapping_control_export_has_one_exact_new_section ... ok
+test portable_backup::intercompany::tests::overwrite_and_nonempty_unencoded_sections_refuse ... ok
+test portable_backup::consolidation::tests::missing_history_company_or_approved_mapping_refuses_and_overwrite_never_occurs ... ok
+test portable_backup::intercompany::tests::unknown_shape_types_hashes_and_lifecycle_corruption_never_partially_restore ... ok
+test portable_backup::consolidation::tests::corrupt_shape_canonical_hash_chain_and_version_roll_back_both_tables ... ok
+test portable_backup::intercompany::tests::disposition_v2_history_service_principal_and_original_references_roundtrip_or_refuse ... ok
+test portable_backup::corporate::tests::complete_originals_history_legacy_scope_and_native_visibility_survive_restore_restart ... ok
+test portable_backup::tasks::tests::history_and_receipts_roundtrip_without_runtime_or_authority ... ok
+test portable_backup::tasks::tests::unknown_company_wrong_codec_and_missing_table_refuse_atomically ... ok
+test portable_backup::corporate::tests::corrupt_source_and_unknown_schema_fail_export ... ok
+test portable_backup::tasks::tests::malformed_cross_principal_and_wrong_operation_receipts_refuse_without_partial_restore ... ok
+test portable_backup::ownership::tests::codec_roundtrip_preserves_ownership_all_states_endings_visibility_history_and_file_reopen ... ok
+test portable_backup::inbox::tests::inbox_codec_roundtrip_all_states_full_original_history_and_credential_free_new_principal ... ok
+test portable_backup::parties::tests::party_codec_roundtrip_preserves_all_source_tables_native_projection_and_no_authority ... ok
+test portable_backup::inbox::tests::inbox_completed_and_split_document_references_must_be_same_company_marker_hash_metadata_and_inventory ... ok
+test portable_backup::ownership::tests::historical_v1_profiles_exact_replays_principals_and_current_v2_endings_survive ... ok
+test portable_backup::corporate::tests::corrupt_unknown_crossrefs_and_typed_mirrors_refuse_with_whole_section_rollback has been running for over 60 seconds
+test portable_backup::inbox::tests::inbox_codec_corrupt_unknown_blob_proof_claim_crossref_and_types_refuse_atomically has been running for over 60 seconds
+test portable_backup::inbox::tests::native_mail_v2_roundtrip_preserves_pending_review_and_legacy_v1_remains_valid has been running for over 60 seconds
+test portable_backup::parties::tests::company_reference_mismatch_source_corruption_and_unknown_schema_are_refused ... ok
+test portable_backup::parties::tests::identity_only_source_free_codec_and_strict_anchor_rollback ... ok
+test portable_backup::tests::business_codec_preserves_historical_evidence_without_auth_or_grants ... ok
+test portable_backup::tests::empty_known_native_schedule_schema_is_valid_but_corruption_is_not ... ok
+test portable_backup::tests::scheduler_boundary_failure_leaves_receipt_boundary_and_audit_unchanged ... ok
+test portable_backup::tests::malformed_manifest_is_refused_and_unknown_codec_never_imports_authority ... ok
+test portable_backup::tests::knowledge_full_history_provenance_effective_context_and_new_authority_survive ... ok
+test portable_backup::ownership::tests::malformed_ownership_sections_refuse_atomically_without_altering_dependencies has been running for over 60 seconds
+test portable_backup::parties::tests::malformed_conflicting_unknown_or_dangling_party_codec_refuses_atomically has been running for over 60 seconds
+test portable_backup::tests::knowledge_unknown_codec_columns_foreign_keys_and_authority_tables_refuse_atomically ... ok
+test portable_backup::parties::tests::malformed_conflicting_unknown_or_dangling_party_codec_refuses_atomically ... ok
+test portable_backup::inbox::tests::inbox_codec_corrupt_unknown_blob_proof_claim_crossref_and_types_refuse_atomically ... ok
+test portable_backup::inbox::tests::native_mail_v2_roundtrip_preserves_pending_review_and_legacy_v1_remains_valid ... ok
+test portable_backup::corporate::tests::corrupt_unknown_crossrefs_and_typed_mirrors_refuse_with_whole_section_rollback ... ok
+test portable_backup::ownership::tests::malformed_ownership_sections_refuse_atomically_without_altering_dependencies ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 691 filtered out; finished in 118.19s
+

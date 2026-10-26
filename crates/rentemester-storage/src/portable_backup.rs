@@ -19,6 +19,7 @@ pub use corporate::{
     initialize as initialize_corporate, validate_companies as validate_corporate_companies,
 };
 mod parties;
+pub mod tasks;
 pub use inbox::{
     initialize as initialize_inbox, validate_companies as validate_inbox_companies,
     validate_company as validate_inbox_company,
@@ -128,6 +129,7 @@ pub struct Control {
     pub ownership_bytes: Vec<u8>,
     pub intercompany_bytes: Vec<u8>,
     pub consolidation_bytes: Vec<u8>,
+    pub task_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
@@ -162,6 +164,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         ownership_bytes: ownership::export(tx)?,
         intercompany_bytes: intercompany::export(tx)?,
         consolidation_bytes: consolidation::export(tx)?,
+        task_bytes: tasks::export(tx)?,
         unsupported,
     })
 }
@@ -174,6 +177,8 @@ fn export_tables(db: &Connection, names: &[&str], format: &str) -> Result<Vec<u8
             "rm_party_identifiers" => "jurisdiction,identifier_kind,identifier,party_id",
             "rm_party_company_roles" => "party_id,company_slug,role",
             "rm_party_legacy_links" => "company_slug,legacy_kind,legacy_id",
+            "rm_task_receipts" => "principal,idempotency_key",
+            "rm_task_notifications" => "notification_id",
             _ => "id",
         };
         let mut q = db

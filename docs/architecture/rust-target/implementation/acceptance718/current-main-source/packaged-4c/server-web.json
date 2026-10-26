@@ -1,0 +1,81 @@
+{
+  "status": "passed",
+  "imageId": "sha256:cd032eb6b1f78933c0601a140639b7013fc4c67d834bef3161d068d62008a59d",
+  "architecture": "amd64",
+  "imageLabels": {
+    "org.opencontainers.image.revision": "ca303a8bc513455a726472ff315c05207f88ff29",
+    "org.opencontainers.image.source": "https://github.com/mikkelkrogsholm/rentemester",
+    "org.opencontainers.image.title": "Rentemester Rust candidate",
+    "org.opencontainers.image.version": "0.3.1",
+    "org.rentemester.runtime": "rust",
+    "org.rentemester.runtime.rust.version": "1.94.1",
+    "org.rentemester.source.dirty": "false"
+  },
+  "checks": {
+    "freshHealth": {
+      "authRequired": true,
+      "backend": "rust",
+      "deploymentProfile": "hosted",
+      "ok": true,
+      "readiness": {
+        "code": "setup_required",
+        "status": "not_ready"
+      },
+      "service": "rentemester",
+      "setupRequired": true,
+      "workspaceReady": true
+    },
+    "dedicatedNonrootReadOnlyNoCapabilitiesNoJsRuntime": true,
+    "packagedClientHelp": true,
+    "packagedPdfParse": {
+      "status": "ok",
+      "inputSha256": "617222dad7e66cdafa49f4f534578c6fb1b0050a039c98e66bb38a6402044769",
+      "provenance": {
+        "adapterVersion": "1",
+        "artifactSha256": "1470e21b8b4a3b4ad7f85684e2da11d94f3b69a86d81dee11b9b6709d927ac1d",
+        "bindingVersion": "0.9.4",
+        "layoutConvention": "pdfium-character-loose-box-bottom-left-v1",
+        "librarySha256": "f728930966f503652b92acc89b9374a2eeca00ce42e26dccd3e4b5c5161b2d64",
+        "limits": {
+          "addressSpaceBytes": 536870912,
+          "cpuSeconds": 15,
+          "macMemoryEnforcementQualified": false,
+          "wallSeconds": 15
+        },
+        "parserId": "pdfium",
+        "parserVersion": "151.0.7881.0+binding0.9.4.adapter1.f728930966f50365"
+      }
+    },
+    "normalOwnerMfaPost125_50BalancedReportsExactReceipt": true,
+    "firstStopExit": 0,
+    "reopenHealth": {
+      "authRequired": true,
+      "backend": "rust",
+      "deploymentProfile": "hosted",
+      "ok": true,
+      "readiness": {
+        "code": "current",
+        "status": "ready"
+      },
+      "service": "rentemester",
+      "setupRequired": false,
+      "workspaceReady": true
+    },
+    "normalMfaReopenPersistedJournalOriginalIdempotentReplay": true,
+    "secondStopExit": 0
+  },
+  "limits": [
+    "Loopback HTTP candidate; HTTPS proxy/provider/release qualification remains open",
+    "Packaged CLI/MCP help only; their authenticated business parity is not claimed here",
+    "No installed desktop GUI or production deployment",
+    "No independent no-cache reproducibility or registry attestation qualification"
+  ],
+  "ownedContainerAndVolumesRemoved": true,
+  "runnerSha256": "271167bc9b9a8eb404950752391e172f43c8a582279f994333122eeb18dea73f",
+  "screenshotsSha256": {
+    "acceptance/server-web.json.assets/first.png": "88b4755c4601d3e42ddf83503c5d58c3093b1577d3bfb2ce726bab52aa4dbc8d",
+    "acceptance/server-web.json.assets/reopen-original.png": "88b4755c4601d3e42ddf83503c5d58c3093b1577d3bfb2ce726bab52aa4dbc8d",
+    "acceptance/server-web.json.assets/first-original.png": "88b4755c4601d3e42ddf83503c5d58c3093b1577d3bfb2ce726bab52aa4dbc8d",
+    "acceptance/server-web.json.assets/reopen.png": "88729231f5649d574332784510388543192ad6bcab556693f9a2e9c3b755c7fe"
+  }
+}

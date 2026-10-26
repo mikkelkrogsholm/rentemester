@@ -24,7 +24,7 @@ impl Readiness {
     }
 }
 
-const CONTROL_ARTIFACTS: [&str; 31] = [
+const CONTROL_ARTIFACTS: [&str; 33] = [
     include_str!("../../../src/core/workspace-migrations/0001-workspace-control-baseline.json"),
     include_str!("../../../src/core/workspace-migrations/0002-better-auth-foundation.json"),
     include_str!("../../../src/core/workspace-migrations/0003-workspace-access-events.json"),
@@ -68,6 +68,8 @@ const CONTROL_ARTIFACTS: [&str; 31] = [
         "../../../src/core/workspace-migrations/0030-document-party-role-taxonomy-v30.json"
     ),
     include_str!("../../../src/core/workspace-migrations/0031-workspace-mail-intake-v31.json"),
+    include_str!("native-workspace-migrations/0032-namespace-custody-v32.json"),
+    include_str!("native-workspace-migrations/0033-workspace-tasks-v33.json"),
 ];
 
 fn unsupported() -> rentemester_engine::Error {
@@ -93,7 +95,7 @@ fn control(db: &Connection) -> Result<bool, rentemester_engine::Error> {
         }
         reference.execute_batch(artifact["sql"].as_str().ok_or_else(unsupported)?).map_err(crate::invalid)?;
     }
-    if migration::schema(db)? != migration::schema(&reference)? { return Err(unsupported()); }
+    if crate::document_access::strip_schema(db, &migration::schema(db)?)? != migration::schema(&reference)? { return Err(unsupported()); }
     Ok(true)
 }
 fn company(db: &Connection) -> Result<bool, rentemester_engine::Error> {
@@ -156,6 +158,16 @@ mod tests {
         for _ in 0..2 { assert_eq!(probe(&c, &d).code, Code::Current); }
         assert_eq!(before, (crate::test_support::typed_tables(&c), crate::test_support::typed_tables(&d)));
         assert_eq!(changes, (c.total_changes(), d.total_changes()));
+    }
+    #[test]
+    fn native32_task_upgrade_is_pending_with_known_service_audit_but_not_unknown_objects() {
+        let (mut current,d)=pair();let c=control_prefix(32);
+        let tx=current.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();crate::document_access::install(&tx).unwrap();tx.commit().unwrap();
+        let mut extension=migration::schema(&current).unwrap().into_iter().filter(|o|o.name.starts_with("native_service_document_access_")).collect::<Vec<_>>();extension.sort_by_key(|o|(o.kind!="table",o.name.clone()));
+        for object in extension {c.execute_batch(&object.sql).unwrap();}
+        let before=crate::test_support::typed_tables(&c);let changes=c.total_changes();
+        assert_eq!(probe(&c,&d).code,Code::MigrationRequired);assert_eq!(c.total_changes(),changes);assert_eq!(crate::test_support::typed_tables(&c),before);
+        c.execute_batch("CREATE TABLE unknown_extra(id INTEGER)").unwrap();assert_eq!(probe(&c,&d).code,Code::UnsupportedSchema);
     }
     #[test]
     fn readiness_requires_exact_history_and_physical_schema() {

@@ -1,0 +1,131 @@
+{
+  "format": "rentemester-native-task-recovery-qualification/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "nativeTaskApiEnabled": false,
+  "scope": "Recovery for the currently implemented five-operation manual task lifecycle; no live migration, provider/bookkeeping replay or application-route enablement.",
+  "sourceFiles": {
+    "crates/rentemester-cli/src/operator_original716/transfer.rs": "872953820ba71208a3f3ca51b45a73857345a3c27965b1d6b1529939c104a57e",
+    "crates/rentemester-host/src/portable_backup.rs": "b91ffa3085cbc566b2c9eca93ca5c622f09a889b0031dfb9a96e8a665d42a8ad",
+    "crates/rentemester-runtime/src/backup_artifact.rs": "975f231ef698d86a88340c52fe13410d63097639b1f1831e22c76b0efd917906",
+    "crates/rentemester-runtime/src/backup_artifact/tests.rs": "955567a055bb1239bad3577ff55ee9fbc22773c35eaa9716c85f1fb7d7739b11",
+    "crates/rentemester-runtime/src/package_update.rs": "ccaa2e94eef896ab040d3b15f74ac6a1445c762263693975a9462664b59b5bc9",
+    "crates/rentemester-server/src/main.rs": "4f8e498768a948938cf8686b9d375247178290790f6cda3f1004fa4fd7fcad09",
+    "crates/rentemester-server/src/original716_cli/transfer.rs": "66c72bbcb32291fd033413b48890dab1eebc23188d384799baeb50f5e52e03a2",
+    "crates/rentemester-storage/src/control_migration.rs": "5089aea025f29d359efd0ba34685035bc56a3695149703ceb094b476d0e37e08",
+    "crates/rentemester-storage/src/fresh.rs": "ea82e9f8ac9b0df66480910c30262108840be8e2df8422afcbad634e06f37a57",
+    "crates/rentemester-storage/src/legacy-workspace-schema.json": "dce05115d0dc95ce2ecbcbc1d3e7bc3c91842d27e6ac1d732513206388d1fa15",
+    "crates/rentemester-storage/src/legacy_control_adoption.rs": "f7bfa384a0b536346632a46a56a5798741aa66924882df0f8b959fd5b9ca61f2",
+    "crates/rentemester-storage/src/original716/transfer.rs": "c8e88425594440d777dc363fbd1ae2dd0422606e6ec7bc77202cd4b9110100dc",
+    "crates/rentemester-storage/src/portable_backup.rs": "6358729312d5f62c412ee4a5c179b7625a04d1065dc9f6cb028c160972098f7e",
+    "crates/rentemester-storage/src/readiness.rs": "e0dc027b43804325e177344b1b91c3cffdbfd9400640b17c94f024b3c0295066",
+    "crates/rentemester-storage/src/native-workspace-migrations/0033-workspace-tasks-v33.json": "a86ae8ce9286c42465a972698d8a16416a2630b6b5f357481fbd2b12031c3e60",
+    "crates/rentemester-storage/src/portable_backup/tasks.rs": "b480bd13e4bfc072ff2c538c23bf1cf97e725696e3032b143cdb5f023cdba8c2"
+  },
+  "checks": {
+    "storage_migrations": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_migrations.log",
+      "sha256": "d56cb7a58c5a9506b686841a003683e68ea020beef4ead56f4f79ab436dcd949",
+      "passedCases": 13,
+      "ignored": 1
+    },
+    "storage_custody": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_custody.log",
+      "sha256": "1962fd80b2f16d1e1e42c6c7b55e2ef75cef7fd0c02e6d9c61ead26763cac3b3",
+      "passedCases": 1,
+      "ignored": 0
+    },
+    "storage_readiness-final": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_readiness-final.log",
+      "sha256": "910392020585d3e15275009d5e15ac2713bae4838cf0f54410ad0e537b9bdd81",
+      "passedCases": 6,
+      "ignored": 0
+    },
+    "storage_adoption-repaired": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_adoption-repaired.log",
+      "sha256": "4aff09e4e2f8dc55e666888644d0d76bf45dadce369685b2fd5afd68f7384836",
+      "passedCases": 3,
+      "ignored": 0
+    },
+    "storage_adoption-prefix": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_adoption-prefix.log",
+      "sha256": "71608f1c5d77bf24497baed46c2ebcd3d1edb4f5fa93c84aa6dbb609342448b2",
+      "passedCases": 1,
+      "ignored": 0
+    },
+    "storage_backup_final": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_backup_final.log",
+      "sha256": "e8d698312aba1afb3da164cc69b2543c2efdc7e30bb727a18fe27c03e525d967",
+      "passedCases": 34,
+      "ignored": 0
+    },
+    "storage_tasks-source-export": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/storage_tasks-source-export.log",
+      "sha256": "4d8b775aafa416f0ab3b2ae99ee8db703ea329e79450f36503f1a8d08bf0142e",
+      "passedCases": 3,
+      "ignored": 0
+    },
+    "runtime_backup-repaired": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/runtime_backup-repaired.log",
+      "sha256": "4c988c669a75e82bbc98070c2c148f6252e8327b853d0d383335ec30ed396c76",
+      "passedCases": 18,
+      "ignored": 0
+    },
+    "host_backup_final": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/host_backup_final.log",
+      "sha256": "b72c14f1fcfdc7896fcb05d322c798e5299168d541ae2a3e36082828fd0e4d30",
+      "passedCases": 20,
+      "ignored": 0
+    },
+    "integrated-compile": {
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-recovery/integrated-compile.log",
+      "sha256": "959ca2f9343c4a3ef7588828b27f17a6257cf229340783543d129641c61e7477",
+      "passedCases": null,
+      "ignored": null
+    }
+  },
+  "review": "Native1–32 migration identities unchanged. New distinct native33 tasks is not main33 mapping. Custody verified before32→33; current writer gates retained. Read-only review found unusable/unbound task receipt results; fixed by Task shape plus exact historical snapshot/principal/operation matching, with malformed/principal/operation/unknown-form refusals. Original request bytes are not stored, so request-hash semantics cannot be rederived and are not claimed.",
+  "evidenceReuse": "Migration/custody/adoption/portable/runtime/host suites are executed component evidence. Later changes to historical test fixtures add independent audit-prefix comparison and source-export assertion; targeted follow-ups pass. Last production readiness-prefix delta is covered by6readiness checks and final server/CLI compile; unchanged current-schema recovery evidence reused. This is not a new source-bound release binary or whole current-main acceptance.",
+  "schema": {
+    "nativeBefore": 32,
+    "nativeAfter": 33,
+    "old32IdentitiesPreserved": true,
+    "main31KnowledgeRefusedAsNative31Mail": true,
+    "ordinaryReadMigrates": false,
+    "stoppedExistingCustodyRequired": true,
+    "frozenOrCopiedNamespaceRefused": true
+  },
+  "recovery": {
+    "businessCodec": "rentemester-native-tasks/1",
+    "newSignedContainer": "rentemester-native-backup/2",
+    "legacySignedContainerReadable": "rentemester-native-backup/1",
+    "tables": [
+      "rm_task_events",
+      "rm_task_board_events",
+      "rm_task_series_events",
+      "rm_task_receipts",
+      "rm_task_notifications"
+    ],
+    "runtimeLeaseTickErrorImported": false,
+    "historicalLabelsBecomeGrants": false,
+    "knownManualReceiptForms": 5,
+    "unknownReceiptForms": "refused until explicitly supported; no truncation or silent omission",
+    "oldSourceProfileWithTaskData": "refused"
+  },
+  "remaining": [
+    "Verified application session/service subject inside same immediate transaction and explicit all-company task roles, including archived Live membership",
+    "Confirmed HTTP/CLI/MCP bindings, existing React manual task journey and actual native restart/replay",
+    "Full source/boards/series/routines/calendar/runtime/notifications/protected knowledge and distinct current-main adoption including all company56 gaps",
+    "Whole718/broad UI/original712/J03 and final installed desktop/release/cutover gates"
+  ]
+}

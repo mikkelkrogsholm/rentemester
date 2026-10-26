@@ -1,0 +1,52 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.97s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_host-b208d26238487e77)
+
+running 20 tests
+test portable_backup::recurring_workspace_tests::even_valid_signature_cannot_adopt_missing_original_recurring_provenance ... ok
+test portable_backup::tests::signed_gdpr_hold_history_restore_remains_complete ... ok
+test portable_backup::scheduled_tests::signed_unresolved_attempt_survives_restore_and_blocks_reconsent_without_new_effects ... ok
+test portable_backup::scheduled_tests::signed_corrupt_scheduler_is_refused_before_restore_and_boundary_rolls_back ... ok
+test portable_backup::asset_disposal_tests::asset_disposal_signed_source_free_restore_retains_history_receipt_and_original ... ok
+test portable_backup::recurring_workspace_tests::signed_original_recurring_dryrun_and_uncertain_rows_survive_restore_rebackup_and_reopen ... ok
+test portable_backup::consolidation_tests::signed_profile_and_actual_applied_elimination_report_survive_source_free_restore_reopen has been running for over 60 seconds
+test portable_backup::intercompany_tests::signed_intercompany_restores_real_source_chain_reopens_and_keeps_identity_gates has been running for over 60 seconds
+test portable_backup::scheduled_tests::signed_scheduler_history_survives_snapshot_restore_boundary_rebackup_and_file_reopen has been running for over 60 seconds
+test portable_backup::tests::original_layout119_signed_restore_provisions_all_companies_without_overwrite has been running for over 60 seconds
+test portable_backup::tests::signed_archived_flag_requires_explicit_boolean_without_defaulting_or_coercion has been running for over 60 seconds
+test portable_backup::tests::signed_corporate_originals_history_scope_and_sensitive_gates_restore_without_authority has been running for over 60 seconds
+test portable_backup::tests::signed_inbox_pending_split_completed_and_physical_original_semantics_validate_before_publication has been running for over 60 seconds
+test portable_backup::tests::signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported has been running for over 60 seconds
+test portable_backup::tests::signed_mixed_active_and_archived_companies_preserve_flag_inventory_and_native_ledger has been running for over 60 seconds
+test portable_backup::tests::signed_ownership_preserves_history_endings_and_original_principals_without_authority has been running for over 60 seconds
+test portable_backup::scheduled_tests::signed_scheduler_history_survives_snapshot_restore_boundary_rebackup_and_file_reopen ... ok
+test portable_backup::tests::original_layout119_signed_restore_provisions_all_companies_without_overwrite ... ok
+test portable_backup::tests::signed_source_free_access_events_preserve_actual_principals_without_authority ... ok
+test portable_backup::consolidation_tests::signed_profile_and_actual_applied_elimination_report_survive_source_free_restore_reopen ... ok
+test portable_backup::tests::signed_party_codec_is_required_validated_and_preserves_facts_without_authority has been running for over 60 seconds
+test portable_backup::tests::signed_tasks_restore_exact_history_receipts_without_runtime_or_grants ... ok
+test portable_backup::tests::signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported ... ok
+test portable_backup::tests::signed_v2_nonlive_restore_preserves_exact_inventory_and_refuses_missing_ledger has been running for over 60 seconds
+test portable_backup::tests::signed_ownership_preserves_history_endings_and_original_principals_without_authority ... ok
+test portable_backup::tests::signed_corporate_originals_history_scope_and_sensitive_gates_restore_without_authority ... ok
+test portable_backup::tests::signed_mixed_active_and_archived_companies_preserve_flag_inventory_and_native_ledger ... ok
+test portable_backup::tests::signed_party_codec_is_required_validated_and_preserves_facts_without_authority ... ok
+test portable_backup::tests::signed_inbox_pending_split_completed_and_physical_original_semantics_validate_before_publication ... ok
+test portable_backup::intercompany_tests::signed_intercompany_restores_real_source_chain_reopens_and_keeps_identity_gates ... ok
+test portable_backup::tests::signed_archived_flag_requires_explicit_boolean_without_defaulting_or_coercion ... ok
+test portable_backup::tests::signed_v2_nonlive_restore_preserves_exact_inventory_and_refuses_missing_ledger ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 169 filtered out; finished in 181.17s
+

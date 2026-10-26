@@ -158,5 +158,10 @@
     "id": 32,
     "name": "rentemester-namespace-custody-v32",
     "checksum": "73ae70d618b1f5df308464c0ad01376986a7eda740b25ac0025000722aa2c837"
+  },
+  {
+    "id": 33,
+    "name": "rentemester-workspace-tasks-v33",
+    "checksum": "a86ae8ce9286c42465a972698d8a16416a2630b6b5f357481fbd2b12031c3e60"
   }
 ]

@@ -43,6 +43,21 @@ fn artifact() -> (SigningKey, Vec<u8>) {
     let wire = create(ctx, entries, &key).unwrap();
     (key, wire)
 }
+#[test]
+fn task_format_v2_is_complete_signed_and_v1_remains_independently_readable() {
+    let key=key();let (mut ctx,mut entries)=fixture();
+    ctx.coverage.included.push(BusinessSection::Tasks);
+    entries.push(Snapshot{kind:EntryKind::ControlBusiness{section:BusinessSection::Tasks},path:"control/tasks.json".into(),bytes:br#"{"format":"rentemester-native-tasks/1","tables":{}}"#.to_vec()});
+    let encoded=create(ctx,entries,&key).unwrap();let parsed=verify(&encoded,&trusted(&key)).unwrap();
+    assert_eq!(parsed.manifest().format,FORMAT_V2);
+    let legacy=artifact().1;assert_eq!(verify(&legacy,&trusted(&key)).unwrap().manifest().format,FORMAT);
+    let mut envelope:Value=serde_json::from_slice(&encoded).unwrap();
+    envelope["entries"].as_array_mut().unwrap().retain(|e|e["path"]!="control/tasks.json");assert!(verify(&wire(envelope),&trusted(&key)).is_err());
+    let mut envelope:Value=serde_json::from_slice(&encoded).unwrap();envelope["format"]=json!(FORMAT);
+    signed_manifest(&mut envelope,&key,|m|m.format=FORMAT.into());assert!(verify(&wire(envelope),&trusted(&key)).is_err());
+    let mut envelope:Value=serde_json::from_slice(&encoded).unwrap();
+    let entry=envelope["entries"].as_array_mut().unwrap().iter_mut().find(|e|e["path"]=="control/tasks.json").unwrap();entry["bytesBase64"]=json!(STANDARD.encode(b"tampered"));assert!(verify(&wire(envelope),&trusted(&key)).is_err());
+}
 fn trusted(key: &SigningKey) -> TrustedPublicKey {
     TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap()
 }

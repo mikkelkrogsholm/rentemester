@@ -36,10 +36,10 @@ impl ConvertedControlBusiness {
     pub fn retirement_binding(&self) -> Option<&crate::legacy_retirement::RetirementBinding> {
         self.retirement.as_ref()
     }
-    /// Stable length-framed digest of all eight codec sections; no auth bytes included.
+    /// Stable versioned, length-framed digest of every business section; no auth bytes included.
     pub fn payload_sha256(&self) -> String {
         let mut hash = Sha256::new();
-        hash.update(b"rentemester-legacy-control-business/1\0");
+        hash.update(b"rentemester-legacy-control-business/2\0");
         for bytes in [
             &self.business.bytes,
             &self.business.knowledge_bytes,
@@ -49,6 +49,7 @@ impl ConvertedControlBusiness {
             &self.business.ownership_bytes,
             &self.business.intercompany_bytes,
             &self.business.consolidation_bytes,
+            &self.business.task_bytes,
         ] {
             hash.update((bytes.len() as u64).to_be_bytes());
             hash.update(bytes);
@@ -126,6 +127,7 @@ impl ConvertedControlBusiness {
             .map_err(refused)?;
         business::initialize_consolidation(db, &self.business.consolidation_bytes, registered)
             .map_err(refused)?;
+        business::tasks::initialize(db, &self.business.task_bytes, registered).map_err(refused)?;
         control_migration::validate_current_control(db).map_err(refused)
     }
 }
@@ -162,20 +164,13 @@ mod tests {
         db.execute_batch("PRAGMA foreign_keys=ON").unwrap();
         let identities: Value =
             serde_json::from_str(include_str!("legacy-workspace-schema.json")).unwrap();
-        let root =
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../src/core/workspace-migrations");
-        let mut paths = std::fs::read_dir(root)
-            .unwrap()
-            .map(|p| p.unwrap().path())
-            .collect::<Vec<_>>();
-        paths.sort();
-        for (path, identity) in paths
+        for (raw, identity) in control_migration::ARTIFACTS
             .iter()
             .zip(identities.as_array().unwrap())
             .take(version)
         {
             let value: Value =
-                serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+                serde_json::from_str(raw).unwrap();
             db.execute_batch(value["sql"].as_str().unwrap()).unwrap();
             db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version)VALUES(?1,?2,?3,'synthetic-source')",params![identity["id"].as_i64().unwrap(),identity["name"].as_str().unwrap(),identity["checksum"].as_str().unwrap()]).unwrap();
         }
@@ -223,29 +218,20 @@ mod tests {
     }
     #[test]
     fn populated_business_actors_survive_but_secrets_and_old_grants_do_not() {
-        let (dir, mut db) = fixture(31);
+        fn audit_prefix(db:&Connection,table:&str,last:i64)->Vec<Vec<rusqlite::types::Value>> {
+            let mut q=db.prepare(&format!("SELECT * FROM {table} WHERE id<=?1 ORDER BY id")).unwrap();let n=q.column_count();
+            q.query_map([last],|r|(0..n).map(|i|r.get(i)).collect::<Result<Vec<_>,_>>()).unwrap().map(Result::unwrap).collect()
+        }
+        let (dir, db) = fixture(31);
         db.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('old','Synthetic old owner','old@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO account(id,issuer,accountId,providerId,userId,password,createdAt,updatedAt)VALUES('credential','local:credential','old','credential','old','synthetic-password-secret','2026-01-01','2026-01-01');INSERT INTO session(id,token,userId,createdAt,updatedAt,expiresAt)VALUES('s','synthetic-token-secret','old','2026-01-01','2026-01-01','2099-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('f','synthetic-totp-secret','[]','old',1);INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('old','activate','workspace_owner','user:old');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('old','synthetic','grant','owner','user:old');INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('synthetic-history','synthetic','preserved','user:old')").unwrap();
-        let tx = db
-            .transaction_with_behavior(TransactionBehavior::Immediate)
-            .unwrap();
-        let input=serde_json::from_value::<crate::parties::Create>(json!({"kind":"organization","name":"Synthetic preserved party","source":"manual","observedAt":"2026-01-01T00:00:00.000Z","reviewAssertion":"approved","role":"supplier","aliases":["Synthetic alias"]})).unwrap();
-        crate::parties::create(
-            &tx,
-            &input,
-            "synthetic-party",
-            "user:old",
-            "2026-01-01T00:00:00.000Z",
-        )
-        .unwrap();
-        tx.commit().unwrap();
-        let source_payload = {
-            let tx = db
-                .transaction_with_behavior(TransactionBehavior::Immediate)
-                .unwrap();
-            let result = business::export_control(&tx).unwrap();
-            tx.rollback().unwrap();
-            result
-        };
+        // Historical v31 data is seeded as historical rows. A current writer must
+        // continue to refuse this old schema until explicit private conversion.
+        let payload=json!({"name":"Synthetic preserved party","aliases":["Synthetic alias"],"identifiers":[],"source":"manual","observedAt":"2026-01-01T00:00:00.000Z","reviewAssertion":"approved"});
+        db.execute("INSERT INTO rm_party_events(party_id,event_type,canonical_kind,payload_hash,canonical_payload,actor,created_at) VALUES('synthetic-party','created','organization',?1,?2,'user:old','2026-01-01T00:00:00.000Z')",params![crate::parties::hash(&payload),crate::parties::canonical(&payload)]).unwrap();
+        let source_party=db.query_row("SELECT canonical_payload,payload_hash,actor FROM rm_party_events",[],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?))).unwrap();
+        let source_audit=["workspace_audit","rm_workspace_document_access_events","rm_workspace_authorization_events"].map(|table| {
+            let last=db.query_row::<i64,_,_>(&format!("SELECT COALESCE(MAX(id),0) FROM {table}"),[],|r|r.get(0)).unwrap();(table,last,audit_prefix(&db,table,last))
+        });
         let original =
             std::fs::read(dir.path().join(".rentemester/workspace-control.sqlite")).unwrap();
         let converted = convert_control_for_adoption(dir.path()).unwrap();
@@ -262,6 +248,7 @@ mod tests {
             &converted.business.ownership_bytes,
             &converted.business.intercompany_bytes,
             &converted.business.consolidation_bytes,
+            &converted.business.task_bytes,
         ] {
             let text = std::str::from_utf8(bytes).unwrap();
             for secret in [
@@ -272,11 +259,6 @@ mod tests {
                 assert!(!text.contains(secret));
             }
         }
-        assert_eq!(converted.business.bytes, source_payload.bytes);
-        assert_eq!(
-            converted.business.parties_bytes,
-            source_payload.parties_bytes
-        );
         assert_eq!(converted.payload_sha256().len(), 64);
         let mut target = Connection::open_in_memory().unwrap();
         converted
@@ -303,6 +285,8 @@ mod tests {
                 .unwrap(),
             1
         );
+        assert_eq!(target.query_row("SELECT canonical_payload,payload_hash,actor FROM rm_party_events",[],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?))).unwrap(),source_party);
+        for (table,last,expected) in source_audit {assert_eq!(audit_prefix(&target,table,last),expected,"historical audit prefix: {table}");}
         for table in [
             "user",
             "account",

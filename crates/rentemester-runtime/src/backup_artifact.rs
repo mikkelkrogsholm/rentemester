@@ -18,6 +18,8 @@ use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 
 pub const FORMAT: &str = "rentemester-native-backup/1";
+/// V2 authenticates the task section as well; V1 remains independently verifiable.
+pub const FORMAT_V2: &str = "rentemester-native-backup/2";
 pub const MAX_ENTRIES: usize = 2048;
 pub const MAX_FILE_BYTES: usize = 32 * 1024 * 1024;
 pub const MAX_TOTAL_BYTES: usize = 64 * 1024 * 1024;
@@ -113,6 +115,7 @@ pub enum BusinessSection {
     WorkspaceInbox,
     Intercompany,
     Consolidation,
+    Tasks,
 }
 impl BusinessSection {
     pub const ALL: [Self; 8] = [
@@ -125,6 +128,7 @@ impl BusinessSection {
         Self::Intercompany,
         Self::Consolidation,
     ];
+    pub const CURRENT: [Self; 9] = [Self::WorkspaceAudit,Self::Parties,Self::CorporateRecords,Self::CompanyKnowledge,Self::Ownership,Self::WorkspaceInbox,Self::Intercompany,Self::Consolidation,Self::Tasks];
     fn name(self) -> &'static str {
         match self {
             Self::WorkspaceAudit => "workspace-audit",
@@ -135,6 +139,7 @@ impl BusinessSection {
             Self::WorkspaceInbox => "workspace-inbox",
             Self::Intercompany => "intercompany",
             Self::Consolidation => "consolidation",
+            Self::Tasks => "tasks",
         }
     }
 }
@@ -321,7 +326,9 @@ fn context(value: &Context) -> Result<(), Error> {
             return Err(Error::Coverage);
         }
     }
-    if sections != BusinessSection::ALL.into_iter().collect()
+    if (sections != BusinessSection::ALL.into_iter().collect()
+        && (sections != BusinessSection::CURRENT.into_iter().collect()
+            || !value.coverage.included.contains(&BusinessSection::Tasks)))
         || value.coverage.excluded.len() != Exclusion::ALL.len()
         || value
             .coverage
@@ -386,10 +393,13 @@ fn entry(entry: &InventoryEntry, ctx: &Context) -> Result<(), Error> {
     Ok(())
 }
 fn inventory(manifest: &Manifest) -> Result<(), Error> {
-    if manifest.format != FORMAT || !hex(&manifest.signing_public_key_sha256, 64) {
+    if ![FORMAT,FORMAT_V2].contains(&manifest.format.as_str()) || !hex(&manifest.signing_public_key_sha256, 64) {
         return Err(Error::Malformed);
     }
     context(&manifest.context)?;
+    if (manifest.format == FORMAT_V2) != manifest.context.coverage.included.contains(&BusinessSection::Tasks) {
+        return Err(Error::Coverage);
+    }
     if manifest.inventory.is_empty() || manifest.inventory.len() > MAX_ENTRIES {
         return Err(Error::Bounds);
     }
@@ -457,8 +467,9 @@ pub fn create(
     ctx.coverage.unsupported.sort_by_key(|s| s.section);
     ctx.coverage.excluded.sort();
     snapshots.sort_by(|a, b| a.path.cmp(&b.path));
+    let format = if ctx.coverage.included.contains(&BusinessSection::Tasks) {FORMAT_V2} else {FORMAT};
     let manifest = Manifest {
-        format: FORMAT.into(),
+        format: format.into(),
         signing_public_key_sha256: hash(&key.public_key_bytes()),
         context: ctx,
         inventory: snapshots
@@ -478,7 +489,7 @@ pub fn create(
     }
     let signature = key.0.sign(&manifest_bytes);
     let envelope = Envelope {
-        format: FORMAT.into(),
+        format: format.into(),
         manifest_base64: STANDARD.encode(&manifest_bytes),
         signature_base64: STANDARD.encode(signature.as_ref()),
         entries: snapshots
@@ -501,7 +512,7 @@ pub fn verify(wire: &[u8], trusted: &TrustedPublicKey) -> Result<VerifiedArtifac
         return Err(Error::Bounds);
     }
     let envelope: Envelope = serde_json::from_slice(wire).map_err(|_| Error::Malformed)?;
-    if envelope.format != FORMAT {
+    if ![FORMAT,FORMAT_V2].contains(&envelope.format.as_str()) {
         return Err(Error::Malformed);
     }
     if envelope.entries.len() > MAX_ENTRIES {
@@ -517,6 +528,7 @@ pub fn verify(wire: &[u8], trusted: &TrustedPublicKey) -> Result<VerifiedArtifac
         .map_err(|_| Error::Signature)?;
     let manifest: Manifest =
         serde_json::from_slice(&manifest_bytes).map_err(|_| Error::Malformed)?;
+    if manifest.format != envelope.format { return Err(Error::Malformed); }
     if manifest.signing_public_key_sha256 != hash(&trusted.0) {
         return Err(Error::Signature);
     }

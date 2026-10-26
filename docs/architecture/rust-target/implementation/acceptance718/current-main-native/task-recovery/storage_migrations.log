@@ -1,0 +1,22 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.23s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 14 tests
+test control_migration::tests::crash_child ... ignored, subprocess helper selected explicitly by process-death parent
+test control_migration::tests::legal_sqlite_like_user_objects_are_not_internal_or_empty ... ok
+test control_migration::tests::all_control_artifacts_are_bound_and_public_errors_are_opaque ... ok
+test control_migration::tests::real_history_insert_failure_rolls_back_entire_suffix_including_sessions ... ok
+test control_migration::tests::main_knowledge31_is_not_native_mail31_or_a_task_upgrade_source ... ok
+test control_migration::tests::mail_extension_preserves_v30_inbox_and_append_only_guards ... ok
+test control_migration::tests::mfa_upgrade_and_immutable_guards_match_real_sql ... ok
+test control_migration::tests::namespace_custody_enrollment_refuses_frozen_and_missing_v32_without_repair ... ok
+test control_migration::tests::task_suffix_requires_existing_custody_before_any_change_and_retains_prefix ... ok
+test control_migration::tests::namespace_custody_v31_enrollment_preserves_history_sessions_and_is_atomic ... ok
+test control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop ... ok
+test control_migration::tests::process_death_restores_whole_prefix_and_sessions_or_commits_all ... ok
+test control_migration::tests::explicit_mail_upgrade_accepts_only_exact_previous_or_current_schema ... ok
+test control_migration::tests::ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence ... ok
+
+test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 710 filtered out; finished in 4.85s
+

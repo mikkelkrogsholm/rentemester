@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-e91c6bbc115e6578)
+
+running 1 test
+test namespace_custody::tests::namespace_custody_exact_missing_mismatch_never_overwrites ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 723 filtered out; finished in 0.24s
+

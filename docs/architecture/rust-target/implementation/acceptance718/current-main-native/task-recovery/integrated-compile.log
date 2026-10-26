@@ -1,0 +1,46 @@
+    Checking rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Checking rentemester-client v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-client)
+    Checking rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+    Checking rentemester-cli v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-cli)
+    Checking rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::Value`
+  --> crates/rentemester-host/src/portable_backup.rs:10:5
+   |
+10 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `accepts` is never used
+  --> crates/rentemester-cli/src/regulatory.rs:94:8
+   |
+94 | pub fn accepts(args: &[String]) -> bool {
+   |        ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `preflight` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:161:8
+    |
+161 | pub fn preflight(args: &[String]) -> Result<bool, crate::dated_reports::Output> {
+    |        ^^^^^^^^^
+
+warning: function `binding_refusal` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:165:8
+    |
+165 | pub fn binding_refusal(args: &[String]) -> crate::dated_reports::Output {
+    |        ^^^^^^^^^^^^^^^
+
+warning: `rentemester-cli` (bin "rentemester-rust") generated 3 warnings
+warning: `rentemester-host` (lib) generated 1 warning (run `cargo fix --lib -p rentemester-host` to apply 1 suggestion)
+    Checking rentemester-server v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-server)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.73s

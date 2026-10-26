@@ -1,0 +1,24 @@
+{
+  "format": "rentemester-packaged-ci-qualification/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "sourceHead": "4c1da596616fd1a5685a9612b2688aee133e37f9",
+  "testedMerge": "ca303a8bc513455a726472ff315c05207f88ff29",
+  "testedParents": [
+    "72d80e17abd7e064dcf1a08c933d41e0f781a0fa",
+    "4c1da596616fd1a5685a9612b2688aee133e37f9"
+  ],
+  "identicalGitTree": "fcdc6f77f60269c91d948441a4ac2c024f62ecc7",
+  "workflowRun": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/40316137590",
+  "job": 121549092727,
+  "artifactId": 12647049001,
+  "artifactSha256": "c8ceb84455b5e1abeedd7f07d0faa3beb90ee6b6a32d31d98cf3a34f25e68fa2",
+  "imageId": "sha256:cd032eb6b1f78933c0601a140639b7013fc4c67d834bef3161d068d62008a59d",
+  "files": {
+    "build-identity.json": "d7916b6716ab9edba6d261b89412f110a41235ef9e575330954a0383bb62ccd2",
+    "package.json": "01b0a7b7e19adcbae22fcd2e03008254b99fe09105764c2e75883b0a5e3b1fbf",
+    "server-web.json": "33a9b870995c87d654efa1d3f29e0858e7e3c1777967051fbd5bc6aff9baf6ae"
+  },
+  "actualChecks": "All7GitHub checksPASS. Cold LinuxAMD64 image0.3.1 actual inventory/mode/live identity; owner/private installer/verification/MFA/company selection; real manual125.50post; income/balance/trialbalance CSV/PDF text/determinism; receipt upload/exact original/refusals; stop/restart/login/persisted journal+original and idempotent replay. Actual owned container/volumes removed.",
+  "evidenceLimit": "Historical exact4c/merge-tree proof before native33 recovery changes. Not full main-task parity, broad121DOM qualification, HTTPS/release/cutover/authenticated CLI/MCP parity or installed desktop acceptance. Screenshot/PDF/CSV originals retained locally from exact hashed GitHub artifact; no business/provider effects replayed."
+}

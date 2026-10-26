@@ -248,8 +248,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )?;
         rentemester_host::Owner::validate_backup(&verified)?;
         println!(
-            "{{\"ok\":true,\"format\":\"rentemester-native-backup/1\",\"companies\":{},\"scope\":\"signed_inventory_current_schema_integrity_journal_chain_and_originals\"}}",
-            verified.manifest().context.companies.len()
+            "{{\"ok\":true,\"format\":\"{}\",\"companies\":{},\"scope\":\"signed_inventory_current_schema_integrity_journal_chain_and_originals\"}}",
+            verified.manifest().format, verified.manifest().context.companies.len()
         );
         return Ok(());
     }
