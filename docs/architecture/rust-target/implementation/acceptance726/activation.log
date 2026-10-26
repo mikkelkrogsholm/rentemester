@@ -1,0 +1,30 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/crates/rentemester-storage)
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/crates/rentemester-runtime)
+   Compiling rentemester-application v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/crates/rentemester-application)
+   Compiling rentemester-host v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-activation-recovery-20261026T003143.063073000/integration/crates/rentemester-host)
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 29.12s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/nonempty_jobs/debug/deps/rentemester_host-c590957fefcaca24)
+
+running 5 tests
+test workspace_transfer::tests::activation_process_child ... ignored, activation process helper invoked only by its parent test
+test workspace_transfer::tests::activation_process_death_reopens_known_authority_without_old_source_writer ... activation_process_recovery phase=before observed=staged recovery_ms=373 journal_entries_lost=0 source_mode=moved
+activation_process_recovery phase=after observed=active recovery_ms=366 journal_entries_lost=0 source_mode=moved
+ok
+test workspace_transfer::tests::nonempty_jobs_handoff_reconsent_and_target_only_journal_source_unavailable_recovery ... ok
+test workspace_transfer::tests::offered_snapshot_staged_nonce_signed_release_activation_restart_and_no_original_mutation ... ok
+test workspace_transfer::tests::source_cancel_only_before_offer_and_business_fence_survives_reopen ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 178 filtered out; finished in 69.70s
+

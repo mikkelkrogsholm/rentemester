@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original726 nonempty scheduled transfer/reconsent/target-only signed recovery composed acceptance passed; whole issue remains active for original restaccept.",
-  "code_revision": "41391b2d954fe6dc2cdfa9d966b742e89e0aa39b",
+  "current_increment": "Original726 nonempty jobs, target-only signed recovery and actual activation-owner SIGKILL/reopen acceptance passed; original raw pre-freeze-copy gate next.",
+  "code_revision": "0c7c41a6dbbd3093ae938cc513e582cb2e2b7d06",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
   "state": "original726_nonempty_jobs_and_target_recovery_accepted_restaccept_active",
   "issues_closed": 43,
-  "next": "Original726 activation process death/reopen with staged-or-active authority and measured component recovery, using existing test-process pattern; no new production manager/harness. Then reconcile original remaining clone/rollback/release/native boundaries.",
+  "next": "One original pre-freeze raw-copy admission/write diagnostic, distinct from staged nonce/inode ABA tests. Source review found no persistent clone binding; preserve original full gate rather than inferring safety.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16773,6 +16773,29 @@
       "source_revision": "41391b2d954fe6dc2cdfa9d966b742e89e0aa39b",
       "status": "Nonempty jobs and target-only signed recovery composed host acceptance passed; next original activation crash/restaccept",
       "sgdRun": "issue726-transfer-recovery-20261026T001342.623907000"
+    },
+    "issue726_activation_process_recovery": {
+      "issue": 726,
+      "whole_issue_accepted": false,
+      "report": "docs/architecture/rust-target/implementation/issue726-evidence.json",
+      "source_revision": "0c7c41a6dbbd3093ae938cc513e582cb2e2b7d06",
+      "sgdRun": "issue726-activation-recovery-20261026T003143.063073000",
+      "measurements": [
+        {
+          "phase": "before",
+          "observedMode": "staged",
+          "componentReopenMs": 373,
+          "baselineJournalEntriesLost": 0,
+          "sourceMode": "moved"
+        },
+        {
+          "phase": "after",
+          "observedMode": "active",
+          "componentReopenMs": 366,
+          "baselineJournalEntriesLost": 0,
+          "sourceMode": "moved"
+        }
+      ]
     }
   },
   "verified_history": [

@@ -1,0 +1,18 @@
+{
+  "acceptance": [
+    {
+      "check": "activation726",
+      "key": "7c066b5d3dff0f0c99c1dc0c61840ee0685333333b4f8143127c9d23bc123430",
+      "argv": [
+        "python3",
+        "/tmp/issue726-activation-check.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue726-activation-recovery-20261026T003143.063073000/acceptance/7c066b5d3dff0f0c99c1dc0c61840ee0685333333b4f8143127c9d23bc123430/activation726.log"
+    }
+  ],
+  "message": "Agreed checks passed on the combined result. Deliver the result; no further tasks. publish can fast-forward the original checkout.",
+  "phase": "done",
+  "result_branch": "sgd/issue726-activation-recovery-20261026T003143.063073000/integration"
+}
