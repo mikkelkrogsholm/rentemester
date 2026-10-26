@@ -853,5 +853,539 @@
       }
     },
     "additionalProperties": false
+  },
+  "series-list": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "companySlugs": {
+        "maxItems": 200,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 120,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        }
+      },
+      "includeArchived": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false
+  },
+  "series-save": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "series": {
+        "type": "object",
+        "properties": {
+          "seriesId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "company"
+                  },
+                  "companySlug": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "pattern": "^[a-z0-9][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlug"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "workspace"
+                  },
+                  "companySlugs": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9][a-z0-9-]*$"
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlugs"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "template": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "company"
+                      },
+                      "companySlug": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "pattern": "^[a-z0-9][a-z0-9-]*$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "companySlug"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "workspace"
+                      },
+                      "companySlugs": {
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 120,
+                          "pattern": "^[a-z0-9][a-z0-9-]*$"
+                        }
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "companySlugs"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 8000
+              },
+              "nextAction": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "assignee": {
+                "anyOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "member"
+                          },
+                          "userId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 160
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "userId",
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "external"
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 100
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "waitingOn": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "workDate": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "deadline": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "statutory",
+                          "agreement",
+                          "internal"
+                        ]
+                      },
+                      "basis": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      },
+                      "certainty": {
+                        "type": "string",
+                        "enum": [
+                          "confirmed",
+                          "unconfirmed"
+                        ]
+                      },
+                      "ruleId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "kind",
+                      "basis",
+                      "certainty"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "period": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                      },
+                      "to": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "references": {
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "document",
+                        "bank_transaction",
+                        "period",
+                        "approval",
+                        "knowledge",
+                        "external_receipt",
+                        "party"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    },
+                    "companySlug": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9][a-z0-9-]*$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "ref"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "evidenceRequired": {
+                "type": "boolean"
+              },
+              "relevance": {
+                "type": "string",
+                "enum": [
+                  "relevant",
+                  "unknown",
+                  "not_relevant"
+                ]
+              },
+              "verificationRequired": {
+                "type": "boolean"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ad_hoc",
+                  "routine",
+                  "obligation"
+                ]
+              }
+            },
+            "required": [
+              "title",
+              "scope"
+            ],
+            "additionalProperties": false
+          },
+          "cadence": {
+            "type": "string",
+            "enum": [
+              "month",
+              "quarter",
+              "year",
+              "custom"
+            ]
+          },
+          "every": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "anchor": {
+            "type": "string",
+            "enum": [
+              "calendar",
+              "fiscal"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fiscalYearStartMonth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "workDayOffset": {
+            "type": "integer",
+            "minimum": -366,
+            "maximum": 366
+          },
+          "deadlineDayOffset": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -366,
+                "maximum": 366
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "relevance": {
+            "type": "string",
+            "enum": [
+              "relevant",
+              "unknown",
+              "activity"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "seriesId",
+          "title",
+          "scope",
+          "template",
+          "cadence",
+          "every",
+          "anchor",
+          "startDate",
+          "endDate",
+          "fiscalYearStartMonth",
+          "workDayOffset",
+          "deadlineDayOffset",
+          "relevance",
+          "active"
+        ]
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      }
+    },
+    "required": [
+      "series",
+      "expectedVersion",
+      "idempotencyKey"
+    ],
+    "additionalProperties": false
+  },
+  "series-project": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "companySlugs": {
+        "maxItems": 200,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 120,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        }
+      },
+      "from": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+      },
+      "to": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+      },
+      "includeArchived": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "from",
+      "to"
+    ],
+    "additionalProperties": false
+  },
+  "series-materialize": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "companySlugs": {
+        "maxItems": 200,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 120,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        }
+      },
+      "asOfDate": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "ISO calendar date YYYY-MM-DD; dates are validated again by the domain."
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      }
+    },
+    "required": [
+      "idempotencyKey"
+    ],
+    "additionalProperties": false
   }
 }

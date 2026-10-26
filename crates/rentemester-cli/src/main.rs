@@ -107,6 +107,7 @@ mod reviewed_bookkeeping;
 mod saft;
 mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().is_some_and(|s|s=="task-series"){return tasks::run_series(&args[1..]);}
     if args.first().is_some_and(|s|s=="tasks"){return tasks::run(&args[1..]);}
     if args.first().is_some_and(|s|mileage_posting::accepts(s)) { return remote::run(&args); }
     if args.first().is_some_and(|s|s=="reg") { return regulatory::run(&args); }
@@ -983,3 +984,15 @@ mod dinero_import;
 #[cfg(test)]
 #[path = "../../rentemester-client/tests/common/mod.rs"]
 mod test_protocol;
+
+#[cfg(test)]
+mod task_series_dispatch_tests {
+    #[test]
+    fn original_root_dispatches_series_help_and_refuses_unknown_operations() {
+        let help = super::run(vec!["task-series".into(), "--help".into()]).unwrap();
+        assert!(help["usage"].as_str().unwrap().starts_with("task-series list|save|project|materialize"));
+        assert_eq!(help["inputSchemas"].as_object().unwrap().len(), 4);
+        assert!(super::run(vec!["task-series".into(), "run".into()]).is_err());
+        assert!(super::run(vec!["tasks".into(), "--help".into()]).unwrap()["inputSchemas"].get("create").is_some());
+    }
+}
