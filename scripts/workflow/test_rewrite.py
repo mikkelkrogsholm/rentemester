@@ -160,9 +160,36 @@ class GitTests(unittest.TestCase):
         mapping = self.base / w.MAP
         mapping.parent.mkdir(parents=True)
         mapping.write_text(json.dumps({'RM-RUST': {'number': 1, 'url': 'https://github.com/owner/repo/issues/1'}}))
+        # Ordinary work can commit without an unrelated Rust packet.
+        (self.base / 'old.txt').write_text('invoice change')
+        self.git('add', 'old.txt')
+        self.assertEqual(subprocess.run([str(hook)], cwd=self.base).returncode, 0)
+        # A managed file still requires a packet even in a mixed commit.
+        self.git('add', str(script.relative_to(self.base)))
         result = subprocess.run([str(hook)], cwd=self.base, capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('rentemester-work.json', result.stderr)
+
+        w.packet_path(self.base).write_text(json.dumps(dict(
+            issue=1, owner='worker', paths=['scripts/workflow/'],
+            acceptance='result', checks=['test'])))
+        result = subprocess.run([str(hook)], cwd=self.base, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('old.txt', result.stderr)
+        self.git('reset', '-q', 'HEAD', '--', 'old.txt')
+        self.assertEqual(subprocess.run([str(hook)], cwd=self.base).returncode, 0)
+
+    def test_unrelated_commit_message_does_not_require_a_packet(self):
+        (self.base / 'old.txt').write_text('invoice change')
+        self.git('add', 'old.txt')
+        with patch.object(w, 'root', return_value=self.base), patch.object(
+                w, 'mapping', return_value=({1}, 1, 'owner/repo')):
+            message = self.base / 'message'
+            message.write_text('Ordinary invoice change\n')
+            w.main(['check-message', str(message)])
+            message.write_text('Change\n\nWork-Issue: #1\n')
+            with self.assertRaises(OSError):
+                w.main(['check-message', str(message)])
 
     def test_existing_hooks_preserved_and_no_partial_install(self):
         directory = self.base / 'custom-hooks'

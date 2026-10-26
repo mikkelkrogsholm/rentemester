@@ -108,6 +108,14 @@ def staged_paths(base):
     return [os.fsdecode(p) for p in output.split(b'\0') if p]
 
 
+def managed_paths(paths):
+    return any(
+        p.startswith(('crates/', 'rust/', 'scripts/rust/', 'docs/architecture/rust-target/', 'scripts/workflow/'))
+        or p in {'Cargo.toml', 'Cargo.lock', 'AGENTS.md', '.github/workflows/rewrite-workflow.yml'}
+        for p in paths
+    )
+
+
 def check_paths(paths, owned):
     for path in paths:
         valid_path(path)
@@ -206,9 +214,7 @@ def main(argv=None):
         paths = run('git', 'diff', '--name-only', revision, cwd=base).splitlines()
         text = (pr.get('title') or '') + '\n' + (pr.get('body') or '')
         refs = {int(n) for n in re.findall(r'#([0-9]+)\b', text)}
-        managed = bool(refs & numbers) or any(
-            p.startswith(('crates/', 'rust/', 'scripts/rust/', 'docs/architecture/rust-target/', 'scripts/workflow/'))
-            or p in {'Cargo.toml', 'Cargo.lock', 'AGENTS.md', '.github/workflows/rewrite-workflow.yml'} for p in paths)
+        managed = bool(refs & numbers) or managed_paths(paths)
         if managed:
             check_commits(base, revision)
         else:
@@ -221,11 +227,18 @@ def main(argv=None):
         packet_path(base).write_text(json.dumps(data, indent=2) + '\n')
         print(packet_path(base))
     elif args.command in {'check-staged', 'check-message'}:
-        data = validate_packet(json.loads(packet_path(base).read_text()), numbers)
+        paths = staged_paths(base)
+        packet = packet_path(base)
+        message = Path(args.file).read_text() if args.command == 'check-message' else ''
+        has_work_reference = bool(re.search(r'^Work-Issue:\s*#\d+\s*$', message, re.M))
+        if not packet.exists() and not managed_paths(paths) and not has_work_reference:
+            print('Unrelated changes: Rust work packet does not apply')
+            return
+        data = validate_packet(json.loads(packet.read_text()), numbers)
         if args.command == 'check-staged':
-            check_paths(staged_paths(base), data['paths'])
+            check_paths(paths, data['paths'])
         else:
-            check_message(Path(args.file).read_text(), data['issue'])
+            check_message(message, data['issue'])
     else:
         if args.command == 'move' and args.issue not in numbers:
             raise ValueError('issue is outside managed map')
