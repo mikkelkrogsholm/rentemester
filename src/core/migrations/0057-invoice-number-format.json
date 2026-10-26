@@ -1,0 +1,5 @@
+{
+  "id": 57,
+  "name": "invoice-number-format-v57",
+  "sql": "ALTER TABLE companies ADD COLUMN invoice_number_format TEXT NOT NULL DEFAULT 'fiscal-year' CHECK(invoice_number_format IN ('fiscal-year','daily'));"
+}

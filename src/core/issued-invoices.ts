@@ -130,27 +130,24 @@ function hasCommittedDocumentAtPath(db: Database, storedPath: string): boolean |
   }
 }
 
-// #251: the single canonical issued-invoice-number format. The fortløbende
-// nummer is the fiscal-year scope, a hyphen, and the sequence value padded to
-// four digits (`2026-0001`). Every issuing path — `invoice issue`, the guided
-// `invoice create`, the MCP `invoice_issue` tool and recurring invoices — funnels
-// through `issueInvoice`, so this one function fixes the format for all of them.
-// Four digits matches the credit-note series (`CN-<scope>-NNNN`); journal
-// entries keep their own separate `entry_no` series.
+// Every issuance path uses this shared numbering policy. Fiscal-year series
+// retain four digits; daily RM series use at least two digits.
 const INVOICE_NUMBER_DIGITS = 4;
 
 function canonicalInvoiceNumber(scope: string, value: number): InvoiceNumber {
-  return asInvoiceNumber(`${scope}-${String(value).padStart(INVOICE_NUMBER_DIGITS, "0")}`);
+  return asInvoiceNumber(`${scope}-${String(value).padStart(scope.startsWith("RM-") ? 2 : INVOICE_NUMBER_DIGITS, "0")}`);
 }
 
 function invoiceSequenceState(db: Database, issueDate: string) {
-  const scope = fiscalYearLabelFromDate(db, issueDate);
-  // KODE-12: width-robust suffix read. The canonical suffix is four digits
-  // (`2026-0001`), but once a scope issues more than 9 999 invoices in a year
-  // the number simply grows wider (`2026-10000`). A fixed `[0-9]{4}` GLOB +
-  // `substr(-4)` would stop matching those and silently truncate the floor,
-  // re-issuing a colliding number. Anchor the `${scope}-` prefix by length and
-  // require an all-digit suffix instead, so any width matches and parses.
+  const daily = getCompanySettings(db).invoiceNumberFormat === "daily";
+  // Two-digit years repeat after a century; fail closed rather than reuse a
+  // daily series identity for a different date.
+  if (daily && (issueDate < "2000-01-01" || issueDate > "2099-12-31")) {
+    throw new Error("daily invoice numbering supports issue dates from 2000 through 2099");
+  }
+  const scope = daily ? `RM-${issueDate.slice(2)}` : fiscalYearLabelFromDate(db, issueDate);
+  // Read the complete numeric suffix rather than a fixed width: a daily series
+  // can grow past 99 and a yearly series can grow past 9,999.
   const prefix = `${scope}-`;
   const row = db
     .query(
@@ -169,14 +166,8 @@ function invoiceSequenceState(db: Database, issueDate: string) {
 // before the final hyphen, the suffix is one or more decimal digits. The
 // numeric value of the suffix is what is reserved against the sequence.
 //
-// #251: the suffix is always re-padded to the canonical four-digit form
-// (INVOICE_NUMBER_DIGITS) before it is stored, so a manually supplied `2026-1`
-// and an auto-generated number for the same sequence value both become the
-// identical string `2026-0001`. Without this, a manual number and an
-// auto-numbered one could be stored in two different, colliding zero-pad widths
-// in the same ledger — a fortløbende-nummer compliance fault. Numbers past
-// 9 999 grow wider than four digits, which invoiceSequenceState reads
-// width-robustly (KODE-12).
+// Canonicalise manual suffixes to the configured width so different padding
+// cannot create two representations of the same position in a series.
 const MANUAL_INVOICE_NUMBER_RE = /^(.+)-([0-9]+)$/;
 
 function validateManualInvoiceNumberScope(db: Database, issueDate: string, invoiceNumber: string) {
@@ -254,16 +245,15 @@ export function previewIssuedInvoicePdf(
     return { ok: false, appliedRules, errors: validation.errors };
   }
 
-  // Compute the preview fakturanummer placeholder. The scope is the current
-  // fiscal-year label, exactly as `issueInvoice` would use, so the preview's
-  // header reads `<scope>-UDKAST` — clearly NOT a finalised number. Falls back
+  // Compute the placeholder from the configured series; it is not a final
+  // number and does not reserve a sequence value. Falls back
   // to a plain "UDKAST" if the fiscal-year scope cannot be resolved (older
   // ledgers / missing companies row).
   let previewNumber = payload.invoiceNumber?.trim() || "UDKAST";
   if (!payload.invoiceNumber?.trim()) {
     try {
       if (payload.issueDate) {
-        const scope = fiscalYearLabelFromDate(db, payload.issueDate);
+        const scope = invoiceSequenceState(db, payload.issueDate).scope;
         previewNumber = `${scope}-UDKAST`;
       }
     } catch {
@@ -308,6 +298,11 @@ export function issueInvoice(
   const appliedRules = [...new Set([...(validation.appliedRules ?? []), RULE_ID, LOCK_RULE_ID])];
   if (!validation.ok) return { ok: false, appliedRules, errors: validation.errors };
 
+  if (getCompanySettings(db).invoiceNumberFormat === "daily" &&
+      (payload.issueDate! < "2000-01-01" || payload.issueDate! > "2099-12-31")) {
+    return { ok: false, appliedRules, errors: ["daily invoice numbering supports issue dates from 2000 through 2099"] };
+  }
+
   // #221: resolve the company's payment details once, so the customer-facing
   // PDF built at issue time always carries the BETALING block (where to pay).
   const invoiceCurrency = (payload.currency ?? "DKK").trim().toUpperCase();
@@ -346,7 +341,7 @@ export function issueInvoice(
       if (explicitInvoiceNumber !== undefined) {
         const reserved = reserveManualInvoiceNumber(db, payload.issueDate!, explicitInvoiceNumber);
         if (!reserved.ok) return { ok: false as const, error: reserved.error };
-        // #251: use the canonicalised four-digit number, not the verbatim
+        // Use the canonicalised number, not the verbatim
         // input, so the persisted snapshot, PDF and documents row all carry the
         // same consistent format as an auto-numbered invoice.
         invoiceNumber = asInvoiceNumber(reserved.invoiceNumber);

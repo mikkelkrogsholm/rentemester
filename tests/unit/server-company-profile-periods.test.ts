@@ -71,6 +71,19 @@ function postPnlEntry(ws: string, slug: string, transactionDate: string) {
 // #284 — Cockpit owner can set company profile + bank/payment details.
 // --------------------------------------------------------------------------
 describe("Cockpit company profile / bank details (#284)", () => {
+  test("the invoice number format can be saved and read back", async () => {
+    const { root: ws, slug } = makeWorkspace("profile-invoice-series");
+    try {
+      const path = `/api/companies/${slug}/company`;
+      expect((await call(config(ws), path)).body.company.invoiceNumberFormat).toBe("fiscal-year");
+      expect((await patch(config(ws), path, { invoiceNumberFormat: "daily" })).status).toBe(200);
+      expect((await call(config(ws), path)).body.company.invoiceNumberFormat).toBe("daily");
+      expect((await patch(config(ws), path, { invoiceNumberFormat: "unknown" })).status).toBe(400);
+      expect((await call(config(ws), path)).body.company.invoiceNumberFormat).toBe("daily");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
   test("GET .../company surfaces the payment block (null when unset)", async () => {
     const { root: ws, slug } = makeWorkspace("profile-get");
     try {

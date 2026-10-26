@@ -35,7 +35,7 @@ export function registerCompanyProfileTools(server: McpServer): void {
         "cvr, fiscalYearStartMonth, fiscalYearLabelStrategy, address, " +
         "postalCode, city, companyForm, industryCode, industryText, " +
         "cvrStatus, auditWaived, cvrSyncedAt, paymentTermsDays, " +
-        "vatPeriodType, vatRegistered }. `vatPeriodType` er 'month' / " +
+        "vatPeriodType, vatRegistered, invoiceNumberFormat }. invoiceNumberFormat er 'fiscal-year' eller 'daily'. `vatPeriodType` er 'month' / " +
         "'quarter' / 'half-year', ELLER `null` når virksomheden IKKE er " +
         "momsregistreret (holdingselskab m.fl.); `vatRegistered` er den " +
         "afledte boolean (false ⇔ vatPeriodType er null) — branch på den " +

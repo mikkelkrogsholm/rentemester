@@ -40,7 +40,7 @@ describe("build identity", () => {
       getBuildIdentity({ RENTEMESTER_BUILT_AT: "not-a-date" }),
     ).toThrow("ISO-8601 timestamp");
     expect(() =>
-      getBuildIdentity({ RENTEMESTER_VERSION: "0.4.0" }),
+      getBuildIdentity({ RENTEMESTER_VERSION: "999.0.0" }),
     ).toThrow("does not match packaged version");
     expect(() => getBuildIdentity({ RENTEMESTER_BUN_VERSION: "not-semver" })).toThrow("SemVer");
     expect(() => getBuildIdentity({ RENTEMESTER_BASE_IMAGE_DIGEST: "image" })).toThrow("sha256 digest");

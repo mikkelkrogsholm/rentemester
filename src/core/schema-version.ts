@@ -361,6 +361,10 @@ export function applySchemaMigrations(db: Database): void {
           CREATE INDEX IF NOT EXISTS idx_recurring_invoice_delivery_events_generation
             ON recurring_invoice_delivery_events(generation_id,id DESC);
         `);
+      } else if (migration.id === 57 &&
+        (db.query("PRAGMA table_info(companies)").all() as Array<{ name: string }>).some((column) => column.name === "invoice_number_format")) {
+        // A recovered migration history may omit the version row while the
+        // committed column remains. Preserve its existing values.
       } else {
         // A damaged migration ledger can be missing the v4 row while its
         // committed tables and guards remain. The migration is deliberately
