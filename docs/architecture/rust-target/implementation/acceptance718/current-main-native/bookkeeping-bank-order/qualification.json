@@ -1,0 +1,166 @@
+{
+  "format": "rentemester-bookkeeping-bank-order/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "source": "6213eb4ad4f37a3ce3692962a3d762d007d20d08",
+  "run_id": "issue718-bookkeeping-bank-statement-order-20261026T210554.875502000",
+  "qualifiedAt": "2026-10-26T21:09:31.860689+00:00",
+  "outcome": "Existing shared React raw import retains declared statement chronology; true closing balance/difference, CLI/MCP zero-row opposite-direction reimports, actual restart and signed source-free recovery pass.",
+  "sourceFiles": {
+    "crates/rentemester-application/src/bank.rs": "75a582a24a60d0a3cabd7ae18c4c3127143ee8fe2fac435c4c506566c3842ad7",
+    "crates/rentemester-application/src/bank/original_tests.rs": "9870af7df1a611c5a27f09ed7d13300dd1e09ae9b91c191a99f99a8b22e5e589",
+    "crates/rentemester-cli/src/bank_import.rs": "54d0239fdbbca35bac9bef3791f40e194d70da64ede0a618d45553759e35442a",
+    "crates/rentemester-client/src/bank_import.rs": "8aca36f707e048f3a07c7be057f50eb7c373ffd83684c3ef06be14ca7698b77d",
+    "crates/rentemester-client/src/bank_payables.rs": "23467cf2ff35d94a0494aec00189699d69a46c82ffd0d545a7b693dd34b5c58c",
+    "crates/rentemester-client/src/lib.rs": "194826fa2f2409af29d9c25c7f7f4f9f70167d300f23a748f8f9708c4d3b8859",
+    "crates/rentemester-engine/src/bank/profiles.rs": "9ea85bfcbe22b227ca5857613051f81ca918e6f946aa1d1678964ab02c07c6c6",
+    "crates/rentemester-host/src/portable_backup.rs": "358dfa2dce603f62b67369b65c18a68a1a470e0efa37cc56576f5ec235dc27a3",
+    "crates/rentemester-mcp/src/bank_import.rs": "8798e882267931f1e5e31c3502609082937fb1d68c07a7d04532a327e73c2eb6",
+    "crates/rentemester-server/src/product_http/bank.rs": "29ffa297dc35e00821e9193079ab38b258679ca70b15d43c707cd94b1d9773b7",
+    "crates/rentemester-storage/src/bank.rs": "8c00e543cc34d1c18d72fcbd6f60925fe8319c9b4bfb4d176551f61eeb5fe1e2",
+    "crates/rentemester-storage/src/company_baseline.rs": "94b19d3567de1a31ba22f2b1dc0942440f11c4f2569373d8cad93de5e0e08ad4",
+    "crates/rentemester-storage/src/lib.rs": "9ca516ec2b845b1e3f0198a93ad6235646e5e4b5b20af8b054e64a73848066b1",
+    "crates/rentemester-storage/src/scheduled_recurring_schema.rs": "c7fdf62476eeba18986de6e5f9ab4b9035e71714e2fdcabb81c61a706cb44a60",
+    "docs/architecture/rust-target/implementation/autonomous-closeout.md": "f51ebf2e594a033f7081fbd1bfd5ba9248fb8488a71c46c3c77742eff7c5659c",
+    "docs/cli-contract.md": "b1dc25f5fb83cc6e9b8b9a9c048141666f152a77e3a868df762befcd5a5da2d8",
+    "docs/rust-server.md": "7b30d4ece1cfc93ecd7e28ca5fc7964b0d936ecffcae6cc779b6db58288dc3e1",
+    "scripts/rust/check-native-tasks.py": "cf10e2b215f24988c10a6c1f6cfefca4a7e76e49fdc4740d30f71a14c6c4c7fd",
+    "crates/rentemester-host/src/portable_backup/bank_statement_order_tests.rs": "86d88038d5a04ec62f8c1a7bd699c5921f199d7bb0b509153d2ce1ce8415b899",
+    "crates/rentemester-storage/src/bank_statement_order.rs": "78d364434a9d9f8f37d672d1eda22e4456360f989e70987a2fec674e267f00a0",
+    "scripts/rust/check-native-bank-order.ts": "52402b0854f94df936fd67c6aa29b96876776efb4fc149627699ad6f9f83a98f"
+  },
+  "binaries": {
+    "rentemester-server": "0b1cfad5b9e7086ca0a6b4aee367c8867aed42871f65c932ee1c3c679d84b865",
+    "rentemester-rust": "b6be2e16262873490710c40d38cb6266440c31d940233a968f1cc9993cf0f9b5",
+    "rentemester-mcp": "1556dbcc3bb05b83ef63a02673e30a0cdae94698a546e8759025e3631aeb50a2"
+  },
+  "checks": {
+    "source-order": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/source-order.log",
+      "sha256": "8559b27619c6f5d3969ed8e1dc8f21f8bab96806029a00dcce4ea397c485c43a",
+      "passed": 4,
+      "exitCode": 0
+    },
+    "signed-recovery": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/signed-recovery.log",
+      "sha256": "3b0b74ada62d7cb1b289baaec20a5e16823440707b1cb1b8325a982152dc912f",
+      "passed": 1,
+      "exitCode": 0
+    },
+    "tests": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/tests.log",
+      "sha256": "3c0d2c5a6f58de4457e5c003f3f1afd5bccb686f39b8a5859efa2300e3476232",
+      "exitCode": 0,
+      "testSummaries": [
+        "ok. 68 passed; 0 failed; 0 ignored; 0 measured; 681 filtered out; finished in 128.64s"
+      ]
+    },
+    "authority": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/authority.log",
+      "sha256": "de773b31d9769f10c29853cfdc8de501d2b0c5bea354b20cd92598af9bffa455",
+      "exitCode": 0,
+      "testSummaries": [
+        "ok. 2 passed; 0 failed; 0 ignored; 0 measured; 250 filtered out; finished in 2.32s"
+      ]
+    },
+    "signed-restore": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/signed-restore.log",
+      "sha256": "0ee2a3f4425071f2dd106038e22a0383e2bac5c33974b0a78a5a91cb6b09102d",
+      "exitCode": 0,
+      "testSummaries": [
+        "ok. 1 passed; 0 failed; 0 ignored; 0 measured; 191 filtered out; finished in 3.73s"
+      ]
+    },
+    "http": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/http.log",
+      "sha256": "de0c1da24738821e22cd89621de7dce0b3be3a24bb02014563a5007888e27ada",
+      "exitCode": 0,
+      "testSummaries": [
+        "ok. 6 passed; 0 failed; 0 ignored; 0 measured; 134 filtered out; finished in 0.01s"
+      ]
+    },
+    "client": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/client.log",
+      "sha256": "ed49785ab26f16f00c877705e37004c7e64b71dda119da5db12d67a2ae89e359",
+      "exitCode": 0,
+      "testSummaries": [
+        "ok. 1 passed; 0 failed; 0 ignored; 0 measured; 70 filtered out; finished in 1.09s",
+        "ok. 1 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.20s"
+      ]
+    },
+    "main-reference": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/main-reference.log",
+      "sha256": "3eb05c887b0a96feab5af6b8a53eef367f648ee6e12d5bea7caefeb416d143cb",
+      "exitCode": 0,
+      "testSummaries": []
+    },
+    "build": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/build.log",
+      "sha256": "3f552f38715c7f8bdc5d5609254b769802e1127ead306521f09826e45d5fd926",
+      "exitCode": 0,
+      "testSummaries": []
+    }
+  },
+  "browser": {
+    "bank-order-first.json": {
+      "ok": true,
+      "ordinaryOwnerVerificationMfa": true,
+      "existingReactRawFileImport": true,
+      "visibleStatementBalance": 100,
+      "bookedBalance": 0,
+      "difference": -100,
+      "cliAndMcpOppositeOrderNoRewrite": true,
+      "transactions": 3,
+      "errors": []
+    },
+    "bank-order-reopen.json": {
+      "ok": true,
+      "exactPersistedStatementSourceOrderAndBalances": true,
+      "transactions": 3,
+      "errors": []
+    },
+    "bank-cli.json": {
+      "ok": true,
+      "imported": 0,
+      "skippedDuplicates": 3
+    },
+    "bank-mcp.json": {
+      "ok": true,
+      "sourceForms": [
+        "path",
+        "inline"
+      ],
+      "imported": 0,
+      "skippedDuplicates": 3
+    },
+    "runtime.json": {
+      "origin": "http://127.0.0.1:65290",
+      "profile": "local-user-macos",
+      "synthetic": true,
+      "stopped": true,
+      "workspaceRemoved": true
+    }
+  },
+  "review": [
+    "Preserved exact raw bytes/sourceSHA, occurrence fingerprints and old bank identities. Only newly inserted rows gain native immutable chronology; duplicate/opposite-direction reimport cannot rewrite prior evidence.",
+    "Strict optional two-value DTO reaches same existing cookie/service CompanyLedgerPost fence and one transaction/charge; original service/human/revocation fixture actually executes new ordered action and passes. No JSON identity or account default.",
+    "Main profile declares descending; explicit generic input preserved with exact zero-based row index and original source hash. Multi-day read checks every bank movement rather than trusting a terminal heuristic or insertion id.",
+    "Missing balances or direction, colliding sources, inconsistent/cyclic unproven streams and non-DKK uncertainty refuse a total. Valid explicitly ordered zero-net movement remains known. Existing mapped/unmapped account fences preserved.",
+    "Native sidecar v1 follows established exact optional company-extension pattern, unchanged historical migrations1\u201336; stopped upgrade only, no ordinary read/import migration or old evidence backfill. Exact physical schema + all provenance rows validated by canonical native gate.",
+    "Signed complete SQLite image already carries company extensions, originals and history. Actual crypto validation/source-free restore/reopen passed with explicit native bank evidence, no new backup subsystem or format.",
+    "Actual unchanged React raw import, original CLI plus MCP file/inline forms, opposite-option zero-row reimports and restart all PASS without browser errors. Existing receipt/posting/journal/reports financial proofs reused; no old effects replayed."
+  ],
+  "retainedFailures": [
+    "Initial new storage fixture used deferred transaction and correctly refused; fixed to existing IMMEDIATE contract. No guard weakened.",
+    "Old MCP inline fake server expects business POST first but native client correctly begins required identity handshake; raw failure retained. Exact real Rust MCP file AND inline structured/text envelope proof passed instead, with identity/unknown-outcome guards intact."
+  ],
+  "reuse": [
+    "Accepted receipt/posting/journal/report packaged-4c and52043 proofs are retained for their actual revisions; no financial/provider replay.",
+    "68 scoped bank cases passed before final formatting and metadata read projection. Combined committed-source order/recovery checks cover final source; same current authority/transport files and actual browser binary hashes are bound above."
+  ],
+  "limits": [
+    "Fresh native ledgers include exact company extensionv1; older native data requires explicit stopped operator admission, never ordinary read/import migration. Historical rows are not backfilled on reimport.",
+    "This is bookkeeping-path acceptance, not current packaged Linux/Windows/installed Tauri release qualification, full main adoption, production cutover or whole718 closure.",
+    "All55 original scopes/final controls remain. Current main56/control32\u201334 lineage adoption and original installed/manual/external gates remain; further task/calendar/knowledge feature work is deferred."
+  ]
+}

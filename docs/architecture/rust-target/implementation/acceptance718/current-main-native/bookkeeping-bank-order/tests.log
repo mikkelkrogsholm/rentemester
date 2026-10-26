@@ -1,0 +1,80 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.49s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 68 tests
+test bank::profile_tests::generic_raw_history_does_not_imply_a_native_profile_and_unknown_account_is_readonly ... ok
+test audit_bank::tests::legacy_named_profile_replay_is_bound_to_original_bytes_and_nullable_identity ... ok
+test audit_invoice::tests::cash_movement_matches_actual_bank_and_original_frozen_debtor ... ok
+test audit_bank::tests::nullable_historical_bank_account_source_identity_and_fallback_are_not_lost ... ok
+test bank::byte_tests::encoding_variants_keep_raw_hashes_logical_occurrences_and_exact_source_proof ... ok
+test audit_bank::tests::native_proof_and_historical_source_survive_deactivation_without_admitting_mutation ... ok
+test bank::profile_tests::only_fresh_batch_adjacency_creates_a_gap_exception_and_repeat_creates_none ... ok
+test bank::original_tests::original_import_selector_is_trimmed_exact_id_or_slug_and_source_conflicts_stay_typed ... ok
+test bank::tests::independent_statement_balance_ignores_import_order_and_refuses_missing_or_ambiguous_evidence ... ok
+test bank::byte_tests::original_bom_and_newline_bytes_are_hashed_and_source_verified_without_reencoding ... ok
+test bank::profile_tests::named_profile_retains_all_evidence_reconstructs_balances_and_preserves_repeat_identity ... ok
+test audit_bank::tests::populated_direct_purchase_payable_correction_and_tampered_reference ... ok
+test bank_accounts_original::tests::account_lifecycle_keeps_identity_clears_only_present_fields_audits_noop_and_blocks_history_changes ... ok
+test bank_accounts_original::tests::account_validation_duplicate_mapping_and_audit_failure_are_explicit ... ok
+test bank_matches::tests::amount_only_currency_direction_stopwords_and_stable_document_order_are_conservative ... ok
+test bank::tests::repeated_identical_payments_keep_occurrences_and_account_identity ... ok
+test bank_matches::tests::corrupt_prior_allocation_and_orphan_credit_never_produce_customer_refund_advice ... ok
+test bank::original_tests::original_import_receipt_counts_unmatched_only_omits_nulls_and_keeps_native_receipt ... ok
+test bank_matches::tests::reversed_original_posting_cannot_receive_advisory_invoice_matches ... ok
+test audit_bank::tests::populated_legacy_link_and_correction_have_complete_positive_assurance ... ok
+test bank_original::tests::original_link_native_proof_claims_resolution_and_replay ... ok
+test bank_original::tests::original_correction_service_proof_raw_receipt_and_native_v1_compatibility ... ok
+test bank_queries::tests::bank_queries_business_refusals_inversion_and_unpaged_over_default_cap ... ok
+test bank_queries::tests::bank_queries_original_units_all_year_filters_accounts_and_pages ... ok
+test audit_bank::tests::legacy_movement_plan_actor_and_orphan_tampering_is_not_accepted has been running for over 60 seconds
+test bank::profile_tests::missing_unknown_or_conflicting_native_profile_proofs_refuse has been running for over 60 seconds
+test bank_queries::tests::bank_queries_reversal_demotes_then_reviewed_correction_restores_match ... ok
+test bank_reconciliation::correction::tests::reversal_identity_without_exact_opposite_lines_is_not_sufficient ... ok
+test bank_reconciliation::tests::changed_statement_row_or_archive_cannot_supply_source_evidence ... ok
+test bank_reconciliation::correction::tests::correction_needs_real_reversal_then_preserves_accounting_and_replays_known_receipt_after_reopen ... ok
+test bank::profile_tests::missing_unknown_or_conflicting_native_profile_proofs_refuse ... ok
+test bank_reconciliation::correction::tests::stale_proof_wrong_reason_and_competing_supersession_do_not_create_another_event ... ok
+test direct_bank_payable_correction::tests::crash_child ... ok
+test bank_reconciliation::tests::stale_mapping_wrong_proof_missing_confirmation_and_reason_have_no_effect ... ok
+test bank_statement_order::tests::corrupt_provenance_or_orphan_refuses_complete_backup ... ok
+test bank_statement_order::tests::exact_extension_and_refusals_preserve_legacy_history ... ok
+test bank_matches::tests::all_four_advisory_families_preserve_scores_extra_columns_bounds_and_no_effects ... ok
+test bank_reconciliation::tests::exact_reasoned_link_preserves_journals_and_survives_reopen ... ok
+test bank_matches::tests::readonly_credit_verification_accepts_partial_and_full_native_and_legacy_credits ... ok
+test bookkeeping_batch::workbench696::workbench696_same_foreign_bank ... ok
+test cashflow::tests::archived_journal_reference_is_not_a_fabricated_empty_bank_year ... ok
+test cockpit::tests::unposted_bank_source_year_is_selectable_for_vat_without_inventing_postings ... ok
+test cashflow::tests::bank_only_span_year_has_exact_flows_and_independent_multi_account_balances ... ok
+test direct_bank_payable_correction::tests::actual_process_death_before_commit_preserves_source ... ok
+test direct_bank_payable_correction::tests::concurrent_real_connections_commit_one_effect_and_known_keyed_replay ... ok
+test audit_bank::tests::legacy_movement_plan_actor_and_orphan_tampering_is_not_accepted ... ok
+test bank_statement_order::tests::declared_direction_zero_net_cycle_reimport_and_reopen_preserve_evidence ... ok
+test direct_bank_payable_correction::tests::file_snapshot_reopen_keeps_linked_history_and_typed_validation ... ok
+test direct_bank_payable_correction::tests::original_service_direct_correction_binds_nested_proof_and_exact_keyed_replay ... ok
+test direct_bank_payable_correction::tests::period_close_refuses_tampered_retained_direct_correction_without_financial_effects ... ok
+test direct_bank_payable_correction::tests::reviewed_period_close_and_reopen_retain_direct_correction_and_journal_history ... ok
+test journal_original::writer_tests::bank_exception_resolution_and_late_failure_are_fully_rolled_back ... ok
+test invoice_payment_apply::tests::bankless_post_then_exact_candidate_preserves_original_debtor_and_full_audit ... ok
+test bank_statement_order::tests::missing_colliding_inconsistent_and_partial_streams_are_unavailable has been running for over 60 seconds
+test invoice_payment_apply::tests::foreign_apply_requires_bank_and_reuses_native_frozen_fx_settlement ... ok
+test migration_open_items::tests::optional_bank_is_optional_and_caller_rollback_restores_all_effects ... ok
+test periods::bank_audit::tests::bank_audit_individually_valid_proofs_cannot_reuse_one_journal_for_two_banks ... ok
+test purchase_vat::tests::stale_bank_and_different_request_refuse_before_financial_effects ... ok
+test periods::bank_audit::tests::bank_audit_real_public_links_and_repeated_corrections_remain_readonly_after_reopen ... ok
+test supplier_commitments::tests::outgoing_bank_options_and_matches_use_positive_cost_without_posting ... ok
+test unmatched_bank::tests::import_creates_sign_currency_aware_tasks_and_duplicate_refresh_is_idempotent ... ok
+test unmatched_bank::tests::late_voucher_refresh_appends_history_and_ambiguity_or_wrong_currency_never_selects ... ok
+test direct_bank_payable_correction::tests::same_and_cross_period_mixed_vat_preserve_balances_and_exact_replay ... ok
+test periods::bank_audit::tests::bank_audit_missing_corrupt_link_proof_source_journal_and_crossbank_rows_refuse ... ok
+test periods::bank_audit::tests::bank_audit_correction_fullproof_inverse_and_canonical_samebank_chain_refuse_corruption ... ok
+test unmatched_bank::tests::reviewed_expense_post_resolves_task_and_duplicate_import_never_reopens_it ... ok
+test vat_purchase_original::tests::foreign_no_bank_explicit_valuation_matches_original_net_and_gross ... ok
+test vat_purchase_original::tests::cached_eu_without_bank_and_representation_with_imported_payment ... ok
+test direct_bank_payable_correction::tests::stale_source_wrong_direction_closed_period_and_changed_hash_refuse ... ok
+test direct_bank_payable_correction::tests::every_composite_boundary_error_rolls_back_whole_transaction has been running for over 60 seconds
+test bank_statement_order::tests::missing_colliding_inconsistent_and_partial_streams_are_unavailable ... ok
+test direct_bank_payable_correction::tests::every_composite_boundary_error_rolls_back_whole_transaction ... ok
+
+test result: ok. 68 passed; 0 failed; 0 ignored; 0 measured; 681 filtered out; finished in 128.64s
+

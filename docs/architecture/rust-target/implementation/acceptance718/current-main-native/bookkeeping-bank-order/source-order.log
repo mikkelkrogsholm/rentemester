@@ -1,0 +1,15 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-bookkeeping-bank-statement-order-20261026T210554.875502000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-bookkeeping-bank-statement-order-20261026T210554.875502000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-bookkeeping-bank-statement-order-20261026T210554.875502000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-bookkeeping-bank-statement-order-20261026T210554.875502000/integration/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.89s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 4 tests
+test bank_statement_order::tests::corrupt_provenance_or_orphan_refuses_complete_backup ... ok
+test bank_statement_order::tests::exact_extension_and_refusals_preserve_legacy_history ... ok
+test bank_statement_order::tests::declared_direction_zero_net_cycle_reimport_and_reopen_preserve_evidence ... ok
+test bank_statement_order::tests::missing_colliding_inconsistent_and_partial_streams_are_unavailable ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 745 filtered out; finished in 9.96s
+

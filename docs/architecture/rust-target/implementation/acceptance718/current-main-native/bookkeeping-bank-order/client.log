@@ -1,0 +1,598 @@
+   Compiling rentemester-client v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.05s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_client-4718455c3385361d)
+
+running 1 test
+test bank_payables::tests::bank_import_union_canonical_bytes_and_existing_admission_are_enforced ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 70 filtered out; finished in 1.09s
+
+     Running tests/accounting_draft_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/accounting_draft_original-5736c71de646f69b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/accounts_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/accounts_original-bb2cb372c28a62bf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/accrual_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/accrual_original-e684128fa04f5519)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/accruals.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/accruals-0266a283f265d0c3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/annual_exports.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/annual_exports-e231c97f415a72ab)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/annual_reports.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/annual_reports-0ef9661f449403ca)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/archive_import.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/archive_import-7ecc19ce314424c3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/asset_disposal.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/asset_disposal-54b135bf4b4afde2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/asset_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/asset_original-a8a6307ee118b01b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/assets.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/assets-d245ce3d2563d77a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/auth.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/auth-15722d7586fbc151)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/backup_original122.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/backup_original122-4ea7b2130c09e4b9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/bank_accounts_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_accounts_original-2d82f3688abd816b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/bank_correction.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_correction-a1bd68cfcbdbb8c6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/bank_import.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_import-7e78407599f0ca09)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/bank_matches.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_matches-7de42f2dfd76fb86)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/bank_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_original-7e7682acb780901c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/bank_queries.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_queries-70c87446a0a677c2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/bank_reconciliation.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bank_reconciliation-3f8786121672911f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/bilagsmail.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bilagsmail-78ebb4e7ddd9649b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/bookkeeping_batch.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bookkeeping_batch-eaf4ce8625190d29)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+     Running tests/bookkeeping_batch_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/bookkeeping_batch_original-bf83d614319d43c3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/budget_mileage.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/budget_mileage-d1e3477814d4b205)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/budget_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/budget_original-570bc8ca5f387243)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/cfo_analytics.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/cfo_analytics-b486637408160031)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/company_creation.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/company_creation-655db7b1ca47e241)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/company_knowledge.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/company_knowledge-c280ea3c0444f87e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/company_setup.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/company_setup-654c7785cf00ef4c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/consolidation.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/consolidation-a2c611c4d2dd34fe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/contact_import.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/contact_import-f8f2a9af57766e0c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/corporate_records.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/corporate_records-8ad96c760166be26)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/cvr.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/cvr-e56f7f374a49154b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/dashboard_artifact.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/dashboard_artifact-edf247129b2f3b86)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/diagnostics_original118.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/diagnostics_original118-78be8657fcb4988d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/digisense_received.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/digisense_received-a490d3f17cd20f2a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/dimensions_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/dimensions_original-01c1eef9da8e347a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/dinero_import.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/dinero_import-16a8179f5f845a73)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/direct_bank_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/direct_bank_original-0c27844f95fa9e8f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/document_party_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/document_party_original-ffe7e463413c5ee0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/document_pdf.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/document_pdf-48f473b08c0547a7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/documents.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/documents-afc22bf5d29b1c06)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/documents_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/documents_original-cfc0fc125bc7f606)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/eu_sales.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/eu_sales-97b4c128d730d64d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/exceptions.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/exceptions-7be075ee04b74344)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/exceptions_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/exceptions_original-0be2636be69a7430)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/expense_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/expense_original-df74598bbabd9c6c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/handoff_export.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/handoff_export-e13f30ac737c9a80)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/hosted_services.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/hosted_services-625769debc20c640)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/http.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/http-dd0b06791cbdab6d)
+
+running 1 test
+test uncertain_raw_bank_import_does_not_retry ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.20s
+
+     Running tests/import_original94.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/import_original94-15ceb4b388ce94cf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/intercompany.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/intercompany-74efe609ed583264)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/intercompany_dispositions.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/intercompany_dispositions-64a9f1de41b6570b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/invoice_claims_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_claims_original-6b20f046dda7aeda)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/invoice_email.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_email-05a66161ea0602b8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/invoice_extraction.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_extraction-fbfa8d60151310ee)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/invoice_extraction_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_extraction_original-5ad030b70299128a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/invoice_financial_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_financial_original-514b54408b6f9308)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/invoice_lifecycle.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_lifecycle-4b881a51c3d8890d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/invoice_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_original-90624bf6e75424b2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/invoice_public_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/invoice_public_original-18fd1e4c49f35b53)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/journal_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/journal_original-adcd4e0cca3f52e4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/local_runtime.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/local_runtime-dbac06d4e038f2f6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/master_data_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/master_data_original-707335b0c8ae7f71)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/mileage_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/mileage_original-5153a4704f16f628)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/mileage_posting.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/mileage_posting-12231d667d20736a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/obligations.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/obligations-36dd59af01d7c290)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/opening_balance.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/opening_balance-611ca1a53a683010)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/original717.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/original717-8f451c9c0e674fb9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+     Running tests/original717_contracts.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/original717_contracts-842b3ecbdf24ca60)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/original_discovery123.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/original_discovery123-9c977c0a375876e5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/oss_report.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/oss_report-c33942f2e618dbd2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/ownership.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/ownership-5b0069cfb7dc1cf7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/parties.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/parties-f11fe6ea16b0664d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/party_merge.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/party_merge-3eb97ac12c8258b6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/payable_correction.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/payable_correction-d917ae1a16a6c3c4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/payable_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/payable_original-0ba8373b399cee39)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/period_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/period_original-de49b75782db68d2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/portable_backup.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/portable_backup-ba106b22b8433117)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/portfolio_cashflow.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/portfolio_cashflow-ae93f36ec54dd801)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/posting_rules_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/posting_rules_original-e03e016fc718b33c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/privacy.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/privacy-7df2d2bb62e6f0e2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/protocol.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/protocol-af29f357f99e4431)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/public_einvoice.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/public_einvoice-e129a6994f4ede5c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/receivables.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/receivables-e37805fdb94650d4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/recurring_invoices.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/recurring_invoices-98dcb1732bd1a235)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/recurring_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/recurring_original-2fc4ea72ecfb297b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/regulatory.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/regulatory-ee528327024d87ed)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/reminder_claims.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/reminder_claims-edb3e273924e5259)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/report_reads.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/report_reads-8a1d6a8d92f83f8a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/reviewed_bookkeeping.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/reviewed_bookkeeping-503881848282a225)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/saft.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/saft-fe12f78808baab0e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/saft_artifact.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/saft_artifact-c2d748340de9c306)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/scheduled_recurring.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/scheduled_recurring-b5d288c8c28765a8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/supplier_commitment_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/supplier_commitment_original-460930b94ff6ab3c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/vat_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/vat_original-ae3fb818714505f9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/vat_purchase_original.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/vat_purchase_original-fbdb634c71a5ea3b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/workspace_inbox.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/workspace_inbox-8a596a31f7fd66c6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/workspace_transfer.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/workspace_transfer-18fcfd77d8b8f81d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+

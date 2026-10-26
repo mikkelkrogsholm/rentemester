@@ -1,0 +1,14 @@
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/vendor/rusqlite-0.40.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.42s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_application-828f61d861cc763e)
+
+running 2 tests
+test bank::original_tests::original_import_parser_mapping_is_finite_and_stage_scoped ... ok
+test bank::original_tests::original_import_current_human_service_and_existing_source_integrity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 250 filtered out; finished in 2.32s
+

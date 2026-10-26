@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "ordinaryOwnerVerificationMfa": true,
+  "existingReactRawFileImport": true,
+  "visibleStatementBalance": 100,
+  "bookedBalance": 0,
+  "difference": -100,
+  "cliAndMcpOppositeOrderNoRewrite": true,
+  "transactions": 3,
+  "errors": []
+}

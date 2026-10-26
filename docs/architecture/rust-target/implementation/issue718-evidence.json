@@ -891,5 +891,11 @@
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/qualification.json",
     "wholeIssueAccepted": false,
     "scope": "Existing React protected tasklinks/current permissions/safe content/restart; full native business recovery and exact main31-only source adoption, not fullmain adoption."
+  },
+  "bookkeeping_priority_20261026": {
+    "priority": "Receipt \u2192 posting \u2192 journal \u2192 bank reconciliation \u2192 reports \u2192 signed recovery/reopen; other feature ports deferred.",
+    "bankOrderQualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/bookkeeping-bank-order/qualification.json",
+    "source": "6213eb4ad4f37a3ce3692962a3d762d007d20d08",
+    "wholeIssueAccepted": false
   }
 }

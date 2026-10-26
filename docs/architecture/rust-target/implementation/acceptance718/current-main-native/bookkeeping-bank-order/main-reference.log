@@ -1,0 +1,12 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/bank-statement-order.test.ts:
+(pass) authoritative bank statement order (#596) > uses persisted descending source order for a same-date closing balance and replays unchanged [223.28ms]
+(pass) authoritative bank statement order (#596) > supports ascending metadata and fails closed for an unknown same-date chain or inconsistent balances [218.42ms]
+(pass) authoritative bank statement order (#596) > fails closed for a mixed known/unknown multi-account total and colliding sources [433.35ms]
+(pass) authoritative bank statement order (#596) > keeps source-order semantics after reopen and verified backup restore [362.94ms]
+
+ 4 pass
+ 0 fail
+ 23 expect() calls
+Ran 4 tests across 1 file. [1274.00ms]

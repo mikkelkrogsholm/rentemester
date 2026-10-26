@@ -1,0 +1,37 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::Value`
+  --> crates/rentemester-host/src/portable_backup.rs:10:5
+   |
+10 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling rentemester-server v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-server)
+warning: `rentemester-host` (lib) generated 1 warning (run `cargo fix --lib -p rentemester-host` to apply 1 suggestion)
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-server` (bin "rentemester-server" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 35.53s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_server-5ecef0545a605984)
+
+running 6 tests
+test product_http::bank::tests::generic_none_empty_and_null_profiles_keep_existing_body_contract ... ok
+test product_http::bank::tests::named_profile_is_preserved_exactly_and_not_a_transport_authority ... ok
+test product_http::bank::tests::source_order_is_exact_optional_and_never_authority ... ok
+test product_http::bank::tests::original_import_business_mapping_never_hides_fences_source_or_uncertain_outcomes ... ok
+test product_http::bank::tests::original_bank_query_protocol_is_exact_and_business_validation_stays_server_owned ... ok
+test product_http::bank::tests::raw_envelope_preserves_bytes_and_refuses_conflicting_or_noncanonical_sources ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 134 filtered out; finished in 0.01s
+
