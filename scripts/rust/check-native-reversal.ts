@@ -38,11 +38,11 @@ export async function checkNativeReversal(page: Page, base: string) {
     } });
     if (refused.status() !== 422) throw new Error("Duplicate reversal or reversal of a reversal was accepted");
   }
-  await page.locator("section.statement").getByRole("link", { name: "Saldobalance", exact: true }).click();
+  await page.getByRole("main").getByRole("link", { name: "Saldobalance", exact: true }).click();
   await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
-  const balances = await page.locator("section.statement tbody tr td:last-child").allTextContents();
+  const balances = await page.getByRole("main").locator("tbody tr td:last-child").allTextContents();
   if (balances.length !== 2 || !balances.every((value) => value.trim().startsWith("0,00"))) throw new Error("Balances did not return to zero");
-  const totals = await page.locator("section.statement tfoot").textContent();
+  const totals = await page.getByRole("main").locator("tfoot").textContent();
   if (!totals || (totals.match(/251,00/g) ?? []).length !== 2) throw new Error("Original and reversal totals were lost");
   await page.reload();
   await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();

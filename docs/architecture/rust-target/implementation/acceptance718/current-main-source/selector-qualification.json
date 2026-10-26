@@ -1,0 +1,38 @@
+{
+  "format": "rentemester-stylex-native-acceptance-repair/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "failedCiHead": "ad3f9678a87b3f43267521787746d8b02133bc18",
+  "failedJob": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/40308991956/job/121525129149",
+  "diagnosis": "Packaged Rust server built and actual browser manual posting became visible; the existing check then timed out on removed section.statement class. Current shared StyleX shell has exactly one semantic main (AppChrome.tsx), which contains the unchanged report tabs/table and company context header.",
+  "sourceFiles": {
+    "scripts/rust/check-native-commitments.ts": "9f98aeefc75577f4597fb01a4793428b614b87d392e0840c716466894dfb349b",
+    "scripts/rust/check-native-multi-year.ts": "39429e63f0ca59cfe8f7602a9d05c5a887af288ee1fe0625c350f8ad82aeb093",
+    "scripts/rust/check-native-reports.ts": "e14ac596982a4bc3ebbcebd3379ad91a34ca3f1966fe0fd35009ad32671f562f",
+    "scripts/rust/check-native-reversal.ts": "beef5fc52fa4768583ac76b76ff5d0e2dc60aa31d780409cec80fdd127caaf26",
+    "scripts/rust/check-native-web.ts": "11113481084763fa2edafddb80d4cba1ca239ebeac61a143af4c08b87121abfe"
+  },
+  "review": "Exact diff is selector scope replacements only in5existingcheckscripts, including other occurrences of the same obsolete statement/company-context classes. No transaction, amount125.50, debit/credit balance, download, source provenance, permission, replay or receipt assertion changed. Main scope excludes sidebar controls.",
+  "checks": {
+    "ui": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/selector-ui.log",
+      "sha256": "d94c8d361a4471ca3c425803653416e37585c61951bcc1dc7f0bdca599c89f8f"
+    },
+    "lint": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/selector-lint.log",
+      "sha256": "4c331647af4046df85b957681cc367112de36a0e4eb48bca5004b72c999ece27"
+    },
+    "syntax": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/selector-syntax.log",
+      "sha256": "cfb3f97e83fedf38e209d988b2bd8a6b0ea8995a627c67d1ec92b6924dcb27b2"
+    }
+  },
+  "limitations": [
+    "Actual newhead packaged browser journey must still run; the failing oldhead is not PASS",
+    "These16view/layout tests pluslint/syntax validate the bounded repair, not fullnative/currentmain parity",
+    "BroadUIprobe121failures, currentmainnativeports and all originalfinalgates stillopen"
+  ]
+}

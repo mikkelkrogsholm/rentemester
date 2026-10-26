@@ -1,0 +1,29 @@
+$ bun test --isolate src/views/TrialBalanceView.test.tsx src/views/IncomeStatementView.test.tsx src/components/AppChrome.test.tsx
+bun test v1.4.0 (34cbb9a40)
+
+src/components/AppChrome.test.tsx:
+(pass) actual shell retains archive source for all five reports and clicked colliding year [68.58ms]
+(pass) shell keeps explicit live source but excludes unsupported source and view filters [19.14ms]
+(pass) native cashflow exposes the registered shifted fiscal selector in the actual shell [19.12ms]
+
+src/views/IncomeStatementView.test.tsx:
+(pass) IncomeStatementView — Resultatopgørelse > renders the income and expense section headings [17.21ms]
+(pass) IncomeStatementView — Resultatopgørelse > shows the ground-truth result figure [6.90ms]
+(pass) IncomeStatementView — Resultatopgørelse > lists account lines with their amounts [4.97ms]
+(pass) IncomeStatementView — Resultatopgørelse > the daily navigation lets the owner find reports [6.71ms]
+(pass) IncomeStatementView — Resultatopgørelse > the fiscal-year selector reloads for the chosen year [18.30ms]
+(pass) IncomeStatementView — Resultatopgørelse > account rows drill into that account's postings, carrying the year [5.87ms]
+(pass) IncomeStatementView — Resultatopgørelse > #372 — 'Hent CSV' links to the income-statement CSV export endpoint [5.55ms]
+(pass) IncomeStatementView — Resultatopgørelse > an archived year renders the statement under a read-only banner [4.87ms]
+
+src/views/TrialBalanceView.test.tsx:
+(pass) TrialBalanceView — Saldobalance > renders the account table with debit/credit/balance columns [15.70ms]
+(pass) TrialBalanceView — Saldobalance > lists every moved account [9.10ms]
+(pass) TrialBalanceView — Saldobalance > shows the totals row and the balanced confirmation [4.98ms]
+(pass) TrialBalanceView — Saldobalance > #372 — 'Hent CSV' links to the trial-balance CSV export endpoint [6.60ms]
+(pass) TrialBalanceView — Saldobalance > an archived year renders the archived rows under a read-only banner [7.25ms]
+
+ 16 pass
+ 0 fail
+ 41 expect() calls
+Ran 16 tests across 3 files. [4.88s]

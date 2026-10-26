@@ -77,7 +77,7 @@ export async function checkNativeMultiYear(page: Page, base: string, restarted =
   await page.goto(`${base}/companies/synthetic/fleraar?year=${encodeURIComponent(evidence.selected)}`);
   await page.getByRole("heading", { name: "Flerårsoverblik", exact: true }).waitFor();
   // The integrated shell deliberately uses multi-year scope, without a year filter.
-  await page.locator("header.company-context").getByText("Flere regnskabsår", { exact: true }).waitFor();
+  await page.getByRole("main").locator("header").getByText("Flere regnskabsår", { exact: true }).waitFor();
   if (await page.getByRole("combobox", { name: "Vælg regnskabsår" }).count()) throw new Error("Comparison incorrectly presents a single-year filter");
   if (new URL(page.url()).searchParams.get("year") !== evidence.selected) throw new Error("Comparison discarded historical report context");
   const historicalRow = page.locator("#multiyear-result").getByRole("row").filter({ has: page.getByRole("cell", { name: evidence.selected, exact: true }) });

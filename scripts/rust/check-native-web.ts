@@ -127,9 +127,9 @@ try {
     await page.reload();
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
     if (await page.getByText("Synthetic opening transfer", { exact: true }).count() !== 1) throw new Error("Duplicate posting after replay");
-    await page.locator("section.statement").getByRole("link", { name: "Saldobalance", exact: true }).click();
+    await page.getByRole("main").getByRole("link", { name: "Saldobalance", exact: true }).click();
     await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
-    const rows = await page.locator("section.statement tbody tr").allTextContents();
+    const rows = await page.getByRole("main").locator("tbody tr").allTextContents();
     if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Reopened trial balance changed");
     await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
@@ -205,9 +205,9 @@ try {
   await page.getByRole("dialog").getByRole("button", { name: "Bogfør postering", exact: true }).click();
   await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
   console.log("Browser: manual journal post visible");
-  await page.locator("section.statement").getByRole("link", { name: "Saldobalance", exact: true }).click();
+  await page.getByRole("main").getByRole("link", { name: "Saldobalance", exact: true }).click();
   await page.getByRole("heading", { name: "Saldobalance", exact: true }).waitFor();
-  const report = page.locator("section.statement");
+  const report = page.getByRole("main");
   await report.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
   const rows = await report.locator("tbody tr").allTextContents();
   if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Unexpected trial balance rows");

@@ -18,7 +18,7 @@ export async function checkNativeReports(page: Page, base: string) {
     const value = payload[report.api === "income-statement" ? "incomeStatement" : report.api === "balance" ? "balance" : "trialBalance"];
     if (report.api === "income-statement" && (value.result !== 0 || value.priorResult !== null || value.comparison?.reason !== "prior_native_year_not_present")) throw new Error("Opening equity affected profit or absent prior-year evidence was fabricated");
     if (report.api === "balance" && (value.totalAssets !== 125.5 || value.equity.total !== 125.5 || value.balanced !== true || value.assets.priorTotal !== null)) throw new Error("Balance or missing prior comparison is incorrect");
-    const section = page.locator("section.statement");
+    const section = page.getByRole("main");
     for (const format of ["csv", "pdf"]) {
       const [download] = await Promise.all([page.waitForEvent("download"), section.getByRole("link", { name: format === "csv" ? "Hent CSV" : "Hent PDF", exact: true }).click()]);
       if (await download.failure()) throw new Error("Native report download failed");

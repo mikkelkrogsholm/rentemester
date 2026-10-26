@@ -64,7 +64,7 @@ export async function checkNativeCommitments(page: Page, base: string, restarted
     await page.goto(`${base}/companies/synthetic/likviditet`);
     await page.getByRole("heading", { name: "Likviditet", exact: true }).waitFor();
     await page
-      .locator("header.company-context")
+      .getByRole("main").locator("header")
       .getByText("Hele virksomheden", { exact: true })
       .waitFor();
     if (await page.getByRole("combobox", { name: "Vælg regnskabsår" }).count())
