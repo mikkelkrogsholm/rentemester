@@ -59,7 +59,7 @@ fn template(owner: &mut Owner, proof: &VerifiedCookie, first: &str) -> i64 {
     tx.execute_batch("UPDATE companies SET address='Synthetic1',cvr='87654321',vat_period_type='quarter' WHERE id=1").unwrap();
     let customer = rentemester_storage::sales::Customer {
         ..serde_json::from_value(
-            json!({"name":"Synthetic buyer","address":"Synthetic2","vatOrCvr":"DK12345678"}),
+            json!({"name":format!("Synthetic buyer {}", tx.query_row("SELECT count(*) FROM customers", [], |r| r.get::<_, i64>(0)).unwrap()),"address":"Synthetic2","vatOrCvr":"DK12345678"}),
         )
         .unwrap()
     };
@@ -574,5 +574,365 @@ fn offered_snapshot_staged_nonce_signed_release_activation_restart_and_no_origin
     assert!(
         store::require_business_write(source.held.0.as_ref().unwrap().control.as_ref().unwrap())
             .is_err()
+    );
+}
+
+fn scheduled_value(
+    o: &mut Owner,
+    p: &VerifiedCookie,
+    action: rentemester_application::scheduled_recurring::Action<'_>,
+) -> Value {
+    o.scheduled_recurring(
+        p,
+        &Fixed(NOW),
+        action,
+        "2026-01-01",
+        "2026-01-01T00:00:00.000Z",
+    )
+    .unwrap()
+    .outcome
+    .unwrap()
+    .value
+}
+fn scheduled_current(o: &Owner, id: i64) -> Value {
+    rentemester_storage::scheduled_recurring::current(
+        o.held.0.as_ref().unwrap().company.as_ref().unwrap(),
+        id,
+        "2026-01-01",
+    )
+    .unwrap()
+}
+fn scheduled_dispatch(
+    o: &mut Owner,
+    p: &VerifiedCookie,
+    id: i64,
+    index: u32,
+) -> rentemester_engine::scheduled_recurring::Dispatch {
+    use rentemester_application::scheduled_recurring::Action;
+    let plan = scheduled_value(o, p, Action::Plan(id));
+    serde_json::from_value(json!({"templateId":id,"planHash":plan["plan"]["planHash"],"periodIndex":index,"confirm":true})).unwrap()
+}
+fn generation_history(o: &Owner) -> Vec<String> {
+    let db = o.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let mut query = db.prepare("SELECT json_array(id,template_id,period_index,document_id,invoice_number,issue_date,delivery_period_start,delivery_period_end,created_at) FROM recurring_invoice_generations ORDER BY id").unwrap();
+    query
+        .query_map([], |r| r.get(0))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap()
+}
+fn assert_transfer_job_fence(o: &mut Owner, p: &VerifiedCookie, id: i64) {
+    use rentemester_application::scheduled_recurring::Action;
+    let before = scheduled_current(o, id);
+    let generations = count(o, "recurring_invoice_generations");
+    let documents = count(o, "documents");
+    let dispatch = scheduled_dispatch(o, p, id, 0);
+    let failure = o
+        .scheduled_recurring(
+            p,
+            &Fixed(NOW),
+            Action::Dispatch(&dispatch),
+            "2026-01-01",
+            "2026-01-01T00:00:00.000Z",
+        )
+        .unwrap()
+        .outcome
+        .err()
+        .unwrap();
+    assert_eq!(failure.error.code, "workspace_transfer_fenced");
+    let customer = serde_json::from_value(
+        json!({"name":"Fenced synthetic buyer","address":"Synthetic3","vatOrCvr":"DK12345678"}),
+    )
+    .unwrap();
+    assert!(
+        o.sales(
+            p,
+            &Fixed(NOW),
+            rentemester_application::sales::Action::Customers(&customer),
+            "2026-01-01",
+            "2026-01-01T00:00:00.000Z",
+            None
+        )
+        .unwrap()
+        .outcome
+        .is_err()
+    );
+    assert_eq!(scheduled_current(o, id), before);
+    assert_eq!(count(o, "recurring_invoice_generations"), generations);
+    assert_eq!(count(o, "documents"), documents);
+}
+
+#[test]
+fn nonempty_jobs_handoff_reconsent_and_target_only_journal_source_unavailable_recovery() {
+    use rentemester_application::scheduled_recurring::Action;
+    use rentemester_storage::scheduled_recurring as scheduled;
+    let (d, mut source, c, p, uid) = setup();
+    let mut ids = Vec::new();
+    for _ in 0..3 {
+        let id = template(&mut source, &p, "2025-12-18");
+        let plan = scheduled_value(&mut source, &p, Action::Plan(id));
+        let enable = serde_json::from_value(
+            json!({"templateId":id,"templateHash":plan["plan"]["templateHash"],"confirm":true}),
+        )
+        .unwrap();
+        scheduled_value(&mut source, &p, Action::Enable(&enable));
+        let plan = scheduled_value(&mut source, &p, Action::Plan(id));
+        let select = serde_json::from_value(json!({"templateId":id,"planHash":plan["plan"]["planHash"],"periodIndexes":[0],"confirm":true})).unwrap();
+        scheduled_value(&mut source, &p, Action::CatchUp(&select));
+        ids.push(id);
+    }
+    let (queued, completed, unresolved) = (ids[0], ids[1], ids[2]);
+    let dispatch = scheduled_dispatch(&mut source, &p, completed, 0);
+    let done = scheduled_value(&mut source, &p, Action::Dispatch(&dispatch));
+    assert_eq!(done["dispatch"]["status"], "succeeded");
+    // Typed fixture seam models an attempt whose outcome was not recorded; no forged events/provider.
+    let dispatch = scheduled_dispatch(&mut source, &p, unresolved, 0);
+    let db = source.held.0.as_mut().unwrap().company.as_mut().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    scheduled::begin(
+        &tx,
+        &dispatch,
+        "u",
+        "2026-01-01",
+        "2026-01-01T00:00:00.000Z",
+    )
+    .unwrap();
+    tx.commit().unwrap();
+    let original_generations = generation_history(&source);
+    let original: Vec<_> = ids
+        .iter()
+        .map(|id| scheduled_current(&source, *id))
+        .collect();
+    assert_eq!(original[0]["queued"].as_array().unwrap().len(), 1);
+    assert_eq!(original[2]["error"], "unresolved_attempt");
+    assert_eq!(count(&source, "recurring_invoice_generations"), 1);
+    let key = key();
+    let trusted = TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
+    let frozen = freeze(&mut source, &c, &p);
+    assert_transfer_job_fence(&mut source, &p, queued);
+    let input =
+        serde_json::from_value(json!({"expectedStateHash":frozen["stateHash"],"confirm":true}))
+            .unwrap();
+    let wire = source
+        .export_workspace_transfer(&c, &Fixed(NOW), &p, &input, &key)
+        .unwrap()
+        .outcome
+        .unwrap();
+    let artifact = rentemester_runtime::backup_artifact::verify(&wire, &trusted).unwrap();
+    Owner::validate_backup(&artifact).unwrap();
+    let offered = status(&mut source, &c, &p);
+    let root = d.path().canonicalize().unwrap();
+    let target_path = root.join("jobs-target");
+    let op = rentemester_runtime::bootstrap::Operator::from_policy(
+        "w",
+        "system:synthetic-transfer",
+        &["system:synthetic-transfer".into()],
+    )
+    .unwrap();
+    let mut target = Owner::stage_transfer_new(
+        &target_path,
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+        &artifact,
+        &op,
+        &store::digest(&wire),
+        "https://jobs.example.invalid",
+    )
+    .unwrap();
+    let tp = install_target_identity(&mut target, &c);
+    let staged = status(&mut target, &c, &tp);
+    assert_eq!(generation_history(&target), original_generations);
+    let restored: Vec<_> = ids
+        .iter()
+        .map(|id| scheduled_current(&target, *id))
+        .collect();
+    for (before, after) in original.iter().zip(&restored) {
+        assert_eq!(after["history"], before["history"]);
+        assert_eq!(after["restoreConsent"]["required"], true);
+        assert!(after["ownerUserId"].is_null());
+    }
+    assert_transfer_job_fence(&mut target, &tp, queued);
+    let release = serde_json::from_value(json!({"expectedStateHash":offered["stateHash"],"challenge":staged["challenge"],"reason":"Reviewed exact synthetic job target","confirm":true})).unwrap();
+    let moved = source
+        .release_workspace_transfer(&c, &Fixed(NOW), &p, &release, &key)
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_transfer_job_fence(&mut source, &p, queued);
+    assert_eq!(status(&mut source, &c, &p), moved);
+    source.try_close().unwrap();
+    // Source stays moved and unavailable throughout target activity/recovery.
+    let activate = serde_json::from_value(json!({"expectedStateHash":staged["stateHash"],"release":moved["release"],"reason":"Reviewed source release for jobs","confirm":true})).unwrap();
+    target
+        .activate_workspace_transfer(&c, &Fixed(NOW), &tp, &activate, &trusted)
+        .unwrap()
+        .outcome
+        .unwrap();
+    target.try_close().unwrap();
+    let mut target = Owner::open_with_profile(
+        &target_path,
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+    )
+    .unwrap();
+    assert_eq!(generation_history(&target), original_generations);
+    for (id, before) in ids.iter().zip(&restored) {
+        assert_eq!(&scheduled_current(&target, *id), before);
+        let dispatch = scheduled_dispatch(&mut target, &tp, *id, 0);
+        assert!(
+            target
+                .scheduled_recurring(
+                    &tp,
+                    &Fixed(NOW),
+                    Action::Dispatch(&dispatch),
+                    "2026-01-01",
+                    "2026-01-01T00:00:00.000Z"
+                )
+                .unwrap()
+                .outcome
+                .is_err()
+        );
+    }
+    for id in [queued, completed, unresolved] {
+        let before = scheduled_current(&target, id);
+        let plan = scheduled_value(&mut target, &tp, Action::Plan(id));
+        let consent = serde_json::from_value(json!({"templateId":id,"planHash":plan["plan"]["planHash"],"reason":"Fresh synthetic target owner review","confirm":true})).unwrap();
+        let result = target
+            .scheduled_recurring(
+                &tp,
+                &Fixed(NOW),
+                Action::Reconsent(&consent),
+                "2026-01-01",
+                "2026-01-01T00:00:00.000Z",
+            )
+            .unwrap()
+            .outcome;
+        if id == unresolved {
+            assert!(result.is_err());
+            assert_eq!(scheduled_current(&target, id), before);
+        } else {
+            result.unwrap();
+            assert_eq!(scheduled_current(&target, id)["ownerUserId"], "target");
+            assert_eq!(
+                scheduled_current(&target, id)["restoreConsent"]["required"],
+                false
+            );
+        }
+    }
+    let dispatch = scheduled_dispatch(&mut target, &tp, completed, 0);
+    assert!(
+        target
+            .scheduled_recurring(
+                &tp,
+                &Fixed(NOW),
+                Action::Dispatch(&dispatch),
+                "2026-01-01",
+                "2026-01-01T00:00:00.000Z"
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&target, "recurring_invoice_generations"), 1);
+    assert_eq!(generation_history(&target), original_generations);
+    // Restore consent does not silently reinstate the historical queued selection.
+    let plan = scheduled_value(&mut target, &tp, Action::Plan(queued));
+    let select = serde_json::from_value(json!({"templateId":queued,"planHash":plan["plan"]["planHash"],"periodIndexes":[0],"confirm":true})).unwrap();
+    scheduled_value(&mut target, &tp, Action::CatchUp(&select));
+    let dispatch = scheduled_dispatch(&mut target, &tp, queued, 0);
+    assert_eq!(
+        scheduled_value(&mut target, &tp, Action::Dispatch(&dispatch))["dispatch"]["status"],
+        "succeeded"
+    );
+    assert_eq!(count(&target, "recurring_invoice_generations"), 2);
+
+    // An accepted balanced post exists only on the current target, never on the moved source.
+    target.held.0.as_mut().unwrap().company.as_mut().unwrap().execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('1800','Synthetic recovery bank','asset','debit'),('8000','Synthetic recovery equity','equity','credit')").unwrap();
+    let post = serde_json::from_value(json!({"format":rentemester_application::journal_post::FORMAT,"expectedRuleVersion":rentemester_storage::journal_preview::manual_journal_rule_version().unwrap(),"request":{"transactionDate":"2026-01-01","text":"Synthetic target-only accepted journal","currency":"DKK","lines":[{"accountNo":"1800","debitAmount":"12.34"},{"accountNo":"8000","creditAmount":"12.34"}]}})).unwrap();
+    let accepted = target
+        .post_human(
+            &tp,
+            &Fixed(NOW),
+            &rentemester_application::journal_post::Policy::default(),
+            post,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+        .result;
+    assert_eq!(count(&target, "journal_entries"), 1);
+    let history: Vec<_> = ids
+        .iter()
+        .map(|id| scheduled_current(&target, *id)["history"].clone())
+        .collect();
+    let target_generations = generation_history(&target);
+    let target_journal = target
+        .journal_history(&tp, &Fixed(NOW), Default::default())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let wire = target
+        .backup_workspace(&c, &Fixed(NOW), &tp, &key)
+        .unwrap()
+        .outcome
+        .unwrap();
+    let fresh = rentemester_runtime::backup_artifact::verify(&wire, &trusted).unwrap();
+    Owner::validate_backup(&fresh).unwrap();
+    target.try_close().unwrap();
+    let recovery_path = root.join("jobs-source-unavailable-recovery");
+    let mut recovery = Owner::restore_new(
+        &recovery_path,
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+        &fresh,
+        &op,
+    )
+    .unwrap();
+    assert_eq!(count(&recovery, "journal_entries"), 1);
+    assert_eq!(count(&recovery, "recurring_invoice_generations"), 2);
+    assert_eq!(generation_history(&recovery), target_generations);
+    let rp = install_target_identity(&mut recovery, &c);
+    for (id, history) in ids.iter().zip(&history) {
+        let current = scheduled_current(&recovery, *id);
+        assert_eq!(&current["history"], history);
+        assert_eq!(current["restoreConsent"]["required"], true);
+    }
+    // Compare the accepted entry through the ordinary journal read model, not only its count.
+    let journal = recovery
+        .journal_history(&rp, &Fixed(NOW), Default::default())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert!(
+        journal
+            .to_string()
+            .contains("Synthetic target-only accepted journal")
+    );
+    assert_eq!(journal, target_journal);
+    assert_eq!(accepted["ok"], true);
+    recovery.try_close().unwrap();
+    let recovery = Owner::open_with_profile(
+        &recovery_path,
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+    )
+    .unwrap();
+    assert_eq!(count(&recovery, "journal_entries"), 1);
+    assert_eq!(
+        scheduled_current(&recovery, unresolved)["error"],
+        "unresolved_attempt"
     );
 }
