@@ -6,6 +6,8 @@ use serde_json::Value;
 use std::collections::BTreeSet;
 
 mod boards;
+mod sources;
+const FORMAT4: &str = "rentemester-native-tasks/4";
 mod series;
 const FORMAT3: &str = "rentemester-native-tasks/3";
 const FORMAT2: &str = "rentemester-native-tasks/2";
@@ -125,6 +127,9 @@ fn task_snapshot(raw: &str) -> Result<Task, Error> {
     Ok(task)
 }
 fn facts(db: &Connection, companies: Option<&[String]>, codec: u8) -> Result<(), Error> {
+    if sources::needed(db)? && codec < 4 {
+        return Err(refused("Source task operations require codec4"));
+    }
     for (table, key) in [
         (TABLES[0], "task_id"),
         (TABLES[1], "board_id"),
@@ -204,6 +209,9 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec: u8) -> Result<(),
     if codec >= 3 {
         boards::events(db)?;
     }
+    if codec >= 4 {
+        sources::events(db)?;
+    }
     let mut q = db
         .prepare("SELECT principal,operation,result_json,created_at FROM rm_task_receipts")
         .map_err(sql)?;
@@ -219,6 +227,9 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec: u8) -> Result<(),
         .map_err(sql)?
     {
         let (principal, operation, raw, at) = row.map_err(sql)?;
+        if codec >= 4 && sources::receipt(db, &operation, &raw, &at)? {
+            continue;
+        }
         if codec >= 3 && boards::receipt(db, &principal, &operation, &raw, &at)? {
             continue;
         }
@@ -246,7 +257,9 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec: u8) -> Result<(),
 }
 pub(super) fn export(db: &Connection) -> Result<Vec<u8>, Error> {
     shape(db)?;
-    let codec = if boards::needed(db)? {
+    let codec = if sources::needed(db)? {
+        4
+    } else if boards::needed(db)? {
         3
     } else if series::needed(db)? {
         2
@@ -258,6 +271,7 @@ pub(super) fn export(db: &Connection) -> Result<Vec<u8>, Error> {
         db,
         &TABLES,
         match codec {
+            4 => FORMAT4,
             3 => FORMAT3,
             2 => FORMAT2,
             _ => FORMAT,
@@ -269,7 +283,9 @@ pub fn validate_companies(db: &Connection, companies: &[String]) -> Result<(), E
     facts(
         db,
         Some(companies),
-        if boards::needed(db)? {
+        if sources::needed(db)? {
+            4
+        } else if boards::needed(db)? {
             3
         } else if series::needed(db)? {
             2
@@ -285,7 +301,9 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
         return Err(refused("task codec byte bound"));
     }
     let b: Business = serde_json::from_slice(bytes).map_err(sql)?;
-    if ![FORMAT, FORMAT2, FORMAT3].contains(&b.format.as_str()) || b.tables.len() != TABLES.len() {
+    if ![FORMAT, FORMAT2, FORMAT3, FORMAT4].contains(&b.format.as_str())
+        || b.tables.len() != TABLES.len()
+    {
         return Err(refused("unsupported task codec"));
     }
     let mut total = 0usize;
@@ -329,7 +347,9 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
     facts(
         &tx,
         Some(companies),
-        if b.format == FORMAT3 {
+        if b.format == FORMAT4 {
+            4
+        } else if b.format == FORMAT3 {
             3
         } else if b.format == FORMAT2 {
             2

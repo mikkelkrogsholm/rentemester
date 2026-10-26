@@ -3,6 +3,7 @@
 pub mod boards;
 mod input;
 pub mod series;
+pub mod sources;
 mod transition;
 use crate::Error;
 pub use input::{canonical_json, date, draft, id, instant, payload_hash, references, scope, text};

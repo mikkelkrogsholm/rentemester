@@ -53,7 +53,7 @@ pub fn histories(db: &Connection) -> Result<Vec<Vec<Series>>, Error> {
     }
     Ok(histories)
 }
-fn fence(tx: &Transaction<'_>, ctx: &Context<'_>) -> Result<(), Error> {
+pub(super) fn fence(tx: &Transaction<'_>, ctx: &Context<'_>) -> Result<(), Error> {
     if tx
         .transaction_state(Some(rusqlite::MAIN_DB))
         .map_err(invalid)?
@@ -68,7 +68,7 @@ fn fence(tx: &Transaction<'_>, ctx: &Context<'_>) -> Result<(), Error> {
     tasks::instant(ctx.now)?;
     Ok(())
 }
-fn prior(
+pub(super) fn prior(
     tx: &Transaction<'_>,
     ctx: &Context<'_>,
     operation: &str,
@@ -89,7 +89,7 @@ fn prior(
     })
     .transpose()
 }
-fn append_receipt(
+pub(super) fn append_receipt(
     tx: &Transaction<'_>,
     ctx: &Context<'_>,
     operation: &str,

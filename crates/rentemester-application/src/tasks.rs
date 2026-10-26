@@ -20,6 +20,29 @@ use std::collections::BTreeSet;
 
 mod boards;
 mod series;
+mod sources;
+pub struct SourceRequest<'a> {
+    pub slug: &'a str,
+    pub as_of: &'a str,
+    pub now: i64,
+    pub existing: &'a [Task],
+    pub discover: bool,
+}
+/// Implemented by the admitted host. It grants no identity or permission; caller authorizes first.
+pub trait SourceReader {
+    fn observe(
+        &mut self,
+        control: &Transaction<'_>,
+        request: SourceRequest<'_>,
+    ) -> Result<(Vec<domain::sources::Observation>, bool), Error>;
+    fn check(
+        &mut self,
+        control: &Transaction<'_>,
+        slug: &str,
+        task: &Task,
+        now: i64,
+    ) -> Result<domain::SourceCheck, Error>;
+}
 pub enum Authority<'a> {
     Cookie {
         cookies: &'a CookieVerifier,
@@ -29,6 +52,7 @@ pub enum Authority<'a> {
 }
 pub enum Action<'a> {
     List(&'a Value),
+    Sync(&'a Value),
     BoardsList(&'a Value),
     BoardsPreview(&'a Value),
     BoardsSave(&'a Value),
@@ -49,7 +73,8 @@ impl Action<'_> {
     fn writes(&self) -> bool {
         matches!(
             self,
-            Self::BoardsSave(_)
+            Self::Sync(_)
+                | Self::BoardsSave(_)
                 | Self::SeriesSave(_)
                 | Self::SeriesMaterialize(_)
                 | Self::Create(_)
@@ -455,7 +480,7 @@ fn view(
         return Err(error("task_notifications_unavailable"));
     }
     Ok(
-        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":series,"projections":projections,"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":{"running":false,"lastTickAt":null,"lastError":null},"notifications":[],"sourceCoverage":["Manuelle opgaver. Automatisk opfølgning er ikke aktiveret."]}),
+        json!({"count":tasks.len(),"tasks":tasks,"boards":boards,"series":series,"projections":projections,"companies":catalog.companies.iter().filter(|c|access.read.contains(&c.slug)).map(|c|json!({"slug":c.slug,"name":c.name,"archived":c.archived,"canWrite":access.write.contains(&c.slug),"canManage":access.manage.contains(&c.slug)})).collect::<Vec<_>>(),"currentUserId":id.subject,"canManageWorkspace":access.owner,"assignees":assignees,"runtime":{"running":false,"lastTickAt":null,"lastError":null},"notifications":[],"sourceCoverage":store::sources::COVERAGE}),
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -467,6 +492,19 @@ pub fn execute(
     action: Action<'_>,
     key: Option<&str>,
     expected: Option<u64>,
+) -> Result<Value, Failure> {
+    execute_with_sources(db, catalog, clock, authority, action, key, expected, None)
+}
+#[allow(clippy::too_many_arguments)]
+pub fn execute_with_sources(
+    db: &mut Connection,
+    catalog: &Catalog,
+    clock: &dyn Clock,
+    authority: Authority<'_>,
+    action: Action<'_>,
+    key: Option<&str>,
+    expected: Option<u64>,
+    mut reader: Option<&mut dyn SourceReader>,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     rentemester_storage::workspace_context::validate_catalog(catalog)
@@ -485,6 +523,9 @@ pub fn execute(
         let access = access_for(&tx, &identity.subject, catalog)?;
         series::preadmit(&tx, &action, &access, expected)?;
         boards::preadmit(&tx, &action, catalog, &access, expected)?;
+        if let Action::Sync(input) = &action {
+            sources::preadmit(input, &access, expected)?;
+        }
         let writes = action.writes();
         if writes {
             rentemester_storage::workspace_transfer::require_business_write(&tx)?;
@@ -588,15 +629,35 @@ pub fn execute(
         tx.execute_batch("SAVEPOINT task_effect")
             .map_err(|_| error("connection_refused"))?;
         savepoint_safe = false;
+        let source_check = if let (Action::Complete { .. }, Some(task)) = (&action, &existing) {
+            let cached:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM rm_task_receipts WHERE principal=?1 AND idempotency_key=?2)",rusqlite::params![identity.principal,key],|r|r.get(0)).map_err(|_|error("connection_refused"))?;
+            if task.source.is_some() && !cached {
+                Some(if let Some(r) = reader.as_mut() {
+                    r.check(&tx, &task.source.as_ref().unwrap().company_slug, task, now)?
+                } else {
+                    domain::SourceCheck {
+                        state: "unknown".into(),
+                        observed_at: stamp.clone(),
+                        evidence: vec![],
+                    }
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         let ctx = store::Context {
             actor: &identity.actor,
             principal: &identity.principal,
             idempotency_key: key.ok_or_else(|| error("invalid_input"))?,
             expected_version: expected,
             now: &stamp,
-            source_check: None,
+            source_check: source_check.as_ref(),
         };
-        let result = if let Action::BoardsSave(input) = &action {
+        let result = if let Action::Sync(input) = &action {
+            sources::mutate(&tx, input, &ctx, catalog, &access, now, &mut reader)
+        } else if let Action::BoardsSave(input) = &action {
             boards::save(&tx, input, &ctx, catalog, &access)
         } else if matches!(action, Action::SeriesSave(_) | Action::SeriesMaterialize(_)) {
             series::mutate(&tx, &action, &ctx, catalog, &access)

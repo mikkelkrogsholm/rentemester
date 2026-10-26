@@ -135,6 +135,14 @@ pub(super) fn receipt(
     domain::id(&json!(key))?;
     let row:Option<(String,String)>=tx.query_row("SELECT operation,result_json FROM rm_task_receipts WHERE principal=?1 AND idempotency_key=?2",rusqlite::params![principal,key],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(|_|error("invalid_control"))?;
     if let Some((operation, raw)) = &row {
+        if operation == "sources-sync" {
+            let result: store::sources::SyncResult =
+                serde_json::from_str(raw).map_err(|_| error("invalid_control"))?;
+            if !scope_allowed(access, &result.scope, false) || result.includes_workspace {
+                return Err(denied());
+            }
+            return Ok(Some(json!({"operation":operation})));
+        }
         if operation == "task-board-save" {
             let b: domain::Board =
                 serde_json::from_str(raw).map_err(|_| error("invalid_control"))?;

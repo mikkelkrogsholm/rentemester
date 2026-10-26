@@ -17,6 +17,7 @@ enum Command {
     Get(String),
     History(String),
     Receipt(String),
+    Sync(Value),
     Create(Value),
     Update(String, Value),
     Move(String, Value),
@@ -138,6 +139,15 @@ fn command(
                 return Err("invalid_input");
             }
             Command::SeriesMaterialize(body)
+        } else if path == "/api/tasks/sync" {
+            if expected.is_some()
+                || object
+                    .keys()
+                    .any(|k| !["companySlugs", "asOfDate"].contains(&k.as_str()))
+            {
+                return Err("invalid_input");
+            }
+            Command::Sync(body)
         } else if parts.len() == 3 && parts[2] == "tasks" {
             if expected.is_some() {
                 return Err("invalid_input");
@@ -277,6 +287,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Get(id) => Action::Get(id),
             Command::History(id) => Action::History(id),
             Command::Receipt(k) => Action::Receipt(k),
+            Command::Sync(v) => Action::Sync(v),
             Command::Create(v) => Action::Create(v),
             Command::Update(id, v) => Action::Update { id, patch: v },
             Command::Move(id, v) => Action::Move { id, input: v },
@@ -320,6 +331,26 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn source_sync_strict_confirmed_unversioned_input() {
+        assert!(matches!(
+            command(
+                "/api/tasks/sync",
+                Some(json!({"companySlugs":["a"],"idempotencyKey":"sync","confirm":true})),
+                None
+            )
+            .unwrap(),
+            (Command::Sync(_), Some(_), None)
+        ));
+        for value in [
+            json!({"confirm":true}),
+            json!({"idempotencyKey":"sync"}),
+            json!({"confirm":true,"idempotencyKey":"sync","expectedVersion":1}),
+            json!({"confirm":true,"idempotencyKey":"sync","local":true}),
+        ] {
+            assert!(command("/api/tasks/sync", Some(value), None).is_err());
+        }
+    }
     #[test]
     fn boards_preview_is_read_only_while_save_requires_confirmation_and_safe_version() {
         assert!(matches!(

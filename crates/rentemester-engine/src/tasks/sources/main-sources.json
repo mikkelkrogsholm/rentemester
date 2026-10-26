@@ -1,0 +1,857 @@
+[
+  {
+    "mode": "create",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": null,
+    "expected": {
+      "task": {
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "version": 1,
+        "title": "Synthetic source task",
+        "description": "",
+        "nextAction": "",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic"
+        },
+        "type": "ad_hoc",
+        "origin": "system",
+        "status": "open",
+        "columnId": "open",
+        "workspaceColumnId": null,
+        "assignee": null,
+        "waitingOn": "",
+        "workDate": null,
+        "deadline": null,
+        "period": null,
+        "references": [],
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "open",
+          "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "evidenceRequired": true,
+        "relevance": "relevant",
+        "verificationRequired": false,
+        "completion": null,
+        "seriesId": null,
+        "occurrenceKey": null,
+        "reminders": [],
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "updatedAt": "2026-10-26T11:00:00.000Z"
+      }
+    },
+    "expectedVersion": null,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "proposal",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "proposal",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "unknown",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering"
+      },
+      "relevance": "unknown"
+    },
+    "prior": null,
+    "expected": {
+      "task": {
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "version": 1,
+        "title": "Synthetic source task",
+        "description": "",
+        "nextAction": "",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic"
+        },
+        "type": "ad_hoc",
+        "origin": "proposal",
+        "status": "open",
+        "columnId": "open",
+        "workspaceColumnId": null,
+        "assignee": null,
+        "waitingOn": "",
+        "workDate": null,
+        "deadline": null,
+        "period": null,
+        "references": [],
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "unknown",
+          "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "evidenceRequired": true,
+        "relevance": "unknown",
+        "verificationRequired": true,
+        "completion": null,
+        "seriesId": null,
+        "occurrenceKey": null,
+        "reminders": [],
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "updatedAt": "2026-10-26T11:00:00.000Z"
+      }
+    },
+    "expectedVersion": null,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "noop",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "open"
+      },
+      "status": "open",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "companySlug": "synthetic",
+          "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "href": "/companies/synthetic/batchbogfoering",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "kind": "bank_work",
+          "ref": "1",
+          "state": "open"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": false,
+        "version": 2,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 2,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "update",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "open"
+      },
+      "status": "open",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "open",
+          "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": false,
+        "version": 3,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 2,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "resolve",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "resolved",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "open"
+      },
+      "status": "open",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "resolved",
+          "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": false,
+        "version": 3,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 2,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "reopen",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "done",
+      "completion": {
+        "actor": "user:synthetic",
+        "assurance": "product_verified",
+        "at": "2026-10-26T11:00:00.000Z",
+        "note": "Synthetic native source evidence",
+        "outcome": "completed",
+        "references": [
+          {
+            "companySlug": "synthetic",
+            "kind": "bank_transaction",
+            "ref": "1"
+          }
+        ]
+      },
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "resolved"
+      },
+      "status": "done",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 3,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "open",
+          "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": false,
+        "version": 4,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 3,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "unknown",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "unknown",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "done",
+      "completion": {
+        "actor": "user:synthetic",
+        "assurance": "product_verified",
+        "at": "2026-10-26T11:00:00.000Z",
+        "note": "Synthetic native source evidence",
+        "outcome": "completed",
+        "references": [
+          {
+            "companySlug": "synthetic",
+            "kind": "bank_transaction",
+            "ref": "1"
+          }
+        ]
+      },
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "resolved"
+      },
+      "status": "done",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 3,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "unknown",
+          "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": true,
+        "version": 4,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 3,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "unknown-relevance",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "unknown",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "open"
+      },
+      "status": "open",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": true,
+      "version": 3,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "task": {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-26T11:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": true,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "system",
+        "period": null,
+        "references": [],
+        "relevance": "unknown",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": {
+          "kind": "bank_work",
+          "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+          "companySlug": "synthetic",
+          "ref": "1",
+          "state": "open",
+          "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "href": "/companies/synthetic/batchbogfoering"
+        },
+        "status": "open",
+        "taskId": "source-f6448dcc3781ca85a209749930343362",
+        "title": "User-kept title",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-26T11:00:00.000Z",
+        "verificationRequired": true,
+        "version": 4,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    },
+    "expectedVersion": 3,
+    "now": "2026-10-26T11:00:00.000Z"
+  },
+  {
+    "mode": "stale",
+    "input": {
+      "title": "Synthetic source task",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "origin": "system",
+      "evidenceRequired": true,
+      "source": {
+        "kind": "bank_work",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "companySlug": "synthetic",
+        "ref": "1",
+        "state": "open",
+        "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "href": "/companies/synthetic/batchbogfoering"
+      }
+    },
+    "prior": {
+      "assignee": null,
+      "columnId": "open",
+      "completion": null,
+      "createdAt": "2026-10-26T11:00:00.000Z",
+      "deadline": null,
+      "description": "",
+      "evidenceRequired": true,
+      "nextAction": "",
+      "occurrenceKey": null,
+      "origin": "system",
+      "period": null,
+      "references": [],
+      "relevance": "relevant",
+      "reminders": [],
+      "scope": {
+        "companySlug": "synthetic",
+        "kind": "company"
+      },
+      "seriesId": null,
+      "source": {
+        "companySlug": "synthetic",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "href": "/companies/synthetic/batchbogfoering",
+        "identity": "0123456789abcdef0123456789abcdef:bank_work:1",
+        "kind": "bank_work",
+        "ref": "1",
+        "state": "open"
+      },
+      "status": "open",
+      "taskId": "source-f6448dcc3781ca85a209749930343362",
+      "title": "User-kept title",
+      "type": "ad_hoc",
+      "updatedAt": "2026-10-26T11:00:00.000Z",
+      "verificationRequired": false,
+      "version": 2,
+      "waitingOn": "",
+      "workDate": null,
+      "workspaceColumnId": null
+    },
+    "expected": {
+      "error": "version_conflict"
+    },
+    "expectedVersion": 99,
+    "now": "2026-10-26T11:00:00.000Z"
+  }
+]

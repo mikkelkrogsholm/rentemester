@@ -2,6 +2,7 @@
 //! These primitives require the task schema. They do not migrate/adopt a workspace or enable routes.
 pub mod boards;
 pub mod series;
+pub mod sources;
 use crate::invalid;
 use rentemester_engine::{
     Error,

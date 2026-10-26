@@ -19,8 +19,30 @@ oprindelige input og nøglen; `tasks receipt` med `{"idempotencyKey":"original-k
 viser kun en kvittering, som stadig er synlig med de aktuelle rettigheder.
 Kontrollér også `get`/`history`, før en ny handling startes. Klienten gentager
 aldrig automatisk en skrivning. Historiske ansvarlige eller receipts giver ingen
-adgang. Automatiske kilder, påmindelser og beskyttede task-linked knowledge-forløb
+adgang. Automatisk runtime, påmindelser og beskyttede task-linked knowledge-forløb
 er endnu ikke porteret.
+
+### Autoritative opgavekilder gennem Rust-serveren
+
+`rentemester-rust tasks sync` og MCP `tasks_sync` tager `companySlugs?`,
+`asOfDate?` og callerens `idempotencyKey`; skrivningen kræver eksplicit
+bekræftelse. Udeladt scope betyder alle aktuelt skrivbare Live-selskaber;
+`[]` betyder ingen og kræver workspace owner. Historisk og aktuel adgang
+kontrolleres før receipt-replay og før nogen ledger åbnes.
+
+Kilder læses fra de native bank-, undtagelses-, periode-, moms- og
+batchkontroller med verificerede originaler. Alle workbench-sider gennemgås;
+utilgængelige kilder bevares som uafklarede med selskabets fejl i `sync.errors`.
+En periode, der blot er beregnet eller lukket, er ikke en momsindberetning.
+Produktverificeret afslutning kræver det faktiske native resultat og evidens;
+indberetningsstatus kræver den registrerede reference. Årsrapportpligt kræver
+stadig eksplicit relevansafklaring. Genåbning bevarer dokumentationshistorikken.
+
+Sync gemmer atomiske task-events og originale receipts uden at bogføre,
+betale eller indberette eksternt. Task-business-codec4 bevarer kildesnapshots,
+no-op receipts og scoped summer i kildefri backup/restore; ældre manual1,
+rutine2 og board3 beholder deres egne bytes og kontroller. Dette starter
+ikke nogen automatisk runner.
 
 ### Rutiner gennem Rust-serveren
 

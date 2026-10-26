@@ -3457,6 +3457,11 @@
       "capability": "HEAD /api/tasks/operations/{key}"
     },
     {
+      "method": "POST",
+      "path": "/api/tasks/sync",
+      "capability": "POST /api/tasks/sync"
+    },
+    {
       "method": "GET",
       "path": "/api/tasks/{id}",
       "capability": "GET /api/tasks/{id}"
@@ -3637,5 +3642,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "c0024c810f737ed612c235a6cd9a844a82cc775d55bdf9a63dfbf54934303f1e"
+  "manifestId": "e403730cc8f9f7abba722b7d72298fc81cf2c3120361e816800aba6d437e693a"
 }

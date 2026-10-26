@@ -1569,3 +1569,96 @@ fn board_exact_replay_does_not_reapply_later_populated_column_rules() {
         .is_err()
     );
 }
+
+#[test]
+fn source_sync_current_selection_and_historical_receipt_scope_before_any_probe() {
+    struct Witness(usize);
+    impl SourceReader for Witness {
+        fn observe(
+            &mut self,
+            _: &Transaction<'_>,
+            _: SourceRequest<'_>,
+        ) -> Result<(Vec<domain::sources::Observation>, bool), Error> {
+            self.0 += 1;
+            Ok((vec![], false))
+        }
+        fn check(
+            &mut self,
+            _: &Transaction<'_>,
+            _: &str,
+            _: &Task,
+            _: i64,
+        ) -> Result<domain::SourceCheck, Error> {
+            panic!("sync does not complete arbitrary tasks")
+        }
+    }
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let input = json!({});
+    let mut reader = Witness(0);
+    let original = execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Cookie {
+            cookies: &cookies,
+            proof: &p,
+        },
+        Action::Sync(&input),
+        Some("sync-ab"),
+        None,
+        Some(&mut reader),
+    )
+    .unwrap();
+    assert_eq!(reader.0, 2);
+    let replay = execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Cookie {
+            cookies: &cookies,
+            proof: &p,
+        },
+        Action::Sync(&input),
+        Some("sync-ab"),
+        None,
+        Some(&mut reader),
+    )
+    .unwrap();
+    assert_eq!(replay, original);
+    assert_eq!(reader.0, 2);
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','b','revoke',NULL,'user:human-one')").unwrap();
+    let failure = execute_with_sources(
+        &mut c,
+        &cat,
+        &Fixed,
+        Authority::Cookie {
+            cookies: &cookies,
+            proof: &p,
+        },
+        Action::Sync(&input),
+        Some("sync-ab"),
+        None,
+        Some(&mut reader),
+    )
+    .unwrap_err();
+    assert_eq!(failure.error.code, "access_denied");
+    assert_eq!(reader.0, 2);
+    let bad = json!({"companySlugs":["b"]});
+    assert!(
+        execute_with_sources(
+            &mut c,
+            &cat,
+            &Fixed,
+            Authority::Cookie {
+                cookies: &cookies,
+                proof: &p
+            },
+            Action::Sync(&bad),
+            Some("sync-b"),
+            None,
+            Some(&mut reader)
+        )
+        .is_err()
+    );
+    assert_eq!(reader.0, 2);
+}

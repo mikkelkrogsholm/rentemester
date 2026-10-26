@@ -3,11 +3,12 @@ use crate::{ApiClient, Error};
 use reqwest::Method;
 use serde_json::{Value, json};
 pub const MAX_TASK_BODY: usize = 128 * 1024;
-pub const TASK_OPERATIONS: [&str; 16] = [
+pub const TASK_OPERATIONS: [&str; 17] = [
     "list",
     "get",
     "history",
     "receipt",
+    "sync",
     "create",
     "update",
     "move",
@@ -24,7 +25,8 @@ pub const TASK_OPERATIONS: [&str; 16] = [
 pub fn task_writes(op: &str) -> bool {
     matches!(
         op,
-        "create"
+        "sync"
+            | "create"
             | "update"
             | "move"
             | "complete"
@@ -113,6 +115,8 @@ impl ApiClient {
                 .to_owned()
             } else if op == "series-materialize" {
                 "/api/task-series/materialize".to_owned()
+            } else if op == "sync" {
+                "/api/tasks/sync".to_owned()
             } else if op == "create" {
                 "/api/tasks".to_owned()
             } else {
@@ -225,6 +229,7 @@ mod tests {
             thread,
         };
         for (op, input, expected, body) in [
+            ("sync",json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key"}),"POST /api/tasks/sync",Some(json!({"companySlugs":["a"],"asOfDate":"2026-10-26","idempotencyKey":"source-key","confirm":true}))),
             (
                 "boards-list",
                 json!({"companySlugs":[]}),
@@ -347,7 +352,7 @@ mod tests {
     }
     #[test]
     fn series_schema_is_bounded_and_does_not_expose_runtime_or_authority() {
-        assert_eq!(TASK_OPERATIONS.len(), 16);
+        assert_eq!(TASK_OPERATIONS.len(), 17);
         let save = task_input_schema("series-save");
         assert_eq!(
             save["properties"]["series"]["properties"]["workDayOffset"]["maximum"],
@@ -356,7 +361,12 @@ mod tests {
         assert_eq!(save["properties"]["expectedVersion"]["minimum"], 0);
         assert_eq!(save["additionalProperties"], false);
         assert!(save["properties"].get("actor").is_none());
-        assert!(task_input_schema("sync").is_null());
+        let sync=task_input_schema("sync");
+        assert_eq!(sync["additionalProperties"],false);
+        assert_eq!(sync["properties"]["companySlugs"]["maxItems"],200);
+        assert!(sync["properties"].get("expectedVersion").is_none());
+        assert_eq!(sync["required"],json!(["idempotencyKey"]));
+        assert!(task_input_schema("run").is_null());
     }
     #[tokio::test]
     async fn refuses_authority_and_unconfirmed_mutations_before_network() {

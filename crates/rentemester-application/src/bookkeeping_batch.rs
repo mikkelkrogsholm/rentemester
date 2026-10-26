@@ -107,7 +107,7 @@ pub fn execute(
     )
 }
 /// Before ANY apply effects, verify real originals and archived bank proofs under the retained guard.
-fn verify_plan(
+pub fn verify_plan(
     tx: &Transaction<'_>,
     guard: &mut NamespaceGuard,
     plan: &Value,

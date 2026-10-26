@@ -4,7 +4,7 @@ import argparse,base64,json,os,queue,secrets,shutil,socket,subprocess,tempfile,t
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--routine',action='store_true',help='Run only the routine journey');p.add_argument('--boards',action='store_true',help='Run only the custom board journey');p.add_argument('--binary-dir',help='Existing native binary directory');p.add_argument('--web-dir',help='Existing read-only React build');p.add_argument('--resume',action='store_true',help='Resume the retained pre-owner fixture after a diagnosed setup error');p.add_argument('--finish-clients',action='store_true',help='Continue accepted UI state at the client boundary only');a=p.parse_args();out=Path(a.output).resolve();out.mkdir(parents=True,exist_ok=True);os.chmod(out,0o700)
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--routine',action='store_true',help='Run only the routine journey');p.add_argument('--sources',action='store_true',help='Run only the authoritative task sources journey');p.add_argument('--boards',action='store_true',help='Run only the custom board journey');p.add_argument('--binary-dir',help='Existing native binary directory');p.add_argument('--web-dir',help='Existing read-only React build');p.add_argument('--resume',action='store_true',help='Resume the retained pre-owner fixture after a diagnosed setup error');p.add_argument('--finish-clients',action='store_true',help='Continue accepted UI state at the client boundary only');a=p.parse_args();out=Path(a.output).resolve();out.mkdir(parents=True,exist_ok=True);os.chmod(out,0o700)
  binary_dir=Path(a.binary_dir).resolve() if a.binary_dir else Path(os.environ.get('CARGO_TARGET_DIR',str(ROOT/'target')))/'debug'
  binary=binary_dir/'rentemester-server'
  web_dir=Path(a.web_dir).resolve() if a.web_dir else Path(os.environ.get('RENTEMESTER_WEB_DIR',str(ROOT/'app/dist')))
@@ -40,10 +40,10 @@ def main():
  try:
   server,setup=start(not (a.resume or a.finish_clients))
   env={**os.environ,'RM_TASK_ORIGIN':origin,'RM_TASK_SETUP':setup or '', 'RM_TASK_WORKSPACE':str(workspace),'RM_TASK_OUTPUT':str(out),'RM_TASK_PHASE':'clients' if a.finish_clients else 'first','RM_TASK_MODE':'routine' if a.routine else 'manual','RM_TASK_BINARY_DIR':str(binary_dir)}
-  subprocess.run(['bun','run','scripts/rust/check-native-task-boards.ts' if a.boards else 'scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
+  subprocess.run(['bun','run','scripts/rust/check-native-task-sources.ts' if a.sources else 'scripts/rust/check-native-task-boards.ts' if a.boards else 'scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
   stop(server);server=None
   server,_=start(False);env['RM_TASK_PHASE']='reopen';env.pop('RM_TASK_SETUP',None)
-  subprocess.run(['bun','run','scripts/rust/check-native-task-boards.ts' if a.boards else 'scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
+  subprocess.run(['bun','run','scripts/rust/check-native-task-sources.ts' if a.sources else 'scripts/rust/check-native-task-boards.ts' if a.boards else 'scripts/rust/check-native-tasks.ts'],cwd=ROOT,env=env,check=True)
   stop(server);server=None
   accepted=True
   (out/'runtime.json').write_text(json.dumps(dict(origin=origin,profile='local-user-macos',synthetic=True,stopped=True,workspaceRemoved=True),indent=2)+'\n')
