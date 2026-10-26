@@ -1,0 +1,530 @@
+{
+  "first": {
+    "input": {
+      "pageId": "page-synthetic",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": " Synthetic playbook ",
+      "bodyMarkdown": "<script>do not run</script> [[another-page]] https://example.invalid/a?one=1&two=2",
+      "provenance": {
+        "kind": "user",
+        "ref": " Synthetic source "
+      },
+      "effectiveFrom": "2026-01-01",
+      "effectiveToExclusive": "2027-01-01",
+      "actor": "user:synthetic",
+      "principal": "synthetic-member"
+    },
+    "at": "2026-10-26T19:38:18.646Z",
+    "result": {
+      "pageId": "page-synthetic",
+      "version": 1,
+      "eventType": "created",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Synthetic playbook",
+      "bodyMarkdown": "<script>do not run</script> [[another-page]] https://example.invalid/a?one=1&two=2",
+      "rendered": {
+        "text": "&lt;script&gt;do not run&lt;/script&gt; [[another-page]] https://example.invalid/a?one=1&amp;two=2",
+        "html": "&lt;script&gt;do not run&lt;/script&gt; [[another-page]] <a href=\"https://example.invalid/a?one=1&amp;amp;two=2\" rel=\"noopener noreferrer\">https://example.invalid/a?one=1&amp;amp;two=2</a>",
+        "wikilinks": [
+          "another-page"
+        ],
+        "externalLinks": [
+          "https://example.invalid/a?one=1&two=2"
+        ]
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": null,
+      "eventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed"
+    }
+  },
+  "second": {
+    "input": {
+      "pageId": "page-synthetic",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Reviewed playbook",
+      "bodyMarkdown": "[[another-page]] Revised synthetic body",
+      "provenance": {
+        "kind": "user",
+        "ref": " Synthetic source "
+      },
+      "effectiveFrom": "2026-01-01",
+      "effectiveToExclusive": "2027-01-01",
+      "actor": "user:synthetic",
+      "principal": "synthetic-member",
+      "expectedVersion": 1,
+      "expectedEventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed"
+    },
+    "at": "2026-10-26T19:38:18.648Z",
+    "result": {
+      "pageId": "page-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Reviewed playbook",
+      "bodyMarkdown": "[[another-page]] Revised synthetic body",
+      "rendered": {
+        "text": "[[another-page]] Revised synthetic body",
+        "html": "[[another-page]] Revised synthetic body",
+        "wikilinks": [
+          "another-page"
+        ],
+        "externalLinks": []
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed",
+      "eventHash": "8a68f9a9ef645350b2970aa5a30bfaa9e41a2d21c1a2374effd2c0a5801e3a2d"
+    }
+  },
+  "target": {
+    "input": {
+      "pageId": "another-page",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "related",
+      "title": "Related",
+      "bodyMarkdown": "Synthetic related page",
+      "provenance": {
+        "kind": "user",
+        "ref": " Synthetic source "
+      },
+      "effectiveFrom": "2026-01-01",
+      "effectiveToExclusive": "2027-01-01",
+      "actor": "user:synthetic",
+      "principal": "synthetic-member"
+    },
+    "at": "2026-10-26T19:38:18.648Z",
+    "result": {
+      "pageId": "another-page",
+      "version": 1,
+      "eventType": "created",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "related",
+      "title": "Related",
+      "bodyMarkdown": "Synthetic related page",
+      "rendered": {
+        "text": "Synthetic related page",
+        "html": "Synthetic related page",
+        "wikilinks": [],
+        "externalLinks": []
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": null,
+      "eventHash": "fa2360a07bfdd0a7db9f6e385558a1149003f19d690a4d7f0d5bebfb0396b042"
+    }
+  },
+  "relation": {
+    "input": {
+      "relationId": "relation-synthetic",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "reference",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01",
+      "actor": "user:synthetic",
+      "principal": "synthetic-member"
+    },
+    "at": "2026-10-26T19:38:18.648Z",
+    "result": {
+      "relationId": "relation-synthetic",
+      "version": 1,
+      "eventType": "created",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "reference",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "labels": {
+        "forward": "references",
+        "inverse": "referenced by"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": null,
+      "priorEventHash": null,
+      "eventHash": "a778fe8dab0a075d3fd036fd6dc98c803201e379e555007ec61bc5eb1d460dd1"
+    }
+  },
+  "rel2": {
+    "input": {
+      "relationId": "relation-synthetic",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "operational_dependency",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01",
+      "actor": "user:synthetic",
+      "principal": "synthetic-member",
+      "expectedVersion": 1,
+      "expectedEventHash": "a778fe8dab0a075d3fd036fd6dc98c803201e379e555007ec61bc5eb1d460dd1"
+    },
+    "at": "2026-10-26T19:38:18.648Z",
+    "result": {
+      "relationId": "relation-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "operational_dependency",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "labels": {
+        "forward": "depends on",
+        "inverse": "supports"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": null,
+      "priorEventHash": "a778fe8dab0a075d3fd036fd6dc98c803201e379e555007ec61bc5eb1d460dd1",
+      "eventHash": "371015b6abaae02a5c6f3f572fa4e0e0521b56e88c304f81722efc8bbe844847"
+    }
+  },
+  "pages": [
+    {
+      "pageId": "page-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Reviewed playbook",
+      "rendered": {
+        "text": "[[another-page]] Revised synthetic body",
+        "html": "[[another-page]] Revised synthetic body",
+        "wikilinks": [
+          "another-page"
+        ],
+        "externalLinks": []
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed",
+      "eventHash": "8a68f9a9ef645350b2970aa5a30bfaa9e41a2d21c1a2374effd2c0a5801e3a2d"
+    },
+    {
+      "pageId": "another-page",
+      "version": 1,
+      "eventType": "created",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "related",
+      "title": "Related",
+      "rendered": {
+        "text": "Synthetic related page",
+        "html": "Synthetic related page",
+        "wikilinks": [],
+        "externalLinks": []
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": null,
+      "eventHash": "fa2360a07bfdd0a7db9f6e385558a1149003f19d690a4d7f0d5bebfb0396b042"
+    }
+  ],
+  "expired": [],
+  "history": [
+    {
+      "pageId": "page-synthetic",
+      "version": 1,
+      "eventType": "created",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Synthetic playbook",
+      "rendered": {
+        "text": "&lt;script&gt;do not run&lt;/script&gt; [[another-page]] https://example.invalid/a?one=1&amp;two=2",
+        "html": "&lt;script&gt;do not run&lt;/script&gt; [[another-page]] <a href=\"https://example.invalid/a?one=1&amp;amp;two=2\" rel=\"noopener noreferrer\">https://example.invalid/a?one=1&amp;amp;two=2</a>",
+        "wikilinks": [
+          "another-page"
+        ],
+        "externalLinks": [
+          "https://example.invalid/a?one=1&two=2"
+        ]
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": null,
+      "eventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed"
+    },
+    {
+      "pageId": "page-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "slug": "playbook",
+      "title": "Reviewed playbook",
+      "rendered": {
+        "text": "[[another-page]] Revised synthetic body",
+        "html": "[[another-page]] Revised synthetic body",
+        "wikilinks": [
+          "another-page"
+        ],
+        "externalLinks": []
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic source"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": "2027-01-01T00:00:00.000Z",
+      "priorEventHash": "ac601472f8f602361891f26a17fd941e96d74de6bca9ec6d4b0830322f57c1ed",
+      "eventHash": "8a68f9a9ef645350b2970aa5a30bfaa9e41a2d21c1a2374effd2c0a5801e3a2d"
+    }
+  ],
+  "relations": [
+    {
+      "relationId": "relation-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "operational_dependency",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "labels": {
+        "forward": "depends on",
+        "inverse": "supports"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": null,
+      "priorEventHash": "a778fe8dab0a075d3fd036fd6dc98c803201e379e555007ec61bc5eb1d460dd1",
+      "eventHash": "371015b6abaae02a5c6f3f572fa4e0e0521b56e88c304f81722efc8bbe844847"
+    }
+  ],
+  "backlinks": [
+    {
+      "relationId": "relation-synthetic",
+      "version": 2,
+      "eventType": "superseded",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic"
+      },
+      "type": "operational_dependency",
+      "subject": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      },
+      "object": {
+        "kind": "page",
+        "ref": "another-page"
+      },
+      "labels": {
+        "forward": "depends on",
+        "inverse": "supports"
+      },
+      "provenance": {
+        "kind": "user",
+        "ref": "Synthetic relationship"
+      },
+      "effectiveFrom": "2026-01-01T00:00:00.000Z",
+      "effectiveToExclusive": null,
+      "priorEventHash": "a778fe8dab0a075d3fd036fd6dc98c803201e379e555007ec61bc5eb1d460dd1",
+      "eventHash": "371015b6abaae02a5c6f3f572fa4e0e0521b56e88c304f81722efc8bbe844847",
+      "direction": "incoming",
+      "label": "supports",
+      "other": {
+        "kind": "page",
+        "ref": "page-synthetic"
+      }
+    }
+  ],
+  "metric": {
+    "id": "knowledge-page-count",
+    "catalogueVersion": 1,
+    "scope": {
+      "kind": "company",
+      "companySlug": "synthetic"
+    },
+    "asOf": "2026-10-26T00:00:00.000Z",
+    "value": 2,
+    "dataState": "available",
+    "drilldown": [
+      {
+        "pageId": "page-synthetic",
+        "slug": "playbook",
+        "provenance": {
+          "kind": "user",
+          "ref": "Synthetic source"
+        }
+      }
+    ]
+  },
+  "rendered": [
+    {
+      "markdown": "Plain <script>alert(1)</script> & quotes \"hi\"",
+      "result": {
+        "text": "Plain &lt;script&gt;alert(1)&lt;/script&gt; &amp; quotes &quot;hi&quot;",
+        "html": "Plain &lt;script&gt;alert(1)&lt;/script&gt; &amp; quotes &quot;hi&quot;",
+        "wikilinks": [],
+        "externalLinks": []
+      }
+    },
+    {
+      "markdown": "[[page-synthetic]] [[page-synthetic]] [[another-page]] https://example.invalid/a?x=1&b=2",
+      "result": {
+        "text": "[[page-synthetic]] [[page-synthetic]] [[another-page]] https://example.invalid/a?x=1&amp;b=2",
+        "html": "[[page-synthetic]] [[page-synthetic]] [[another-page]] <a href=\"https://example.invalid/a?x=1&amp;amp;b=2\" rel=\"noopener noreferrer\">https://example.invalid/a?x=1&amp;amp;b=2</a>",
+        "wikilinks": [
+          "another-page",
+          "page-synthetic"
+        ],
+        "externalLinks": [
+          "https://example.invalid/a?x=1&b=2"
+        ]
+      }
+    },
+    {
+      "markdown": "javascript:alert(1)",
+      "refused": true
+    },
+    {
+      "markdown": "%6a%61vascript:alert(1)",
+      "refused": true
+    },
+    {
+      "markdown": "data:text/plain,a",
+      "refused": true
+    },
+    {
+      "markdown": "https://user:secret@example.invalid/private",
+      "refused": true
+    },
+    {
+      "markdown": "https://example.invalid/path",
+      "result": {
+        "text": "https://example.invalid/path",
+        "html": "<a href=\"https://example.invalid/path\" rel=\"noopener noreferrer\">https://example.invalid/path</a>",
+        "wikilinks": [],
+        "externalLinks": [
+          "https://example.invalid/path"
+        ]
+      }
+    },
+    {
+      "markdown": "%ü",
+      "result": {
+        "text": "%ü",
+        "html": "%ü",
+        "wikilinks": [],
+        "externalLinks": []
+      }
+    }
+  ]
+}

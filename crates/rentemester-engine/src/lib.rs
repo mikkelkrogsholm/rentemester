@@ -123,3 +123,5 @@ pub fn sha256_bytes(bytes: &[u8]) -> String {
 }
 
 pub mod agent_run;
+
+pub mod knowledge_pages;

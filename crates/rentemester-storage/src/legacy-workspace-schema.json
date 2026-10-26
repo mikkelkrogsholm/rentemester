@@ -163,5 +163,10 @@
     "id": 33,
     "name": "rentemester-workspace-tasks-v33",
     "checksum": "a86ae8ce9286c42465a972698d8a16416a2630b6b5f357481fbd2b12031c3e60"
+  },
+  {
+    "id": 34,
+    "name": "rentemester-knowledge-pages-v34",
+    "checksum": "58fad90f7adbaa483f6d5d816d35b75b2b28c2d2b9f33d84c579b1216c750fef"
   }
 ]

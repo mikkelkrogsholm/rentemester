@@ -19,6 +19,7 @@ use serde_json::{Value, json};
 use std::collections::BTreeSet;
 
 mod boards;
+mod knowledge;
 mod reminders;
 mod series;
 mod sources;
@@ -53,6 +54,7 @@ pub enum Authority<'a> {
 }
 pub enum Action<'a> {
     List(&'a Value),
+    KnowledgeRead{scope:&'a rentemester_engine::knowledge_pages::Scope,reference:&'a str},
     Sync(&'a Value),
     Reminder {
         id: &'a str,
@@ -614,6 +616,7 @@ pub fn execute_with_sources(
             }
         }
         let read = match &action {
+            Action::KnowledgeRead{scope,reference}=>Some(knowledge::read(&tx,scope,reference,&access,&identity,&stamp)?),
             Action::Notifications => Some(
                 json!({"notifications":reminders::notifications(&tx,catalog,&identity,&access)?}),
             ),

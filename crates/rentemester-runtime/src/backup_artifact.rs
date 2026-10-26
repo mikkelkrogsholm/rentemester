@@ -20,6 +20,7 @@ use std::collections::{BTreeMap, BTreeSet};
 pub const FORMAT: &str = "rentemester-native-backup/1";
 /// V2 authenticates the task section as well; V1 remains independently verifiable.
 pub const FORMAT_V2: &str = "rentemester-native-backup/2";
+pub const FORMAT_V3: &str = "rentemester-native-backup/3";
 pub const MAX_ENTRIES: usize = 2048;
 pub const MAX_FILE_BYTES: usize = 32 * 1024 * 1024;
 pub const MAX_TOTAL_BYTES: usize = 64 * 1024 * 1024;
@@ -116,6 +117,7 @@ pub enum BusinessSection {
     Intercompany,
     Consolidation,
     Tasks,
+    KnowledgePages,
 }
 impl BusinessSection {
     pub const ALL: [Self; 8] = [
@@ -128,7 +130,8 @@ impl BusinessSection {
         Self::Intercompany,
         Self::Consolidation,
     ];
-    pub const CURRENT: [Self; 9] = [Self::WorkspaceAudit,Self::Parties,Self::CorporateRecords,Self::CompanyKnowledge,Self::Ownership,Self::WorkspaceInbox,Self::Intercompany,Self::Consolidation,Self::Tasks];
+    pub const V2: [Self; 9] = [Self::WorkspaceAudit,Self::Parties,Self::CorporateRecords,Self::CompanyKnowledge,Self::Ownership,Self::WorkspaceInbox,Self::Intercompany,Self::Consolidation,Self::Tasks];
+    pub const CURRENT: [Self;10]=[Self::WorkspaceAudit,Self::Parties,Self::CorporateRecords,Self::CompanyKnowledge,Self::Ownership,Self::WorkspaceInbox,Self::Intercompany,Self::Consolidation,Self::Tasks,Self::KnowledgePages];
     fn name(self) -> &'static str {
         match self {
             Self::WorkspaceAudit => "workspace-audit",
@@ -140,6 +143,7 @@ impl BusinessSection {
             Self::Intercompany => "intercompany",
             Self::Consolidation => "consolidation",
             Self::Tasks => "tasks",
+            Self::KnowledgePages => "knowledge-pages",
         }
     }
 }
@@ -327,8 +331,8 @@ fn context(value: &Context) -> Result<(), Error> {
         }
     }
     if (sections != BusinessSection::ALL.into_iter().collect()
-        && (sections != BusinessSection::CURRENT.into_iter().collect()
-            || !value.coverage.included.contains(&BusinessSection::Tasks)))
+        && sections != BusinessSection::V2.into_iter().collect()
+        && sections != BusinessSection::CURRENT.into_iter().collect())
         || value.coverage.excluded.len() != Exclusion::ALL.len()
         || value
             .coverage
@@ -393,13 +397,19 @@ fn entry(entry: &InventoryEntry, ctx: &Context) -> Result<(), Error> {
     Ok(())
 }
 fn inventory(manifest: &Manifest) -> Result<(), Error> {
-    if ![FORMAT,FORMAT_V2].contains(&manifest.format.as_str()) || !hex(&manifest.signing_public_key_sha256, 64) {
+    if ![FORMAT,FORMAT_V2,FORMAT_V3].contains(&manifest.format.as_str()) || !hex(&manifest.signing_public_key_sha256, 64) {
         return Err(Error::Malformed);
     }
     context(&manifest.context)?;
-    if (manifest.format == FORMAT_V2) != manifest.context.coverage.included.contains(&BusinessSection::Tasks) {
-        return Err(Error::Coverage);
-    }
+    let included=&manifest.context.coverage.included;
+    let declared=|s|included.contains(&s)||manifest.context.coverage.unsupported.iter().any(|u|u.section==s);
+    let complete=match manifest.format.as_str(){
+        FORMAT=>!declared(BusinessSection::Tasks)&&!declared(BusinessSection::KnowledgePages),
+        FORMAT_V2=>included.contains(&BusinessSection::Tasks)&&!declared(BusinessSection::KnowledgePages),
+        FORMAT_V3=>included.contains(&BusinessSection::Tasks)&&included.contains(&BusinessSection::KnowledgePages),
+        _=>false,
+    };
+    if !complete{return Err(Error::Coverage)}
     if manifest.inventory.is_empty() || manifest.inventory.len() > MAX_ENTRIES {
         return Err(Error::Bounds);
     }
@@ -467,7 +477,7 @@ pub fn create(
     ctx.coverage.unsupported.sort_by_key(|s| s.section);
     ctx.coverage.excluded.sort();
     snapshots.sort_by(|a, b| a.path.cmp(&b.path));
-    let format = if ctx.coverage.included.contains(&BusinessSection::Tasks) {FORMAT_V2} else {FORMAT};
+    let format = if ctx.coverage.included.contains(&BusinessSection::KnowledgePages) {FORMAT_V3} else if ctx.coverage.included.contains(&BusinessSection::Tasks) {FORMAT_V2} else {FORMAT};
     let manifest = Manifest {
         format: format.into(),
         signing_public_key_sha256: hash(&key.public_key_bytes()),
@@ -512,7 +522,7 @@ pub fn verify(wire: &[u8], trusted: &TrustedPublicKey) -> Result<VerifiedArtifac
         return Err(Error::Bounds);
     }
     let envelope: Envelope = serde_json::from_slice(wire).map_err(|_| Error::Malformed)?;
-    if ![FORMAT,FORMAT_V2].contains(&envelope.format.as_str()) {
+    if ![FORMAT,FORMAT_V2,FORMAT_V3].contains(&envelope.format.as_str()) {
         return Err(Error::Malformed);
     }
     if envelope.entries.len() > MAX_ENTRIES {

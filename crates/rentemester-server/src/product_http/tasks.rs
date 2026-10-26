@@ -7,6 +7,7 @@ enum Credentials {
 }
 enum Command {
     List(Value),
+    Knowledge(rentemester_engine::knowledge_pages::Scope,String),
     BoardsList(Value),
     BoardsPreview(Value),
     BoardsSave(Value),
@@ -199,6 +200,8 @@ fn command(
         Ok((operation, Some(key), expected))
     } else {
         let cmd = match parts.as_slice() {
+            ["", "api", "knowledge-pages", reference] if raw_query.is_none()=>Command::Knowledge(rentemester_engine::knowledge_pages::Scope::Workspace,decode(reference)),
+            ["", "api", "companies",slug,"knowledge-pages", reference] if raw_query.is_none()=>Command::Knowledge(rentemester_engine::knowledge_pages::Scope::Company{company_slug:decode(slug)},decode(reference)),
             ["", "api", "task-boards"] => {
                 Command::BoardsList(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
             }
@@ -294,6 +297,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         let action = match &command {
             Command::List(q) => Action::List(q),
+            Command::Knowledge(scope,reference)=>Action::KnowledgeRead{scope,reference},
             Command::BoardsList(q) => Action::BoardsList(q),
             Command::BoardsPreview(v) => Action::BoardsPreview(v),
             Command::BoardsSave(v) => Action::BoardsSave(v),
@@ -481,6 +485,12 @@ mod tests {
         assert!(
             matches!(command("/api/task-series/project",None,Some("companySlugs=&from=2026-01-01&to=2026-12-31")).unwrap().0,Command::SeriesProject(v) if v["companySlugs"]==json!([]))
         );
+    }
+    #[test]
+    fn protected_knowledge_routes_have_only_url_scope_and_no_body_query_or_local_grant(){
+        assert!(matches!(command("/api/knowledge-pages/playbook",None,None).unwrap().0,Command::Knowledge(rentemester_engine::knowledge_pages::Scope::Workspace,r)if r=="playbook"));
+        assert!(matches!(command("/api/companies/a/knowledge-pages/page-one",None,None).unwrap().0,Command::Knowledge(rentemester_engine::knowledge_pages::Scope::Company{company_slug},r)if company_slug=="a"&&r=="page-one"));
+        assert!(command("/api/knowledge-pages/playbook",None,Some("local=true")).is_err());assert!(command("/api/knowledge-pages/playbook",Some(json!({"actor":"system:owner","confirm":true})),None).is_err());
     }
     #[test]
     fn reminder_original_routes_confirm_version_scope_and_no_internal_authority() {

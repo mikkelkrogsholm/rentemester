@@ -19,6 +19,7 @@ pub fn require_source_export_coverage(tx: &Transaction<'_>) -> Result<(), Error>
         b.intercompany_bytes,
         b.consolidation_bytes,
         b.task_bytes,
+        b.knowledge_page_bytes,
     ] {
         let v: Value = serde_json::from_slice(&bytes).map_err(|_| err())?;
         if v["tables"].as_object().is_none_or(|tables| {

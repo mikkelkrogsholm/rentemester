@@ -23,5 +23,7 @@ regex = "=1.13.1"
 chrono = { version = "=0.4.45", default-features = false, features = ["std"] }
 chrono-tz = { version = "=0.10.4", default-features = false }
 
+url = "=2.5.8"
+
 [lints]
 workspace = true

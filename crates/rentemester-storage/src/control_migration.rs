@@ -98,6 +98,7 @@ fn native_steps() -> Result<Vec<Step>, Error> {
     let mut raw = ARTIFACTS.to_vec();
     raw.push(include_str!("native-workspace-migrations/0032-namespace-custody-v32.json"));
     raw.push(include_str!("native-workspace-migrations/0033-workspace-tasks-v33.json"));
+    raw.push(include_str!("native-workspace-migrations/0034-knowledge-pages-v34.json"));
     steps(&raw, &native_catalogue()?)
 }
 fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
@@ -292,11 +293,35 @@ fn rehearse(
         writer_authority: false,
     })
 }
+/// Unforgeable in-process observation of the exact main31 disposable copy; no writer grant.
+pub(super) struct MainKnowledge31Projection<'a,'db>{transaction:&'a rusqlite::Transaction<'db>}
+impl MainKnowledge31Projection<'_,'_>{pub(super)fn transaction(&self)->&rusqlite::Transaction<'_>{self.transaction}}
 /// Conversion-only private copy. Reuses the exact full-prefix rehearsal guards;
 /// never grants writer authority or retains the old control authentication state.
 pub(super) fn convert_adoption_copy(
     db: &mut Connection,
 ) -> Result<(usize, crate::portable_backup::Control), Error> {
+    // Main knowledge31 is not native mail31: validate its own exact lineage/shape,
+    // then project business on this disposable copy without rewriting source history.
+    let has_history: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='workspace_schema_migrations')",[],|r|r.get(0)).map_err(failed)?;
+    let source_main: bool = has_history && db.query_row("SELECT EXISTS(SELECT 1 FROM workspace_schema_migrations WHERE id=31 AND name='rentemester-knowledge-pages-v31')",[],|r|r.get(0)).map_err(failed)?;
+    if source_main {
+        let raw=include_str!("../../../src/core/workspace-migrations/0031-knowledge-pages-v31.json");
+        let artifact:Artifact=serde_json::from_str(raw).map_err(failed)?;
+        let mut source_catalog=catalogue()?;source_catalog.truncate(30);
+        source_catalog.push(Migration{id:31,name:artifact.name,checksum:format!("{:x}",Sha256::digest(raw.as_bytes()))});
+        let mut source_artifacts=ARTIFACTS[..30].to_vec();source_artifacts.push(raw);
+        let source_steps=steps(&source_artifacts,&source_catalog)?;
+        if history(db,&source_catalog)?.len()!=31||crate::document_access::strip_schema(db,&schema(db)?)?!=reference(&source_steps,31)?{return Err(unsupported("exact main knowledge31 lineage required"))}
+        integrity(db)?;
+        let tx=db.transaction_with_behavior(TransactionBehavior::Immediate).map_err(failed)?;
+        // Empty native-only task tables make the closed business exporter applicable.
+        // No migration-history row or historical authority is reinterpreted or imported.
+        tx.execute_batch(&native_steps()?[32].sql).map_err(failed)?;
+        let business=crate::portable_backup::export_main31_projection(&MainKnowledge31Projection{transaction:&tx})?;
+        tx.rollback().map_err(failed)?;
+        return Ok((31,business));
+    }
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
     let report = rehearse(db, &steps, &expected)?;
@@ -429,6 +454,11 @@ pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn native33_knowledge_suffix_keeps_history_and_verifies_custody_before_migration(){
+        let mut db=native32();let all=native_steps().unwrap();let task=&all[32];db.execute_batch(&task.sql).unwrap();db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version)VALUES(?1,?2,?3,'historical-native33')",params![task.identity.id,task.identity.name,task.identity.checksum]).unwrap();let old:Vec<(i64,String,String)>=db.prepare("SELECT id,name,checksum FROM workspace_schema_migrations ORDER BY id").unwrap().query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap().collect::<Result<_,_>>().unwrap();
+        assert!(bind_namespace(&mut db,crate::namespace_custody::Identity{device:7,inode:9},true).is_err());assert_eq!(db.query_row::<i64,_,_>("SELECT count(*) FROM workspace_schema_migrations",[],|r|r.get(0)).unwrap(),33);bind_namespace(&mut db,crate::namespace_custody::Identity{device:7,inode:8},true).unwrap();let current:Vec<(i64,String,String)>=db.prepare("SELECT id,name,checksum FROM workspace_schema_migrations ORDER BY id").unwrap().query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap().collect::<Result<_,_>>().unwrap();assert_eq!(&current[..33],old);assert_eq!(current.len(),34);
+    }
     fn native32() -> Connection {
         let db=Connection::open_in_memory().unwrap();
         for step in native_steps().unwrap().iter().take(32) {
@@ -448,7 +478,7 @@ mod tests {
         assert!(db.prepare("SELECT * FROM rm_task_events").is_err());
         crate::namespace_custody::enroll_stopped(&mut db,crate::namespace_custody::Identity{device:7,inode:8}).unwrap();
         let current=history(&db,&native_catalogue().unwrap()).unwrap();
-        assert_eq!(&current[..32],old); assert_eq!(current.len(),33);
+        assert_eq!(&current[..32],old); assert_eq!(current.len(),34);
         validate_current_control(&db).unwrap();
         assert_eq!(db.query_row::<i64,_,_>("SELECT count(*) FROM rm_task_events",[],|r|r.get(0)).unwrap(),0);
     }

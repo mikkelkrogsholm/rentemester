@@ -24,7 +24,7 @@ impl Readiness {
     }
 }
 
-const CONTROL_ARTIFACTS: [&str; 33] = [
+const CONTROL_ARTIFACTS: [&str; 34] = [
     include_str!("../../../src/core/workspace-migrations/0001-workspace-control-baseline.json"),
     include_str!("../../../src/core/workspace-migrations/0002-better-auth-foundation.json"),
     include_str!("../../../src/core/workspace-migrations/0003-workspace-access-events.json"),
@@ -70,6 +70,7 @@ const CONTROL_ARTIFACTS: [&str; 33] = [
     include_str!("../../../src/core/workspace-migrations/0031-workspace-mail-intake-v31.json"),
     include_str!("native-workspace-migrations/0032-namespace-custody-v32.json"),
     include_str!("native-workspace-migrations/0033-workspace-tasks-v33.json"),
+    include_str!("native-workspace-migrations/0034-knowledge-pages-v34.json"),
 ];
 
 fn unsupported() -> rentemester_engine::Error {

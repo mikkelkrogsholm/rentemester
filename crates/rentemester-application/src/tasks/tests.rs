@@ -2156,3 +2156,16 @@ fn reminder_service_claim_lease_and_maintenance_charge_once_and_revoke_before_so
         None
     );
 }
+#[test]
+fn protected_knowledge_current_cookie_company_permission_workspace_owner_interval_and_no_grants(){
+ use rentemester_engine::knowledge_pages::{PageInput,Scope as KScope};let (_dir,mut c,cookies,p,cat)=fixture();
+ let tx=c.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();for (id,scope)in [("page-company",json!({"kind":"company","companySlug":"a"})),("page-workspace",json!({"kind":"workspace"})),("page-hidden",json!({"kind":"company","companySlug":"b"}))]{let input:PageInput=serde_json::from_value(json!({"pageId":id,"scope":scope,"slug":id,"title":"Synthetic protected playbook","bodyMarkdown":"<script>no execution</script> private synthetic instructions","provenance":{"kind":"user","ref":"Synthetic source"},"effectiveFrom":"2026-01-01","effectiveToExclusive":"2026-02-01"})).unwrap();rentemester_storage::knowledge_pages::append_page(&tx,&input,"unused",None,&rentemester_storage::knowledge_pages::Context{actor:"user:synthetic",principal:"historical-label-not-grant",now:"2026-01-01"}).unwrap();}tx.commit().unwrap();
+ let company=KScope::Company{company_slug:"a".into()};assert_eq!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&company,reference:"page-company"},None,None).unwrap()["page"]["title"],"Synthetic protected playbook");
+ assert_eq!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&KScope::Workspace,reference:"page-workspace"},None,None).unwrap_err().error.code,"access_denied");
+ c.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','workspace_owner','user:synthetic')",[]).unwrap();assert!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&KScope::Workspace,reference:"page-workspace"},None,None).is_ok());
+ c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','a','revoke',NULL,'user:synthetic')",[]).unwrap();assert_eq!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&company,reference:"page-company"},None,None).unwrap_err().error.code,"access_denied");assert_eq!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&KScope::Company{company_slug:"b".into()},reference:"page-company"},None,None).unwrap_err().error.code,"not_found");
+ assert_eq!(call(&mut c,&cookies,&p,&cat,Action::KnowledgeRead{scope:&KScope::Workspace,reference:"../page-company"},None,None).unwrap_err().error.code,"not_found");
+ struct Later;impl Clock for Later{fn now_unix_ms(&self)->Result<i64,AuthError>{Ok(1769904000000)}}
+ // Same current cookie expires before this later page interval; auth precedes content.
+ assert!(execute(&mut c,&cat,&Later,Authority::Cookie{cookies:&cookies,proof:&p},Action::KnowledgeRead{scope:&KScope::Workspace,reference:"page-workspace"},None,None).is_err());
+}

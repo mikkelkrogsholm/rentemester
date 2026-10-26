@@ -39,7 +39,7 @@ impl ConvertedControlBusiness {
     /// Stable versioned, length-framed digest of every business section; no auth bytes included.
     pub fn payload_sha256(&self) -> String {
         let mut hash = Sha256::new();
-        hash.update(b"rentemester-legacy-control-business/2\0");
+        hash.update(b"rentemester-legacy-control-business/3\0");
         for bytes in [
             &self.business.bytes,
             &self.business.knowledge_bytes,
@@ -50,6 +50,7 @@ impl ConvertedControlBusiness {
             &self.business.intercompany_bytes,
             &self.business.consolidation_bytes,
             &self.business.task_bytes,
+            &self.business.knowledge_page_bytes,
         ] {
             hash.update((bytes.len() as u64).to_be_bytes());
             hash.update(bytes);
@@ -128,6 +129,7 @@ impl ConvertedControlBusiness {
         business::initialize_consolidation(db, &self.business.consolidation_bytes, registered)
             .map_err(refused)?;
         business::tasks::initialize(db, &self.business.task_bytes, registered).map_err(refused)?;
+        business::knowledge_pages::initialize(db, &self.business.knowledge_page_bytes, registered).map_err(refused)?;
         control_migration::validate_current_control(db).map_err(refused)
     }
 }
@@ -249,6 +251,7 @@ mod tests {
             &converted.business.intercompany_bytes,
             &converted.business.consolidation_bytes,
             &converted.business.task_bytes,
+            &converted.business.knowledge_page_bytes,
         ] {
             let text = std::str::from_utf8(bytes).unwrap();
             for secret in [
@@ -334,4 +337,16 @@ mod tests {
             assert_eq!(std::fs::read(path).unwrap(), before);
         }
     }
+}
+#[cfg(test)]mod knowledge31_tests{
+ use super::*;use rusqlite::params;use serde_json::{Value,json};
+ #[test]fn explicit_main31_page_lineage_projects_without_rebinding_or_authority_restore(){
+  let dir=tempfile::tempdir().unwrap();std::fs::create_dir(dir.path().join(".rentemester")).unwrap();let file=dir.path().join(".rentemester/workspace-control.sqlite");let db=Connection::open(&file).unwrap();let native:Vec<crate::Migration>=serde_json::from_str(include_str!("legacy-workspace-schema.json")).unwrap();for (raw,m)in control_migration::ARTIFACTS.iter().zip(native).take(30){let a:Value=serde_json::from_str(raw).unwrap();db.execute_batch(a["sql"].as_str().unwrap()).unwrap();db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version)VALUES(?1,?2,?3,'actual-source-prefix')",params![m.id,m.name,m.checksum]).unwrap();}
+  let raw=include_str!("../../../src/core/workspace-migrations/0031-knowledge-pages-v31.json");let a:Value=serde_json::from_str(raw).unwrap();db.execute_batch(a["sql"].as_str().unwrap()).unwrap();db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version)VALUES(31,?1,?2,'actual-main31')",params![a["name"].as_str().unwrap(),format!("{:x}",Sha256::digest(raw.as_bytes()))]).unwrap();
+  // Independently produced actual-main rows and hashes from the engine oracle.
+  let v:Value=serde_json::from_str(include_str!("../../rentemester-engine/src/knowledge_pages/main-pages.json")).unwrap();for key in ["first","second","target"]{let row=&v[key];let p=&row["result"];let scope=if p["scope"]["kind"]=="company"{Some(p["scope"]["companySlug"].as_str().unwrap())}else{None};db.execute("INSERT INTO rm_knowledge_page_events(page_id,version,event_type,scope_kind,company_slug,slug,title,body_markdown,provenance_kind,provenance_ref,effective_from,effective_to_exclusive,prior_event_hash,event_hash,actor,principal,created_at)VALUES(?1,?2,?3,'company',?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,'user:synthetic','synthetic-member',?14)",params![p["pageId"].as_str().unwrap(),p["version"].as_i64().unwrap(),p["eventType"].as_str().unwrap(),scope,p["slug"].as_str().unwrap(),p["title"].as_str().unwrap(),p["bodyMarkdown"].as_str().unwrap(),p["provenance"]["kind"].as_str().unwrap(),p["provenance"]["ref"].as_str().unwrap(),p["effectiveFrom"].as_str().unwrap(),p["effectiveToExclusive"].as_str(),p["priorEventHash"].as_str(),p["eventHash"].as_str().unwrap(),row["at"].as_str().unwrap()]).unwrap();}
+  db.execute_batch("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt)VALUES('historical-owner','Synthetic historical owner','old@example.invalid',1,'2026-01-01','2026-01-01');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('historical-owner','activate','workspace_owner','user:historical-owner');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('historical-owner','synthetic','grant','owner','user:historical-owner');").unwrap();
+  drop(db);let before=std::fs::read(&file).unwrap();let converted=convert_control_for_adoption(dir.path()).unwrap();assert_eq!(converted.from_version(),31);let mut target=Connection::open_in_memory().unwrap();converted.initialize_new_control(&mut target,&["synthetic".into()],&"a".repeat(64),"system:synthetic-adopter").unwrap();assert_eq!(std::fs::read(&file).unwrap(),before);let page=crate::knowledge_pages::read_page(&target,&rentemester_engine::knowledge_pages::Scope::Company{company_slug:"synthetic".into()},"playbook","2026-10-26").unwrap().unwrap();assert_eq!(page,v["second"]["result"]);assert_eq!(target.query_row::<i64,_,_>("SELECT count(*) FROM user",[],|r|r.get(0)).unwrap(),0);let name:String=target.query_row("SELECT name FROM workspace_schema_migrations WHERE id=31",[],|r|r.get(0)).unwrap();assert_eq!(name,"rentemester-workspace-mail-intake-v31");assert_eq!(target.query_row::<i64,_,_>("SELECT count(*) FROM workspace_schema_migrations",[],|r|r.get(0)).unwrap(),34);
+  let db=Connection::open(&file).unwrap();db.execute_batch("CREATE TABLE unencoded_extra(data TEXT)").unwrap();assert!(convert_control_for_adoption(dir.path()).is_err());let _=json!({"main32plus":"not accepted; original financial/mapping/tasks lineage still requires explicit conversion"});
+ }
 }

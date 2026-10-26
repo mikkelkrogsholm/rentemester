@@ -727,3 +727,5 @@ pub mod agent_review;
 pub mod original716;
 
 pub mod namespace_custody;
+
+pub mod knowledge_pages;

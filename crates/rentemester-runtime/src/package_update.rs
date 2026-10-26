@@ -19,7 +19,7 @@ pub fn current_policy() -> Policy {
     Policy {
         platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
         api_epoch: 1,
-        control_schema: 33,
+        control_schema: 34,
         company_schema: 36,
     }
 }

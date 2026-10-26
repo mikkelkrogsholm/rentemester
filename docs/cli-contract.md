@@ -21,6 +21,32 @@ Kontrollér også `get`/`history`, før en ny handling startes. Klienten gentage
 aldrig automatisk en skrivning. Historiske ansvarlige eller receipts giver ingen
 adgang. Beskyttede task-linked knowledge-forløb er endnu ikke porteret.
 
+### Beskyttede vidensreferencer fra opgaver
+
+De eksisterende React-links åbner `GET /api/companies/:slug/knowledge-pages/:pageId`
+eller `GET /api/knowledge-pages/:pageId`. Selskabsviden kræver aktuel
+`company.knowledge.read` og membership; fælles workspaceviden kræver workspace
+ejer efter verificeret tasks-read-adgang. URL-scope autoriseres før indholdet
+læses. Page-ID eller slug skal matche præcis scope og det aktuelle effective
+interval. Manglende, udløbet eller forkert scoped reference er `404`; tabt
+adgang er `403`. UI viser en generisk utilgængelig reference, og markdown vises
+som escaped tekst. Historisk actor/provenance giver aldrig adgang.
+
+Der er ingen ny management-UI, public pagewriter eller CLI/MCP-familie.
+Den porterede interne Rust-core bevarer pages, relations, version/hash-konflikter,
+hashkæder, provenance, effektive intervaller, backlinks og afgrænsede metrics.
+Native34 er et eksplicit suffix efter uændret native1–33 med custody-kontrol
+før stopped-operator upgrade. Main31 knowledge og native31 mail er forskellige
+lineages: main31-only kan konverteres gennem en præcis privat businessprojektion
+uden at omskrive kildehistorik eller importere grants. Main32–34 og de øvrige
+finansielle main-domæner kræver fortsat deres egen fulde konvertering.
+
+Signed `rentemester-native-backup/3` kræver den komplette knowledge-page-sektion
+samt task-business; signed /1 og /2 beholder deres egne coverage/restore-regler.
+Page/relation-historik og oprindelige hashes bevares, mens credentials, grants og
+runtime aldrig gendannes som aktiv autoritet. Det gamle source-TAR-format afviser
+ikke-tomme nye businesssektioner i stedet for at udelade data.
+
 ### Påmindelser og live runtime gennem Rust-serveren
 
 `tasks reminder-set` / MCP `tasks_reminder_set` kræver `taskId`, den præcise

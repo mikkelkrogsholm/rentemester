@@ -376,6 +376,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/task-boards/preview",post(tasks::handle))
         .route("/api/task-series/project",get(tasks::handle))
         .route("/api/task-series/materialize",post(tasks::handle))
+        .route("/api/knowledge-pages/{reference}",get(tasks::handle))
+        .route("/api/companies/{slug}/knowledge-pages/{reference}",get(tasks::handle))
         .route("/api/tasks/run", post(tasks::handle))
         .route("/api/tasks/runtime", get(tasks::handle))
         .route("/api/tasks/notifications", get(tasks::handle))

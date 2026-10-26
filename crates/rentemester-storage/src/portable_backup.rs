@@ -20,6 +20,7 @@ pub use corporate::{
 };
 mod parties;
 pub mod tasks;
+pub mod knowledge_pages;
 pub use inbox::{
     initialize as initialize_inbox, validate_companies as validate_inbox_companies,
     validate_company as validate_inbox_company,
@@ -130,12 +131,19 @@ pub struct Control {
     pub intercompany_bytes: Vec<u8>,
     pub consolidation_bytes: Vec<u8>,
     pub task_bytes: Vec<u8>,
+    pub knowledge_page_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
+    crate::workspace_members::writer(tx)?;
+    collect_control_business(tx)
+}
+/// Read-only business projection from an already exact-lineage/shape-verified private source copy.
+/// This token can only be minted by control_migration; it never admits a live native writer.
+pub(super)fn export_main31_projection(proof:&crate::control_migration::MainKnowledge31Projection<'_,'_>)->Result<Control,Error>{collect_control_business(proof.transaction())}
+fn collect_control_business(tx:&Transaction<'_>)->Result<Control,Error>{
     crate::backup_registration::validate_history(tx)?;
     crate::workspace_transfer::current(tx)?;
-    crate::workspace_members::writer(tx)?;
     let mut unsupported = vec![];
     for (section, tables) in UNSUPPORTED {
         let mut count = 0u64;
@@ -165,6 +173,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         intercompany_bytes: intercompany::export(tx)?,
         consolidation_bytes: consolidation::export(tx)?,
         task_bytes: tasks::export(tx)?,
+        knowledge_page_bytes: knowledge_pages::export(tx)?,
         unsupported,
     })
 }

@@ -448,3 +448,9 @@ fn actual_native_issued_json_and_pdf_paths_preserve_both_originals() {
         ));
     }
 }
+#[test]
+fn knowledge_format_v3_requires_signed_complete_section_and_retains_v1_v2(){
+ let key=key();let (mut ctx,mut entries)=fixture();ctx.coverage.included.extend([BusinessSection::Tasks,BusinessSection::KnowledgePages]);for section in [BusinessSection::Tasks,BusinessSection::KnowledgePages]{entries.push(Snapshot{kind:EntryKind::ControlBusiness{section},path:format!("control/{}.json",section.name()),bytes:b"Synthetic codec tested at storage boundary".to_vec()});}let wire_=create(ctx,entries,&key).unwrap();let a=verify(&wire_,&trusted(&key)).unwrap();assert_eq!(a.manifest().format,FORMAT_V3);
+ let mut e:Value=serde_json::from_slice(&wire_).unwrap();e["entries"].as_array_mut().unwrap().retain(|e|e["path"]!="control/knowledge-pages.json");assert!(verify(&wire(e),&trusted(&key)).is_err());
+ let mut e:Value=serde_json::from_slice(&wire_).unwrap();e["format"]=json!(FORMAT_V2);signed_manifest(&mut e,&key,|m|m.format=FORMAT_V2.into());assert!(verify(&wire(e),&trusted(&key)).is_err());assert_eq!(verify(&artifact().1,&trusted(&key)).unwrap().manifest().format,FORMAT);
+}

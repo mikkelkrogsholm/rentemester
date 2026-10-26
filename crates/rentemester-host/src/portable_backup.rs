@@ -183,6 +183,7 @@ impl Owner {
             )?;
             let mut entries = vec![];
             store::tasks::validate_companies(&tx, &catalog.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;
+            store::knowledge_pages::validate_companies(&tx, &catalog.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;
             let mut companies = vec![];
             let mut activity_ids = std::collections::BTreeMap::new();
             add(
@@ -368,6 +369,7 @@ impl Owner {
                 kind: artifact::EntryKind::ControlBusiness { section: artifact::BusinessSection::Tasks },
                 path: "control/tasks.json".into(), bytes: business.task_bytes,
             })?;
+            add(&mut entries,artifact::Snapshot{kind:artifact::EntryKind::ControlBusiness{section:artifact::BusinessSection::KnowledgePages},path:"control/knowledge-pages.json".into(),bytes:business.knowledge_page_bytes})?;
             let unsupported = business
                 .unsupported
                 .into_iter()
@@ -398,6 +400,7 @@ impl Owner {
                         artifact::BusinessSection::Intercompany,
                         artifact::BusinessSection::Consolidation,
                         artifact::BusinessSection::Tasks,
+                        artifact::BusinessSection::KnowledgePages,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -763,6 +766,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::Intercompany
                     | artifact::BusinessSection::Consolidation
                     | artifact::BusinessSection::Tasks
+                    | artifact::BusinessSection::KnowledgePages
             )
         })
     {
@@ -966,6 +970,7 @@ fn restore_business(
     if a.manifest().context.coverage.included.contains(&artifact::BusinessSection::Tasks) {
         store::tasks::initialize(control,entry(artifact::BusinessSection::Tasks)?.bytes(),&a.manifest().context.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;
     }
+    if a.manifest().context.coverage.included.contains(&artifact::BusinessSection::KnowledgePages){store::knowledge_pages::initialize(control,entry(artifact::BusinessSection::KnowledgePages)?.bytes(),&a.manifest().context.companies.iter().map(|c|c.slug.clone()).collect::<Vec<_>>())?;}
     Ok(())
 }
 #[cfg(test)]
@@ -1982,3 +1987,10 @@ mod recurring_workspace_tests;
 
 #[cfg(test)]
 mod asset_disposal_tests;
+#[cfg(test)]mod knowledge_page_tests{
+ use super::*;use serde_json::json;
+ #[test]fn signed_v3_pages_restore_complete_history_without_runtime_or_authority(){
+  let base=tests::signed(false,false,false,false,false,None);let mut source=Connection::open_in_memory().unwrap();store::initialize_control(&mut source,base.entries().iter().find(|e|e.path()=="control/workspace-audit.json").unwrap().bytes(),&"b".repeat(64)).unwrap();let input=serde_json::from_value(json!({"pageId":"page-synthetic","scope":{"kind":"company","companySlug":"synthetic"},"slug":"playbook","title":"Synthetic signed playbook","bodyMarkdown":"Synthetic complete protected body","provenance":{"kind":"user","ref":"Synthetic source"},"effectiveFrom":"2026-01-01"})).unwrap();let tx=source.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();rentemester_storage::knowledge_pages::append_page(&tx,&input,"unused",None,&rentemester_storage::knowledge_pages::Context{actor:"user:synthetic",principal:"historical-label",now:"2026-01-01"}).unwrap();let business=store::export_control(&tx).unwrap();let pages=business.knowledge_page_bytes;let tasks=business.task_bytes;tx.rollback().unwrap();
+  let mut context=base.manifest().context.clone();context.coverage.included.extend([artifact::BusinessSection::Tasks,artifact::BusinessSection::KnowledgePages]);let mut entries=base.entries().iter().map(|e|artifact::Snapshot{kind:e.kind().clone(),path:e.path().into(),bytes:e.bytes().to_vec()}).collect::<Vec<_>>();entries.extend([artifact::Snapshot{kind:artifact::EntryKind::ControlBusiness{section:artifact::BusinessSection::Tasks},path:"control/tasks.json".into(),bytes:tasks},artifact::Snapshot{kind:artifact::EntryKind::ControlBusiness{section:artifact::BusinessSection::KnowledgePages},path:"control/knowledge-pages.json".into(),bytes:pages.clone()}]);let archive=tests::verified(context,entries);assert_eq!(archive.manifest().format,artifact::FORMAT_V3);validate(&archive).unwrap();let mut target=Connection::open_in_memory().unwrap();restore_business(&mut target,&archive,&"c".repeat(64)).unwrap();let tx=target.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();assert_eq!(store::export_control(&tx).unwrap().knowledge_page_bytes,pages);tx.rollback().unwrap();for table in ["user","session","apikey","rm_company_membership_events"]{assert_eq!(target.query_row::<i64,_,_>(&format!("SELECT count(*) FROM {table}"),[],|r|r.get(0)).unwrap(),0);}assert_eq!(target.query_row::<Option<String>,_,_>("SELECT lease_owner FROM rm_task_runtime",[],|r|r.get(0)).unwrap(),None);
+ }
+}

@@ -1822,6 +1822,16 @@
       "capability": "HEAD /api/companies/{slug}/knowledge"
     },
     {
+      "method": "GET",
+      "path": "/api/companies/{slug}/knowledge-pages/{reference}",
+      "capability": "GET /api/companies/{slug}/knowledge-pages/{reference}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/knowledge-pages/{reference}",
+      "capability": "HEAD /api/companies/{slug}/knowledge-pages/{reference}"
+    },
+    {
       "method": "POST",
       "path": "/api/companies/{slug}/knowledge/propose",
       "capability": "POST /api/companies/{slug}/knowledge/propose"
@@ -3253,6 +3263,16 @@
     },
     {
       "method": "GET",
+      "path": "/api/knowledge-pages/{reference}",
+      "capability": "GET /api/knowledge-pages/{reference}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/knowledge-pages/{reference}",
+      "capability": "HEAD /api/knowledge-pages/{reference}"
+    },
+    {
+      "method": "GET",
       "path": "/api/me",
       "capability": "GET /api/me"
     },
@@ -3672,5 +3692,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "051d2ed2ce765854b55d346f668d2c1150d215f06f2fe5bc6f99ce295973d4d8"
+  "manifestId": "2fbaca0396b9d70803be023294b2c3d94a2c5e1b646a10806e7dd6e270bcd3ed"
 }
