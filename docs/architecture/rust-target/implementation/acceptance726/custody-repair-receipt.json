@@ -1,0 +1,54 @@
+{
+  "task": "namespace_custody",
+  "attempt": 1,
+  "passed": true,
+  "commit": "0814617f0bbb47a271a1696a0c7c83937775766c",
+  "changed_paths": [
+    "crates/rentemester-runtime/src/package_update/manifest/tests.rs",
+    "crates/rentemester-server/src/main.rs",
+    "crates/rentemester-host/src/legacy_adoption.rs",
+    "crates/rentemester-host/src/lib.rs",
+    "crates/rentemester-host/src/namespace_custody.rs",
+    "crates/rentemester-host/src/original716/transfer.rs",
+    "crates/rentemester-runtime/src/namespace.rs",
+    "crates/rentemester-runtime/src/package_update.rs",
+    "crates/rentemester-runtime/src/namespace/linux.rs",
+    "crates/rentemester-storage/src/fresh.rs",
+    "crates/rentemester-storage/src/legacy-workspace-schema.json",
+    "crates/rentemester-storage/src/native-workspace-migrations/0032-namespace-custody-v32.json",
+    "scripts/release/assemble-native-macos.py",
+    "crates/rentemester-server/src/backend.rs",
+    "crates/rentemester-host/src/portable_backup.rs",
+    "crates/rentemester-runtime/src/local/layout.rs",
+    "crates/rentemester-storage/src/control_migration.rs",
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-host/src/readiness.rs",
+    "crates/rentemester-host/src/workspace_transfer/tests.rs",
+    "crates/rentemester-server/src/namespace_custody_cli.rs",
+    "crates/rentemester-storage/src/namespace_custody.rs"
+  ],
+  "checks": [
+    {
+      "check": "custody_core",
+      "key": "68e3f46953de811b820e29165b857dcf14fba7d0b482053578e7f762e6c32944",
+      "argv": [
+        "python3",
+        "/tmp/issue726-custody-core-check.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody-lead-0814617f0bbb-20261026T012532.547863000/checks/68e3f46953de811b820e29165b857dcf14fba7d0b482053578e7f762e6c32944/custody_core.log"
+    },
+    {
+      "check": "custody_host",
+      "key": "cddb129b5d2f49429458c6758ef43eb777739ec8897cdd97d2517969426b9a51",
+      "argv": [
+        "python3",
+        "/tmp/issue726-custody-host-check.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody-lead-0814617f0bbb-20261026T012532.547863000/checks/cddb129b5d2f49429458c6758ef43eb777739ec8897cdd97d2517969426b9a51/custody_host.log"
+    }
+  ]
+}

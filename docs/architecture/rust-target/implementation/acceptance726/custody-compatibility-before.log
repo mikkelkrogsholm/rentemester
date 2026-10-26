@@ -1,0 +1,22 @@
+   Compiling rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/crates/rentemester-storage)
+    Finished `test` profile [unoptimized] target(s) in 29.49s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/debug/deps/rentemester_storage-e7317d4a72bbda4e)
+
+running 1 test
+test control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop ... FAILED
+
+failures:
+
+---- control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop stdout ----
+
+thread 'control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop' (55961580) panicked at crates/rentemester-storage/src/control_migration.rs:497:63:
+called `Result::unwrap()` on an `Err` value: Error { code: "unsupported_schema", message: "complete v31 required" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 713 filtered out; finished in 0.23s
+
+error: test failed, to rerun pass `-p rentemester-storage --lib`

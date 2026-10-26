@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "olderRuntimeSha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+  "olderRuntimeSource": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+  "physicalControlVersion": 32,
+  "startupExitCode": 1,
+  "ordinaryStartupRefused": true,
+  "businessCalls": 0
+}

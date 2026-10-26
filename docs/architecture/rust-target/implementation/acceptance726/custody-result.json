@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "sourceRevision": "0814617f0bbb",
+  "binarySha256": "c59d058bb9d9e66e54932f5d12a3bcf16508dc02ff172abfbd8da8eab49f8cb1",
+  "original31HistoryPreserved": true,
+  "physicalVersion": 32,
+  "actualRootBindingVerified": true,
+  "financialRowsUnchanged": true,
+  "financialEffects": 0,
+  "at": "2026-10-26T01:30:58.144213+00:00",
+  "normalExistingMfaOwnerRead": true,
+  "journalUnchanged": true,
+  "sharedReactOriginVisible": true,
+  "ownedServerStopped": true,
+  "ownedServerExit": 0
+}

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "scope": "Actual current common Rust/sharedReact visibleorigin only; final installed remote vault/WebKit/J03/J06 remains.",
+  "activeOrigin": "http://127.0.0.1:61929",
+  "company": "synthetic",
+  "canonicalVisibleOrigin": true,
+  "companyContextRetained": true,
+  "journalUnchanged": true,
+  "noBusinessWrites": true,
+  "normalMfaOwnerReused": true,
+  "browserVersion": "153.0.8010.12",
+  "journalSha256": "2d11731ba0f8e9786fbd979d2cc1b76f66dcfe61821198c1cdbd7cbf3e7cedac"
+}

@@ -2,7 +2,7 @@
   "issue": 726,
   "whole_issue_accepted": false,
   "nonempty_scheduler_and_target_only_recovery_accepted": true,
-  "checkedAt": "2026-10-26T00:36:49.274749+00:00",
+  "checkedAt": "2026-10-26T01:31:54.960364+00:00",
   "source_revision": "0c7c41a6dbbd3093ae938cc513e582cb2e2b7d06",
   "source_tree": "a58c581900edbda441ca320835d31928edd17e8f",
   "worker_revision": "6a21fd4527f7928cc33db4dae834bb5597a56c1e",
@@ -36,9 +36,73 @@
     "pre-freeze-copy.log": {
       "path": "docs/architecture/rust-target/implementation/acceptance726/pre-freeze-copy.log",
       "sha256": "640979f5f7bd376a6a491ec6584e192491830223679115255a9e6352548e80ce"
+    },
+    "custody-browser.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-browser.json",
+      "sha256": "7464f50f756b8be5101cf16c0e97af822dbc4718540ac75dbf11fde426454e9f"
+    },
+    "custody-browser.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-browser.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "custody-compatibility-after.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-compatibility-after.log",
+      "sha256": "7fb0493e73a9eda76980811cafb0efdcc9d6b1b7b9de7a98020e040f5795385f"
+    },
+    "custody-compatibility-before.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-compatibility-before.log",
+      "sha256": "a8f2db6b47ba346b42978062276367d8d996f67198e3712332e6559c6a5b52aa"
+    },
+    "custody-custody_core.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-custody_core.log",
+      "sha256": "69324b581aebe2cb9e9150c14cb78e28da3ca548da817b75d423ed133b4be511"
+    },
+    "custody-custody_host.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-custody_host.log",
+      "sha256": "4e8bd6bc3c8ea4d943f683ebff67e471841d834ed551db8f89578b09050f93e3"
+    },
+    "custody-enrollment.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-enrollment.json",
+      "sha256": "86eb0f61417889df2923b61c82419d226ef3bf990f96b98a404ef6d022198ae0"
+    },
+    "custody-enrollment.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-enrollment.log",
+      "sha256": "8a3fe2a6f1970b91e40a94a6cd58a79f8b8895c4692c5d484bce1d5b68c26cf2"
+    },
+    "custody-old31-runtime-refusal.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-old31-runtime-refusal.json",
+      "sha256": "fd2f2b7be533bfdd9adc0cdb60eb17c4a67d89be1226b5424acc2e5b7e13e12d"
+    },
+    "custody-old31-runtime-refusal.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-old31-runtime-refusal.log",
+      "sha256": "04d0fa4ac3153b469473791146609655fe57cc0f411ffa5f6a2b39f0666e0b10"
+    },
+    "custody-repair-receipt.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-repair-receipt.json",
+      "sha256": "5845ee46d5c936244569c03f155573a95e3d4793920e530fe588b2d6627fc23e"
+    },
+    "custody-result.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-result.json",
+      "sha256": "b3fc763eb07e55bfa653c33f04d6b8539f7eb2d9f3ccbeebeff3b8996601ac89"
+    },
+    "custody-source-restore.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-source-restore.log",
+      "sha256": "28aec9b036e9e434fe086afedabcf1addd2b100ad69d828ec2fa6eb9e4064ec3"
+    },
+    "custody-worker-ast.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-worker-ast.log",
+      "sha256": "78cb0cb6c754a41f518282970a08868ed57f5f5a687efabe2890e3506ce0da92"
+    },
+    "custody-worker-deadline-receipt.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-worker-deadline-receipt.json",
+      "sha256": "4dbe0c5703b959c7c823bf62edd3f3e19a0690923c4254cffc3c5e50604fa76c"
+    },
+    "custody-package-update.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/custody-package-update.log",
+      "sha256": "2c8621f9fedb15f43951496d27ad38432b87fcd8946e33e17a8c8a711451e295"
     }
   },
-  "review": "Reviewed actual6a21fd45 test-only diff:3 typed schedules exercise queued/completed/unresolved history across signed offered/staged/released/active/reopen states. Exact workspace_transfer_fenced dispatch refusals preserve docs/generations; fresh target consent cannot clear unknown attempts or redispatch completed generation, queued work requires separate reviewed selection. Accepted target-only12.34 balanced journal and exact readmodel/history/generations survive independently verified fresh recovery/reopen. Unique synthetic buyer only fixture correction; no production API/control/guard changes. Frozen guarded host receipt3testsPASS and worker AST observed. Qualifies finite component only; original activation-crash/older-clone/platform/native/release matrix remains open. Main reviewed214line existing-pattern activation process helper/parent: public synthetic key, own exact child signal9/reap, durable status equality, source moved fence, staged-only reviewed resume and no active-case blind retry. Frozen4testsPASS, component timings373/366ms; no production hook/manager or guard weakening.",
+  "review": "Reviewed actual6a21fd45 test-only diff:3 typed schedules exercise queued/completed/unresolved history across signed offered/staged/released/active/reopen states. Exact workspace_transfer_fenced dispatch refusals preserve docs/generations; fresh target consent cannot clear unknown attempts or redispatch completed generation, queued work requires separate reviewed selection. Accepted target-only12.34 balanced journal and exact readmodel/history/generations survive independently verified fresh recovery/reopen. Unique synthetic buyer only fixture correction; no production API/control/guard changes. Frozen guarded host receipt3testsPASS and worker AST observed. Qualifies finite component only; original activation-crash/older-clone/platform/native/release matrix remains open. Main reviewed214line existing-pattern activation process helper/parent: public synthetic key, own exact child signal9/reap, durable status equality, source moved fence, staged-only reviewed resume and no active-case blind retry. Frozen4testsPASS, component timings373/366ms; no production hook/manager or guard weakening. Reviewed actual22-file custody correction, read-only initial probe, held identity source, all private constructors, configured operator allowlist/exact confirmation, atomic31 history extension, unchanged historical31 migration bytes and distinct portablecontext30. Explicitly retained oldbinary+olddata custody limitation. Fresh actual server enrollment preserved original31 history and journal, normal existing MFA-owner/shared React read passed, old immutable supported31 runtime refused new32 startup.",
   "accepted": [
     "Current3test composed common-engine host suite passed under pinned Rust1.94.1, guarded independent build output. Worker and integrated tree85e0e1d0 identical; SGD reused exact valid receipt rather than rerunning unchanged checks.",
     "Nonempty typed queued/completed/unresolved scheduler histories and generation rows preserved across signed offered snapshot/stage/release/activate/reopen. Frozen/moved source and staged target reject dispatch with workspace_transfer_fenced and preserve documents/generations.",
@@ -46,7 +110,8 @@
     "A target-only accepted12.34 balanced journal and two generation rows survive independently verified signed fresh recovery; exact ordinary journal read model, generation/history and unresolved state survive reopen. Source remains moved/closed.",
     "Existing Group99 actual lostreply/unknown SMTP/source tombstone, #707 corrupt/signed restore and #701 migration/legacy retirement evidence retained; no prior actual financial/provider setup was reconstructed or replayed.",
     "Actual unit child-owner SIGKILL(signal9) before activation leaves exact staged state; post-durable-activation/pre-completion SIGKILL leaves exact active state. Fresh Owner readback is authoritative; only definitely staged case executes the original reviewed activation once, active case is not blindly retried. Source remains moved and writer-fenced throughout.",
-    "All4 current composed transfer host tests PASS; ignored helper is invoked explicitly by the parent in both death cases. Component reopen373ms/366ms on this host; not a full operator/native RTO or injection inside SQLite commit."
+    "All4 current composed transfer host tests PASS; ignored helper is invoked explicitly by the parent in both death cases. Component reopen373ms/366ms on this host; not a full operator/native RTO or injection inside SQLite commit.",
+    "Supported-current namespace copy fence corrected and actual32 server qualified on existing stopped synthetic31 source: explicit authorized enrollment preserves31 history and financial rows, normal existing MFA journal/origin read succeeds, old supported31 binary startup refused. No new financial/provider effects."
   ],
   "limits": [
     "These are synthetic composed macOS host unit tests using existing explicit identity fixture, not normal-MFA browser/native/hosted platform acceptance. No arbitrary pre-freeze clone guarantee is claimed.",
@@ -55,12 +120,13 @@
   ],
   "preservedFailures": [
     "Worker exploratory compile identified consumed Owner after try_close; removed redundant drop. Fixture required distinct synthetic buyers and explicit post-restore catch-up selection. Product guards preserved; full outputs remain in original agent.ndjson and frozen receipts.",
-    "Initial GDD concurrency risk lacked a concurrency-category exercising scenario; retained original model and added truthful fenced-authority scenario before dispatch."
+    "Initial GDD concurrency risk lacked a concurrency-category exercising scenario; retained original model and added truthful fenced-authority scenario before dispatch.",
+    "Worker hit900s deadline after implementing correction; preserved failed receipt and candidate, no further model. Main reproduced valid v31 service-access extension rejection, repaired existing safe-extension validation plus current32 mail no-op, focused regression then frozen checks passed; append-only controls preserved."
   ],
   "criterionDispositions": [
     {
       "criterion": 1,
-      "accepted": "Current nonempty scheduler source/staged human dispatch fence; existing wrong-target/key and writer/restart fences retained",
+      "accepted": "Current nonempty scheduler source/staged human dispatch fence; existing wrong-target/key and writer/restart fences retained Supported-current raw pre-freeze copy ordinary admission now refused; actual supported older31 runtime refuses physical32.",
       "remaining": "Original qualified hosted/older/pre-freeze clone matrix, all upstream release/native gates remain."
     },
     {
@@ -80,7 +146,7 @@
     },
     {
       "criterion": 5,
-      "accepted": "Existing moved-source restart/tombstone and current source/staged job refusal retained",
+      "accepted": "Existing moved-source restart/tombstone and current source/staged job refusal retained Supported-current raw pre-freeze copy ordinary admission now refused; actual supported older31 runtime refuses physical32.",
       "remaining": "Original qualified J06/copied configuration/pre-freeze clone and final native workflow."
     },
     {
@@ -89,7 +155,7 @@
       "remaining": "Original full claimed hosted/platform/external-effect composed qualification."
     }
   ],
-  "nextNecessaryAcceptance": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked.",
+  "nextNecessaryAcceptance": "Original full qualified cutover/J06/platform/release dependencies and measured operator RPO/RTO remain. Current raw-copy defect corrected; no optional guard expansion. Next independent original727 documentation/support package; final installed desktop remains last.",
   "closed55OriginalIssues": 43,
   "remaining55OriginalIssues": 12,
   "activation_process_death_recovery_accepted": true,
@@ -130,6 +196,50 @@
     "preservedSyntheticFixture": "/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/.tmpEF3qy9",
     "logSha256": "640979f5f7bd376a6a491ec6584e192491830223679115255a9e6352548e80ce",
     "diagnosis": "Namespace lease/layout binds only current descriptors; a complete pre-freeze copy has separate inode/lock and lacks the later moved tombstone. Its ordinary current Owner opens as active and transfer write admission succeeds. This is not staged nonce, hardlink, ABA or privileged SQL tampering.",
-    "nextNecessaryChange": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked."
+    "nextNecessaryChange": "Persist supported-current namespace custody bound to held root device/inode, physical schema32 old-runtime fence, strict ordinary admission and explicit authorized create/restore/stage/enrollment. Portable business context30 remains distinct; old pre-feature31 copies plus old31 binaries require explicit existing cutover custody, cannot be retrospectively globally revoked.",
+    "correctionAccepted": true,
+    "correctionRevision": "0814617f0bbb47a271a1696a0c7c83937775766c",
+    "currentRegressionResult": "active PASS on supported current32 construction; raw copy ordinary Owner refused. Original failed31 proof remains preserved."
+  },
+  "namespace_custody_correction_accepted": true,
+  "namespaceCustody": {
+    "sourceRevision": "0814617f0bbb47a271a1696a0c7c83937775766c",
+    "integratedRevision": "f471cd8b54ca401078990ef320f21672e792e74a",
+    "sgdRun": "issue726-namespace-custody-owned-20261026T010211.917579000",
+    "sgdPhase": "done",
+    "physicalControlSchema": 32,
+    "portableBusinessControlContext": 30,
+    "companySchema": 36,
+    "ordinaryAdmission": "held root device/inode verified; missing/mismatched custody refused before writable opening and during dispatch; never auto-enroll/rebind",
+    "enrollment": "explicit stopped configured allowlisted operator and exact configured root; complete31 migration plus binding atomically; current32 exact no-op only, missing/mismatch/frozen/moved/staged refused",
+    "trustedConstruction": "fresh, signed portable/source restore/staging and legacy adoption bind private physical root before ordinary admission/publication",
+    "checks": "frozen4 custody storage,11 control migration,2 host custody,5 composed transfer,2 server tests PASS; runtime compile PASS. One ignored migration helper and one ignored activation helper are explicitly invoked by parent tests. Additional original716 source transfer/restore PASS.",
+    "actualServerRead": {
+      "status": "passed",
+      "sourceRevision": "0814617f0bbb",
+      "binarySha256": "c59d058bb9d9e66e54932f5d12a3bcf16508dc02ff172abfbd8da8eab49f8cb1",
+      "original31HistoryPreserved": true,
+      "physicalVersion": 32,
+      "actualRootBindingVerified": true,
+      "financialRowsUnchanged": true,
+      "financialEffects": 0,
+      "at": "2026-10-26T01:30:58.144213+00:00",
+      "normalExistingMfaOwnerRead": true,
+      "journalUnchanged": true,
+      "sharedReactOriginVisible": true,
+      "ownedServerStopped": true,
+      "ownedServerExit": 0
+    },
+    "olderRuntimeFence": {
+      "status": "passed",
+      "olderRuntimeSha256": "5642bf46519d82568d9a7203c6177871fa7821ab10c4b26bfaf48299a453a350",
+      "olderRuntimeSource": "6fcf7a699d9eba092577138d5b0cf9bbdab62d92",
+      "physicalControlVersion": 32,
+      "startupExitCode": 1,
+      "ordinaryStartupRefused": true,
+      "businessCalls": 0
+    },
+    "limitation": "Cannot retrospectively revoke already-copied old31 binary plus old31 data; original authoritative-source/stop/drain/custody/retirement gate remains. Prior31 package artifacts do not qualify new32 packages.",
+    "packageCompatibilityTests": "All10 existing signed manifest/install/update tests PASS on physical32 policy; signature/inventory/platform/downgrade/active-app/recovery guards retained."
   }
 }

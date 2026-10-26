@@ -1,0 +1,22 @@
+   Compiling time v0.3.55
+   Compiling serde_json v1.0.154
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/vendor/rusqlite-0.40.2)
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized] target(s) in 10.48s
+     Running unittests src/lib.rs (.sgd/builds/checks/namespace_custody/debug/deps/rentemester_runtime-86cfe1afd257f01b)
+
+running 10 tests
+test package_update::install::tests::authenticated_upgrade_keeps_previous_runs_and_rejects_downgrade_or_active_app ... ok
+test package_update::install::tests::bundled_server_and_shell_share_lease_and_retired_or_staged_copies_refuse ... ok
+test package_update::install::tests::empty_interrupted_staging_and_current_schema_contract ... ok
+test package_update::install::tests::exchange_interruption_and_post_retention_interruption_are_recoverable ... ok
+test package_update::install::tests::incomplete_staging_recovers_without_touching_installation_or_workspace ... ok
+test package_update::install::tests::signature_failure_and_symlink_staging_preserve_the_runnable_old_package ... ok
+test package_update::manifest::tests::signed_package_exact_inventory_and_external_trust_anchor ... ok
+test package_update::manifest::tests::signed_package_links_and_unsafe_permissions_refused ... ok
+test package_update::manifest::tests::signed_package_policy_paths_and_bounds_refused_even_with_valid_signature ... ok
+test package_update::manifest::tests::signed_package_tamper_missing_unlisted_and_mode_refused ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 166 filtered out; finished in 2.49s
+

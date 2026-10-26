@@ -1,0 +1,8 @@
+{
+  "task": "namespace_custody",
+  "attempt": 1,
+  "passed": false,
+  "changed_paths": [],
+  "checks": [],
+  "reason": "worker process failed (signal: killed); inspect /Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody-1/agent.ndjson"
+}

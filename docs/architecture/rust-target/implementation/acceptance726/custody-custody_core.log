@@ -1,0 +1,269 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/crates/rentemester-storage)
+    Finished `test` profile [unoptimized] target(s) in 34.82s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/rentemester_storage-e7317d4a72bbda4e)
+
+running 4 tests
+test control_migration::tests::namespace_custody_enrollment_refuses_frozen_and_missing_v32_without_repair ... ok
+test control_migration::tests::namespace_custody_v31_enrollment_preserves_history_sessions_and_is_atomic ... ok
+test control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop ... ok
+test namespace_custody::tests::namespace_custody_exact_missing_mismatch_never_overwrites ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 710 filtered out; finished in 0.93s
+
+     Running tests/company_creation_profile85.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/company_creation_profile85-ba6638d55c525ebd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/company_name_profile85.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/company_name_profile85-e7e8a9541e692e54)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+
+    Finished `test` profile [unoptimized] target(s) in 0.20s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/rentemester_storage-e7317d4a72bbda4e)
+
+running 12 tests
+test control_migration::tests::all_control_artifacts_are_bound_and_public_errors_are_opaque ... ok
+test control_migration::tests::crash_child ... ignored, subprocess helper selected explicitly by process-death parent
+test control_migration::tests::explicit_mail_upgrade_accepts_only_exact_previous_or_current_schema ... ok
+test control_migration::tests::legal_sqlite_like_user_objects_are_not_internal_or_empty ... ok
+test control_migration::tests::mail_extension_preserves_v30_inbox_and_append_only_guards ... ok
+test control_migration::tests::mfa_upgrade_and_immutable_guards_match_real_sql ... ok
+test control_migration::tests::namespace_custody_enrollment_refuses_frozen_and_missing_v32_without_repair ... ok
+test control_migration::tests::namespace_custody_v31_enrollment_preserves_history_sessions_and_is_atomic ... ok
+test control_migration::tests::namespace_custody_v31_service_access_extension_survives_enrollment_and_current_mail_noop ... ok
+test control_migration::tests::ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence ... ok
+test control_migration::tests::process_death_restores_whole_prefix_and_sessions_or_commits_all ... ok
+test control_migration::tests::real_history_insert_failure_rolls_back_entire_suffix_including_sessions ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 702 filtered out; finished in 2.79s
+
+     Running tests/company_creation_profile85.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/company_creation_profile85-ba6638d55c525ebd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/company_name_profile85.rs (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/namespace_custody/debug/deps/company_name_profile85-e7e8a9541e692e54)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+
+   Compiling syn v3.0.9
+    Checking libc v0.2.191
+    Checking cfg-if v1.0.5
+   Compiling jobserver v0.1.35
+   Compiling synstructure v0.14.0
+   Compiling cc v1.8.0
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+    Checking zerofrom v0.1.8
+    Checking stable_deref_trait v1.2.1
+    Checking typenum v1.20.1
+    Checking yoke v0.8.3
+    Checking generic-array v0.14.7
+   Compiling zerovec-derive v0.11.6
+    Checking smallvec v1.16.3
+   Compiling displaydoc v0.2.7
+    Checking zerovec v0.11.8
+    Checking zeroize v1.9.1
+    Checking subtle v2.6.1
+   Compiling portable-atomic v1.15.0
+    Checking pin-project-lite v0.2.17
+    Checking crypto-common v0.1.7
+    Checking bytes v1.12.1
+    Checking tinystr v0.8.4
+   Compiling cmake v0.1.58
+    Checking litemap v0.8.3
+   Compiling fs_extra v1.3.0
+    Checking memchr v2.8.3
+   Compiling dunce v1.0.5
+    Checking futures-core v0.3.34
+    Checking writeable v0.6.4
+    Checking critical-section v1.2.0
+    Checking icu_locale_core v2.3.0
+    Checking once_cell v1.21.4
+   Compiling num-traits v0.2.19
+   Compiling aws-lc-sys v0.46.0
+    Checking potential_utf v0.1.6
+    Checking zerotrie v0.2.5
+    Checking utf8_iter v1.0.4
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_properties_data v2.3.0
+    Checking bitflags v2.13.2
+    Checking icu_collections v2.3.0
+    Checking icu_provider v2.3.1
+    Checking serde_core v1.0.229
+   Compiling tokio-macros v2.7.2
+    Checking socket2 v0.6.5
+    Checking mio v1.2.4
+    Checking tokio v1.53.3
+   Compiling ring v0.17.14
+   Compiling serde_derive v1.0.229
+   Compiling getrandom v0.4.3
+   Compiling aws-lc-rs v1.18.2
+    Checking rand_core v0.10.1
+    Checking futures-sink v0.3.34
+    Checking itoa v1.0.18
+    Checking percent-encoding v2.3.2
+    Checking serde v1.0.229
+    Checking icu_properties v2.3.0
+    Checking icu_normalizer v2.3.0
+    Checking rustls-pki-types v1.15.1
+   Compiling futures-macro v0.3.34
+    Checking scopeguard v1.2.0
+    Checking slab v0.4.12
+    Checking futures-task v0.3.34
+    Checking futures-io v0.3.34
+    Checking core-foundation-sys v0.8.7
+    Checking futures-util v0.3.34
+    Checking idna_adapter v1.2.2
+    Checking getrandom v0.2.17
+   Compiling glob v0.3.4
+    Checking untrusted v0.9.0
+   Compiling clang-sys v1.9.1
+    Checking idna v1.1.0
+    Checking ipnet v2.12.2
+    Checking form_urlencoded v1.2.2
+    Checking http v1.5.0
+    Checking tracing-core v0.1.36
+    Checking block-buffer v0.10.4
+   Compiling syn v2.0.119
+   Compiling crossbeam-utils v0.8.23
+    Checking log v0.4.34
+   Compiling rustls v0.23.46
+    Checking digest v0.10.7
+    Checking tracing v0.1.44
+    Checking http-body v1.1.0
+    Checking url v2.5.8
+    Checking equivalent v1.0.3
+   Compiling httparse v1.10.1
+   Compiling regex-syntax v0.8.11
+   Compiling parking_lot_core v0.9.12
+    Checking tinyvec v1.13.3
+   Compiling minimal-lexical v0.2.1
+    Checking foldhash v0.2.0
+   Compiling thiserror v2.0.21
+   Compiling libloading v0.8.9
+    Checking hashbrown v0.17.1
+   Compiling nom v7.1.3
+   Compiling regex-automata v0.4.18
+    Checking futures-channel v0.3.34
+    Checking chacha20 v0.10.2
+    Checking inout v0.1.4
+   Compiling thiserror-impl v2.0.21
+    Checking try-lock v0.2.5
+    Checking either v1.19.0
+   Compiling bindgen v0.72.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling system-configuration-sys v0.6.0
+    Checking tower-service v0.3.3
+   Compiling itertools v0.13.0
+    Checking rustls-webpki v0.103.15
+    Checking prefix-trie v0.8.4
+    Checking want v0.3.2
+    Checking cipher v0.4.4
+    Checking rand v0.10.3
+   Compiling regex v1.13.1
+   Compiling cexpr v0.6.0
+    Checking uuid v1.28.0
+    Checking lock_api v0.4.14
+   Compiling async-trait v0.1.92
+    Checking cpufeatures v0.2.17
+   Compiling rustc-hash v2.1.3
+   Compiling shlex v1.3.0
+    Checking base64 v0.23.1
+    Checking atomic-waker v1.1.2
+    Checking data-encoding v2.11.1
+    Checking hyper v1.12.0
+    Checking hickory-proto v0.26.3
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/vendor/libsqlite3-sys-0.38.2)
+    Checking parking_lot v0.12.5
+    Checking tokio-rustls v0.26.6
+    Checking crossbeam-channel v0.5.17
+    Checking core-foundation v0.10.1
+    Checking security-framework-sys v2.17.0
+    Checking core-foundation v0.9.4
+    Checking sync_wrapper v1.0.2
+    Checking siphasher v1.0.4
+    Checking tower-layer v0.3.3
+    Checking tagptr v0.2.0
+    Checking simdutf8 v0.1.5
+   Compiling serde_json v1.0.154
+    Checking zlib-rs v0.6.8
+   Compiling libproc v0.14.11
+    Checking flate2 v1.1.10
+    Checking encoding_rs v0.8.42
+    Checking moka v0.12.16
+    Checking tower v0.5.3
+    Checking phf_shared v0.12.1
+    Checking system-configuration v0.7.0
+    Checking security-framework v3.7.0
+    Checking nix v0.31.3
+    Checking zmij v1.0.23
+    Checking crc32fast v1.5.2
+    Checking hickory-net v0.26.3
+   Compiling hashify v0.2.9
+    Checking hyper-util v0.1.21
+    Checking sha2 v0.10.9
+    Checking indexmap v2.14.2
+    Checking hmac v0.12.1
+    Checking num-integer v0.1.47
+    Checking universal-hash v0.5.1
+    Checking errno v0.3.14
+   Compiling chrono-tz v0.10.4
+    Checking deranged v0.5.9
+    Checking resolv-conf v0.7.6
+    Checking opaque-debug v0.3.1
+   Compiling exacl v0.13.0
+   Compiling rustix v1.1.5
+    Checking typed-path v0.12.4
+    Checking powerfmt v0.2.1
+    Checking num-conv v0.2.2
+    Checking time-core v0.1.9
+    Checking zip v9.0.5
+    Checking time v0.3.55
+    Checking poly1305 v0.8.0
+    Checking hickory-resolver v0.26.3
+    Checking num-bigint v0.5.1
+    Checking pbkdf2 v0.12.2
+    Checking hyper-rustls v0.27.10
+    Checking mail-parser v0.11.9
+    Checking rustls-platform-verifier v0.7.1
+    Checking tower-http v0.6.11
+    Checking phf v0.12.1
+    Checking chacha20 v0.9.1
+    Checking salsa20 v0.10.2
+    Checking hashlink v0.12.2
+    Checking unicode-normalization v0.1.25
+    Checking http-body-util v0.1.5
+    Checking webpki-roots v1.0.9
+    Checking chrono v0.4.45
+    Checking nom v8.0.0
+    Checking aead v0.5.2
+    Checking ryu-js v1.0.3
+    Checking unicode-properties v0.1.4
+    Checking fallible-streaming-iterator v0.1.9
+    Checking email_address v0.2.9
+    Checking base64 v0.22.1
+    Checking roxmltree v0.20.0
+    Checking fallible-iterator v0.3.0
+    Checking rentemester-engine v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/crates/rentemester-engine)
+    Checking rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/vendor/rusqlite-0.40.2)
+    Checking lettre v0.11.23
+    Checking chacha20poly1305 v0.10.1
+    Checking reqwest v0.13.5
+    Checking scrypt v0.11.0
+    Checking sha1 v0.10.7
+    Checking webpki-root-certs v1.0.9
+    Checking rentemester-runtime v0.2.0 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/crates/rentemester-runtime)
+    Finished `dev` profile [unoptimized] target(s) in 59.18s

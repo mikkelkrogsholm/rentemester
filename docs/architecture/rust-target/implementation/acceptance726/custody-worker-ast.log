@@ -1,0 +1,9 @@
+[graphify extract] incremental scan of /Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody
+[graphify extract] re-queuing 673 manifest-stamped code file(s) with no nodes in graph.json (prior failed extraction, #2543)
+[graphify extract] --code-only: skipping 630 non-code file(s) (605 docs, 6 papers, 19 images) — no LLM extraction
+[graphify extract] 683 code, 0 docs, 0 papers, 0 images changed; 4081 unchanged; 0 deleted
+[graphify extract] 119 file(s) not classified (no supported extension or shebang), skipped: .dockerignore, .env.example, .git, .gitattributes, .gitignore, .graphifyignore (+113 more)
+[graphify extract] 5 file(s) skipped as potentially sensitive (rename or move if wrongly flagged): password-sources.json, password.json, review-password.json, review-password.txt, tokens.css
+[graphify extract] AST extraction on 683 code files...
+  AST extraction: 10/10 uncached files (100%)
+[graphify extract] wrote /Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/issue726-namespace-custody-owned-20261026T010211.917579000/namespace_custody/graphify/graphify-out/graph.json — 36999 nodes, 116238 edges (no clustering)
