@@ -819,5 +819,13 @@
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/workspace-v2-qualification.json",
     "baseRevision": "a4d02e7072c8bfacd1fe81a2270fec854f124d21",
     "remaining": "Native company56/control-main34/tasks and other current-main operations, original platform/manual/release/cutover gates"
+  },
+  "currentMainCiCorrection": {
+    "status": "scoped source CI correction accepted; whole718 OPEN",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-qualification.json",
+    "uiCasesPassed": 130,
+    "releaseIdentityCasesPassed": 46,
+    "coldCockpitBuild": "PASS",
+    "currentNativeReleaseQualified": false
   }
 }

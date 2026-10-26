@@ -326,7 +326,7 @@ test("authority loss invalidates the open review and hides old queue facts befor
     const calls = vi.fn(original); stubGlobal("fetch", calls);
     function Harness() {
       const [, setTick] = useState(0);
-      return <><button onClick={() => { auth = { ...auth, context: { ...auth.context!, companies: [] } }; setTick(x => x + 1); }}>Synthetic revoke</button><SuggestionsView /></>;
+      return <><button type="button" onClick={() => { auth = { ...auth, context: { ...auth.context!, companies: [] } }; setTick(x => x + 1); }}>Synthetic revoke</button><SuggestionsView /></>;
     }
     renderAt(<Harness />, { route: "/companies/acme-aps/agent-forslag", path: "/companies/:slug/agent-forslag" });
     await userEvent.click(await screen.findByRole("button", { name: /Godkend Overforfalden/ }));

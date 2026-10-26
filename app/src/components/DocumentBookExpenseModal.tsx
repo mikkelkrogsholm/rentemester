@@ -151,6 +151,7 @@ export function DocumentBookExpenseForm({
   const nativeValidationBlocked = native && (nativeInternalVoucher
     ? !nativeBoundInternalVoucher || bankTransactionId !== options?.document.sourceBankTransactionId || vatTreatment !== "exempt"
     : !visiblePreflight?.ok || preflightLoading);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: preflightReload deliberately repeats the read after explicit validation; preserve this trigger.
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -171,7 +172,7 @@ export function DocumentBookExpenseForm({
       if (!cancelled && latest.current.currentContext === currentContext) setPreflightError((err as MaybeApiError)?.message ?? "Momsvalideringen kunne ikke hentes.");
     }).finally(() => { if (!cancelled) setPreflightLoading(false); });
     return () => { cancelled = true; controller.abort(); };
-  }, [slug, documentId, native, currentContext, preflightReload]);
+  }, [slug, documentId, native, currentContext, preflightReload, options, nativeInternalVoucher]);
 
   function reviewPreflight() {
     if (!allowed || providerBlock.isBlocked() || preflightBusy || busy || !visiblePreflight || !options) return;

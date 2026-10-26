@@ -16,7 +16,7 @@ export class LoginAttempts {
   constructor(private readonly signOut: () => Promise<{ error?: unknown }>, private readonly read: () => Promise<{ error?: unknown; data?: { user?: unknown } | null }>) {}
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   snapshot = () => this.status;
-  private change(status: Status) { this.status = status; this.epoch++; this.listeners.forEach(listener => listener()); }
+  private change(status: Status) { this.status = status; this.epoch++; this.listeners.forEach(listener => { listener(); }); }
   start(email: string): LoginAttempt {
     if (this.status !== "idle") throw new Error("Authentication cleanup required");
     const attempt = { email: email.trim().toLowerCase(), ready: false };

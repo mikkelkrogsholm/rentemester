@@ -39,7 +39,7 @@ function Handoff({ owner }: { owner: boolean }) {
   const [archiveHash, setArchiveHash] = useState("");
   const t = lifecycle.transfer;
   const available = owner && t && fullTransfer(t) && !lifecycle.error && !lifecycle.loading;
-  useEffect(() => { void lifecycle.refresh(); }, []);
+  useEffect(() => { void lifecycle.refresh(); }, [lifecycle.refresh]);
   function prepare(action: Exclude<Review["action"], "map">) {
     if (!available || !t?.stateHash) return;
     const common = { expectedStateHash: t.stateHash, confirm: true, reason: reason.trim() };

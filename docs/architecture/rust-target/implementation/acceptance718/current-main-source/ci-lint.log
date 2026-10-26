@@ -1,0 +1,2 @@
+$ biome lint . --error-on-warnings "--max-diagnostics=100"
+Checked 1702 files in 280ms. No fixes applied.

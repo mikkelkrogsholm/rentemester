@@ -52,6 +52,7 @@ export function VirtualJournalList({ entries, renderEntry }: {
     }
   });
   // Filtering must start at a useful position, without remounting retained rows.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: replacing the filtered entry set must reset the viewport even when the virtualizer instance is stable.
   useLayoutEffect(() => { virtualizer.scrollToOffset(0); }, [entries, virtualizer]);
   return <div ref={viewport} {...stylex.props(...[cockpitStyles.journalVirtualViewport])} role="region" aria-label="Posteringer — brug pil op/ned, Page Up/Down, Home/End på en postering"
     onFocusCapture={event => {

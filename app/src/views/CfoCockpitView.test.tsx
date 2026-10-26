@@ -1,3 +1,5 @@
+import { withProtocol } from "../test/protocol";
+import { stubGlobal } from "../test/globals";
 import { beforeEach, describe, expect, test, vi } from "bun:test";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderAt } from "../test/render";
@@ -132,9 +134,10 @@ test("group profile selection binds the requested profile and missing profiles n
 test("CFO transport preserves repeated company and source filters plus exact monetary response", async () => {
   const {cfoAnalyticsApi}=await import("../lib/api/cfo-analytics");
   const response={...companyAnalytics,rows:[{...companyAnalytics.rows[0],amount:"-90071992547409.93"}]};
-  const fetcher=vi.spyOn(globalThis,"fetch").mockResolvedValue(new Response(JSON.stringify(response),{headers:{"content-type":"application/json"}}));
+  const fetcher=vi.fn(withProtocol(async () => Response.json(response), [["GET", "/api/cfo-analytics"]]));
+  stubGlobal("fetch", fetcher);
   const result=await cfoAnalyticsApi.cfoAnalytics({scope:"portfolio",from:"2026-01-01",to:"2026-08-30",companySlug:["alpha","beta"],account:"4200",party:"party:source",dimension:"project:one",currency:"EUR",aggregate:"sum",cursor:"exact-source-cursor",limit:1});
-  const query=new URL(String(fetcher.mock.calls[0]![0]),"http://localhost").searchParams;
+  const query=new URL(String(fetcher.mock.calls.find(([input]) => String(input).startsWith("/api/cfo-analytics?"))![0]),"http://localhost").searchParams;
   expect(query.getAll("companySlug")).toEqual(["alpha","beta"]);
   expect(Object.fromEntries(query.entries())).toMatchObject({account:"4200",party:"party:source",dimension:"project:one",currency:"EUR",aggregate:"sum",cursor:"exact-source-cursor",limit:"1"});
   expect(result).toEqual(response);

@@ -14,10 +14,12 @@ COPY package.json bun.lock bunfig.toml ./
 COPY app/package.json app/bunfig.toml ./app/
 RUN bun install --frozen-lockfile
 COPY app/ ./app/
+COPY protocol/ ./protocol/
 # The cockpit checks generated tokens and shares the browser-safe permission policy.
 COPY DESIGN.md ./
 COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
 COPY src/design ./src/design
+COPY crates/rentemester-desktop/src/design_tokens.rs ./crates/rentemester-desktop/src/design_tokens.rs
 COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
 # Shared task contracts and type-only playbook metadata are checked by tsc.
 COPY src/core/tasks-types.ts ./src/core/tasks-types.ts

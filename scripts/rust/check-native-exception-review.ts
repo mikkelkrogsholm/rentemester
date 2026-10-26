@@ -54,8 +54,9 @@ export async function checkNativeExceptionReview(page: Page, base: string, resta
   const replay = await page.request.post(`${url}/exceptions/${expected.id}/resolve`, { headers, data: { note: "Must not replace first review" } });
   if (!replay.ok() || (await replay.json()).exception.resolved !== false) throw new Error("Already resolved exception is not a source-compatible no-op");
   const actual = (await list("resolved")).find(r => r.id === expected.id);
+  if (!actual) throw new Error("Reviewed exception missing from resolved inventory");
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error("No-op/restart changed original review decision or source evidence");
-  if ((actual?.sourceEvidence as { underlyingInvariantSatisfied?: boolean }).underlyingInvariantSatisfied !== false || (actual?.postingPreview as { mustPostSeparately?: boolean }).mustPostSeparately !== true) throw new Error("Review falsely repaired the fixture's underlying invariant");
+  if ((actual.sourceEvidence as { underlyingInvariantSatisfied?: boolean }).underlyingInvariantSatisfied !== false || (actual.postingPreview as { mustPostSeparately?: boolean }).mustPostSeparately !== true) throw new Error("Review falsely repaired the fixture's underlying invariant");
   if ((await list("open")).some(r => r.id === expected.id)) throw new Error("Reviewed exception remains on open queue");
   await page.goto(`${base}/companies/synthetic/undtagelser?status=resolved`);
   await page.getByRole("row").filter({ hasText: message }).getByText("Løst", { exact: true }).waitFor();

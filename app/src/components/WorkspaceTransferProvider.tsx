@@ -1,6 +1,6 @@
 import { cockpitStyles } from "../design/cockpit.stylex";
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOptionalAuth } from "../lib/auth-context";
 import { workspaceTransferApi, type Transfer } from "../lib/api/workspace-transfer";
@@ -27,7 +27,7 @@ export function WorkspaceTransferProvider({ children }: { children: ReactNode })
     setWorkspaceWriteMode(scope, value.mode);
     setSnapshot({ scope, transfer: value, error: "", loading: false });
   }
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!native) return;
     const request = ++serial.current;
     setSnapshot(old => ({ ...old, loading: true }));
@@ -40,7 +40,7 @@ export function WorkspaceTransferProvider({ children }: { children: ReactNode })
         setSnapshot(old => ({ scope, transfer: old.scope === scope ? old.transfer : null, error: "Workspace-tilstanden kunne ikke kontrolleres. Skrivning og automatik er stoppet indtil ny kontrol.", loading: false }));
       }
     }
-  }
+  }, [native, scope]);
   useEffect(() => {
     if (!native) return;
     void refresh();
@@ -48,7 +48,7 @@ export function WorkspaceTransferProvider({ children }: { children: ReactNode })
     const focus = () => void refresh();
     window.addEventListener("focus", focus);
     return () => { serial.current++; clearInterval(timer); window.removeEventListener("focus", focus); clearWorkspaceWriteMode(scope); };
-  }, [native, scope]);
+  }, [native, scope, refresh]);
   return <Context.Provider value={{ enabled: native, transfer, error, loading: !matches || snapshot.loading, writable, scope, refresh, adopt }}>{children}</Context.Provider>;
 }
 export function WorkspaceTransferBanner() {

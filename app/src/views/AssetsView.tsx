@@ -722,6 +722,7 @@ function WriteOffModal({
   const context = useRef(auth?.context);
   context.current = auth?.context;
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: permission or source snapshot changes invalidate the pending review.
   useEffect(() => { setReview(null); }, [auth?.context, allowed, docs.data, chart.data]);
   const nativeBlocked = nativeAccounts && (sendLock.blocked || !allowed || !!receipt);
   const refreshNative = async () => { await Promise.all([api.assets(slug), api.journal(slug)]); if (active.current) onRefresh(); };

@@ -14,7 +14,7 @@ afterEach(() => { sessionStorage.clear(); restoreGlobals(); });
 beforeEach(() => sessionStorage.clear());
 const row = { templateId: 31, templateHash: "a".repeat(64), stateHash: "b".repeat(64), state: "enabled", ownerUserId: user.id, error: null, missedCount: 0, queued: [] };
 const plan = { template: { id: 31, name: "Synthetic service", interval: "monthly", intervalCount: 1, firstIssueDate: "2026-08-25", paymentTermsDays: 14, deliveryPeriodMode: "issue_month", payload: { currency: "DKK", lines: [{ description: "Synthetic service", quantity: 1, unitPriceExVat: 100 }] } }, templateId: row.templateId, templateHash: row.templateHash, stateHash: row.stateHash, asOfDate: "2026-10-25", normalDue: { periodIndex: 2, issueDate: "2026-10-25" }, missedCount: 0, missed: [], truncated: false, queued: [], planHash: "c".repeat(64) };
-function Start() { const auth = useAuth(), controls = useScheduledRecurringAutomation(); return <button disabled={!auth.context} onClick={() => controls!.start("a", 31, row.templateHash)}>Start synthetic</button>; }
+function Start() { const auth = useAuth(), controls = useScheduledRecurringAutomation(); return <button type="button" disabled={!auth.context} onClick={() => controls!.start("a", 31, row.templateHash)}>Start synthetic</button>; }
 function mount() { return renderAt(<AuthProvider hosted backend="rust"><MutationMemoryProvider><ScheduledRecurringProvider><Start /></ScheduledRecurringProvider></MutationMemoryProvider></AuthProvider>); }
 function setup(result: unknown = { dispatch: { status: "succeeded" }, generation: { documentId: 101, templateId: 31, periodIndex: 2 } }, missed = false) {
   mockFetch({
@@ -45,7 +45,7 @@ test("unconfirmed success persists a payload-free lock and explicit restart cann
   setup({ dispatch: { status: "succeeded" } }); mount(); await start();
   await screen.findByText(/Kontrollér kørselsstatus og adgang/);
   expect(posts()).toHaveLength(1);
-  const saved = sessionStorage.getItem("rentemester:uncertain-operations:v1")!;
+  const saved = JSON.stringify(Object.entries(localStorage).filter(([key]) => key.startsWith("rentemester:uncertain-operations:v2:") && !key.endsWith(":probe")));
   expect(JSON.parse(saved)).toHaveLength(1); expect(saved).not.toContain("synthetic");
   await start(); await screen.findByText(/En tidligere handling har uafklaret udfald/);
   expect(posts()).toHaveLength(1);

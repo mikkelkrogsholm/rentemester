@@ -61,7 +61,7 @@ test("unowned legacy blockers quarantine every user until explicit reconciliatio
 test("pre-send begin persists before a write and refuses a repeated attempt", async () => {
   function Attempt() {
     const memory = useMutationBlock("native-confirmation");
-    return <button onClick={() => { if (memory.begin()) write(); }}>Attempt</button>;
+    return <button type="button" onClick={() => { if (memory.begin()) write(); }}>Attempt</button>;
   }
   const write = vi.fn();
   render(<MutationMemoryProvider><Attempt /></MutationMemoryProvider>);

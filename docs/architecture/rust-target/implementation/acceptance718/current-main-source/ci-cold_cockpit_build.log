@@ -1,0 +1,82 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.76kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#2 DONE 0.0s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#4 DONE 0.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 217B done
+#5 DONE 0.0s
+
+#6 [cockpit-build  1/16] FROM docker.io/oven/bun:1.4.0-slim@sha256:e0ee68d16ccb9927bf02aa7dd8fd4bf3369ee6d46da04faa72b05ce8bfd135f6
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 38.91kB 0.0s done
+#7 DONE 0.0s
+
+#8 [cockpit-build  2/16] WORKDIR /build
+#8 CACHED
+
+#9 [cockpit-build  3/16] COPY package.json bun.lock bunfig.toml ./
+#9 CACHED
+
+#10 [cockpit-build  4/16] COPY app/package.json app/bunfig.toml ./app/
+#10 CACHED
+
+#11 [cockpit-build  5/16] RUN bun install --frozen-lockfile
+#11 CACHED
+
+#12 [cockpit-build  6/16] COPY app/ ./app/
+#12 DONE 0.1s
+
+#13 [cockpit-build  7/16] COPY protocol/ ./protocol/
+#13 DONE 0.1s
+
+#14 [cockpit-build  8/16] COPY DESIGN.md ./
+#14 DONE 0.0s
+
+#15 [cockpit-build  9/16] COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
+#15 DONE 0.0s
+
+#16 [cockpit-build 10/16] COPY src/design ./src/design
+#16 DONE 0.0s
+
+#17 [cockpit-build 11/16] COPY crates/rentemester-desktop/src/design_tokens.rs ./crates/rentemester-desktop/src/design_tokens.rs
+#17 DONE 0.1s
+
+#18 [cockpit-build 12/16] COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
+#18 DONE 0.0s
+
+#19 [cockpit-build 13/16] COPY src/core/tasks-types.ts ./src/core/tasks-types.ts
+#19 DONE 0.1s
+
+#20 [cockpit-build 14/16] COPY src/core/knowledge-pages.ts ./src/core/knowledge-pages.ts
+#20 DONE 0.1s
+
+#21 [cockpit-build 15/16] COPY src/core/canonical-json.ts ./src/core/canonical-json.ts
+#21 DONE 0.1s
+
+#22 [cockpit-build 16/16] RUN bun run cockpit:build     && find app/dist -print0 | xargs -0 touch -d "2026-10-26T00:00:00Z"
+#22 0.204 $ bun run --filter rentemester-cockpit build
+#22 0.209 rentemester-cockpit build: $ bun run ../scripts/design-tokens.ts --check
+#22 22.49 rentemester-cockpit build: Exited with code 0
+#22 DONE 22.6s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 2.5s done
+#23 writing image sha256:ab59ae40585a794b95c512debe79bf69efbd0db518ec01b119ddda59148a8a17 done
+#23 naming to docker.io/library/rentemester-source-ci:issue718-cockpit done
+#23 DONE 2.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/j6pujb6xv3p0oqk37bbelkdci

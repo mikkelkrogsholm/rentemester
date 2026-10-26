@@ -56,6 +56,7 @@ function Runner({ job, ownerUserId, stopped, busyCompanies }: { busyCompanies: S
   // Callback changes during status rendering must not restart the timer or replay a write.
   const [callbacks] = useState(() => ({ stopped, outcome, pending }));
   callbacks.stopped = stopped; callbacks.outcome = outcome; callbacks.pending = pending;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a changed owner/session scope must cancel the existing automation before restarting.
   useEffect(() => {
     let cancelled = false, timer: ReturnType<typeof setTimeout> | undefined;
     async function tick() {

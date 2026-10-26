@@ -54,12 +54,12 @@ describe("native purchase VAT preflight", () => {
     { ...snapshot(), exception: { id: -1, status: "open", severity: "high", message: "x", requiredAction: null, createdAt: "now" } },
     { ...snapshot(), privateBody: {} }, { ok: true, preflight: snapshot(true) },
   ];
-  invalid.forEach((value, index) => test(`malformed source ${index + 1} remains unknown without fallback`, async () => {
+  invalid.forEach((value, index) => { test(`malformed source ${index + 1} remains unknown without fallback`, async () => {
     const spy = setup(value);
     await expect(documentsApi.applyNativeDocumentVatPreflight("acme-aps", 1, { confirm: true })).rejects.toMatchObject({ code: "internal" });
     expect(spy.mock.calls.filter(c => String(c[0]) === path)).toHaveLength(1);
     expect(spy.mock.calls.some(c => String(c[0]).includes("/documents/"))).toBe(false);
-  }));
+  }); });
   for (const status of [401, 403, 422, 500]) test(`HTTP ${status} cannot be accepted as a source false`, async () => {
     setup(snapshot(), status);
     await expect(documentsApi.applyNativeDocumentVatPreflight("acme-aps", 1, { confirm: true })).rejects.toMatchObject({ status });

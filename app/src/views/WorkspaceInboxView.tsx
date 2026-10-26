@@ -31,6 +31,7 @@ function CompanyInbox({ slug }: { slug: string }) {
   const ingestIdentity = useRef<{ key: string; receivedAt: string }>();
   const outcome = useMutationOutcome(() => data.reload());
   const reload = () => data.reload();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: changing the target invalidates the reviewed metadata and company-bound mutation.
   useEffect(() => { setReview(undefined); setMetadataSource(undefined); }, [target]);
   function inspect(source: InboxSource, action: Review["action"]) {
     if (!target) { setMessage("Vælg målvirksomheden efter gennemgang."); return; }

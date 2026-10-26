@@ -1,0 +1,84 @@
+{
+  "format": "rentemester-current-main-ci-correction/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "baseRevision": "d0102f38fdb123cee73a14ffb1620f5006e8fb74",
+  "failedCiHead": "a4d02e7072c8bfacd1fe81a2270fec854f124d21",
+  "diagnoses": [
+    "Legacy cockpit build omitted native generated design source and protocol fixture build inputs",
+    "22lint findings: real closures/semantics corrected; required reset triggers explicitly retained",
+    "Product/web0.3.1 vs Cargo0.2.0 and Tauri0.1.0; strict build identity rejects drift",
+    "Four old uncertainty assertions expected retired v1 session array; actual opaque per-operation v2 localStorage blockers remain required",
+    "CFO transport fixture omitted mandatory protocol discovery; uses existing withProtocol and exact decimal/selector assertions"
+  ],
+  "sourceFiles": {
+    "Cargo.lock": "9a4ba96e2413b655689514dec202c9ce2e43ad11673c36c19247c718c03e69fd",
+    "Cargo.toml": "051660d27e5296c9aae1cd1c641c09880197ab4563803df2ef58d8ea1c897866",
+    "Dockerfile": "9ebfaf15df2f7ea25357051a77002615a00400e069a0ca9fc67917a7ff703f4c",
+    "app/src/components/DocumentBookExpenseModal.tsx": "87f21e20b920c3d5aab57928b12048921cf56b6fab457d62dd31690dd1c6602d",
+    "app/src/components/ScheduledRecurringProvider.test.tsx": "d24729260dbe77ad7dc08afbe59e9776ffe99005d12e39df1ddfbe4aef85c389",
+    "app/src/components/ScheduledRecurringProvider.tsx": "8b1ab4544a90fa71bdf4b5f2e1481b52f5d6bec1c4cf1081ebf93ba8e6da8e24",
+    "app/src/components/VirtualJournalList.tsx": "825cd27d4aed1fc38871e64d61c517b1749d9f342ea67735e50c312ffd0e3c82",
+    "app/src/components/WorkspaceTransferProvider.test.tsx": "65393b6cbc6c24a2b06519542d6e66fa40a8a8778fe652722cad88766a9b988f",
+    "app/src/components/WorkspaceTransferProvider.tsx": "598d2fc0d22f0fc820bb5434cc2d1d1e5836b98b5fd7d04423468c5825c6b011",
+    "app/src/lib/api/document-vat-preflight.test.ts": "44970e7b75069428dc164c12d32dc83dead08d2ad612e09aeb98b4c32e61dfed",
+    "app/src/lib/login-attempt.ts": "b82e23151e53244bdc3d5b3b586ea9cb67baa1e2744de4c1a6f43b6d60d5e081",
+    "app/src/lib/mutation-memory.test.tsx": "d9bd533301d994a701a64e2cfc8995e3a0ccee3411a2f918e6604e2426ec5141",
+    "app/src/views/AssetsView.tsx": "ca5cc304b6d5c04957d030d29d2a9a480353c55d8aad079008999bafa4b77714",
+    "app/src/views/CfoCockpitView.test.tsx": "76c375297aaa7416866d9c699ac9acef4bd97cdf97358750bfc1b1f6bd0c356a",
+    "app/src/views/CfoCockpitView.tsx": "a8a046cf113d82488159b0c9dcda02ef849bcd431f4ec1db5a9863f73a59bac9",
+    "app/src/views/SuggestionsView.test.tsx": "5f110c45fbd2d994efc615cb70a54720ae858455f278bcfc6c0193856bf227e4",
+    "app/src/views/WorkspaceHandoffView.test.tsx": "8ee4ee00a4ec7bf164d90b23a0e7665625089338a9bb809f0f727e62c9d5d5e0",
+    "app/src/views/WorkspaceHandoffView.tsx": "7745ac4293ae6422d2abe0c36e0dec122bf2faee95938a917363f7aaebab8fc4",
+    "app/src/views/WorkspaceInboxView.tsx": "c7a0efc1beaee6ce56b4cc49970d3d30c6dc3bee8e9c397d9bb29ba72287ee96",
+    "crates/rentemester-desktop/tauri.conf.json": "22533074f44ef5f4bff0c1079d754e0feab47d845ae82409ee170b6f1fd3c715",
+    "scripts/rust/check-native-exception-review.ts": "1d43024a2f9c9ec2e751c456dcc2951c46538cf8744dbcb99b07cb0a6d4960c6"
+  },
+  "checks": {
+    "lint": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-lint.log",
+      "sha256": "9e951fcdd4d27a63ecbb292a54704d368645c8600169b10d633e90d1d3db5ece"
+    },
+    "ui": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-ui.log",
+      "sha256": "3260d8b1f5ab0fc2c6ba03c4b38544ff02f65721baccf3e339c53c76c2488af7"
+    },
+    "release_identity_tests": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-release_identity_tests.log",
+      "sha256": "50e50a876912579472ac2bbed5a080776532eb10dfd6c85118db70db24e5de91"
+    },
+    "local_web_build": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-local_web_build.log",
+      "sha256": "35ea3fd2c084837e657951882f6c01a587ea4022d9ecfb345f2c15afe2168204"
+    },
+    "cold_cockpit_build": {
+      "result": "PASS",
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-source/ci-cold_cockpit_build.log",
+      "sha256": "47dc2201686348f57dd91fa6caaac6a1e6b3a2e6d39b49091eeebfb350bffa0a"
+    }
+  },
+  "lockedCargoVersions": {
+    "rentemester-pdf-worker": "0.3.1",
+    "rentemester-desktop": "0.3.1",
+    "rentemester-client": "0.3.1",
+    "rentemester-runtime": "0.3.1",
+    "rentemester-engine": "0.3.1",
+    "rentemester-host": "0.3.1",
+    "rentemester-application": "0.3.1",
+    "rentemester-storage": "0.3.1",
+    "rentemester-cli": "0.3.1",
+    "rentemester-mcp": "0.3.1",
+    "rentemester-server": "0.3.1"
+  },
+  "coldImage": "sha256:ab59ae40585a794b95c512debe79bf69efbd0db518ec01b119ddda59148a8a17",
+  "review": "Actual diff inspected: stable refresh keeps cancellation/serial/write gates; real missing closure values included. Intentional dependency resets retained with narrow documented correctness annotations; StyleX gate unchanged. No protocol, uncertain-write, source-evidence or identity controls relaxed. All11local versions aligned without external dependency upgrades. Build input COPYs only extend existing buildstage.",
+  "limitations": [
+    "Cold Docker target is cockpit-build only; no new Linux native package/release/whole718 acceptance",
+    "Actual new-head CI must run after push; old-head failures are retained",
+    "Other current-main native ports and original final gates remain open"
+  ]
+}

@@ -12,10 +12,10 @@ test("mode changes preserve open review, state and in-flight unknown outcome han
   const pending = new Promise<void>(resolve => { complete = resolve; });
   function Review() {
     const [open, setOpen] = useState(false), [confirmed, setConfirmed] = useState(false), [outcome, setOutcome] = useState("");
-    return <><button onClick={() => setOpen(true)}>Open review</button><a href="/reports">Read report</a>
+    return <><button type="button" onClick={() => setOpen(true)}>Open review</button><a href="/reports">Read report</a>
       {open && <Dialog title="Reviewed send" onClose={() => setOpen(false)}>
         <label><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />Reviewed original</label>
-        <button onClick={() => void pending.then(() => setOutcome("Unknown outcome retained"))}>Confirm send</button>
+        <button type="button" onClick={() => void pending.then(() => setOutcome("Unknown outcome retained"))}>Confirm send</button>
         {outcome && <p role="alert">{outcome}</p>}
       </Dialog>}
     </>;
@@ -23,7 +23,7 @@ test("mode changes preserve open review, state and in-flight unknown outcome han
   function Harness() {
     const [writable, setWritable] = useState(true);
     const lifecycle: Lifecycle = { enabled: true, writable, scope: "synthetic", transfer: null, error: writable ? "" : "Status unavailable", loading: false, refresh: async () => {}, adopt: () => {} };
-    return <Context.Provider value={lifecycle}><button onClick={() => setWritable(v => !v)}>Change mode</button><WorkspaceReadOnlyGuard><Review /></WorkspaceReadOnlyGuard></Context.Provider>;
+    return <Context.Provider value={lifecycle}><button type="button" onClick={() => setWritable(v => !v)}>Change mode</button><WorkspaceReadOnlyGuard><Review /></WorkspaceReadOnlyGuard></Context.Provider>;
   }
   renderAt(<Harness />, { route: "/companies/synthetic/fakturaer" });
   await userEvent.click(screen.getByRole("button", { name: "Open review" }));
