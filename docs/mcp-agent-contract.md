@@ -1,21 +1,44 @@
 # MCP agent contract — the standalone tool surface (#203)
 
-## Native Rust surface
+## Current native Rust contract
 
-The TypeScript contract below remains the legacy reference. The Rust MCP
-process exposes its actual tool names and schemas with `--catalogue`; use
-`meta_about`, `agent_capability_search` and `agent_workflow_describe` to discover
-the finite native supplier-payable journey. `toolCount` comes from the live
-MCP registry, not this document's historical count. Native metadata explicitly
-reports `fullCoverage:false`, unavailable TypeScript rule-bundle identity and
-unavailable commit/build-time identity when not accessible to that metadata
-module. Verify the packaged build identity separately.
+Use the identified native MCP binary and [native installation guide](mcp-install.md).
+`--help` and `--catalogue` are standalone offline lookups. The live `tools/list`,
+`meta_about`, `agent_capability_search` and `agent_workflow_describe` expose the
+selected revision's schemas, safety, ordered review/apply and retry boundaries.
+The accepted registry contains448tools; do not use a historical count or assume
+discovery alone proves full product/release acceptance. Verify package/build
+identity separately and consult the actual metadata rather than assuming an old
+`fullCoverage` value or a supplier-payable-only catalogue.
 
-Discovery is read-only and public. Accounting operations still require current
-company authority and explicit confirmation. Native payable writes have no
-generic keyed retry promise: reconcile an uncertain outcome using payables
-(with `status:all`), bank, journal and documents before further action. The
-[native server contract](rust-server.md) documents scope and evidence.
+The native process requires an explicit HTTPS server or verified private
+`--local-profile`, and exactly one private `--cookie-file` or
+`--service-key-file`. It joins the existing common Rust server. A local-profile
+name, handshake identity, caller actor or `RENTEMESTER_MCP_USER` is not authority.
+The server's current human/MFA or explicitly scoped service principal decides
+access on every call, including receipt readback and revocation.
+
+Use an explicit authorized company and the running tool's exact input schema.
+Preserve source identity, body, plan/review hash and original idempotency key
+where the operation defines them. Confirmation is operation-specific; discovery
+never authorizes apply. Not every mutation has keyed replay. Unknown outcomes
+require canonical journal/document/invoice/receipt readback and deliberate
+reconciliation; never invent a new key or automatic transport retry. Prior
+committed effects remain when a later step fails. Accounting, access, immutable
+original, period, backup and moved/staged-source controls remain server-owned.
+
+The common Rust runtime now implements the accepted original CLI/MCP contracts;
+whole retirement still depends on the original parity, signed/platform release,
+cutover and final installed-desktop gates. This guide does not close those gates.
+Use [owner/operator support](rust-support.md) for recovery and safe diagnostic
+material. No credentials or private accounting data belong in support bundles.
+
+## Historical TypeScript contract and preserved baseline
+
+The following214-tool reference records the historical source contract. Its
+client-name/env attribution and company-path conventions do not override native
+credential-derived authority or the running native schemas. Retain the reference
+for compatibility evidence; use the current native contract above for operation.
 
 This is the operating contract for an **external agent** (Claude Desktop,
 Cursor, Claude Code, Codex, …) that drives Rentemester through the **MCP

@@ -1,4 +1,90 @@
-# Runtime bookkeeper agent — operating contract (#183)
+# Runtime bookkeeper agent — operating contract
+
+The current entrypoint uses the common Rust server and the same accounting
+writers as web, Tauri, CLI and MCP. The sections below describe current native
+operation first; the historical TypeScript loop specification is retained after
+it as compatibility evidence. Attribution metadata is not an access credential.
+See [onboarding](onboarding.md), [MCP installation](mcp-install.md) and
+[owner/operator support](rust-support.md). Full legacy retirement in #727 awaits
+the original parity/release/cutover gates; no production readiness is inferred
+from this document.
+
+## Current AgentRun through the common Rust server
+
+The native `rentemester-rust agent run` now executes the complete existing loop:
+`ingest → book → route → payables → reconcile → deadlines → report`.
+It uses the same authoritative Rust engine/server as web and Tauri. It is an
+explicit financial run, including guarded expense booking and corroborated
+creditor payments; it is not a proposal-only mode or a new scheduled agent.
+
+Use the existing explicit `--server` or verified `--local-profile`, current
+`--cookie-file` or `--service-key-file`, `--company`, required `--as-of`, and
+optional original `--inbox`, `--metadata-dir`, `--bank-csv`, `--json`/`--format`.
+The invocation supplies its transport confirmation; there is no new CLI
+`--confirm` flag. `--actor` only asserts the actual credential-derived principal.
+The native report contains the original15fields, a canonical company slug and
+actual `user:`/`service_account:` identity. Journal attribution uses
+`rentemester-runtime-agent` before the existing canonical writer commits.
+Default non-agent writer programs remain unchanged.
+
+Rules are explicit trusted operator configuration, per exact company slug:
+`agentPolicies[slug].supplierRules` contains `token`, `expenseAccount`,
+`vatTreatment`, `label`, and required `assetLike`. Map to an existing active
+company expense account; no chart, company, supplier or equipment category is
+inferred as a built-in default. Empty policy routes confident matches to human
+review. The HTTP request cannot supply rules, actor authority or providers.
+
+For `--bank-csv`, configure the existing confirmed `bank` account role and exactly
+one active bank account mapped to that asset; all statement currencies must
+match it. Missing/ambiguous mapping fails with an actionable report, retaining
+already completed intake. For several bank accounts, use the existing bank
+import with an explicit account first, then run AgentRun without `--bank-csv`.
+All physical-source, current-authority, VAT, amount, period and duplicate guards
+remain in the common writers. Each effect commits separately: an error is not
+an all-run rollback, and unknown/retired responses are never automatically retried.
+
+The original seven-phase flow was accepted through the normal CLI/server/shared
+React journey with current human/service authority, duplicate no-reposting,
+retained intake after later failure and refusal paths. #716 is closed for its
+complete original scope. Discover the current catalogue from the running
+interfaces; historical1615-operation counts do not describe the current registry.
+No standalone MCP `agent_run` is invented. Overall epic672, release/cutover,
+retirement and final installed-desktop acceptance remain open.
+
+## CLI launcher
+
+The default `bin/rentemester` executes the packaged sibling `rentemester-rust`,
+then PATH when no sibling exists; `RENTEMESTER_RUST_CLI` explicitly selects an
+artifact. It never builds or retries a failed operation using another engine.
+The historical Bun CLI is available only by explicit `RENTEMESTER_LEGACY_CLI=1`.
+Private bootstrap and stopped-server schema operations retain common Rust Owner
+admission and private operator allowlists; command actor/path assertions do not
+grant authority. Uncertain effects must be reconciled, not automatically retried.
+
+## Native Rust authority and compatibility (#716)
+
+The installed standard CLI selects the existing Rust binary; it does not compile
+or silently invoke Bun. The original seven-phase `agent run` is an orchestrator
+in the same common Rust Owner/server, not a second accounting engine. In this
+profile the current authenticated human/service principal is the authority;
+source `agent:rentemester-bookkeeper` metadata is not a credential or a grant.
+Caller actor assertions must match that actual principal. Existing company,
+period, VAT, immutable-original, backup and transfer fences still apply.
+
+Each dependent mutation is sent once. A failed later phase does not roll back
+previous committed intake/bookkeeping. Unknown outcomes require canonical
+readback and deliberate reconciliation, never automatic mutation retry. Current
+CLI discovery preserves the original265 source identities; current schemas and
+metadata come from the selected revision. Discovery is not whole-product acceptance.
+Provider availability, qualified Linux broker environments, live migration and
+final installed desktop acceptance are not established by syntax/declaration tests.
+
+## Historical TypeScript loop specification
+
+The following source-era spec preserves deterministic phases/report semantics.
+Its canonical `agent:` identity is historical attribution, not native authority.
+Use the current credential/principal and invocation contracts above.
+
 
 Rentemesters mission is **"agenten er bogholderen"**. The hands (MCP tools,
 CLI), the guardrails (rules, append-only ledger, exception queue) and the
@@ -228,80 +314,3 @@ A single run produces one `AgentRunReport` object. Top-level fields:
 - An LLM choosing accounts at posting time. The rule base is deterministic;
   swapping in an LLM to *propose* rules offline is a future extension, but the
   posting-time decision must always remain a deterministic lookup.
-
-## 2026-10-25 — Original AgentRun through the common Rust server
-
-The native `rentemester-rust agent run` now executes the complete existing loop:
-`ingest → book → route → payables → reconcile → deadlines → report`.
-It uses the same authoritative Rust engine/server as web and Tauri. It is an
-explicit financial run, including guarded expense booking and corroborated
-creditor payments; it is not a proposal-only mode or a new scheduled agent.
-
-Use the existing explicit `--server` or verified `--local-profile`, current
-`--cookie-file` or `--service-key-file`, `--company`, required `--as-of`, and
-optional original `--inbox`, `--metadata-dir`, `--bank-csv`, `--json`/`--format`.
-The invocation supplies its transport confirmation; there is no new CLI
-`--confirm` flag. `--actor` only asserts the actual credential-derived principal.
-The native report contains the original15fields, a canonical company slug and
-actual `user:`/`service_account:` identity. Journal attribution uses
-`rentemester-runtime-agent` before the existing canonical writer commits.
-Default non-agent writer programs remain unchanged.
-
-Rules are explicit trusted operator configuration, per exact company slug:
-`agentPolicies[slug].supplierRules` contains `token`, `expenseAccount`,
-`vatTreatment`, `label`, and required `assetLike`. Map to an existing active
-company expense account; no chart, company, supplier or equipment category is
-inferred as a built-in default. Empty policy routes confident matches to human
-review. The HTTP request cannot supply rules, actor authority or providers.
-
-For `--bank-csv`, configure the existing confirmed `bank` account role and exactly
-one active bank account mapped to that asset; all statement currencies must
-match it. Missing/ambiguous mapping fails with an actionable report, retaining
-already completed intake. For several bank accounts, use the existing bank
-import with an explicit account first, then run AgentRun without `--bank-csv`.
-All physical-source, current-authority, VAT, amount, period and duplicate guards
-remain in the common writers. Each effect commits separately: an error is not
-an all-run rollback, and unknown/retired responses are never automatically retried.
-
-The full ordinary CLI/server/shared-React synthetic proof at90aef554 produced
-five journals/fourteen lines: three explicit payable registrations, one automatic
-expense and one creditor settlement. Four bank rows/two links, one payment,
-actual-principal agent attribution, native proposals visible in the existing
-cockpit, duplicate no-reposting, pre-ingest bad-sidecar refusal, retained intake
-after bank failure and reviewer refusal were independently checked. Native
-fixtures also cover service identity/revocation, physical tamper, VAT/fixed-asset
-refusal, exact phase/report shape and unknown outcomes. The current catalogue
-is1615operations (651HTTP/532CLI/432MCP); the previous1613business contracts and
-schemas are preserved except source pins. No standalone MCP `agent_run` existed
-in the source or is invented here.
-
-This accepts this original user flow only. Full716, remaining original commands,
-all55/J01–J07, cutover and final installed desktop acceptance remain open. The
-legacy default entrypoint and live company workspaces are unchanged.
-
-## CLI launcher
-
-The default `bin/rentemester` executes the packaged sibling `rentemester-rust`,
-then PATH when no sibling exists; `RENTEMESTER_RUST_CLI` explicitly selects an
-artifact. It never builds or retries a failed operation using another engine.
-The historical Bun CLI is available only by explicit `RENTEMESTER_LEGACY_CLI=1`.
-Private bootstrap and stopped-server schema operations retain common Rust Owner
-admission and private operator allowlists; command actor/path assertions do not
-grant authority. Uncertain effects must be reconciled, not automatically retried.
-
-## Native Rust authority and compatibility (#716)
-
-The installed standard CLI selects the existing Rust binary; it does not compile
-or silently invoke Bun. The original seven-phase `agent run` is an orchestrator
-in the same common Rust Owner/server, not a second accounting engine. In this
-profile the current authenticated human/service principal is the authority;
-source `agent:rentemester-bookkeeper` metadata is not a credential or a grant.
-Caller actor assertions must match that actual principal. Existing company,
-period, VAT, immutable-original, backup and transfer fences still apply.
-
-Each dependent mutation is sent once. A failed later phase does not roll back
-previous committed intake/bookkeeping. Unknown outcomes require canonical
-readback and deliberate reconciliation, never automatic mutation retry. Current
-CLI discovery is source metadata for 265 identities, not whole-product acceptance.
-Provider availability, qualified Linux broker environments, live migration and
-final installed desktop acceptance are not established by syntax/declaration tests.

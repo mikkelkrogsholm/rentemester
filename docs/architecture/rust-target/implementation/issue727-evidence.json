@@ -1,0 +1,53 @@
+{
+  "issue": 727,
+  "whole_issue_accepted": false,
+  "documentation_handover_accepted": true,
+  "checkedAt": "2026-10-26T01:42:29.715190+00:00",
+  "baseRevision": "09bf870cd69c14f02abe4f85cc4ab752e82a230d",
+  "productRuntimeChanged": false,
+  "runtimeRetirementPerformed": false,
+  "guideFiles": {
+    "docs/onboarding.md": "cb82a3424982e6aefdaa7075ca6e7627c53e2891a21b5c7134e4603b6e7f35b1",
+    "docs/mcp-install.md": "020645e96b18d0e53de5fffe4fc0222d8ef1c960cab81ff69b1081c447bb26e5",
+    "docs/mcp-agent-contract.md": "1a1fc1954a445a6271a408a2d54230d00ca42a52c7e28decc3408ecd620c492b",
+    "docs/runtime-agent-contract.md": "2c50382cda2430c0e25e8d9c330cbf05a2d2caf82f13d79c1105caf181f69b94",
+    "docs/rust-support.md": "46c717fafccb77cf02a8d04121a60b6377db7172ecb0c516017d78c22eeeefd9"
+  },
+  "reviewedSourceContracts": {
+    "bin/rentemester": "e2184b7db75a42c89b1899957d29b0091a236429229aa894621ea4248690461b",
+    "bin/rentemester-mcp": "3e1a47c365d418e92c6d9e368c76ad35168fcac9084a5a3da1cfd944f1bbc8f2",
+    "rust-toolchain.toml": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+    "crates/rentemester-mcp/src/main.rs": "8146a67c518b9964c865646c130392c478f09fd9e65cc879b67dbbfeb8cea2cf",
+    "crates/rentemester-mcp/src/original_discovery123.rs": "375b1a5cfcd6a98193cf62cd1fa8f12b5c0680bf40f1027ad203d8c2ef61b100",
+    "crates/rentemester-cli/src/main.rs": "85ca91c29e84e59d21bf20848e04d872a45a5290ac604d367df7010fb94cf5e6",
+    "crates/rentemester-server/src/main.rs": "a53a4c7d6ba3cd433dc1f864de3f3c814f1194cff46a1dd4cc2339f296ea90de",
+    "docs/cli-contract.md": "97232fea07ad7244234ba68a4de2907a7d941ea698f7ccaf308fec9c5db02001",
+    "docs/architecture/rust-target/implementation/namespace-custody.md": "5c0acca1b7fa09006668e188bd2666e6fcc6cb38f9000f4c745d61ea203c17d9"
+  },
+  "review": [
+    "Native onboarding separates owner/operator/new data/import/first reviewed booking/backup; one Rust server/shared React, final release and installed desktop gates remain.",
+    "Native MCP uses explicit identified binary, standalone help/catalogue, server or verified local profile, exclusive private cookie/service credential, current principal authority and operation-specific schemas/retry. Existing repository Bun MCP wrapper accurately disclosed; no hidden replacement or false retirement.",
+    "Current full original AgentRun contract moved first, credential authority and separate committed effects preserved; historical TS spec/provenance retained, stale full716-open/default-launcher/count claims corrected.",
+    "Support guide covers backup/trust/fresh recovery, failed local/server runtime, moved source and canonical unknown-outcome readback, current32 raw-copy refusal and old31 copy custody limit.",
+    "Support material is a manually reviewed allowlist record of public build/platform/mode/time/stage/sanitized-code/readiness only. No automatic collector/redaction guarantee; credentials/config/raw logs/financial/private data excluded.",
+    "34 repository-relative guide links resolve; git diff --check passes after trimming one final blank line. No runtime build, provider call, financial mutation or new test platform required for this documentation-only change."
+  ],
+  "remainingOriginalAcceptance": [
+    "Full exact-revision baseline and original723/724/725/726 release/cutover/platform/native gates remain required.",
+    "Only after gates: replace remaining live MCP entrypoint and remove replaced Bun/Node/TS backend/CLI/MCP/auth/PDF worker dependencies; preserve historical compatibility evidence.",
+    "Qualify exact final runtime dependency bill and full support/platform/version policy on actual retirement revision. Current guides distinguish native Rust/build tooling and retained legacy wrapper; they do not certify completed retirement."
+  ],
+  "actualOfflineBuildInfo": {
+    "binarySha256": "c59d058bb9d9e66e54932f5d12a3bcf16508dc02ff172abfbd8da8eab49f8cb1",
+    "exitCode": 0,
+    "output": {
+      "apiEpoch": 1,
+      "companySchema": 36,
+      "controlSchema": 32,
+      "format": "rentemester-native-server/1",
+      "platform": "macos-aarch64",
+      "version": "0.2.0"
+    },
+    "scope": "No workspace/credentials/network. Actual output lacks source commit; guide explicitly obtains revision/checksums from package manifest."
+  }
+}

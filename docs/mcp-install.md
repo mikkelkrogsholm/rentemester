@@ -1,190 +1,121 @@
-# Rentemester MCP-server — installation
+# Tilslut den native Rust MCP-klient
 
-Rentemester eksponerer sin CLI som en MCP-server, så agenter (Claude
-Desktop, Cursor, Claude Code, Codex m.fl.) kan kalde
-bogføringskommandoer direkte. Serveren eksponerer hele tool-surface'en —
-**214 tools** — fordelt på domænerne `invoice_*`, `bank_*`, `journal_*`,
-`vat_*`, `system_backup_*`, `asset_*`, `mileage_*`, `recurring_invoice_*`
-m.fl. Den autoritative liste med klassifikation og inputs står i
-[`docs/mcp-tool-surface.md`](mcp-tool-surface.md); kør `tools/list` mod en
-kørende server for den faktiske, aktuelle liste.
+Rentemesters native MCP-proces er en stdio-klient til den fælles Rust-server.
+Den starter ingen ekstra bogføringsmotor. Brug en absolut sti til den
+identificerede native `rentemester-mcp`-binær. Repositoryets
+`bin/rentemester-mcp` er fortsat en Bun-wrapper; den endelige udfasning i #727
+venter på de oprindelige release-/cutovergates.
 
-`initialize`-svaret indeholder også en kort `instructions`-streng der
-orienterer agenten om rækkefølge og confirm/destructive-konventioner. Den
-fulde kontrakt for den løse tool-surface står i
-[`docs/mcp-agent-contract.md`](mcp-agent-contract.md).
+## Kontrollér binær og katalog
 
-## Installer den fælles runtime
-
-Følg først den kanoniske [første-virksomhed-guide](onboarding.md): den
-installerer både root- og cockpit-afhængigheder, registrerer de stabile
-`rentemester` og `rentemester-mcp` shims og kører de relevante grønne gates.
-For MCP er de nødvendige shim-kontroller:
-
-```bash
-rentemester --version
-command -v rentemester
-command -v rentemester-mcp
+```sh
+/absolute/native/rentemester-mcp --help
+/absolute/native/rentemester-mcp --catalogue
 ```
 
-`rentemester-mcp` er altid en stdio-server; den giver derfor ikke meningsfuld
-interaktiv `--help`-output. Brug `bun run smoke-mcp` fra repository-roden til
-at verificere handshake, tool-katalog og write/confirm-kontrakt. Peg altid en
-MCP-klient på shim'en, aldrig på interne `src/*.ts`-filer.
+Begge er offline-opslag uden virksomhedsadgang. `--catalogue` skal stå alene;
+svaret indeholder protokolversion og den faktiske `tools`-liste med skemaer og
+annotations. Efter forbindelse bruges `tools/list` og `meta_about` til den
+kørende proces. Senest accepterede registry har 448 tools, men antal og
+skemaer skal altid hentes fra den valgte revision. De tidligere 214 tools er
+en historisk TypeScript-reference, ikke installationskontrakten.
 
-## Claude Desktop
+## Forbind til en HTTPS-server
 
-Rediger `~/Library/Application Support/Claude/claude_desktop_config.json`
-(macOS) eller `%APPDATA%\Claude\claude_desktop_config.json` (Windows) og
-tilføj Rentemester under `mcpServers`:
+En menneskelig bruger logger ind gennem det almindelige password/MFA-forløb.
+CLI-login kan skrive en ny privat sessionsfil med `--session-out`; det kræver
+privat stdin uden terminalekko og overskriver ikke en eksisterende fil. Se
+[loginvejledningen](rust-server.md#cli-login-med-adgangskode-og-mfa).
+MCP læser Cookie-headerens værdi fra en privat regulær fil, på Unix `0600`.
+Skriv aldrig selve cookien i argumenter, klient-JSON, miljøvariabler eller logs.
+
+En MCP-klient med `mcpServers`-konfiguration kan fx bruge:
 
 ```json
 {
   "mcpServers": {
     "rentemester": {
-      "command": "rentemester-mcp",
-      "args": [],
-      "env": {
-        "RENTEMESTER_MCP_USER": "mikkel@56n.dk"
-      }
+      "command": "/absolute/native/rentemester-mcp",
+      "args": [
+        "--server", "https://accounting.example.invalid",
+        "--cookie-file", "/absolute/private/session.cookie"
+      ]
     }
   }
 }
 ```
 
-Genstart Claude Desktop. I en ny chat skal "rentemester" nu fremgå af
-listen over MCP-servere, og `audit_verify` + `journal_post` skal være
-kaldbare.
+Tilpas adressen og de absolutte stier lokalt. Indsæt samme serverdefinition i
+den valgte klients MCP-indstillinger; klientens placering af konfigurationen
+kan variere. Genstart forbindelsen efter ændringer. Bekræft initialize,
+`tools/list`, `meta_about` og et autoriseret read-only virksomhedsopslag før
+nogen mutation. Udskriv ikke credential-filen for at fejlsøge forbindelsen.
 
-### Hvis `rentemester-mcp` ikke ligger i PATH
+HTTPS er standard. `--allow-loopback-http` tillader kun en eksplicit literal
+loopbackadresse ved lokal afprøvning; det er ikke en undtagelse for en vilkårlig
+HTTP-server. Klienten følger ikke redirects eller skifter automatisk backend.
 
- Brug en absolut sti til den installerede wrapper. Den er stabil ved pakke-
- installationer; undgå at pege klientkonfigurationer på interne `src/*.ts`-filer:
+## Tilslut en allerede kørende lokal server
 
-```json
-{
-  "mcpServers": {
-    "rentemester": {
-      "command": "/Users/mikkel/.bun/bin/rentemester-mcp",
-      "args": [],
-      "env": {
-        "RENTEMESTER_MCP_USER": "mikkel@56n.dk"
-      }
-    }
-  }
-}
+```sh
+/absolute/native/rentemester-mcp \
+  --local-profile /absolute/private/local-profile \
+  --cookie-file /absolute/private/session.cookie
 ```
 
-## Cursor
+Profilen skal være den aktuelle beskyttede profil med matchende kanonisk
+descriptor og privat Unix-socket fra den administrerede server. Dette starter
+ikke serveren og giver ingen myndighed ved mappe- eller actor-navn.
+`--local-profile` kan ikke kombineres med `--server` eller
+`--allow-loopback-http`. Ved ny logisk origin skal MCP stoppes og
+konfigureres/genstartes eksplicit; der er ingen TCP- eller child-serverfallback.
 
-Cursor's MCP-konfiguration ligger i `~/.cursor/mcp.json`. Samme format
-som Claude Desktop:
+## Servicekonto og attribution
 
-```json
-{
-  "mcpServers": {
-    "rentemester": {
-      "command": "rentemester-mcp",
-      "args": []
-    }
-  }
-}
-```
+En ejer opretter og aktiverer servicekontoen gennem **Brugere og adgang** og
+giver den nødvendige virksomhedsrolle. Vælg `--service-key-file PRIVATE_PATH`
+i stedet for `--cookie-file`; de må aldrig kombineres. Nøglen kræver en privat
+regulær fil og må ikke indsættes i klientargumenter eller logs.
 
-## Claude Code
+Den aktuelle server kontrollerer adgang og tilbagekaldelse på hver operation.
+Værktøjets navn eller tilstedeværelse i kataloget lover ikke, at en servicekonto
+må bruge det; flere ejer-/administrationsforløb kræver menneskelig MFA.
+Forbrug og kvitteringsreplay følger den aktuelle operation, også ved et
+udtrykkeligt nyt servicekald.
 
-Tilføj serveren via `claude mcp add`:
+Autoritet kommer fra den autentificerede bruger/serviceidentitet.
+`RENTEMESTER_MCP_USER`, et handshake-navn eller en påstået actor er ikke login
+eller en adgangstildeling i Rust. Brug aktuelle skemaer og serverens kanoniske
+attribution; overfør ikke legacy-miljøbaserede rettighedsantagelser.
 
-```bash
-claude mcp add rentemester --command rentemester-mcp
-```
+## Arbejd gennem discovery og gennemgang
 
-Eller manuelt i `~/.claude.json` under `mcpServers` med samme JSON-form
-som ovenfor.
+Begynd med `meta_about {}`, søg et konkret resultat med
+`agent_capability_search`, og kald `agent_workflow_describe` med det returnerede
+`id`. Følg workflowets læsning, plan, gennemgang, godkendelse og apply samt det
+aktuelle tools inputskema. Metadata giver ingen bogføringsmyndighed.
 
-## Actor-attribution
-
-Hvert MCP-call tilskrives som `agent:<client-name>/<client-version>`,
-fx `agent:claude-desktop/0.7.6`. Hvis du sætter `RENTEMESTER_MCP_USER`
-i env, vises den i `created_by_program` på journal-posteringer og i
-`audit_log.actor` som:
-
-```
-agent:claude-desktop/0.7.6 via mcp:mikkel@56n.dk
-```
-
-Dette er den traceable kæde fra agent-call til append-only-bogføring.
-Aktor-info udledes per request fra MCP-klientens handshake og passes
-som **eksplicit parameter** til kernen — ikke som proces-env-var — så
-flere parallelle calls ikke kan løbe ind i hinanden.
-
-## Eksempel-tool-call (rå MCP JSON-RPC)
-
-`audit_verify`:
+Eksempel på et read-only discovery-kald efter MCP-initialize:
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 1,
   "method": "tools/call",
-  "params": {
-    "name": "audit_verify",
-    "arguments": { "company": "/Users/mikkel/companies/acme-aps" }
-  }
+  "params": { "name": "meta_about", "arguments": {} }
 }
 ```
 
-Respons:
+Brug derefter en eksplicit autoriseret virksomhed fra serverens synlige
+virksomheder; en lokal sti vælger ikke skjult myndighed. Writes kræver den
+præcise operations bekræftelse, ofte både ydre `confirm:true` og en konkret
+reviewet body. Der er ingen universel payload eller generel retry-garanti.
+Gem den oprindelige nøgle/envelope, og genlæs kvittering/journal/status ved
+ukendt udfald. En ny nøgle er ikke en sikker gentagelse.
 
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "content": [{"type": "text", "text": "{\"ok\":true,\"data\":{\"entries\":142},\"errors\":[]}"}],
-    "structuredContent": { "ok": true, "data": { "entries": 142 }, "errors": [] },
-    "isError": false
-  }
-}
-```
-
-`journal_post` (kræver `confirm: true`):
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 2,
-  "method": "tools/call",
-  "params": {
-    "name": "journal_post",
-    "arguments": {
-      "company": "/Users/mikkel/companies/acme-aps",
-      "payload": {
-        "transactionDate": "2026-05-18",
-        "text": "Manuel postering — kontorartikler",
-        "documentId": 12,
-        "lines": [
-          { "accountNo": "3000", "debitAmount": 320.00, "vatCode": "DK_PURCHASE_25" },
-          { "accountNo": "1200", "debitAmount": 80.00 },
-          { "accountNo": "2000", "creditAmount": 400.00 }
-        ]
-      },
-      "confirm": true
-    }
-  }
-}
-```
-
-## Fejlsøgning
-
-- **Claude Desktop viser ikke serveren.** Tjek at JSON er valid, og at
-  `command` peger på en binary i PATH eller en absolut sti. Genstart
-  Claude Desktop helt (Cmd+Q) — det er ikke nok at lukke vinduet.
-- **`tools/call` returnerer `confirm: true required`.** Write-tools
-  kræver eksplicit `confirm: true` på input. Det er bevidst — det
-  forhindrer agenter i at bogføre ved et uheld.
-- **`company path does not exist`.** MCP-serveren accepterer aldrig
-  implicit "current company"; agenten skal altid passe en `company` —
-  enten en absolut sti til virksomhedsmappen eller en workspace-slug
-  (slås op i `RENTEMESTER_WORKSPACE`'s manifest).
-  Kør `rentemester init --company /path/to/company` først.
+Læs [agentkontrakten](mcp-agent-contract.md) og
+[ejer-/operatørhjælpen](rust-support.md). Ved forbindelsesfejl kontrolleres
+binærsti, serverorigin, privat filtilstand, aktuel session/rolle og lokal
+profilbinding. Ved mistet svar afklares den eksisterende handling; opret ikke
+et testbilag eller en testpostering i den rigtige virksomhed for at kontrollere
+forbindelsen.

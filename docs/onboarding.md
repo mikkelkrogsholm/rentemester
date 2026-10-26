@@ -1,217 +1,112 @@
-# Første virksomhed: fra ren clone til verificeret postering
+# Kom i gang med Rust-udgaven
 
-Dette er den kanoniske onboarding-vej for Rentemester. Den er bevidst delt i
-fem forskellige situationer: udvikling, drift, en helt ny virksomhed, migration
-fra et eksisterende system og den første rigtige postering. Kør ikke en
-produktionsvirksomhed som eneste kilde til sandhed endnu; se forbeholdet i
-[README](../README.md#vigtigt-forbehold).
+Rentemester bruger én Rust-motor og server. Web og Rust/Tauri-desktop viser det
+samme React-UI; CLI og MCP bruger serverens adgang og regnskabskontroller.
+Den samlede release-, flytte- og installerede desktopaccept er stadig åben i
+[epic #672](https://github.com/mikkelkrogsholm/rentemester/issues/672).
+Brug en særskilt syntetisk virksomhed til afprøvning. Overflyt ikke den eneste
+rigtige ledger, før de oprindelige release- og cutovergates er godkendt.
 
-Alle eksempler bruger kun lokale stier og ikke-hemmelige identiteter. Skriv
-aldrig adgangskoder, API-nøgler, tokens eller bank-login i kommandoer,
-skalhistorik eller repository-filer. Brug i stedet den relevante klient eller
-operativsystemets secret store, når en integration kræver en hemmelighed.
+## Vælg hvor regnskabet skal køre
 
-## 1. Udviklerinstallation
+| Situation | Start her | Hvem gør hvad? |
+| --- | --- | --- |
+| Lokal desktop | Appens **Opret lokalt regnskab** eller **Åbn lokalt regnskab** | Ejeren bruger fælles UI; appen ejer den lokale Rust-server. |
+| Desktop mod server | Appens **Forbind til server** med den aftalte HTTPS-adresse | Operatøren driver serveren; ejeren logger ind og vælger virksomhed. |
+| Web mod server | Åbn operatørens HTTPS-adresse | Samme login, MFA, virksomheder og brugerforløb som i desktop. |
+| CLI eller agent | [CLI-kontrakt](cli-contract.md), [MCP-installation](mcp-install.md) | Aktuel bruger eller eksplicit begrænset servicekonto, samme server. |
 
-Forudsætning: [Bun](https://bun.sh) 1.4.0. Root og cockpit er ét workspace, så
-en ren clone kræver én installation:
+Kontrollér den synlige **Server:**-adresse og den valgte virksomhed, før du
+arbejder. En forbindelsesfejl skifter ikke automatisk til et lokalt regnskab.
+En mappekopi er ikke en understøttet flytning af et eksisterende regnskab.
 
-```bash
-git clone https://github.com/mikkelkrogsholm/rentemester.git
-cd rentemester
-bun install
-bun link
-rentemester --version
-command -v rentemester
-command -v rentemester-mcp
+## Første ejer og første virksomhed
+
+På en ny lokal installation vælger ejeren **Opret lokalt regnskab** og følger
+første-ejerforløbet. På en server opretter operatøren først det nye workspace
+med en privat konfiguration og den eksplicitte setup-operatør; ejeren bruger det
+private installationslink. Se [serverens opsætningskontrakt](rust-server.md#aktuel-afgrænsning).
+Et færdigt setup genåbnes ikke ved en almindelig servergenstart.
+
+Verificér e-mailen og tilmeld MFA gennem det almindelige UI. Ved lokal drift
+findes det private bekræftelseslink gennem appens menu **Lokal drift**; en
+HTTPS-server bruger sin konfigurerede maillevering. Opbevar recovery codes
+privat. Der gives ikke adgang ved at skrive et actor-navn eller en e-mail i en
+klientkonfiguration.
+
+Vælg virksomhed, kontrollér virksomhedsoplysninger, regnskabsår og momsforhold,
+og gennemgå kontoplanens roller og bankkonti. Brug virksomhedens faktiske
+kontoplan og dokumenterede mappings; et eksempelkontonummer er aldrig en
+produktstandard. Ekstra brugere inviteres og tildeles de nødvendige aktuelle
+rettigheder under **Brugere og adgang**. En servicekonto skal også have
+udtrykkelig virksomhedsadgang; oprettelse af en nøgle alene giver den ikke.
+
+## Ny virksomhed eller eksisterende regnskab
+
+For en ny virksomhed gennemgås åbningsgrundlag og kontoroller før den første
+postering. Et eksisterende regnskab skal gennem den dokumenterede
+[import](rust-dinero-import.md) eller [flytning](rust-server.md#flyt-workspace-mellem-lokal-drift-og-server).
+Gennemgå kildefiler, plan, regnskabsidentiteter og kontrolresultater før apply.
+Genbrug ikke en gammel serverkonfiguration eller kopieret datamappe som en ny
+aktiv skriver. Operatøren håndterer migration, kompatibilitet og det præcise
+mål; ejeren godkender det regnskabsmæssige grundlag.
+
+Native schema 31 kræver en særskilt, stoppet og autoriseret
+[custody-enrollment](architecture/rust-target/implementation/namespace-custody.md)
+ved opgradering til fysisk schema 32. Normal opstart udfører den ikke.
+
+## Første verificerede bogføring
+
+1. Vælg korrekt server, virksomhed og periode. Kontrollér regnskabets
+   [backupstatus](rust-backup-destinations.md) og eventuelle spærrer.
+2. Indlæs det originale bilag. Gennemgå dato, valuta, beløb, momsgrundlag,
+   modpart og de eksplicit valgte konti i det relevante bilagsforløb.
+3. Gennemgå serverens forslag og bekræft den konkrete handling én gang.
+   Udstedelse, bogføring, betaling og afsendelse er særskilte beslutninger.
+4. Genlæs posteringen og originalen; kontrollér journal, bank og relevante
+   rapporter. En fejl rettes gennem det dokumenterede korrektionsforløb,
+   ikke ved at redigere eller slette historik.
+5. Hvis et svar forsvinder, afklar den eksisterende operation og dens
+   kvittering før en ny handling. Gentag ikke bogføring eller afsendelse
+   med en ny nøgle for at se, om det virker.
+
+Se [regnskabskontrol](rust-audit-verify.md) og [revisionshistorik](rust-audit-log.md).
+Gem en signeret backup og den separat betroede offentlige nøgle. Kontrolleret
+fresh recovery, ikke blot download af en fil, er beviset for gendannelse.
+[Ejer- og operatørhjælpen](rust-support.md) beskriver fejl, flyttede data og
+hvilke oplysninger der sikkert kan deles med support.
+
+## Installation for udvikleren og operatøren
+
+Brug en identificeret releasekandidat og dens dokumenterede platform; en
+usigneret lokal build er ikke en godkendt distribution. Operatøren følger
+[serverkontrakten](rust-server.md), [releaseguiden](release/README.md) og de
+oprindelige kompatibilitets-/cutovergates før adgang til rigtige data.
+
+Ved udvikling bruges repositoryets fastlåste Rust-toolchain og mindst 30 GiB
+ledig plads på kilde- og byggevolumen. Eksempel fra repositoryroden:
+
+```sh
+python3 scripts/rust/cargo-guard.py status
+python3 scripts/rust/cargo-guard.py cargo build --locked \
+  -p rentemester-server -p rentemester-cli -p rentemester-mcp
 ```
 
-`bun link` installerer pakkens to stabile wrappers: `rentemester` starter
-`src/cli.ts`, og `rentemester-mcp` starter `src/mcp/server.ts`. Den sidste er
-en stdio-server og må derfor ikke bruges som en interaktiv `--help`-kommando;
-dens ende-til-ende-kontrol er MCP-smoken nedenfor.
+Bun bruges fortsat til React-build og eksisterende udviklings-/legacyværktøjer:
 
-Den samlede grønne gate før push eller release candidate er:
-
-```bash
-bun run verify:local
+```sh
+bun install --frozen-lockfile
+cd app
+bun run build
 ```
 
-Kommandoen bruger Buns parallelle test-workers på alle lokale CPU-kerner til
-root- og cockpittests og kører derefter build, smoke, MCP-smoke samt
-containerens readiness- og reproducerbarhedskontrol. Ingen af kontrollerne
-bruger produktionsdata. GitHub ejer ikke den fulde testsuite; push-CI laver
-hurtige kildekontroller og bygger/verificerer Linux-imaget.
+Cargo-wrapperens status angiver den valgte outputmappe; antag ikke automatisk
+`target/debug` ved en eksplicit eller fælles cache. Brug de identificerede
+native binærfiler fra builden eller pakken. Kontrollér serverens `--build-info`,
+CLI'ens `--help` og MCP'ens `--help`/`--catalogue` uden virksomhedsændringer.
 
-## 2. Produktionsoperatørinstallation
-
-En operatør skal bruge en fastlåst release og et separat, vedvarende
-virksomhedsvolume — ikke en udviklerclone med en vilkårlig commit. Følg den
-fastlåste containervej i [README's Docker-afsnit](../README.md#fastlåst-docker-distribution)
-og versions-/godkendelsesflowet i [release-guiden](release/README.md).
-
-Før en release får adgang til rigtige data, verificér den mod en ny tom
-virksomhed eller en verificeret datakopi, aldrig den eneste live-ledger. Hold
-cockpit på den lokale bind-adresse i compose-eksemplet; det er ikke en offentlig
-login-løsning. Ved lokal binær drift gælder shim-kontrollerne fra afsnit 1
-stadig, og MCP-klienten skal pege på `rentemester-mcp`, ikke interne
-`src/*.ts`-filer.
-
-## 3. Opret den første virksomhed og actor
-
-Vælg først den menneskelige eller automatiske identitet, som skal have ansvar
-for efterfølgende writes. `init` seeder den valgte actor i virksomhedens
-`config/policy.yaml`, så den er klar **før** første muterende smoke eller
-bogføring. Actor er sporbar identitet, ikke en hemmelighed.
-
-```bash
-COMPANY="$HOME/rentemester-data/acme-aps"
-ACTOR="user:acme-owner"
-
-rentemester init \
-  --company "$COMPANY" \
-  --name "Acme ApS" \
-  --cvr DK12345678 \
-  --vat-period quarter \
-  --actor "$ACTOR"
-
-rentemester system healthcheck --company "$COMPANY"
-rentemester accounts roles-status --company "$COMPANY"
-```
-
-Healthcheck skriver ikke til ledgeren. Brug `--json` når resultatet læses af
-automation; den maskinlæsbare `schema`-blok viser både installeret/krævet
-version og eventuelle ventende migrations. Kør kun den CLI-only migration med
-en allowlistet actor og eksakt samtykke: `rentemester system migrate --company
-"$COMPANY" --apply yes --actor "$ACTOR"`.
-
-Er virksomheden ikke momsregistreret, vælg `--no-vat` (eller
-`--vat-period none`) i stedet for `--vat-period quarter`. Før en anden person
-eller agent kan skrive, tilføjer en ansvarlig operatør dens kanoniske
-`user:…`, `agent:…` eller `system:…`-identitet til virksomhedens
-`config/policy.yaml`. Den fulde actor- og exit-kode-kontrakt står i
-[CLI-kontrakten](cli-contract.md).
-
-Alle senere muterende CLI-kommandoer skal have `--actor "$ACTOR"` (eller en
-anden allowlistet actor). Exit `2` betyder at kaldet/politikken skal rettes;
-exit `1` betyder at det formelt gyldige kald blev afvist af forretnings- eller
-ledgerreglerne.
-
-## 4. Bankkonto og konto-mapping
-
-Hvis betalingsoplysninger blev angivet ved `init`, oprettes den primære
-bankkonto med sluggen `primaer`. I en ren clone uden betalingsoplysninger skal
-den oprettes eksplicit, før den kan opdateres. Se den først, opret den om
-nødvendigt, og sæt derefter dens finansielle mapping før nogen bankimporter:
-
-```bash
-rentemester bank-account list --company "$COMPANY"
-rentemester bank-account add \
-  --company "$COMPANY" \
-  --name "Primær driftskonto" \
-  --slug primaer \
-  --currency DKK \
-  --actor "$ACTOR"
-rentemester bank-account update \
-  --company "$COMPANY" \
-  --account primaer \
-  --ledger-account 2000 \
-  --actor "$ACTOR"
-rentemester bank-account list --company "$COMPANY"
-```
-
-Hvis `primaer` allerede fandtes efter `init`, springes `bank-account add` over.
-Angiv kun `--account primaer` på
-`bank import`, når CSV-rækkerne faktisk hører til den konto.
-
-`bank-account update` auditerer ændringer i betalingsprofil og aktiv-status.
-Den afviser en ændring af `--ledger-account`, når kontoen allerede har
-transaktioner, fordi historiske bankrækker ikke må få ny regnskabsmæssig
-betydning. Opret i det tilfælde en ny bankkonto i stedet for at remappe den
-gamle.
-
-## 5. Ny virksomhed eller migration — vælg én vej
-
-**Helt ny virksomhed.** Start med den reelle, gennemgåede dokumentation og en
-dry-run; fortsæt til afsnit 6. Det fulde daglige eksempel er
-[bogførings-playbooken](../examples/agent-demo/README.md): den viser bilag,
-bankimport, forslag, exceptions, moms og audit uden nøgler eller netværk.
-
-**Eksisterende virksomhed.** Eksportér først fra det gamle system og behold
-den oprindelige eksport som dokumentation. Undersøg understøttede parsere og
-valider derefter en kopi af eksporten:
-
-```bash
-rentemester import systems
-rentemester import run \
-  --company "$COMPANY" \
-  --file /sikker/lokal/sti/til/eksport.csv \
-  --system synthetic-csv \
-  --dry-run \
-  --actor "$ACTOR"
-```
-
-Er eksporten accepteret, fjernes `--dry-run` først efter gennemgang. Importen
-er idempotent og bogfører én balanceret primobalance; den erstatter ikke en
-ukontrolleret historisk dataoverførsel. Brug `import systems` til at vælge en
-faktisk tilgængelig parser — `synthetic-csv` er kun det indbyggede eksempel.
-Hvis du selv har en balanceret, revisor-godkendt primobalance, er det separate
-flow `rentemester opening-balance post --help`.
-
-## 6. Første verificerede postering
-
-Lav først en gennemgået JSON-payload fra et rigtigt bilag og en korrekt
-konto-/moms-vurdering. Kør samme payload som dry-run, post den kun når
-resultatet er korrekt, og verificér derefter audit-kæden:
-
-```bash
-rentemester journal dry-run \
-  --company "$COMPANY" \
-  --input ./første-postering.json
-
-rentemester journal post \
-  --company "$COMPANY" \
-  --input ./første-postering.json \
-  --actor "$ACTOR"
-
-rentemester audit verify --company "$COMPANY"
-rentemester journal list --company "$COMPANY"
-```
-
-Gem ikke hemmeligheder i `første-postering.json`; den skal kun indeholde den
-bogføringspayload, der er nødvendig for posteringen. Bilag og metadata skal
-indlæses og vurderes før deres `documentId` bruges i en journalpost. Ret fejl
-med en ny reverseringspostering — slet eller redigér aldrig den bogførte
-historik. Se [CLI-kontrakten](cli-contract.md) og
-[confirm-kontrakten](confirm-contract.md) for write- og destructive-regler.
-
-## 7. Backup og MCP efter første postering
-
-Sæt backup-destination og menneskelig EU/EØS-/sikkerhedsattestering op før
-normal drift. Følg [backup-onboarding](compliance/backup-destinations.md),
-som beskriver destination, attestering, placering og kontrol af governance.
-
-Hvis en agent skal arbejde via MCP, følg den MCP-specifikke klientopsætning i
-[MCP-installation](mcp-install.md). MCP-write-tools kræver `confirm: true` pr.
-kald, også når CLI's daglige writes bruger actor i stedet; den præcise kontrakt
-står i [MCP-agentkontrakten](mcp-agent-contract.md).
-
-## Cockpit e-faktura
-
-The Cockpit's **Send e-faktura** action uses the selected company's local
-DigiSense configuration and bound company identity. Do not put DigiSense keys,
-access-point details or company keys in browser/API request bodies. A queued
-delivery appears as **E-faktura køsat — afventer status**; use **Opdatér
-leveringsstatus** to observe it. That action never sends the document again.
-En fejl før DigiSense har accepteret dokumentet vises derimod som
-**E-faktura fejlede — kan prøves igen** og må leveres igen med samme
-idempotente identitet.
-En terminal status efter DigiSense har accepteret dokumentet vises som
-**E-faktura afvist — send ikke igen**. Det eksisterende dokument-id bevares
-som revisionsspor, og Cockpit tilbyder hverken ny levering eller yderligere
-automatisk polling.
-Et timeout, forbindelsesbrud eller ubrugeligt svar efter selve delivery-POST'en
-vises som **E-faktura-status ukendt — afklar manuelt**. Rentemester blokerer
-automatisk gensendelse, fordi DigiSense kan have accepteret dokumentet uden at
-returnere et brugbart dokument-id. Afklar udfaldet hos DigiSense før manuel
-videre behandling.
+Repositoryets `bin/rentemester` vælger Rust-binæren og bygger eller skifter ikke
+motor ved fejl. `RENTEMESTER_LEGACY_CLI=1` er en eksplicit historisk opt-in.
+`bin/rentemester-mcp` er endnu Bun-wrapperen: konfigurer derfor den konkrete
+native MCP-binær efter [MCP-guiden](mcp-install.md). Den endelige fjernelse af
+den erstattede runtime afventer #727s fulde parity/release/cutoveraccept.
