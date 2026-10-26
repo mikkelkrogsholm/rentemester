@@ -10,27 +10,62 @@ fn invalid(s: &str) -> Failure {
     (2, Error::new("invalid_input", s))
 }
 pub fn help() -> Value {
-    json!({"usage":"tasks list|get|history|receipt|create|update|move|complete|reopen --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input task.json] [--confirm]. Global --local-profile joins an existing local server instead. Input is original typed JSON, from --input or stdin (list defaults to {}).","policy":"Current verified identity and all company memberships before receipt replay; caller idempotencyKey and positive expectedVersion on existing-task writes. No caller actor/local grant, ledger opening, background workers, generated keys or automatic retry. After outcome_unknown retain the exact input/key; inspect receipt/history before another action. Source completion remains refused until native authoritative sources are ported. Boards/runtime remain separate unfinished scope. Series use explicit projection/materialization, never automatic retries.","inputSchemas":TASK_OPERATIONS.iter().filter(|op| !op.starts_with("series-")).map(|op|(*op,task_input_schema(op))).collect::<BTreeMap<_,_>>()})
+    json!({"usage":"tasks list|get|history|receipt|create|update|move|complete|reopen --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input task.json] [--confirm]. Global --local-profile joins an existing local server instead. Input is original typed JSON, from --input or stdin (list defaults to {}).","policy":"Current verified identity and all company memberships before receipt replay; caller idempotencyKey and positive expectedVersion on existing-task writes. No caller actor/local grant, ledger opening, background workers, generated keys or automatic retry. After outcome_unknown retain the exact input/key; inspect receipt/history before another action. Source completion remains refused until native authoritative sources are ported. Custom boards use explicit scoped preview and confirmed versioned save; automatic runtime remains unfinished. Series use explicit projection/materialization, never automatic retries.","inputSchemas":TASK_OPERATIONS.iter().filter(|op| !op.starts_with("series-") && !op.starts_with("boards-")).map(|op|(*op,task_input_schema(op))).collect::<BTreeMap<_,_>>()})
 }
 pub fn series_help() -> Value {
     let mut value = help();
-    value["usage"] = json!("task-series list|save|project|materialize --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input series.json] [--confirm]. Same private local-profile transport; input from --input or stdin (list defaults to {}). Save requires expectedVersion 0 for new series or current positive version; writes retain the caller idempotencyKey.");
-    value["inputSchemas"] = json!(TASK_OPERATIONS.iter().filter(|op| op.starts_with("series-")).map(|op| (op.trim_start_matches("series-"), task_input_schema(op))).collect::<BTreeMap<_,_>>());
+    value["usage"] = json!(
+        "task-series list|save|project|materialize --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input series.json] [--confirm]. Same private local-profile transport; input from --input or stdin (list defaults to {}). Save requires expectedVersion 0 for new series or current positive version; writes retain the caller idempotencyKey."
+    );
+    value["inputSchemas"] = json!(
+        TASK_OPERATIONS
+            .iter()
+            .filter(|op| op.starts_with("series-"))
+            .map(|op| (op.trim_start_matches("series-"), task_input_schema(op)))
+            .collect::<BTreeMap<_, _>>()
+    );
     value
+}
+pub fn run_boards(args: &[String]) -> Result<Value, Failure> {
+    if args.is_empty() || args == ["--help"] || args.get(1).is_some_and(|s| s == "--help") {
+        let mut value = help();
+        value["usage"] = json!(
+            "task-boards list|preview|save --server HTTPS_ORIGIN (--cookie-file PRIVATE_PATH | --service-key-file PRIVATE_PATH) [--input board.json] [--confirm]. Preview is read-only and refuses confirmation; save requires expectedVersion0/new or current version and original idempotencyKey."
+        );
+        value["inputSchemas"] = json!(
+            TASK_OPERATIONS
+                .iter()
+                .filter(|op| op.starts_with("boards-"))
+                .map(|op| (op.trim_start_matches("boards-"), task_input_schema(op)))
+                .collect::<BTreeMap<_, _>>()
+        );
+        return Ok(value);
+    }
+    if !["list", "preview", "save"].contains(&args[0].as_str()) {
+        return Err(invalid("unsupported native task-boards operation"));
+    }
+    let mut mapped = args.to_vec();
+    mapped[0] = format!("boards-{}", args[0]);
+    run_operation(&mapped)
 }
 pub fn run_series(args: &[String]) -> Result<Value, Failure> {
     if args.is_empty() || args == ["--help"] || args.get(1).is_some_and(|s| s == "--help") {
         return Ok(series_help());
     }
     if !["list", "save", "project", "materialize"].contains(&args[0].as_str()) {
-        return Err(invalid("unsupported native task-series operation; see task-series --help"));
+        return Err(invalid(
+            "unsupported native task-series operation; see task-series --help",
+        ));
     }
     let mut mapped = args.to_vec();
     mapped[0] = format!("series-{}", args[0]);
     run_operation(&mapped)
 }
 pub fn run(args: &[String]) -> Result<Value, Failure> {
-    if args.first().is_some_and(|s| s.starts_with("series-")) {
+    if args
+        .first()
+        .is_some_and(|s| s.starts_with("series-") || s.starts_with("boards-"))
+    {
         return Err(invalid("use task-series list|save|project|materialize"));
     }
     run_operation(args)
@@ -94,7 +129,9 @@ fn run_operation(args: &[String]) -> Result<Value, Failure> {
             .take(MAX_TASK_BODY as u64 + 1)
             .read_to_end(&mut bytes)
             .map_err(|_| invalid("cannot read task input"))?;
-    } else if !matches!(op.as_str(), "list" | "series-list") || !std::io::IsTerminal::is_terminal(&std::io::stdin()) {
+    } else if !matches!(op.as_str(), "list" | "series-list" | "boards-list")
+        || !std::io::IsTerminal::is_terminal(&std::io::stdin())
+    {
         std::io::stdin()
             .take(MAX_TASK_BODY as u64 + 1)
             .read_to_end(&mut bytes)
@@ -103,7 +140,8 @@ fn run_operation(args: &[String]) -> Result<Value, Failure> {
     if bytes.len() > MAX_TASK_BODY {
         return Err(invalid("task input exceeds128KiB"));
     }
-    let input = if bytes.is_empty() && matches!(op.as_str(), "list" | "series-list") {
+    let input = if bytes.is_empty() && matches!(op.as_str(), "list" | "series-list" | "boards-list")
+    {
         json!({})
     } else {
         serde_json::from_slice(&bytes).map_err(|_| invalid("task JSON required"))?
@@ -147,8 +185,20 @@ mod tests {
     use super::*;
     #[test]
     fn series_help_and_refusals() {
-        assert_eq!(run_series(&["--help".into()]).unwrap()["inputSchemas"].as_object().unwrap().len(), 4);
-        for args in [vec!["save"], vec!["materialize"], vec!["list", "--confirm"], vec!["run"], vec!["save", "--confirm", "--actor", "user:owner"]] {
+        assert_eq!(
+            run_series(&["--help".into()]).unwrap()["inputSchemas"]
+                .as_object()
+                .unwrap()
+                .len(),
+            4
+        );
+        for args in [
+            vec!["save"],
+            vec!["materialize"],
+            vec!["list", "--confirm"],
+            vec!["run"],
+            vec!["save", "--confirm", "--actor", "user:owner"],
+        ] {
             assert!(run_series(&args.into_iter().map(String::from).collect::<Vec<_>>()).is_err());
         }
     }

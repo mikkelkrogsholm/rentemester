@@ -1,0 +1,1223 @@
+[
+  {
+    "mode": "rename",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "done",
+          "name": "Færdig 😀",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer 😀",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang 😀",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "open",
+          "name": "Åben 😀",
+          "status": "open",
+          "isDefault": true
+        }
+      ]
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "29975926870c3f7b39a36db6e43d7b123307f374312af9c476abe6261669c198",
+      "affectedTaskIds": [],
+      "statusChanges": []
+    },
+    "expected": {
+      "board": {
+        "boardId": "company:synthetic-alpha",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic-alpha"
+        },
+        "columns": [
+          {
+            "columnId": "done",
+            "name": "Færdig 😀",
+            "status": "done",
+            "isDefault": true
+          },
+          {
+            "columnId": "waiting",
+            "name": "Afventer 😀",
+            "status": "waiting",
+            "isDefault": true
+          },
+          {
+            "columnId": "in_progress",
+            "name": "I gang 😀",
+            "status": "in_progress",
+            "isDefault": true
+          },
+          {
+            "columnId": "open",
+            "name": "Åben 😀",
+            "status": "open",
+            "isDefault": true
+          }
+        ],
+        "version": 1,
+        "updatedAt": "2026-10-08T10:00:00.000Z"
+      },
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-08T10:00:00.000Z",
+          "deadline": null,
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": null,
+          "origin": "manual",
+          "period": null,
+          "references": [
+            {
+              "kind": "document",
+              "ref": "synthetic-proof"
+            }
+          ],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic-alpha",
+            "kind": "company"
+          },
+          "seriesId": null,
+          "source": null,
+          "status": "open",
+          "taskId": "synthetic-task",
+          "title": "Synthetic board task",
+          "type": "ad_hoc",
+          "updatedAt": "2026-10-08T10:00:00.000Z",
+          "verificationRequired": false,
+          "version": 1,
+          "waitingOn": "",
+          "workDate": null,
+          "workspaceColumnId": null
+        }
+      ]
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "relocate",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "new-open",
+          "name": "Åben",
+          "status": "open",
+          "isDefault": true
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        }
+      ],
+      "relocations": {
+        "open": "new-open"
+      }
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "cc2df87e3f70700760d8347c8854420fb2c8135930a6d62f356031cf25d2e4dc",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": []
+    },
+    "expected": {
+      "board": {
+        "boardId": "company:synthetic-alpha",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic-alpha"
+        },
+        "columns": [
+          {
+            "columnId": "new-open",
+            "name": "Åben",
+            "status": "open",
+            "isDefault": true
+          },
+          {
+            "columnId": "in_progress",
+            "name": "I gang",
+            "status": "in_progress",
+            "isDefault": true
+          },
+          {
+            "columnId": "waiting",
+            "name": "Afventer",
+            "status": "waiting",
+            "isDefault": true
+          },
+          {
+            "columnId": "done",
+            "name": "Færdig",
+            "status": "done",
+            "isDefault": true
+          }
+        ],
+        "version": 1,
+        "updatedAt": "2026-10-08T10:00:00.000Z"
+      },
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "new-open",
+          "completion": null,
+          "createdAt": "2026-10-08T10:00:00.000Z",
+          "deadline": null,
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": null,
+          "origin": "manual",
+          "period": null,
+          "references": [
+            {
+              "kind": "document",
+              "ref": "synthetic-proof"
+            }
+          ],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic-alpha",
+            "kind": "company"
+          },
+          "seriesId": null,
+          "source": null,
+          "status": "open",
+          "taskId": "synthetic-task",
+          "title": "Synthetic board task",
+          "type": "ad_hoc",
+          "updatedAt": "2026-10-08T10:00:00.000Z",
+          "verificationRequired": false,
+          "version": 2,
+          "waitingOn": "",
+          "workDate": null,
+          "workspaceColumnId": null
+        }
+      ]
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "meaning",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "waiting",
+          "isDefault": false
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "new-open",
+          "name": "New open",
+          "status": "open",
+          "isDefault": true
+        }
+      ],
+      "previewHash": "b13692a96b72ed463f00191ac891636086e8464b31e6519f14d6b871b9998488"
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "b13692a96b72ed463f00191ac891636086e8464b31e6519f14d6b871b9998488",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": [
+        {
+          "taskId": "synthetic-task",
+          "from": "open",
+          "to": "waiting"
+        }
+      ]
+    },
+    "expected": {
+      "board": {
+        "boardId": "company:synthetic-alpha",
+        "scope": {
+          "kind": "company",
+          "companySlug": "synthetic-alpha"
+        },
+        "columns": [
+          {
+            "columnId": "open",
+            "name": "Åben",
+            "status": "waiting",
+            "isDefault": false
+          },
+          {
+            "columnId": "in_progress",
+            "name": "I gang",
+            "status": "in_progress",
+            "isDefault": true
+          },
+          {
+            "columnId": "waiting",
+            "name": "Afventer",
+            "status": "waiting",
+            "isDefault": true
+          },
+          {
+            "columnId": "done",
+            "name": "Færdig",
+            "status": "done",
+            "isDefault": true
+          },
+          {
+            "columnId": "new-open",
+            "name": "New open",
+            "status": "open",
+            "isDefault": true
+          }
+        ],
+        "version": 1,
+        "updatedAt": "2026-10-08T10:00:00.000Z"
+      },
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-08T10:00:00.000Z",
+          "deadline": null,
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": null,
+          "origin": "manual",
+          "period": null,
+          "references": [
+            {
+              "kind": "document",
+              "ref": "synthetic-proof"
+            }
+          ],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic-alpha",
+            "kind": "company"
+          },
+          "seriesId": null,
+          "source": null,
+          "status": "waiting",
+          "taskId": "synthetic-task",
+          "title": "Synthetic board task",
+          "type": "ad_hoc",
+          "updatedAt": "2026-10-08T10:00:00.000Z",
+          "verificationRequired": false,
+          "version": 2,
+          "waitingOn": "",
+          "workDate": null,
+          "workspaceColumnId": null
+        }
+      ]
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "unreviewed",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "waiting",
+          "isDefault": false
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "new-open",
+          "name": "New open",
+          "status": "open",
+          "isDefault": true
+        }
+      ]
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "b13692a96b72ed463f00191ac891636086e8464b31e6519f14d6b871b9998488",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": [
+        {
+          "taskId": "synthetic-task",
+          "from": "open",
+          "to": "waiting"
+        }
+      ]
+    },
+    "expected": {
+      "error": "preview_required"
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "stale",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "waiting",
+          "isDefault": false
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "new-open",
+          "name": "New open",
+          "status": "open",
+          "isDefault": true
+        }
+      ],
+      "previewHash": "b13692a96b72ed463f00191ac891636086e8464b31e6519f14d6b871b9998488"
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "in_progress",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "in_progress",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 2,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "34e9702814074a4ffa60d4fd0e7a45ea5e21995fe52553b6e2aa630c9c428896",
+      "affectedTaskIds": [],
+      "statusChanges": []
+    },
+    "expected": {
+      "error": "preview_required"
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "complete",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "done",
+          "isDefault": false
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "new-open",
+          "name": "New open",
+          "status": "open",
+          "isDefault": true
+        }
+      ],
+      "previewHash": "98a204ed43cb2207a4d74945849ad35c6e024bb2b322ef28191f6b0563f182ac"
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "98a204ed43cb2207a4d74945849ad35c6e024bb2b322ef28191f6b0563f182ac",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": [
+        {
+          "taskId": "synthetic-task",
+          "from": "open",
+          "to": "done"
+        }
+      ]
+    },
+    "expected": {
+      "error": "completion_required"
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "reopen",
+    "input": {
+      "boardId": "company:synthetic-alpha",
+      "scope": {
+        "kind": "company",
+        "companySlug": "synthetic-alpha"
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "open",
+          "isDefault": true
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "open",
+          "isDefault": false
+        },
+        {
+          "columnId": "new-done",
+          "name": "New done",
+          "status": "done",
+          "isDefault": true
+        }
+      ],
+      "previewHash": "02bb176572a478c3266874081664483b727bc425c233f153b4a660c80c22743f"
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "done",
+        "completion": {
+          "actor": "user:synthetic",
+          "assurance": "user_reported",
+          "at": "2026-10-08T10:00:00.000Z",
+          "note": "Synthetic evidence checked",
+          "outcome": "completed",
+          "references": []
+        },
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "done",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 2,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "02bb176572a478c3266874081664483b727bc425c233f153b4a660c80c22743f",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": [
+        {
+          "taskId": "synthetic-task",
+          "from": "done",
+          "to": "open"
+        }
+      ]
+    },
+    "expected": {
+      "error": "reopen_required"
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "workspace-relocate",
+    "input": {
+      "boardId": "workspace",
+      "scope": {
+        "kind": "workspace",
+        "companySlugs": []
+      },
+      "columns": [
+        {
+          "columnId": "new-open",
+          "name": "Åben",
+          "status": "open",
+          "isDefault": true
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        }
+      ],
+      "relocations": {
+        "open": "new-open"
+      }
+    },
+    "prior": null,
+    "boards": [],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "2aee54900c89c7153a3a73d713c6df632b9792534994eaf9fc5e157565cc8ac1",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": []
+    },
+    "expected": {
+      "board": {
+        "boardId": "workspace",
+        "scope": {
+          "kind": "workspace",
+          "companySlugs": []
+        },
+        "columns": [
+          {
+            "columnId": "new-open",
+            "name": "Åben",
+            "status": "open",
+            "isDefault": true
+          },
+          {
+            "columnId": "in_progress",
+            "name": "I gang",
+            "status": "in_progress",
+            "isDefault": true
+          },
+          {
+            "columnId": "waiting",
+            "name": "Afventer",
+            "status": "waiting",
+            "isDefault": true
+          },
+          {
+            "columnId": "done",
+            "name": "Færdig",
+            "status": "done",
+            "isDefault": true
+          }
+        ],
+        "version": 1,
+        "updatedAt": "2026-10-08T10:00:00.000Z"
+      },
+      "tasks": [
+        {
+          "assignee": null,
+          "columnId": "open",
+          "completion": null,
+          "createdAt": "2026-10-08T10:00:00.000Z",
+          "deadline": null,
+          "description": "",
+          "evidenceRequired": false,
+          "nextAction": "",
+          "occurrenceKey": null,
+          "origin": "manual",
+          "period": null,
+          "references": [
+            {
+              "kind": "document",
+              "ref": "synthetic-proof"
+            }
+          ],
+          "relevance": "relevant",
+          "reminders": [],
+          "scope": {
+            "companySlug": "synthetic-alpha",
+            "kind": "company"
+          },
+          "seriesId": null,
+          "source": null,
+          "status": "open",
+          "taskId": "synthetic-task",
+          "title": "Synthetic board task",
+          "type": "ad_hoc",
+          "updatedAt": "2026-10-08T10:00:00.000Z",
+          "verificationRequired": false,
+          "version": 2,
+          "waitingOn": "",
+          "workDate": null,
+          "workspaceColumnId": "new-open"
+        }
+      ]
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  },
+  {
+    "mode": "ambiguous",
+    "input": {
+      "boardId": "workspace",
+      "scope": {
+        "kind": "workspace",
+        "companySlugs": []
+      },
+      "columns": [
+        {
+          "columnId": "open",
+          "name": "Åben",
+          "status": "waiting",
+          "isDefault": false
+        },
+        {
+          "columnId": "in_progress",
+          "name": "I gang",
+          "status": "in_progress",
+          "isDefault": true
+        },
+        {
+          "columnId": "waiting",
+          "name": "Afventer",
+          "status": "waiting",
+          "isDefault": true
+        },
+        {
+          "columnId": "done",
+          "name": "Færdig",
+          "status": "done",
+          "isDefault": true
+        },
+        {
+          "columnId": "new-open",
+          "name": "New open",
+          "status": "open",
+          "isDefault": true
+        }
+      ],
+      "previewHash": "a847019ae664b1ac3d0233ebd21a4b733b52c613917260451c9eb463825f1aab"
+    },
+    "prior": null,
+    "boards": [
+      {
+        "boardId": "company:synthetic-alpha",
+        "columns": [
+          {
+            "columnId": "open",
+            "isDefault": true,
+            "name": "Åben",
+            "status": "open"
+          },
+          {
+            "columnId": "in_progress",
+            "isDefault": true,
+            "name": "I gang",
+            "status": "in_progress"
+          },
+          {
+            "columnId": "waiting",
+            "isDefault": true,
+            "name": "Afventer",
+            "status": "waiting"
+          },
+          {
+            "columnId": "done",
+            "isDefault": true,
+            "name": "Færdig",
+            "status": "done"
+          },
+          {
+            "columnId": "other-waiting",
+            "isDefault": false,
+            "name": "Other waiting",
+            "status": "waiting"
+          }
+        ],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "version": 1
+      }
+    ],
+    "tasks": [
+      {
+        "assignee": null,
+        "columnId": "open",
+        "completion": null,
+        "createdAt": "2026-10-08T10:00:00.000Z",
+        "deadline": null,
+        "description": "",
+        "evidenceRequired": false,
+        "nextAction": "",
+        "occurrenceKey": null,
+        "origin": "manual",
+        "period": null,
+        "references": [
+          {
+            "kind": "document",
+            "ref": "synthetic-proof"
+          }
+        ],
+        "relevance": "relevant",
+        "reminders": [],
+        "scope": {
+          "companySlug": "synthetic-alpha",
+          "kind": "company"
+        },
+        "seriesId": null,
+        "source": null,
+        "status": "open",
+        "taskId": "synthetic-task",
+        "title": "Synthetic board task",
+        "type": "ad_hoc",
+        "updatedAt": "2026-10-08T10:00:00.000Z",
+        "verificationRequired": false,
+        "version": 1,
+        "waitingOn": "",
+        "workDate": null,
+        "workspaceColumnId": null
+      }
+    ],
+    "preview": {
+      "previewHash": "a847019ae664b1ac3d0233ebd21a4b733b52c613917260451c9eb463825f1aab",
+      "affectedTaskIds": [
+        "synthetic-task"
+      ],
+      "statusChanges": [
+        {
+          "taskId": "synthetic-task",
+          "from": "open",
+          "to": "waiting"
+        }
+      ]
+    },
+    "expected": {
+      "error": "column_choice_required"
+    },
+    "now": "2026-10-08T10:00:00.000Z",
+    "expectedVersion": 0
+  }
+]

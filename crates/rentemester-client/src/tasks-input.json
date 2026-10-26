@@ -1387,5 +1387,300 @@
       "idempotencyKey"
     ],
     "additionalProperties": false
+  },
+  "boards-list": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "companySlugs": {
+        "maxItems": 200,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "maxLength": 120,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        }
+      },
+      "includeArchived": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false
+  },
+  "boards-preview": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "board": {
+        "type": "object",
+        "properties": {
+          "boardId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "company"
+                  },
+                  "companySlug": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "pattern": "^[a-z0-9][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlug"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "workspace"
+                  },
+                  "companySlugs": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9][a-z0-9-]*$"
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlugs"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "columns": {
+            "minItems": 1,
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "in_progress",
+                    "waiting",
+                    "done"
+                  ]
+                },
+                "isDefault": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "columnId",
+                "name",
+                "status",
+                "isDefault"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "relocations": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          "previewHash": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "boardId",
+          "scope",
+          "columns"
+        ],
+        "additionalProperties": false
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    },
+    "required": [
+      "board"
+    ],
+    "additionalProperties": false
+  },
+  "boards-save": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "board": {
+        "type": "object",
+        "properties": {
+          "boardId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "scope": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "company"
+                  },
+                  "companySlug": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "pattern": "^[a-z0-9][a-z0-9-]*$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlug"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "workspace"
+                  },
+                  "companySlugs": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9][a-z0-9-]*$"
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "companySlugs"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "columns": {
+            "minItems": 1,
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "columnId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "in_progress",
+                    "waiting",
+                    "done"
+                  ]
+                },
+                "isDefault": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "columnId",
+                "name",
+                "status",
+                "isDefault"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "relocations": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          "previewHash": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "boardId",
+          "scope",
+          "columns"
+        ],
+        "additionalProperties": false
+      },
+      "expectedVersion": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "idempotencyKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160,
+        "description": "Durable retry key. Reuse only for an identical operation; a changed payload conflicts."
+      }
+    },
+    "required": [
+      "board",
+      "expectedVersion",
+      "idempotencyKey"
+    ],
+    "additionalProperties": false
   }
 }

@@ -3383,6 +3383,26 @@
     },
     {
       "method": "GET",
+      "path": "/api/task-boards",
+      "capability": "GET /api/task-boards"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/task-boards",
+      "capability": "HEAD /api/task-boards"
+    },
+    {
+      "method": "POST",
+      "path": "/api/task-boards",
+      "capability": "POST /api/task-boards"
+    },
+    {
+      "method": "POST",
+      "path": "/api/task-boards/preview",
+      "capability": "POST /api/task-boards/preview"
+    },
+    {
+      "method": "GET",
       "path": "/api/task-series",
       "capability": "GET /api/task-series"
     },
@@ -3617,5 +3637,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "01812c77eef99abe5f6abd930490c625c87cd88f331034441c16fb9bb90e3b09"
+  "manifestId": "c0024c810f737ed612c235a6cd9a844a82cc775d55bdf9a63dfbf54934303f1e"
 }

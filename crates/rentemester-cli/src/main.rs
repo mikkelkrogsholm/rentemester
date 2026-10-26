@@ -107,6 +107,7 @@ mod reviewed_bookkeeping;
 mod saft;
 mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().is_some_and(|s|s=="task-boards"){return tasks::run_boards(&args[1..]);}
     if args.first().is_some_and(|s|s=="task-series"){return tasks::run_series(&args[1..]);}
     if args.first().is_some_and(|s|s=="tasks"){return tasks::run(&args[1..]);}
     if args.first().is_some_and(|s|mileage_posting::accepts(s)) { return remote::run(&args); }
@@ -989,6 +990,7 @@ mod test_protocol;
 mod task_series_dispatch_tests {
     #[test]
     fn original_root_dispatches_series_help_and_refuses_unknown_operations() {
+        let boards=super::run(vec!["task-boards".into(),"--help".into()]).unwrap();assert_eq!(boards["inputSchemas"].as_object().unwrap().len(),3);assert!(boards["inputSchemas"]["preview"]["properties"].get("confirm").is_none());assert!(super::run(vec!["task-boards".into(),"run".into()]).is_err());
         let help = super::run(vec!["task-series".into(), "--help".into()]).unwrap();
         assert!(help["usage"].as_str().unwrap().starts_with("task-series list|save|project|materialize"));
         assert_eq!(help["inputSchemas"].as_object().unwrap().len(), 4);

@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 pub fn help() -> Value {
     json!({"ok":true,"currentCli":rentemester_engine::agent_discovery::current_cli716(),"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. The default launcher is Rust; TypeScript requires explicit RENTEMESTER_LEGACY_CLI=1. Whole-product parity is unfinished; registration metadata is not whole-product acceptance.","commands":[
         {"name":"report analytics","usage":"report analytics --help","scope":"original source-flat CFO read through explicit verified workspace runtime; canonical server calculation and current visibility"},
+        {"name":"task-boards list|preview|save","usage":"task-boards --help","scope":"current scope-authorized custom board preview and confirmed versioned save; same Rust server, no automatic retries"},
         {"name":"task-series list|save|project|materialize","usage":"task-series --help","scope":"routine series save, pure projection and explicit materialization through the common Rust server; original flat DTOs, explicit confirmation and caller key on writes; no automatic retry"},
         {"name":"tasks list|get|history|receipt|create|update|move|complete|reopen","usage":"tasks --help","scope":"manual task lifecycle through the common Rust control server; current identity and all-company rights, explicit confirmation, expectedVersion and caller key, no automatic retry; automatic sources/runtime remain unfinished"},
         {"name":"agent run","usage":"agent run --help","scope":"full original seven-phase loop, one explicit POST; actual current principal and canonical company slug; no automatic retry"},
@@ -202,7 +203,7 @@ fn recognized(root: &str) -> bool {
             | "report"
             | "journal"
             | "dashboard"
-            | "tasks" | "task-series" | "remote"
+            | "tasks" | "task-series" | "task-boards" | "remote"
             | "documents"
             | "validate-journal"
             | "trial-balance"

@@ -3,12 +3,36 @@ use crate::{ApiClient, Error};
 use reqwest::Method;
 use serde_json::{Value, json};
 pub const MAX_TASK_BODY: usize = 128 * 1024;
-pub const TASK_OPERATIONS: [&str; 13] = [
-    "list", "get", "history", "receipt", "create", "update", "move", "complete", "reopen",
-    "series-list", "series-save", "series-project", "series-materialize",
+pub const TASK_OPERATIONS: [&str; 16] = [
+    "list",
+    "get",
+    "history",
+    "receipt",
+    "create",
+    "update",
+    "move",
+    "complete",
+    "reopen",
+    "series-list",
+    "series-save",
+    "series-project",
+    "series-materialize",
+    "boards-list",
+    "boards-preview",
+    "boards-save",
 ];
 pub fn task_writes(op: &str) -> bool {
-    matches!(op, "create" | "update" | "move" | "complete" | "reopen" | "series-save" | "series-materialize")
+    matches!(
+        op,
+        "create"
+            | "update"
+            | "move"
+            | "complete"
+            | "reopen"
+            | "series-save"
+            | "series-materialize"
+            | "boards-save"
+    )
 }
 /// Generated from src/task-interface-input.ts with z.toJSONSchema; receipt is metadata-only.
 pub fn task_input_schema(op: &str) -> Value {
@@ -72,11 +96,21 @@ impl ApiClient {
         if task_writes(op) {
             id(&input["idempotencyKey"])?;
             let mut body = input.clone();
-            let path = if op == "series-save" {
-                if !input["expectedVersion"].as_u64().is_some_and(|n| n <= 9_007_199_254_740_991) {
-                    return Err(Error::InvalidInput("nonnegative safe expectedVersion required"));
+            let path = if op == "series-save" || op == "boards-save" {
+                if !input["expectedVersion"]
+                    .as_u64()
+                    .is_some_and(|n| n <= 9_007_199_254_740_991)
+                {
+                    return Err(Error::InvalidInput(
+                        "nonnegative safe expectedVersion required",
+                    ));
                 }
-                "/api/task-series".to_owned()
+                if op == "boards-save" {
+                    "/api/task-boards"
+                } else {
+                    "/api/task-series"
+                }
+                .to_owned()
             } else if op == "series-materialize" {
                 "/api/task-series/materialize".to_owned()
             } else if op == "create" {
@@ -100,7 +134,19 @@ impl ApiClient {
             return self.request(Method::POST, &path, &[], Some(bytes)).await;
         }
         match op {
-            "list" | "series-list" | "series-project" => {
+            "boards-preview" => {
+                self.request(
+                    Method::POST,
+                    "/api/task-boards/preview",
+                    &[],
+                    Some(
+                        serde_json::to_vec(input)
+                            .map_err(|_| Error::InvalidInput("board JSON required"))?,
+                    ),
+                )
+                .await
+            }
+            "list" | "series-list" | "series-project" | "boards-list" => {
                 let mut query = vec![];
                 for (k, v) in object {
                     if k == "companySlugs" {
@@ -135,6 +181,7 @@ impl ApiClient {
                 }
                 self.get(
                     match op {
+                        "boards-list" => "/api/task-boards",
                         "series-list" => "/api/task-series",
                         "series-project" => "/api/task-series/project",
                         _ => "/api/tasks",
@@ -173,12 +220,59 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn series_routes_preserve_flat_bodies_keys_queries_and_empty_selection() {
-        use std::{io::{Read, Write}, thread};
+        use std::{
+            io::{Read, Write},
+            thread,
+        };
         for (op, input, expected, body) in [
-            ("series-list", json!({"companySlugs":[],"includeArchived":false}), "GET /api/task-series?companySlugs=&includeArchived=false", None),
-            ("series-project", json!({"companySlugs":["a","b"],"from":"2026-01-01","to":"2026-02-01"}), "GET /api/task-series/project?companySlug=a&companySlug=b&from=2026-01-01&to=2026-02-01", None),
-            ("series-save", json!({"series":{"seriesId":"routine"},"expectedVersion":0,"idempotencyKey":"exact-key"}), "POST /api/task-series", Some(json!({"series":{"seriesId":"routine"},"expectedVersion":0,"idempotencyKey":"exact-key","confirm":true}))),
-            ("series-materialize", json!({"companySlugs":[],"asOfDate":"2026-01-01","idempotencyKey":"exact-materialize"}), "POST /api/task-series/materialize", Some(json!({"companySlugs":[],"asOfDate":"2026-01-01","idempotencyKey":"exact-materialize","confirm":true}))),
+            (
+                "boards-list",
+                json!({"companySlugs":[]}),
+                "GET /api/task-boards?companySlugs=",
+                None,
+            ),
+            (
+                "boards-preview",
+                json!({"board":{"boardId":"company:a"},"expectedVersion":0}),
+                "POST /api/task-boards/preview",
+                Some(json!({"board":{"boardId":"company:a"},"expectedVersion":0})),
+            ),
+            (
+                "boards-save",
+                json!({"board":{"boardId":"company:a"},"expectedVersion":0,"idempotencyKey":"board-key"}),
+                "POST /api/task-boards",
+                Some(
+                    json!({"board":{"boardId":"company:a"},"expectedVersion":0,"idempotencyKey":"board-key","confirm":true}),
+                ),
+            ),
+            (
+                "series-list",
+                json!({"companySlugs":[],"includeArchived":false}),
+                "GET /api/task-series?companySlugs=&includeArchived=false",
+                None,
+            ),
+            (
+                "series-project",
+                json!({"companySlugs":["a","b"],"from":"2026-01-01","to":"2026-02-01"}),
+                "GET /api/task-series/project?companySlug=a&companySlug=b&from=2026-01-01&to=2026-02-01",
+                None,
+            ),
+            (
+                "series-save",
+                json!({"series":{"seriesId":"routine"},"expectedVersion":0,"idempotencyKey":"exact-key"}),
+                "POST /api/task-series",
+                Some(
+                    json!({"series":{"seriesId":"routine"},"expectedVersion":0,"idempotencyKey":"exact-key","confirm":true}),
+                ),
+            ),
+            (
+                "series-materialize",
+                json!({"companySlugs":[],"asOfDate":"2026-01-01","idempotencyKey":"exact-materialize"}),
+                "POST /api/task-series/materialize",
+                Some(
+                    json!({"companySlugs":[],"asOfDate":"2026-01-01","idempotencyKey":"exact-materialize","confirm":true}),
+                ),
+            ),
         ] {
             let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
             let origin = format!("http://{}", listener.local_addr().unwrap());
@@ -186,31 +280,47 @@ mod tests {
                 // The shared legacy fixture manifest intentionally predates series.
                 // Admit only this test's actual operation, without changing production discovery.
                 let (mut discovery, _) = listener.accept().unwrap();
-                discovery.set_read_timeout(Some(std::time::Duration::from_secs(5))).unwrap();
+                discovery
+                    .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                    .unwrap();
                 let mut headers = vec![];
                 while !headers.ends_with(b"\r\n\r\n") {
                     let mut byte = [0];
                     discovery.read_exact(&mut byte).unwrap();
                     headers.push(byte[0]);
                 }
-                assert!(String::from_utf8(headers).unwrap().starts_with("GET /api/protocol HTTP/1.1"));
+                assert!(
+                    String::from_utf8(headers)
+                        .unwrap()
+                        .starts_with("GET /api/protocol HTTP/1.1")
+                );
                 let (method, path) = expected.split_once(' ').unwrap();
                 let path = path.split('?').next().unwrap();
                 let manifest = json!({"format":"rentemester-http-protocol/1","protocolMajor":1,"manifestId":"a".repeat(64),"wireProfiles":["rust-http-v1"],"operations":[{"method":method,"path":path,"capability":format!("{method} {path}")}]}).to_string();
                 write!(discovery,"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",manifest.len(),manifest).unwrap();
                 drop(discovery);
                 let (mut socket, _) = listener.accept().unwrap();
-                socket.set_read_timeout(Some(std::time::Duration::from_secs(5))).unwrap();
+                socket
+                    .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                    .unwrap();
                 let mut bytes = vec![];
                 loop {
-                    let mut buf = [0;4096];
+                    let mut buf = [0; 4096];
                     let n = socket.read(&mut buf).unwrap();
                     assert!(n > 0);
                     bytes.extend_from_slice(&buf[..n]);
                     if let Some(end) = bytes.windows(4).position(|w| w == b"\r\n\r\n") {
                         let headers = String::from_utf8_lossy(&bytes[..end]).to_lowercase();
-                        let length = headers.lines().find_map(|l| l.strip_prefix("content-length:").map(|v| v.trim().parse::<usize>().unwrap())).unwrap_or(0);
-                        if bytes.len() >= end + 4 + length { break; }
+                        let length = headers
+                            .lines()
+                            .find_map(|l| {
+                                l.strip_prefix("content-length:")
+                                    .map(|v| v.trim().parse::<usize>().unwrap())
+                            })
+                            .unwrap_or(0);
+                        if bytes.len() >= end + 4 + length {
+                            break;
+                        }
                     }
                 }
                 let reply = r#"{"ok":true,"data":[]}"#;
@@ -218,19 +328,31 @@ mod tests {
                 String::from_utf8(bytes).unwrap()
             });
             let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
-            api.task_operation(op, &input, task_writes(op)).await.unwrap();
+            api.task_operation(op, &input, task_writes(op))
+                .await
+                .unwrap();
             let request = server.join().unwrap();
-            assert!(request.starts_with(&format!("{expected} HTTP/1.1")), "{request}");
+            assert!(
+                request.starts_with(&format!("{expected} HTTP/1.1")),
+                "{request}"
+            );
             if let Some(body) = body {
-                assert_eq!(serde_json::from_str::<Value>(request.split_once("\r\n\r\n").unwrap().1).unwrap(), body);
+                assert_eq!(
+                    serde_json::from_str::<Value>(request.split_once("\r\n\r\n").unwrap().1)
+                        .unwrap(),
+                    body
+                );
             }
         }
     }
     #[test]
     fn series_schema_is_bounded_and_does_not_expose_runtime_or_authority() {
-        assert_eq!(TASK_OPERATIONS.len(), 13);
+        assert_eq!(TASK_OPERATIONS.len(), 16);
         let save = task_input_schema("series-save");
-        assert_eq!(save["properties"]["series"]["properties"]["workDayOffset"]["maximum"], 366);
+        assert_eq!(
+            save["properties"]["series"]["properties"]["workDayOffset"]["maximum"],
+            366
+        );
         assert_eq!(save["properties"]["expectedVersion"]["minimum"], 0);
         assert_eq!(save["additionalProperties"], false);
         assert!(save["properties"].get("actor").is_none());

@@ -5,7 +5,9 @@ use rentemester_engine::tasks::{self as domain, Board, Task};
 use serde_json::Value;
 use std::collections::BTreeSet;
 
+mod boards;
 mod series;
+const FORMAT3: &str = "rentemester-native-tasks/3";
 const FORMAT2: &str = "rentemester-native-tasks/2";
 const FORMAT: &str = "rentemester-native-tasks/1";
 const TABLES: [&str; 5] = [
@@ -122,7 +124,7 @@ fn task_snapshot(raw: &str) -> Result<Task, Error> {
     }
     Ok(task)
 }
-fn facts(db: &Connection, companies: Option<&[String]>, codec2: bool) -> Result<(), Error> {
+fn facts(db: &Connection, companies: Option<&[String]>, codec: u8) -> Result<(), Error> {
     for (table, key) in [
         (TABLES[0], "task_id"),
         (TABLES[1], "board_id"),
@@ -196,8 +198,11 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec2: bool) -> Result<
     if bad != 0 {
         return Err(refused("task notification refers to missing history"));
     }
-    if codec2 {
+    if codec >= 2 {
         series::events(db)?;
+    }
+    if codec >= 3 {
+        boards::events(db)?;
     }
     let mut q = db
         .prepare("SELECT principal,operation,result_json,created_at FROM rm_task_receipts")
@@ -214,7 +219,10 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec2: bool) -> Result<
         .map_err(sql)?
     {
         let (principal, operation, raw, at) = row.map_err(sql)?;
-        if codec2 && series::receipt(db, &principal, &operation, &raw, &at)? {
+        if codec >= 3 && boards::receipt(db, &principal, &operation, &raw, &at)? {
+            continue;
+        }
+        if codec >= 2 && series::receipt(db, &principal, &operation, &raw, &at)? {
             continue;
         }
         let event = match operation.as_str() {
@@ -238,13 +246,37 @@ fn facts(db: &Connection, companies: Option<&[String]>, codec2: bool) -> Result<
 }
 pub(super) fn export(db: &Connection) -> Result<Vec<u8>, Error> {
     shape(db)?;
-    let codec2 = series::needed(db)?;
-    facts(db, None, codec2)?;
-    export_tables(db, &TABLES, if codec2 { FORMAT2 } else { FORMAT })
+    let codec = if boards::needed(db)? {
+        3
+    } else if series::needed(db)? {
+        2
+    } else {
+        1
+    };
+    facts(db, None, codec)?;
+    export_tables(
+        db,
+        &TABLES,
+        match codec {
+            3 => FORMAT3,
+            2 => FORMAT2,
+            _ => FORMAT,
+        },
+    )
 }
 pub fn validate_companies(db: &Connection, companies: &[String]) -> Result<(), Error> {
     shape(db)?;
-    facts(db, Some(companies), series::needed(db)?)
+    facts(
+        db,
+        Some(companies),
+        if boards::needed(db)? {
+            3
+        } else if series::needed(db)? {
+            2
+        } else {
+            1
+        },
+    )
 }
 pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Result<(), Error> {
     crate::control_migration::validate_current_control(db)?;
@@ -253,7 +285,7 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
         return Err(refused("task codec byte bound"));
     }
     let b: Business = serde_json::from_slice(bytes).map_err(sql)?;
-    if ![FORMAT, FORMAT2].contains(&b.format.as_str()) || b.tables.len() != TABLES.len() {
+    if ![FORMAT, FORMAT2, FORMAT3].contains(&b.format.as_str()) || b.tables.len() != TABLES.len() {
         return Err(refused("unsupported task codec"));
     }
     let mut total = 0usize;
@@ -294,7 +326,17 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
         }
     }
     insert_tables(&tx, &b, &TABLES)?;
-    facts(&tx, Some(companies), b.format == FORMAT2)?;
+    facts(
+        &tx,
+        Some(companies),
+        if b.format == FORMAT3 {
+            3
+        } else if b.format == FORMAT2 {
+            2
+        } else {
+            1
+        },
+    )?;
     // No runtime state, authority, credentials or grants are imported by this codec.
     tx.execute("UPDATE rm_task_runtime SET lease_owner=NULL,lease_until=NULL,last_tick_at=NULL,last_error=NULL WHERE id=1",[]).map_err(sql)?;
     tx.commit().map_err(sql)

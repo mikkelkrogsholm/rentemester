@@ -7,6 +7,9 @@ enum Credentials {
 }
 enum Command {
     List(Value),
+    BoardsList(Value),
+    BoardsPreview(Value),
+    BoardsSave(Value),
     SeriesList(Value),
     SeriesProject(Value),
     SeriesSave(Value),
@@ -76,6 +79,17 @@ fn command(
             return Err("invalid_input");
         }
         let object = body.as_object_mut().ok_or("invalid_input")?;
+        if path == "/api/task-boards/preview" {
+            let board = object.remove("board").ok_or("invalid_input")?;
+            if object
+                .remove("expectedVersion")
+                .is_some_and(|v| v.as_u64().is_none_or(|n| n > 9_007_199_254_740_991))
+                || !object.is_empty()
+            {
+                return Err("invalid_input");
+            }
+            return Ok((Command::BoardsPreview(board), None, None));
+        }
         if object.remove("confirm") != Some(json!(true)) {
             return Err("confirmation_required");
         }
@@ -85,16 +99,28 @@ fn command(
             .ok_or("idempotency_key_required")?;
         rentemester_engine::tasks::id(&json!(key)).map_err(|_| "invalid_input")?;
         let series_save = path == "/api/task-series";
+        let board_save = path == "/api/task-boards";
         let version = object.remove("expectedVersion");
         let expected = version
             .as_ref()
             .map(|v| {
                 v.as_u64()
-                    .filter(|n| *n <= 9_007_199_254_740_991 && (series_save || *n >= 1))
+                    .filter(|n| {
+                        *n <= 9_007_199_254_740_991 && (series_save || board_save || *n >= 1)
+                    })
                     .ok_or("version_required")
             })
             .transpose()?;
-        let operation = if series_save {
+        let operation = if board_save {
+            if expected.is_none() {
+                return Err("version_required");
+            }
+            let board = object.remove("board").ok_or("invalid_input")?;
+            if !object.is_empty() {
+                return Err("invalid_input");
+            }
+            Command::BoardsSave(board)
+        } else if series_save {
             if expected.is_none() {
                 return Err("version_required");
             }
@@ -148,6 +174,9 @@ fn command(
         Ok((operation, Some(key), expected))
     } else {
         let cmd = match parts.as_slice() {
+            ["", "api", "task-boards"] => {
+                Command::BoardsList(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
+            }
             ["", "api", "task-series"] => {
                 Command::SeriesList(query(raw_query.unwrap_or("")).map_err(|_| "invalid_input")?)
             }
@@ -238,6 +267,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         let action = match &command {
             Command::List(q) => Action::List(q),
+            Command::BoardsList(q) => Action::BoardsList(q),
+            Command::BoardsPreview(v) => Action::BoardsPreview(v),
+            Command::BoardsSave(v) => Action::BoardsSave(v),
             Command::SeriesList(q) => Action::SeriesList(q),
             Command::SeriesProject(q) => Action::SeriesProject(q),
             Command::SeriesSave(v) => Action::SeriesSave(v),
@@ -288,6 +320,63 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn boards_preview_is_read_only_while_save_requires_confirmation_and_safe_version() {
+        assert!(matches!(
+            command(
+                "/api/task-boards/preview",
+                Some(json!({"board":{},"expectedVersion":0})),
+                None
+            )
+            .unwrap()
+            .0,
+            Command::BoardsPreview(_)
+        ));
+        assert!(
+            command(
+                "/api/task-boards/preview",
+                Some(json!({"board":{},"confirm":true})),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            command(
+                "/api/task-boards/preview",
+                Some(json!({"board":{},"actor":"user:owner"})),
+                None
+            )
+            .is_err()
+        );
+        assert!(matches!(
+            command(
+                "/api/task-boards",
+                Some(json!({"board":{},"expectedVersion":0,"confirm":true,"idempotencyKey":"key"})),
+                None
+            )
+            .unwrap()
+            .0,
+            Command::BoardsSave(_)
+        ));
+        assert!(
+            command(
+                "/api/task-boards",
+                Some(json!({"board":{},"expectedVersion":0,"idempotencyKey":"key"})),
+                None
+            )
+            .is_err()
+        );
+        assert!(
+            command(
+                "/api/task-boards",
+                Some(
+                    json!({"board":{},"expectedVersion":-1,"confirm":true,"idempotencyKey":"key"})
+                ),
+                None
+            )
+            .is_err()
+        );
+    }
     #[test]
     fn routine_public_dtos_keep_exact_keys_confirmation_versions_and_empty_selection() {
         assert!(matches!(

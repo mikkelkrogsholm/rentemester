@@ -1,5 +1,6 @@
 //! Workspace task streams and receipts. The caller supplies current authority, never JSON grants.
 //! These primitives require the task schema. They do not migrate/adopt a workspace or enable routes.
+pub mod boards;
 pub mod series;
 use crate::invalid;
 use rentemester_engine::{

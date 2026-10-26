@@ -1157,3 +1157,415 @@ fn routine_service_charges_once_per_admitted_request_including_nested_occurrence
         7
     );
 }
+fn board_draft(scope: Scope) -> Value {
+    let b = domain::boards::default_board(&scope);
+    json!({"boardId":b.board_id,"scope":b.scope,"columns":b.columns})
+}
+#[test]
+fn board_journey_previews_relocates_preserves_evidence_and_replays_after_restart() {
+    let (dir, mut c, cookies, p, cat) = fixture();
+    let created = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Create(&draft()),
+        Some("board-task"),
+        None,
+    )
+    .unwrap();
+    let id = created["task"]["taskId"].as_str().unwrap();
+    let mut input = board_draft(Scope::Company {
+        company_slug: "a".into(),
+    });
+    input["columns"][0]["columnId"] = json!("new-open");
+    input["relocations"] = json!({"open":"new-open"});
+    let preview = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsPreview(&input),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(preview["preview"]["affectedTaskIds"], json!([id]));
+    let saved = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsSave(&input),
+        Some("board-save"),
+        Some(0),
+    )
+    .unwrap();
+    assert_eq!(saved["board"]["version"], 1);
+    let task = call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap();
+    assert_eq!(task["task"]["columnId"], "new-open");
+    assert_eq!(task["task"]["version"], 2);
+    assert_eq!(task["task"]["references"], created["task"]["references"]);
+    assert_eq!(task["history"][1]["operation"], "board_changed");
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("stale-board"),
+            Some(0)
+        )
+        .is_err()
+    );
+    drop(c);
+    let mut c = Connection::open(dir.path().join("control")).unwrap();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("board-save"),
+            Some(0)
+        )
+        .unwrap(),
+        saved
+    );
+    assert_eq!(
+        call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap(),
+        task
+    );
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Receipt("board-save"),
+            None,
+            None
+        )
+        .unwrap()["receipt"],
+        json!({"operation":"task-board-save","version":1})
+    );
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','a','grant','reader','user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("board-save"),
+            Some(0)
+        )
+        .is_err()
+    );
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsPreview(&input),
+            None,
+            None
+        )
+        .is_err()
+    );
+}
+#[test]
+fn workspace_board_structure_checks_all_membership_without_inaccessible_workload_disclosure() {
+    let (_dir, mut c, cookies, p, cat) = fixture();
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','workspace_owner','user:human-one');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','b','revoke',NULL,'user:human-one');").unwrap();
+    let mut input = board_draft(Scope::Workspace {
+        company_slugs: vec![],
+    });
+    input["columns"][0]["name"] = json!("New vocabulary");
+    let first = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsPreview(&input),
+        None,
+        None,
+    )
+    .unwrap();
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsSave(&input),
+        Some("rename-global"),
+        Some(0),
+    )
+    .unwrap();
+    let before_hidden = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsPreview(&input),
+        None,
+        None,
+    )
+    .unwrap();
+    let hidden = json!({"taskId":"hidden-task","title":"Hidden synthetic task","scope":{"kind":"company","companySlug":"b"}});
+    store::mutate(
+        &mut c,
+        store::Command::Create {
+            input: &hidden,
+            generated_id: "unused",
+        },
+        store::Context {
+            actor: "user:synthetic",
+            principal: "synthetic",
+            idempotency_key: "hidden",
+            expected_version: None,
+            now: "2026-01-01T00:00:00.000Z",
+            source_check: None,
+        },
+        |_, _| Ok(()),
+    )
+    .unwrap();
+    let same = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsPreview(&input),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(same["preview"]["affectedTaskIds"], json!([]));
+    assert_eq!(same, before_hidden);
+    assert_eq!(
+        first["preview"]["statusChanges"],
+        same["preview"]["statusChanges"]
+    );
+    input["columns"][0]["columnId"] = json!("new-open");
+    input["relocations"] = json!({"open":"new-open"});
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsPreview(&input),
+            None,
+            None
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "access_denied"
+    );
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','b','grant','bookkeeper','user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsPreview(&input),
+            None,
+            None
+        )
+        .is_ok()
+    );
+    c.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('human-one','activate','member','user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::Receipt("rename-global"),
+            None,
+            None
+        )
+        .is_err()
+    );
+}
+#[test]
+fn board_meaning_requires_fresh_preview_and_cannot_bypass_documented_completion() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let t = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Create(&draft()),
+        Some("create"),
+        None,
+    )
+    .unwrap();
+    let id = t["task"]["taskId"].as_str().unwrap();
+    let mut input = board_draft(Scope::Company {
+        company_slug: "a".into(),
+    });
+    input["columns"][0]["status"] = json!("done");
+    input["columns"][0]["isDefault"] = json!(false);
+    input["columns"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"columnId":"new-open","name":"Open","status":"open","isDefault":true}));
+    let preview = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsPreview(&input),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("unreviewed"),
+            Some(0)
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "preview_required"
+    );
+    input["previewHash"] = preview["preview"]["previewHash"].clone();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("false-complete"),
+            Some(0)
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "completion_required"
+    );
+    assert_eq!(
+        call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap()["task"]["version"],
+        1
+    );
+    assert_eq!(
+        c.query_row::<i64, _, _>("SELECT count(*) FROM rm_task_board_events", [], |r| r
+            .get(0))
+            .unwrap(),
+        0
+    );
+}
+#[test]
+fn board_exact_replay_does_not_reapply_later_populated_column_rules() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let input = board_draft(Scope::Company {
+        company_slug: "a".into(),
+    });
+    let original = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsSave(&input),
+        Some("original-board"),
+        Some(0),
+    )
+    .unwrap();
+    let mut later = input.clone();
+    later["columns"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"columnId":"later","name":"Later work","status":"open","isDefault":false}));
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::BoardsSave(&later),
+        Some("later-board"),
+        Some(1),
+    )
+    .unwrap();
+    let created = call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Create(&draft()),
+        Some("later-task"),
+        None,
+    )
+    .unwrap();
+    let id = created["task"]["taskId"].as_str().unwrap();
+    call(
+        &mut c,
+        &cookies,
+        &p,
+        &cat,
+        Action::Move {
+            id,
+            input: &json!({"status":"open","columnId":"later"}),
+        },
+        Some("later-move"),
+        Some(1),
+    )
+    .unwrap();
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsPreview(&input),
+            None,
+            None
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "relocation_required"
+    );
+    assert_eq!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("original-board"),
+            Some(0)
+        )
+        .unwrap(),
+        original
+    );
+    assert_eq!(
+        call(&mut c, &cookies, &p, &cat, Action::Get(id), None, None).unwrap()["task"]["columnId"],
+        "later"
+    );
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('human-one','a','revoke',NULL,'user:human-one');").unwrap();
+    assert!(
+        call(
+            &mut c,
+            &cookies,
+            &p,
+            &cat,
+            Action::BoardsSave(&input),
+            Some("original-board"),
+            Some(0)
+        )
+        .is_err()
+    );
+}

@@ -18,6 +18,7 @@ use rusqlite::{Connection, Transaction, TransactionBehavior};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 
+mod boards;
 mod series;
 pub enum Authority<'a> {
     Cookie {
@@ -28,6 +29,9 @@ pub enum Authority<'a> {
 }
 pub enum Action<'a> {
     List(&'a Value),
+    BoardsList(&'a Value),
+    BoardsPreview(&'a Value),
+    BoardsSave(&'a Value),
     SeriesList(&'a Value),
     SeriesProject(&'a Value),
     SeriesSave(&'a Value),
@@ -45,7 +49,8 @@ impl Action<'_> {
     fn writes(&self) -> bool {
         matches!(
             self,
-            Self::SeriesSave(_)
+            Self::BoardsSave(_)
+                | Self::SeriesSave(_)
                 | Self::SeriesMaterialize(_)
                 | Self::Create(_)
                 | Self::Update { .. }
@@ -479,6 +484,7 @@ pub fn execute(
         let identity = observe(&tx, catalog, &authority, now)?;
         let access = access_for(&tx, &identity.subject, catalog)?;
         series::preadmit(&tx, &action, &access, expected)?;
+        boards::preadmit(&tx, &action, catalog, &access, expected)?;
         let writes = action.writes();
         if writes {
             rentemester_storage::workspace_transfer::require_business_write(&tx)?;
@@ -544,6 +550,10 @@ pub fn execute(
             Action::SeriesList(_) | Action::SeriesProject(_) => {
                 Some(series::read(&tx, &action, catalog, &access, &stamp)?)
             }
+            Action::BoardsList(input) => Some(boards::list(&tx, input, &access)?),
+            Action::BoardsPreview(input) => {
+                Some(json!({"preview":boards::preview(&tx,input,catalog,&access)?.preview}))
+            }
             Action::Get(id) => {
                 let task = get_current(&tx, id, catalog, &access, false)?;
                 let history = visible_history(&tx, id, catalog, &access)?;
@@ -554,7 +564,7 @@ pub fn execute(
                 Some(json!({"history":visible_history(&tx,id,catalog,&access)?}))
             }
             Action::Receipt(key) => Some(
-                json!({"receipt":store::series::receipt(&tx,&identity.principal,key,|scope|if scope_allowed(&access,scope,false){Ok(())}else{Err(denied())},|t|authorize_task(&tx,catalog,&access,t,false))?}),
+                json!({"receipt":boards::receipt(&tx,&identity.principal,key,catalog,&access)?}),
             ),
             _ => None,
         };
@@ -586,7 +596,9 @@ pub fn execute(
             now: &stamp,
             source_check: None,
         };
-        let result = if matches!(action, Action::SeriesSave(_) | Action::SeriesMaterialize(_)) {
+        let result = if let Action::BoardsSave(input) = &action {
+            boards::save(&tx, input, &ctx, catalog, &access)
+        } else if matches!(action, Action::SeriesSave(_) | Action::SeriesMaterialize(_)) {
             series::mutate(&tx, &action, &ctx, catalog, &access)
         } else {
             let command = match &action {

@@ -1,5 +1,6 @@
 //! Pure task-card policy shared by native transports. No database, clock or authority lookup.
 //! Callers must hold current scope authority across receipt lookup, transition and append.
+pub mod boards;
 mod input;
 pub mod series;
 mod transition;
