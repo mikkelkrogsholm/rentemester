@@ -185,7 +185,10 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
   }));
   items.push(protect("BANK_UNRECONCILED",()=>{
     if (!has(db,"bank_transactions","transaction_date") || !has(db,"bank_transactions","amount") || !has(db,"bank_journal_reconciliations","bank_transaction_id") || !has(db,"bank_journal_reconciliations","journal_entry_id")) return unavailable("BANK_UNRECONCILED","required bank reconciliation schema unavailable");
-    const evidence=rows(db,`SELECT bt.id,bt.transaction_date,bt.amount,bt.currency FROM bank_transactions bt LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id WHERE br.journal_entry_id IS NULL AND (bt.transaction_date BETWEEN ? AND ? OR bt.transaction_date IS NULL) ORDER BY bt.transaction_date,bt.id`,input.periodStart,cutoff); return control("BANK_UNRECONCILED",evidence.length?"blocked":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.amount??0)),0));
+    // A journal reconciling more than one bank row is as blocking as an
+    // unbooked row: the ledger holds the movement once, so counting every
+    // linked bank row as reconciled would fake a green close.
+    const evidence=rows(db,`SELECT bt.id,bt.transaction_date,bt.amount,bt.currency,CASE WHEN br.journal_entry_id IS NULL THEN 'unmatched' ELSE 'ambiguous' END as reconciliation_status FROM bank_transactions bt LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id WHERE (br.journal_entry_id IS NULL OR EXISTS(SELECT 1 FROM bank_journal_reconciliations other WHERE other.journal_entry_id=br.journal_entry_id AND other.bank_transaction_id<>bt.id)) AND (bt.transaction_date BETWEEN ? AND ? OR bt.transaction_date IS NULL) ORDER BY bt.transaction_date,bt.id`,input.periodStart,cutoff); return control("BANK_UNRECONCILED",evidence.length?"blocked":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.amount??0)),0));
   }));
   items.push(protect("EXCEPTIONS_OPEN",()=>{
     if (!has(db,"exceptions","status") || !has(db,"exceptions","severity")) return unavailable("EXCEPTIONS_OPEN","required exception schema unavailable");
