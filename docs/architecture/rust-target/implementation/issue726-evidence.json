@@ -1,0 +1,77 @@
+{
+  "issue": 726,
+  "whole_issue_accepted": false,
+  "nonempty_scheduler_and_target_only_recovery_accepted": true,
+  "checkedAt": "2026-10-26T00:25:58.174576+00:00",
+  "source_revision": "41391b2d954fe6dc2cdfa9d966b742e89e0aa39b",
+  "source_tree": "85e0e1d042938fb41c8dbd37d37522e091c22515",
+  "worker_revision": "6a21fd4527f7928cc33db4dae834bb5597a56c1e",
+  "sgdRun": "issue726-transfer-recovery-20261026T001342.623907000",
+  "sgdPhase": "done",
+  "proofs": {
+    "nonempty-jobs-acceptance.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/nonempty-jobs-acceptance.json",
+      "sha256": "9c95a58321d35b267f4b068e24e8639b7bf7f01b9e3a65202ffeef36955cc124"
+    },
+    "nonempty-jobs-receipt.json": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/nonempty-jobs-receipt.json",
+      "sha256": "ddad05a16510a10e6b7d5de0c66411d82345e9a8f6badee8bc6377b5e489d61c"
+    },
+    "nonempty-jobs.log": {
+      "path": "docs/architecture/rust-target/implementation/acceptance726/nonempty-jobs.log",
+      "sha256": "84c783c4406041f5dde959f8b142c312dc81eff0604875330553c8a3ea77ff6a"
+    }
+  },
+  "review": "Reviewed actual6a21fd45 test-only diff:3 typed schedules exercise queued/completed/unresolved history across signed offered/staged/released/active/reopen states. Exact workspace_transfer_fenced dispatch refusals preserve docs/generations; fresh target consent cannot clear unknown attempts or redispatch completed generation, queued work requires separate reviewed selection. Accepted target-only12.34 balanced journal and exact readmodel/history/generations survive independently verified fresh recovery/reopen. Unique synthetic buyer only fixture correction; no production API/control/guard changes. Frozen guarded host receipt3testsPASS and worker AST observed. Qualifies finite component only; original activation-crash/older-clone/platform/native/release matrix remains open.",
+  "accepted": [
+    "Current3test composed common-engine host suite passed under pinned Rust1.94.1, guarded independent build output. Worker and integrated tree85e0e1d0 identical; SGD reused exact valid receipt rather than rerunning unchanged checks.",
+    "Nonempty typed queued/completed/unresolved scheduler histories and generation rows preserved across signed offered snapshot/stage/release/activate/reopen. Frozen/moved source and staged target reject dispatch with workspace_transfer_fenced and preserve documents/generations.",
+    "Restored scheduler needs fresh owner consent; unresolved attempts cannot be cleared by consent, completed generation cannot be dispatched again, queued work additionally requires fresh reviewed catch-up selection.",
+    "A target-only accepted12.34 balanced journal and two generation rows survive independently verified signed fresh recovery; exact ordinary journal read model, generation/history and unresolved state survive reopen. Source remains moved/closed.",
+    "Existing Group99 actual lostreply/unknown SMTP/source tombstone, #707 corrupt/signed restore and #701 migration/legacy retirement evidence retained; no prior actual financial/provider setup was reconstructed or replayed."
+  ],
+  "limits": [
+    "These are synthetic composed macOS host unit tests using existing explicit identity fixture, not normal-MFA browser/native/hosted platform acceptance. No arbitrary pre-freeze clone guarantee is claimed.",
+    "pendingEffects intentionally lists unknown SMTP; no new inventory API, scheduler policy, engine or production guard was added. Job inventory is read through existing scheduler/history interfaces.",
+    "Full process-death around activation and measured operator-level RPO/RTO remain next same-issue acceptance. Existing target-only recovery proves data preservation, not all release rollback scenarios."
+  ],
+  "preservedFailures": [
+    "Worker exploratory compile identified consumed Owner after try_close; removed redundant drop. Fixture required distinct synthetic buyers and explicit post-restore catch-up selection. Product guards preserved; full outputs remain in original agent.ndjson and frozen receipts.",
+    "Initial GDD concurrency risk lacked a concurrency-category exercising scenario; retained original model and added truthful fenced-authority scenario before dispatch."
+  ],
+  "criterionDispositions": [
+    {
+      "criterion": 1,
+      "accepted": "Current nonempty scheduler source/staged human dispatch fence; existing wrong-target/key and writer/restart fences retained",
+      "remaining": "Original qualified hosted/older/pre-freeze clone matrix, all upstream release/native gates remain."
+    },
+    {
+      "criterion": 2,
+      "accepted": "Existing #707/#701 corrupt/incompatible snapshot/migration primitives and wrong identity controls retained",
+      "remaining": "Composed process death around activation and exact recoverable authority observation."
+    },
+    {
+      "criterion": 3,
+      "accepted": "Current signed fresh recovery preserves target-only accepted journal and job histories",
+      "remaining": "Full original post-cutover recovery reconciliation/runbook and measured RPO/RTO qualification."
+    },
+    {
+      "criterion": 4,
+      "accepted": "Existing Group99 current-authorized lost-response/replay identity mapping retained",
+      "remaining": "Original qualified credential/local-hosted/native J06 completion."
+    },
+    {
+      "criterion": 5,
+      "accepted": "Existing moved-source restart/tombstone and current source/staged job refusal retained",
+      "remaining": "Original qualified J06/copied configuration/pre-freeze clone and final native workflow."
+    },
+    {
+      "criterion": 6,
+      "accepted": "Nonempty queued/completed/unresolved histories retain typed restore boundaries; no blind rerun under fresh consent",
+      "remaining": "Original full claimed hosted/platform/external-effect composed qualification."
+    }
+  ],
+  "nextNecessaryAcceptance": "Original726 activation process death/reopen with staged-or-active authority and measured component recovery, using existing test-process pattern; no new production manager/harness. Then reconcile original remaining clone/rollback/release/native boundaries.",
+  "closed55OriginalIssues": 43,
+  "remaining55OriginalIssues": 12
+}

@@ -1,12 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original723 retained reported-period signed recovery accepted; normal fresh-owner MFA/read-only restart and exact financial/audit preservation. Whole723 remains open.",
-  "code_revision": "aa88d6a90a1041c188a0f9b6da49b770f8d82e86",
+  "current_increment": "Original726 nonempty scheduled transfer/reconsent/target-only signed recovery composed acceptance passed; whole issue remains active for original restaccept.",
+  "code_revision": "41391b2d954fe6dc2cdfa9d966b742e89e0aa39b",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original723_reported_recovery_accepted_final_qualified_external_gates_pending",
+  "state": "original726_nonempty_jobs_and_target_recovery_accepted_restaccept_active",
   "issues_closed": 43,
-  "next": "Original726 existing transfer rehearsal: nonempty scheduler inventory/dispatch fences and failure/post-write recovery matrix; preserve all prior Group99 effects and original native/release dependencies.",
+  "next": "Original726 activation process death/reopen with staged-or-active authority and measured component recovery, using existing test-process pattern; no new production manager/harness. Then reconcile original remaining clone/rollback/release/native boundaries.",
   "preserve_unrelated_paths": [
     ".claude/settings.json",
     ".codex/hooks.json",
@@ -16765,6 +16765,14 @@
       "archive_sha256": "30b306d180a181b176ed999df482053f90900f3cbf05718919851bb84137cc6c",
       "status": "Retained reported-period source-free recovery and exact normal-owner read-only restart accepted; original qualified/native/external gates retained",
       "sgdRun": "issue723-reported-recovery-20261026T000656.082312000"
+    },
+    "issue726_nonempty_transfer_recovery": {
+      "issue": 726,
+      "whole_issue_accepted": false,
+      "report": "docs/architecture/rust-target/implementation/issue726-evidence.json",
+      "source_revision": "41391b2d954fe6dc2cdfa9d966b742e89e0aa39b",
+      "status": "Nonempty jobs and target-only signed recovery composed host acceptance passed; next original activation crash/restaccept",
+      "sgdRun": "issue726-transfer-recovery-20261026T001342.623907000"
     }
   },
   "verified_history": [
@@ -19312,7 +19320,7 @@
     "oneActiveIssue": true,
     "heartbeat": "rentemester-luk-resterende-rust-issues",
     "manualDesktopLast": true,
-    "currentEvidence": "issue723-evidence.json",
+    "currentEvidence": "issue726-evidence.json",
     "allOriginalScopesRetained": true,
     "current718ScopedResult": {
       "evidence": "issue718-evidence.json",

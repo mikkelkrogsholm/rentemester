@@ -1,0 +1,22 @@
+{
+  "task": "nonempty_jobs",
+  "attempt": 1,
+  "passed": true,
+  "commit": "6a21fd4527f7928cc33db4dae834bb5597a56c1e",
+  "changed_paths": [
+    "crates/rentemester-host/src/workspace_transfer/tests.rs"
+  ],
+  "checks": [
+    {
+      "check": "host726",
+      "key": "1c1f6f68862024f4837d9fdf098bdc7c903f2e42db0c9ad4670ee849f7ca6ea4",
+      "argv": [
+        "python3",
+        "/tmp/issue726-host-check.py"
+      ],
+      "exit_code": 0,
+      "passed": true,
+      "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/issue726-transfer-recovery-20261026T001342.623907000/nonempty_jobs-1/checks/1c1f6f68862024f4837d9fdf098bdc7c903f2e42db0c9ad4670ee849f7ca6ea4/host726.log"
+    }
+  ]
+}
