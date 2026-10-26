@@ -1,0 +1,75 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+   Compiling rentemester-mcp v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-mcp)
+warning: unused imports: `company_schema` and `tool`
+ --> crates/rentemester-mcp/src/backup_governance.rs:1:20
+  |
+1 | use crate::tools::{company_schema, tool};
+  |                    ^^^^^^^^^^^^^^  ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `serde::Deserialize`
+ --> crates/rentemester-mcp/src/backup_governance.rs:3:5
+  |
+3 | use serde::Deserialize;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `json`
+ --> crates/rentemester-mcp/src/backup_governance.rs:4:25
+  |
+4 | use serde_json::{Value, json};
+  |                         ^^^^
+
+warning: unused import: `crate::public_einvoice::original717_tool_result`
+  --> crates/rentemester-mcp/src/digisense_received.rs:28:9
+   |
+28 | pub use crate::public_einvoice::original717_tool_result;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rentemester-mcp` (bin "rentemester-mcp") generated 4 warnings (run `cargo fix --bin "rentemester-mcp" -p rentemester-mcp` to apply 4 suggestions)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-host)
+warning: unused import: `serde_json::Value`
+  --> crates/rentemester-host/src/portable_backup.rs:10:5
+   |
+10 | use serde_json::Value;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling rentemester-server v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-server)
+warning: `rentemester-host` (lib) generated 1 warning (run `cargo fix --lib -p rentemester-host` to apply 1 suggestion)
+   Compiling rentemester-cli v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-cli)
+warning: function `accepts` is never used
+  --> crates/rentemester-cli/src/regulatory.rs:94:8
+   |
+94 | pub fn accepts(args: &[String]) -> bool {
+   |        ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `preflight` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:161:8
+    |
+161 | pub fn preflight(args: &[String]) -> Result<bool, crate::dated_reports::Output> {
+    |        ^^^^^^^^^
+
+warning: function `binding_refusal` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:165:8
+    |
+165 | pub fn binding_refusal(args: &[String]) -> crate::dated_reports::Output {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `endpoint` is never used
+ --> crates/rentemester-server/src/original716_cli/custody.rs:2:8
+  |
+2 | pub fn endpoint(command: &str) -> Option<&'static str> {
+  |        ^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-cli` (bin "rentemester-rust") generated 3 warnings
+warning: `rentemester-server` (bin "rentemester-server") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.12s

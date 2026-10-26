@@ -1,0 +1,9 @@
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.77s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 1 test
+test legacy_control_adoption::tests::every_exact_control_prefix_converts_without_mutating_source_or_inheriting_authority ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 744 filtered out; finished in 38.36s
+

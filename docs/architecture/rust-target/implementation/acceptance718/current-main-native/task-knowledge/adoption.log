@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 1 test
+test legacy_control_adoption::knowledge31_tests::explicit_main31_page_lineage_projects_without_rebinding_or_authority_restore ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 744 filtered out; finished in 1.32s
+

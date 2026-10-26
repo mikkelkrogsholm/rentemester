@@ -1,0 +1,17 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.68s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 6 tests
+test fresh::tests::either_nonempty_database_refuses_before_mutating_the_other ... ok
+test fresh::tests::temporary_attached_metadata_readonly_or_active_transaction_refuses ... ok
+test fresh::tests::company_write_contention_leaves_control_complete_and_company_empty ... ok
+test fresh::tests::repeat_initialization_cannot_replace_native_identity_or_any_data ... ok
+test fresh::tests::explicit_chart_seed_is_atomic_and_never_replaces_an_existing_chart ... ok
+test fresh::tests::complete_empty_native_pair_persists_without_credentials_accounts_or_access ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 739 filtered out; finished in 5.05s
+

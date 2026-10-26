@@ -1,0 +1,22 @@
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-host)
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.25s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_host-2ba5cb6eef4850f7)
+
+running 1 test
+test portable_backup::knowledge_page_tests::signed_v3_pages_restore_complete_history_without_runtime_or_authority ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 190 filtered out; finished in 4.07s
+

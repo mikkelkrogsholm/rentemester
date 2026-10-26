@@ -1,0 +1,16 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.47s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 5 tests
+test knowledge_pages::tests::provision_owned_synthetic_knowledge_fixture ... ignored, requires an explicitly owned stopped disposable native fixture
+test knowledge_pages::tests::actual_main_history_interval_relations_backlinks_metrics_and_read_only_scope ... ok
+test portable_backup::knowledge_pages::tests::complete_sourcefree_page_relation_history_restores_without_grants ... ok
+test knowledge_pages::tests::version_hash_scope_endpoints_and_appendonly_refuse_without_partial_effects ... ok
+test portable_backup::knowledge_pages::tests::changed_body_hash_principal_chain_unknown_company_or_codec_refuses_atomically ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 740 filtered out; finished in 4.45s
+

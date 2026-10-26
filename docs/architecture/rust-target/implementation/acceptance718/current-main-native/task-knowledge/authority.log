@@ -1,0 +1,14 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.38s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_application-828f61d861cc763e)
+
+running 1 test
+test tasks::tests::protected_knowledge_current_cookie_company_permission_workspace_owner_interval_and_no_grants ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 2.54s
+

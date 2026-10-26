@@ -1,0 +1,9 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.87s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_engine-e682b561dc5ed9de)
+
+running 1 test
+test knowledge_pages::tests::actual_main_page_relation_hashes_render_and_refusals ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 0.03s
+

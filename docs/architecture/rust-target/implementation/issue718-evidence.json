@@ -28,7 +28,7 @@
     }
   },
   "remaining": [
-    "Full approved current-main native parity remains: protected task-linked knowledge, company56/control-main lineage-aware adoption and remaining approval/purchase/legacy banking/receivable/party/evidence operations. Manual task, routines, boards, authoritative sources and live reminder journeys now have separate source-bound accepted qualifications; full issue not accepted.",
+    "Full approved current-main native parity remains: company56/control-main lineage-aware adoption and remaining approval/purchase/legacy banking/receivable/party/evidence operations. Manual task, routines, boards, authoritative sources, live reminders and protected task-linked knowledge now have separate source-bound accepted qualifications; full issue not accepted.",
     "Current-main broad UI failures remain incompletely qualified; no assertion/protocol/identity bypass or unchanged full-suite rerun.",
     "Original #712 dependency and J03 native/Tauri boundary: native/menu/Keychain/WebKit-cookie/close-reopen/cancel/manual installed acceptance LAST; all release/cutover gates retained."
   ],
@@ -885,5 +885,11 @@
     "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/qualification.json",
     "acceptedJourney": "Existing common React configure\u2192actual current-service native worker delivery\u2192disable/re-enable original slot\u2192stop/restart/dedup/exact configure/run receipts\u2192documented completion suppression; original CLI notifications and MCP runtime.",
     "whole_issue_accepted": false
+  },
+  "native_protected_knowledge_20261026": {
+    "source": "883e702ffe8f1fd0d23ea28d58e2c9f98c55ed2f",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/qualification.json",
+    "wholeIssueAccepted": false,
+    "scope": "Existing React protected tasklinks/current permissions/safe content/restart; full native business recovery and exact main31-only source adoption, not fullmain adoption."
   }
 }

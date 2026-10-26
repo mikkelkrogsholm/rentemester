@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-0103f4dba411d7e4)
+
+running 1 test
+test control_migration::tests::native33_knowledge_suffix_keeps_history_and_verifies_custody_before_migration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 744 filtered out; finished in 0.17s
+

@@ -1,0 +1,17 @@
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_host-2ba5cb6eef4850f7)
+
+running 1 test
+test portable_backup::tests::signed_tasks_restore_exact_history_receipts_without_runtime_or_grants ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 190 filtered out; finished in 4.55s
+

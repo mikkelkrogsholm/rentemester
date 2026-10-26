@@ -1,0 +1,25 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-runtime)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-storage)
+   Compiling rentemester-application v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-application)
+   Compiling rentemester-host v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-metadata-20261026T201526.365854000/integration/crates/rentemester-host)
+warning: unused import: `serde_json::json`
+ --> crates/rentemester-host/src/backup_original122/original717/tests.rs:5:5
+  |
+5 | use serde_json::json;
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rentemester-host` (lib test) generated 1 warning (run `cargo fix --lib -p rentemester-host --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.39s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_host-2ba5cb6eef4850f7)
+
+running 2 tests
+test namespace_custody::tests::namespace_custody_wrong_confirmation_refuses_without_creation ... ok
+test namespace_custody::tests::namespace_custody_fresh_reopen_exclusive_lease_and_wrong_workspace ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 189 filtered out; finished in 1.32s
+

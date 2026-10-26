@@ -1,0 +1,24 @@
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-engine)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-knowledge-journey-20261026T200331.572353000/integration/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.57s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_runtime-d670b2eb7a07f88f)
+
+running 14 tests
+test backup_artifact::tests::schema_identity_and_created_at_cannot_be_missing_or_ambiguous ... ok
+test backup_artifact::tests::trust_is_explicit_wrong_key_and_embedded_key_cannot_establish_it ... ok
+test backup_artifact::tests::actual_native_issued_json_and_pdf_paths_preserve_both_originals ... ok
+test backup_artifact::tests::caller_pkcs8_is_accepted_but_secret_never_is_part_of_the_envelope ... ok
+test backup_artifact::tests::coverage_cannot_silently_omit_business_or_include_nonempty_unsupported_sections ... ok
+test backup_artifact::tests::strict_json_preserves_no_ambiguous_duplicate_or_unknown_format_fields ... ok
+test backup_artifact::tests::missing_unlisted_duplicate_and_link_like_entries_refuse ... ok
+test backup_artifact::tests::changed_manifest_context_signature_and_payload_refuse ... ok
+test backup_artifact::tests::deterministic_roundtrip_preserves_signed_bytes_identities_coverage_and_originals ... ok
+test backup_artifact::tests::knowledge_format_v3_requires_signed_complete_section_and_retains_v1_v2 ... ok
+test backup_artifact::tests::task_format_v2_is_complete_signed_and_v1_remains_independently_readable ... ok
+test backup_artifact::tests::signed_inventory_requires_full_ledgers_audit_and_one_to_one_payload_mapping ... ok
+test backup_artifact::tests::even_valid_signature_cannot_authorize_unsafe_paths_or_raw_control_and_secrets ... ok
+test backup_artifact::tests::bounds_are_refusals_never_truncation_even_under_a_valid_signature ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 168 filtered out; finished in 0.06s
+

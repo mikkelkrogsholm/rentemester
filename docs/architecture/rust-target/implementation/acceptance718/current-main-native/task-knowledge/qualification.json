@@ -1,0 +1,510 @@
+{
+  "format": "rentemester-native-protected-knowledge-qualification/1",
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "actualGithubStatus": {
+    "closed": 43,
+    "open": 12
+  },
+  "qualifiedAt": "2026-10-26T20:22:33.419733+00:00",
+  "source": "883e702ffe8f1fd0d23ea28d58e2c9f98c55ed2f",
+  "featureSource": "eca1e51180b751217b346a3232a2b8890d359635",
+  "runs": [
+    "issue718-native-knowledge-journey-20261026T200331.572353000",
+    "issue718-native-knowledge-metadata-20261026T201526.365854000"
+  ],
+  "acceptance": {
+    "groups": 12,
+    "cases": 44,
+    "checks": {
+      "engine": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-engine",
+          "--lib",
+          "knowledge_pages::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/engine.log",
+        "sha256": "36187079cea0cc83850d904f8cbd1959959605a30dcb2c20f663fc9c3ec92b4b",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "storage": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-storage",
+          "--lib",
+          "knowledge_pages::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/storage.log",
+        "sha256": "911e95d2e411bae070be0a32dbc1e2adaba195ddeaad63d61f9a9f1f9d832a29",
+        "passed": 4,
+        "exitCode": 0
+      },
+      "migration": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-storage",
+          "--lib",
+          "control_migration::tests::native",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/migration.log",
+        "sha256": "72ec6475372874802884d46f1cc6c37b5d03358920fe4464f2c1250a3d47055c",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "readiness": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-storage",
+          "--lib",
+          "readiness::tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/readiness.log",
+        "sha256": "b5b3c4ddbe3b32d5c106f56ce3e62d9db451edc4f062fb03ae13e6c5f2ae4b41",
+        "passed": 6,
+        "exitCode": 0
+      },
+      "adoption": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-storage",
+          "--lib",
+          "knowledge31_tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/adoption.log",
+        "sha256": "7281297df7a6efa5a2db3c6e904c041e8f9515c875bc34535e9695350f5a24ce",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "authority": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-application",
+          "--lib",
+          "tasks::tests::protected_knowledge",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/authority.log",
+        "sha256": "04b9a31aa14f1a1c599f3bd297f83403561cd5aee52b25e30a2590ed2b7c7e3c",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "artifact": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-runtime",
+          "--lib",
+          "backup_artifact::tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/artifact.log",
+        "sha256": "147f98fb2d609a73acc2b21e410f1e75b4b3010f952c68bf63e3e92c51fcb522",
+        "passed": 14,
+        "exitCode": 0
+      },
+      "signed-pages": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-host",
+          "--lib",
+          "portable_backup::knowledge_page_tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/signed-pages.log",
+        "sha256": "6661854f4846f00e80bfaceaf20e382774d348f6d0d860e99ea916910e841780",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "signed-legacy": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-host",
+          "--lib",
+          "portable_backup::tests::signed_tasks_restore",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/signed-legacy.log",
+        "sha256": "f82afb42954e9f28051633b549edac59a7091509e6333c530e8dbf212d5d0f31",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "http": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-server",
+          "--bin",
+          "rentemester-server",
+          "product_http::tasks::tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/http.log",
+        "sha256": "879eafcacfb59a473a3ad0b7cc88394f05f26e0b41527f6c86a243f607d8a746",
+        "passed": 6,
+        "exitCode": 0
+      },
+      "fresh": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-storage",
+          "--lib",
+          "fresh::tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/fresh.log",
+        "sha256": "0343d49bdf2fcbfa0111029b21e16d96aabc36b1daed55e83052470e1765dff3",
+        "passed": 6,
+        "exitCode": 0
+      },
+      "custody": {
+        "argv": [
+          "env",
+          "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target",
+          "python3",
+          "scripts/rust/cargo-guard.py",
+          "cargo",
+          "test",
+          "-p",
+          "rentemester-host",
+          "--lib",
+          "namespace_custody::tests::",
+          "--",
+          "--nocapture"
+        ],
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/custody.log",
+        "sha256": "9e9c0853ebfc97d608513fc6934abe267dfc40e315f5f24f1482051cc29df38d",
+        "passed": 2,
+        "exitCode": 0
+      }
+    },
+    "build": {
+      "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/build.log",
+      "sha256": "d6ab55bd4bf4340a42876b4afd612c54ef714cef2c9ef9eb3d540ad8b93949c9",
+      "exitCode": 0
+    },
+    "legacyPrefixes": {
+      "logSha256": "aaa0bd4f148e65e6af14090f2650fc94e7d0f41768cb539beb903ed68919c2ab",
+      "controlMigrationSourceSha256": "cc69efb9706f7e2fae70dc1ba08663d659a1d47f52c28ffa497a53b12869bc63",
+      "actualPrefixes": 32,
+      "passed": true,
+      "log": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-knowledge/legacy-prefixes.log"
+    }
+  },
+  "sourceFiles": {
+    "Cargo.lock": "0ea888f81a6cfaa07fbf7d881ed429ab99804885e6a167869c5053d47fab9db1",
+    "crates/rentemester-application/src/tasks.rs": "2dc48a1a4b10116c1d3333309153c083b8fb05fa204bdc40387a6d814b74ae23",
+    "crates/rentemester-application/src/tasks/knowledge.rs": "c4951aebd8b700baa8c4e8caf16359767d3cb3df3047add379528469185f17a2",
+    "crates/rentemester-application/src/tasks/tests.rs": "0401c566178e78d308ff4ae4f3ac80f46290f32ef3001cd26c998c54bbfbddd9",
+    "crates/rentemester-cli/src/operator_original716/transfer.rs": "88e63ae9d637aa49a75512bd4c3a59a75c783c20f3f23ea99213f39946f930c6",
+    "crates/rentemester-engine/Cargo.toml": "6c30ec917d81eb12b741711bd80763297ac888748272f9c513380b25969a6d6f",
+    "crates/rentemester-engine/src/knowledge_pages.rs": "4f729d7f48f27b40d6c64226764d97d44fffa963e49d0e3f517584312c4cb6b4",
+    "crates/rentemester-engine/src/knowledge_pages/generate-main.ts": "d99afd673529664e08c75b5651a205e573878556930b86963f3afddef3d77cc7",
+    "crates/rentemester-engine/src/knowledge_pages/main-pages.json": "6394dc8b18a7b6b64f46843ffdbdb2081d08acf67151f5a14bfc6312c48621c5",
+    "crates/rentemester-engine/src/knowledge_pages/tests.rs": "13df07501e6b3893b6c18f3a393b8964a65abb58e148876e911ecef2ecd0ba67",
+    "crates/rentemester-engine/src/lib.rs": "20f03dd6730c36c6c15226c62c25ce44f994fddc78ccc82ca3250977389b7ad5",
+    "crates/rentemester-host/src/namespace_custody.rs": "f0d5b693007a9f7db5637054a4f6360c9ceda1b865df84ef08c539a854fd05f7",
+    "crates/rentemester-host/src/portable_backup.rs": "d45999f9b3e962b27a76f2495ad1e0123f09cd8838ef2967e7eba73a0a21bbdc",
+    "crates/rentemester-runtime/src/backup_artifact.rs": "799282163fbb89b2526c7c33aa7f1621305765ee760dbf720662241b5034ffa6",
+    "crates/rentemester-runtime/src/backup_artifact/tests.rs": "a141488609921e4cbcaa571164b5b142990fcd03fe839b7b3cb09b549f68d7e1",
+    "crates/rentemester-runtime/src/package_update.rs": "faeeb534e89de93a54d1dd9576dbc31d5a0f0c4debc814a648feae077d6ff787",
+    "crates/rentemester-server/src/main.rs": "77ce259c9a8d7f608ac2084fa5ca3c374bee8973e6c734dec2a9d254191f8fdd",
+    "crates/rentemester-server/src/product_http.rs": "8b3d9e18b7ba798a14b50403569ef45b66203b9ad9e58fa56b986c0130b1742b",
+    "crates/rentemester-server/src/product_http/tasks.rs": "ad080ff152da3ae9394de63335b887af9db9c8d6e9ff5955def3c61f51510097",
+    "crates/rentemester-storage/src/control_migration.rs": "cc69efb9706f7e2fae70dc1ba08663d659a1d47f52c28ffa497a53b12869bc63",
+    "crates/rentemester-storage/src/fresh.rs": "e1b78662c1174c2f53a95145bcf31167cb93c7e3741dc330d6804568fddda698",
+    "crates/rentemester-storage/src/fresh/tests.rs": "57194d89ccdb5d619b16a3596b0328589d696af7bc8a0d5f3bf33e70e650c573",
+    "crates/rentemester-storage/src/knowledge_pages.rs": "6d6c1139cf17eb905b3813c7ec033a17c3ca11d2aade20ffae2b8cd206896dae",
+    "crates/rentemester-storage/src/knowledge_pages/tests.rs": "6ec42d154749de82e053a0070fdf351c3a1b008091cfc479552f7fe78a06c64e",
+    "crates/rentemester-storage/src/legacy-workspace-schema.json": "feb526b29a3de8a197a7029a4a6a9963653203cddf54e91e7c31e46a2d818169",
+    "crates/rentemester-storage/src/legacy_control_adoption.rs": "cfd8da31e6035d29f727cb5daa4f135e90a72a278b6fe464b0674b1c89e1f41f",
+    "crates/rentemester-storage/src/lib.rs": "7772e6b65731734dd4f338e37e2f639b72d411fcf1ec99c9a013e19f34f31127",
+    "crates/rentemester-storage/src/native-workspace-migrations/0034-knowledge-pages-v34.json": "58fad90f7adbaa483f6d5d816d35b75b2b28c2d2b9f33d84c579b1216c750fef",
+    "crates/rentemester-storage/src/original716/transfer.rs": "b0aeb51ffaca74e22d14d26090f5dfadf04cd475ce3ec1fc074dfa15d6700633",
+    "crates/rentemester-storage/src/portable_backup.rs": "6510957b731fdd7d3de8538fb2340ae86ffdbb5c7793fa3098a22ffda795ff29",
+    "crates/rentemester-storage/src/portable_backup/knowledge_pages.rs": "06e2425dbfcb35f568d8e3604f9eaf6b6a06beb71257e773906771fb6023e263",
+    "crates/rentemester-storage/src/portable_backup/knowledge_pages/tests.rs": "5a97d93ac987307f65990bbb65dc2c5a835bb3f01714ce90b580280b6ed10923",
+    "crates/rentemester-storage/src/readiness.rs": "6bc8c95c1fac9f0f631b3d73cd387ab38df827acfc0289d2fb3dd717cd5f2980",
+    "docs/cli-contract.md": "13c552920d9ade0f25d511677cf6667249d3e47773e63887585c72459590763a",
+    "protocol/http-v1.json": "403a72ec62c0d54bb3946c34cec96a25c7e407a2bec9e97bd2016dc78585d15a",
+    "scripts/rust/check-native-task-knowledge.ts": "3d4e56dfad8e21604225984dd5c5d76eb3e4772f816f49316a03cb058e0e4cf0",
+    "scripts/rust/check-native-tasks.py": "04a62d3a414e39e8b91cfce93496d4ab22092543a1f9a96a81d3170aed308335"
+  },
+  "finalCompiledBinaries": {
+    "rentemester-server": "1e20d510029b76dbdf09500b72c36182281c2428a6ff5d3585667ae417af356a",
+    "rentemester-rust": "1690ec27b7b054660838c5f211a20c8911f2b6693d74ee77ed35457dd795019e",
+    "rentemester-mcp": "d72c8e684926554338b34737d719674748f9f81185cdff420845a9c795969d7d"
+  },
+  "browser": {
+    "knowledge-first.json": {
+      "ok": true,
+      "ordinaryOwnerVerificationMfa": true,
+      "syntheticTasksOnly": true,
+      "pagesProvisionedSeparatelyByNativeProgrammaticCore": true,
+      "errors": []
+    },
+    "knowledge-read.json": {
+      "ok": true,
+      "existingReactTaskLinks": [
+        "company",
+        "workspace"
+      ],
+      "escapedTextNoScriptExecution": true,
+      "currentServiceCompanyRead": true,
+      "workspaceOwnerOnly": true,
+      "freshRevocationBeforeContent": true,
+      "refusals": [
+        "anonymous401",
+        "wrongScope404",
+        "expired404",
+        "missing404",
+        "workspaceNonOwner403",
+        "revokedCompany403"
+      ],
+      "errors": []
+    },
+    "knowledge-reopen.json": {
+      "ok": true,
+      "exactPersistedCompanyAndWorkspacePages": true,
+      "existingReactAfterActualRestart": true,
+      "errors": []
+    },
+    "runtime.json": {
+      "origin": "http://127.0.0.1:59064",
+      "profile": "local-user-macos",
+      "synthetic": true,
+      "stopped": true,
+      "workspaceRemoved": true
+    }
+  },
+  "actualBrowserBinaryBinding": {
+    "at": "2026-10-26T19:51:00.175511+00:00",
+    "base": "259f3031cf8877fbaecfb2f0559c6a9e06188010",
+    "sourceFiles": {
+      "Cargo.lock": "0ea888f81a6cfaa07fbf7d881ed429ab99804885e6a167869c5053d47fab9db1",
+      "crates/rentemester-application/src/tasks.rs": "2dc48a1a4b10116c1d3333309153c083b8fb05fa204bdc40387a6d814b74ae23",
+      "crates/rentemester-application/src/tasks/tests.rs": "0401c566178e78d308ff4ae4f3ac80f46290f32ef3001cd26c998c54bbfbddd9",
+      "crates/rentemester-cli/src/operator_original716/transfer.rs": "88e63ae9d637aa49a75512bd4c3a59a75c783c20f3f23ea99213f39946f930c6",
+      "crates/rentemester-engine/Cargo.toml": "6c30ec917d81eb12b741711bd80763297ac888748272f9c513380b25969a6d6f",
+      "crates/rentemester-engine/src/lib.rs": "20f03dd6730c36c6c15226c62c25ce44f994fddc78ccc82ca3250977389b7ad5",
+      "crates/rentemester-host/src/portable_backup.rs": "d45999f9b3e962b27a76f2495ad1e0123f09cd8838ef2967e7eba73a0a21bbdc",
+      "crates/rentemester-runtime/src/backup_artifact.rs": "799282163fbb89b2526c7c33aa7f1621305765ee760dbf720662241b5034ffa6",
+      "crates/rentemester-runtime/src/backup_artifact/tests.rs": "a141488609921e4cbcaa571164b5b142990fcd03fe839b7b3cb09b549f68d7e1",
+      "crates/rentemester-runtime/src/package_update.rs": "faeeb534e89de93a54d1dd9576dbc31d5a0f0c4debc814a648feae077d6ff787",
+      "crates/rentemester-server/src/main.rs": "dc89e41ffa1966d48f93472d2930bc180cd6317107d7b09058500259eba92493",
+      "crates/rentemester-server/src/product_http.rs": "8b3d9e18b7ba798a14b50403569ef45b66203b9ad9e58fa56b986c0130b1742b",
+      "crates/rentemester-server/src/product_http/tasks.rs": "ad080ff152da3ae9394de63335b887af9db9c8d6e9ff5955def3c61f51510097",
+      "crates/rentemester-storage/src/control_migration.rs": "c6df638bff97c4edd42dda767de59522635f915473f4e8a4e03b726816deeb4c",
+      "crates/rentemester-storage/src/legacy-workspace-schema.json": "feb526b29a3de8a197a7029a4a6a9963653203cddf54e91e7c31e46a2d818169",
+      "crates/rentemester-storage/src/legacy_control_adoption.rs": "4d86d98bc582f9d56136290292f18cd6e247105ff22b5e0fb33a0e6eff8ffaa6",
+      "crates/rentemester-storage/src/lib.rs": "7772e6b65731734dd4f338e37e2f639b72d411fcf1ec99c9a013e19f34f31127",
+      "crates/rentemester-storage/src/original716/transfer.rs": "b0aeb51ffaca74e22d14d26090f5dfadf04cd475ce3ec1fc074dfa15d6700633",
+      "crates/rentemester-storage/src/portable_backup.rs": "6510957b731fdd7d3de8538fb2340ae86ffdbb5c7793fa3098a22ffda795ff29",
+      "crates/rentemester-storage/src/readiness.rs": "6bc8c95c1fac9f0f631b3d73cd387ab38df827acfc0289d2fb3dd717cd5f2980",
+      "protocol/http-v1.json": "403a72ec62c0d54bb3946c34cec96a25c7e407a2bec9e97bd2016dc78585d15a",
+      "scripts/rust/check-native-tasks.py": "a67fd4d95eae99aa71152f042af489b553d92e6efea3874c3d59327cc8c51df3",
+      "crates/rentemester-application/src/tasks/knowledge.rs": "c4951aebd8b700baa8c4e8caf16359767d3cb3df3047add379528469185f17a2",
+      "crates/rentemester-engine/src/knowledge_pages.rs": "4f729d7f48f27b40d6c64226764d97d44fffa963e49d0e3f517584312c4cb6b4",
+      "crates/rentemester-engine/src/knowledge_pages/generate-main.ts": "d99afd673529664e08c75b5651a205e573878556930b86963f3afddef3d77cc7",
+      "crates/rentemester-engine/src/knowledge_pages/main-pages.json": "6394dc8b18a7b6b64f46843ffdbdb2081d08acf67151f5a14bfc6312c48621c5",
+      "crates/rentemester-engine/src/knowledge_pages/tests.rs": "13df07501e6b3893b6c18f3a393b8964a65abb58e148876e911ecef2ecd0ba67",
+      "crates/rentemester-storage/src/knowledge_pages.rs": "6d6c1139cf17eb905b3813c7ec033a17c3ca11d2aade20ffae2b8cd206896dae",
+      "crates/rentemester-storage/src/knowledge_pages/tests.rs": "b041d86a551130931dcf2044eb9abda900917289cfe24a4c06173f3b1c6d2a6a",
+      "crates/rentemester-storage/src/native-workspace-migrations/0034-knowledge-pages-v34.json": "58fad90f7adbaa483f6d5d816d35b75b2b28c2d2b9f33d84c579b1216c750fef",
+      "crates/rentemester-storage/src/portable_backup/knowledge_pages.rs": "06e2425dbfcb35f568d8e3604f9eaf6b6a06beb71257e773906771fb6023e263",
+      "crates/rentemester-storage/src/portable_backup/knowledge_pages/tests.rs": "5a97d93ac987307f65990bbb65dc2c5a835bb3f01714ce90b580280b6ed10923",
+      "scripts/rust/check-native-task-knowledge.ts": "2cf176a7c6b939274703b854b985b9851f665fd49ca52e685730710b3f8c928d"
+    },
+    "binaries": {
+      "rentemester-server": "111637e2077aeae8692875198cc0cfec023448ef83d18c953c259883b611b9de",
+      "rentemester-rust": "9fb97bccde3a2974b2226276abbbb9fa5dc847ef5769ba8d93955cd02b6c074f",
+      "rentemester-mcp": "d72c8e684926554338b34737d719674748f9f81185cdff420845a9c795969d7d"
+    },
+    "wholeIssueAccepted": false,
+    "reusedBrowserEvidenceDelta": {
+      "file": "crates/rentemester-storage/src/control_migration.rs",
+      "browserSourcePreserved": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/main-integration/task-knowledge-tested-binaries/control_migration.rs",
+      "change": "Preserve empty historical control-v0 adoption by checking that migration history table exists before inspecting main31 identity. No change to GET/page/authority/renderer/schema/codec paths.",
+      "validatingCheck": "Actual every_exact_control_prefix converts0..31 test PASS, task-knowledge-legacy-prefixes.log. No accepted financial/provider/browser effects replayed."
+    },
+    "successfulCallerHashes": {
+      "scripts/rust/check-native-tasks.py": "04a62d3a414e39e8b91cfce93496d4ab22092543a1f9a96a81d3170aed308335",
+      "scripts/rust/check-native-task-knowledge.ts": "3d4e56dfad8e21604225984dd5c5d76eb3e4772f816f49316a03cb058e0e4cf0"
+    },
+    "browserPhases": {
+      "knowledge-first.json": {
+        "ok": true,
+        "ordinaryOwnerVerificationMfa": true,
+        "syntheticTasksOnly": true,
+        "pagesProvisionedSeparatelyByNativeProgrammaticCore": true,
+        "errors": []
+      },
+      "knowledge-read.json": {
+        "ok": true,
+        "existingReactTaskLinks": [
+          "company",
+          "workspace"
+        ],
+        "escapedTextNoScriptExecution": true,
+        "currentServiceCompanyRead": true,
+        "workspaceOwnerOnly": true,
+        "freshRevocationBeforeContent": true,
+        "refusals": [
+          "anonymous401",
+          "wrongScope404",
+          "expired404",
+          "missing404",
+          "workspaceNonOwner403",
+          "revokedCompany403"
+        ],
+        "errors": []
+      },
+      "knowledge-reopen.json": {
+        "ok": true,
+        "exactPersistedCompanyAndWorkspacePages": true,
+        "existingReactAfterActualRestart": true,
+        "errors": []
+      },
+      "runtime.json": {
+        "origin": "http://127.0.0.1:59064",
+        "profile": "local-user-macos",
+        "synthetic": true,
+        "stopped": true,
+        "workspaceRemoved": true
+      }
+    }
+  },
+  "browserEvidenceReuseLimits": [
+    "Actual unchanged React/Rust protected read/refusal/revocation/restart proof used the preserved earlier binaries; final compiled binaries are separately hashed, not asserted to have rerun the removed fixture.",
+    "Later empty-control-v0 table-existence correction affects only legacy adoption and passed all32 original exact prefixes. Later native34 metadata/help and stale test-expectation corrections passed actual fresh/custody checks; no GET/page/authority/renderer/schema/codec changes.",
+    "Native fixture provisioner is ignored by default and was explicitly invoked only on stopped, owned disposable synthetic workspace through native programmatic page core. Ordinary private owner/verification/MFA/service authority were not seeded."
+  ],
+  "reactBuildTreeSha256": "f4594eac63d2e0d89a4c05999dd5bc99208945d7918174f4796f180da4f5cda8",
+  "review": {
+    "performedBy": "Responsible main actual full diff and independent readonly native_task_source_seams",
+    "repaired": [
+      "Exact main31 projection originally hit public native writer admission and refused: now private unforgeable source observation token and shared closed read-only business collector; public native writer remains unchanged. No source history rebind.",
+      "Empty historical control-v0 lookup requires history-table existence check: all32 exact sourceprefixes0\u201331 actually passed afterward.",
+      "Auth fixture uses actual activate event, not nonexistent role_changed; native control schema/access guards unchanged."
+    ],
+    "confirmed": [
+      "Native1\u201333 identities/checksums preserved, new34 separately identified; current custody verified before suffix.",
+      "Original pure page/relation hashing/rendering/intervals/history/backlinks/metrics compared with actual TS calls and recorded clocks.",
+      "Closed complete business codec and signed outer3 preserve wholepage/relation history; legacy1/2 remain independently authenticated, no grants/runtime restored.",
+      "Current authenticated URL-scope admission before content, workspaceowner/companyknowledgepermission; no new public writer or CLI/MCP.",
+      "Actual existingReact company/workspace tasklinks, safe text, missing/expired/wrongscope refusal, current service revoke/restore and actual restart pass."
+    ],
+    "whole718Accepted": false
+  },
+  "domainGuarantees": [
+    "Two original GET routes only; current cookie/MFA/service and URL company.knowledge.read or workspace-owner scope before content. Missing/hidden/expired/wrong-scope pages404. No new public writer/CLI/MCP or management UI.",
+    "Original programmatic append-only page/relation authoring with exact current-main TS hash/result oracles, optimistic version/hash, provenance, effective intervals, history/backlinks/metrics and escaped text/http(s)/wikilinks.",
+    "Native34 suffix follows unchanged native1\u201333 with custody admission before stopped upgrade; main31knowledge is a distinct observed lineage, never rebound to native31mail.",
+    "Complete closed knowledge businesscodec1 and signed backup3 authenticate pages/relations/history; old backup1/2 retain their own coverage. Restore/adoption/transfer preserve business, never historical actors as grants or runtime/keys.",
+    "Exact main31 stopped-source conversion validates physical schema/history and uses private observed projection; public native writer admission unchanged. Main32\u201334/fullmain adoption remains unsupported pending required business mapping."
+  ],
+  "metadataRepair": [
+    "Fresh initializer now reports actual native34, server help correctly names stopped enroll-namespace-custody for later suffixes.",
+    "Legacy-schema test expectation replaced with canonical native journal_preview admission because accepted asset-disposal extension is not a legacy baseline; actual guards preserved."
+  ],
+  "failuresRetained": {
+    "setup": "One actual native service401 caused by wrong Bearer/mixed cookie fixture transport; inspected service_company proof, used exact x-rentemester-service-key on separate cookie-free context. Only remaining read stage resumed on same fixture; owner/tasks/keys/native seed not recreated. No financial/provider replay.",
+    "reviewFindings": [
+      "Exact main31 projection originally hit public native writer admission and refused: now private unforgeable source observation token and shared closed read-only business collector; public native writer remains unchanged. No source history rebind.",
+      "Empty historical control-v0 lookup requires history-table existence check: all32 exact sourceprefixes0\u201331 actually passed afterward.",
+      "Auth fixture uses actual activate event, not nonexistent role_changed; native control schema/access guards unchanged."
+    ],
+    "oldFinancialProviderReplay": false,
+    "rawFailuresRetained": true
+  },
+  "remaining": [
+    "Remaining approved current-main company56 operations and complete lineage-aware main adoption: approval/purchase/legacy bank-payable-importedreceivable/party/evidence/rules-assets.",
+    "Broad UI failures remain unqualified; original native/Tauri/platform/release/cutover gates and dependencies unchanged, installed manual desktop LAST."
+  ],
+  "notClaimed": [
+    "Whole718 acceptance/closure",
+    "New packaged Linux/Windows or installed Tauri release qualification",
+    "Production promotion/live migration/external review"
+  ]
+}

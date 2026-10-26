@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "existingReactTaskLinks": [
+    "company",
+    "workspace"
+  ],
+  "escapedTextNoScriptExecution": true,
+  "currentServiceCompanyRead": true,
+  "workspaceOwnerOnly": true,
+  "freshRevocationBeforeContent": true,
+  "refusals": [
+    "anonymous401",
+    "wrongScope404",
+    "expired404",
+    "missing404",
+    "workspaceNonOwner403",
+    "revokedCompany403"
+  ],
+  "errors": []
+}
