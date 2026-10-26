@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "workerRestartDedup": true,
+  "exactOriginalConfigureAndRunReceipts": true,
+  "completionSuppresses": true,
+  "errors": []
+}

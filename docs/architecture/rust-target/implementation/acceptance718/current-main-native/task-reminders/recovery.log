@@ -1,0 +1,21 @@
+   Compiling libsqlite3-sys v0.38.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/vendor/libsqlite3-sys-0.38.2)
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-storage v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.07s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_storage-d2becd6ab44b39e5)
+
+running 10 tests
+test portable_backup::tasks::routine_tests::manual_only_codec1_bytes_and_digest_stay_identical ... ok
+test portable_backup::tasks::routine_tests::codec2_routine_roundtrip_is_source_free_preserves_receipts_and_resets_runtime ... ok
+test portable_backup::tasks::tests::unknown_company_wrong_codec_and_missing_table_refuse_atomically ... ok
+test portable_backup::tasks::tests::history_and_receipts_roundtrip_without_runtime_or_authority ... ok
+test portable_backup::tasks::sources::tests::source_codec_roundtrip_noevent_other_principal_and_downgrade_refusal ... ok
+test portable_backup::tasks::reminders::tests::codec5_refuses_reidentified_wrong_local_day_and_before_due_slots_atomically ... ok
+test portable_backup::tasks::tests::malformed_cross_principal_and_wrong_operation_receipts_refuse_without_partial_restore ... ok
+test portable_backup::tasks::boards::tests::codec3_board_recovery_preserves_exact_receipts_and_atomically_refuses_tampering ... ok
+test portable_backup::tasks::reminders::tests::codec5_reminder_run_slot_roundtrip_without_grants_runtime_and_exact_legacy_coverage ... ok
+test portable_backup::tasks::routine_tests::codec2_refuses_wrong_principal_result_counts_scope_identity_and_codec1_downgrade_atomically ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 728 filtered out; finished in 8.62s
+

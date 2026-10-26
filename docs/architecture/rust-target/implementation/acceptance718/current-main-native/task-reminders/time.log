@@ -1,0 +1,12 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-engine)
+   Compiling rusqlite v0.40.2 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/vendor/rusqlite-0.40.2)
+   Compiling rentemester-runtime v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.36s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_runtime-1bab0049f0a3d6df)
+
+running 2 tests
+test posting_time::tests::danish_midnight_dst_and_configured_horizon_are_trusted_arithmetic ... ok
+test posting_time::tests::recipients_use_explicit_iana_dates_across_dst_and_different_days ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 179 filtered out; finished in 0.00s
+

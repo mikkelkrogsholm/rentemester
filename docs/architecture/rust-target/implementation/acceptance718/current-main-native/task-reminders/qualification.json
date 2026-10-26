@@ -1,0 +1,190 @@
+{
+  "issue": 718,
+  "wholeIssueAccepted": false,
+  "originalIssues": {
+    "closed": 43,
+    "open": 12
+  },
+  "acceptedJourney": "Existing common React configure\u2192actual current-service native worker delivery\u2192disable/re-enable original slot\u2192stop/restart/dedup/exact configure/run receipts\u2192documented completion suppression; original CLI notifications and MCP runtime.",
+  "at": "2026-10-26T19:24:17.068285+00:00",
+  "sourceCommit": "b15832bbde116fcfb2eff63d8694f43c20d212b2",
+  "sourceTree": "4f5c87020fa326d4180727e064b3e359917431b6",
+  "sgdRun": "issue718-native-reminder-journey-20261026T191846.578259000",
+  "acceptance": {
+    "groups": 9,
+    "rustCases": 45,
+    "actualTypeScriptOracleScenarios": 8,
+    "logs": {
+      "engine": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/engine.log",
+        "sha256": "a26e256f926775e161fdb24560e771147fff4e2801df148879f7285e38a0ddd9",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "application": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/application.log",
+        "sha256": "7d36b597532ebd0b9d90fed92eede722529149065dc32383c309c7d44db336fb",
+        "passed": 20,
+        "exitCode": 0
+      },
+      "recovery": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/recovery.log",
+        "sha256": "f3be2a9ebcf2625df96b6537f6370c41afc71e4075b4456071cdf68d89d03372",
+        "passed": 10,
+        "exitCode": 0
+      },
+      "time": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/time.log",
+        "sha256": "2d63bbcc9d2aa49fcac43ce6a9b15adbf3f12085611fe6bcfd6af01dcf2ca8fc",
+        "passed": 2,
+        "exitCode": 0
+      },
+      "http": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/http.log",
+        "sha256": "ce405dcaad15a906d8c8fa4a5fcfc3d2a0ccd4e70f4c39177eb0dc7c71315bff",
+        "passed": 5,
+        "exitCode": 0
+      },
+      "worker": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/worker.log",
+        "sha256": "e4ee07af1af18518ce0132a920f0200930a1fa115db26d2e8e3e45c7bacdaa69",
+        "passed": 1,
+        "exitCode": 0
+      },
+      "client": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/client.log",
+        "sha256": "4f896ac67e704ecf5418ce254de975d9aea57c5417591386333204646cf2a775",
+        "passed": 3,
+        "exitCode": 0
+      },
+      "cli": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/cli.log",
+        "sha256": "d642041be5c17c187d2ab4331cde1278b9949d96dafa692c1adc655d4b0520b2",
+        "passed": 2,
+        "exitCode": 0
+      },
+      "mcp": {
+        "path": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/mcp.log",
+        "sha256": "a9985e02295fe686f9ada8260dc3003411f7fa05a5203496a4ada690822ba532",
+        "passed": 1,
+        "exitCode": 0
+      }
+    }
+  },
+  "sourceFiles": {
+    "Cargo.lock": "7aa4c92a9314360ca3e7750f327f6b4a35c149f7d403ed1598007a598c5bf9ee",
+    "crates/rentemester-application/src/tasks.rs": "9dd83b561cfb07595e021b8685921ac8487e152ee7e249146683e1023142e08d",
+    "crates/rentemester-application/src/tasks/boards.rs": "94199d0d3dc6d73e05ca36f4f7808c2e738eaba6206a4da796098f56b35b82e2",
+    "crates/rentemester-application/src/tasks/series.rs": "2e2dacac2695f4a6c7f12f6a9edbbfb93d970ee36001273b6627b4d713f0dc54",
+    "crates/rentemester-application/src/tasks/tests.rs": "809baaacffc2355de4c407ad8047e19e1505a613028d0452aaac59060d318dbe",
+    "crates/rentemester-cli/src/tasks.rs": "bd7e118a0389b190125ba5553913c6c44041ee4e7825a8622ed75271c7dbd7ca",
+    "crates/rentemester-client/src/tasks-input.json": "587c5b8e623492c3c019bf613762e1067d8b3966ed489677e8e0b8de6d21c030",
+    "crates/rentemester-client/src/tasks.rs": "28cebbaa1354654bfe757093167f72bdc5bd20a65dabab9b8086335cdc5d4647",
+    "crates/rentemester-engine/Cargo.toml": "75b2afa38c9b1e2dbf7d775a64fc5c65aa00390624226d50fbaf1260a0e5312c",
+    "crates/rentemester-engine/src/tasks/mod.rs": "1dcf7366b5b9afa6b63ee50da8d7ede110d428158398ac29197fc1d7a7ab857c",
+    "crates/rentemester-host/src/tasks.rs": "1e31fdee0e8711791189f5a42a88245bc4debb2b7ee4a312a85a8244b4900181",
+    "crates/rentemester-mcp/src/tasks.rs": "d0311904bbf695fbad02bf1f75f2549874a971b843ff1f2f4c891461e3e8acb1",
+    "crates/rentemester-runtime/src/posting_time.rs": "2e140a1b291a003f282265b563601926f00dd19124db38ae7705cb1dbfeda567",
+    "crates/rentemester-server/src/backend.rs": "fd8227ef076e39a1a94de185d7ed4a9d3da309f90104f87ca6aa13d340d31eab",
+    "crates/rentemester-server/src/main.rs": "2755a1b176dffe11ff48781da37c4afdbbc9e1a4927fbbf59109c00a94de0200",
+    "crates/rentemester-server/src/product_http.rs": "b2036701622859e666fe663cd9ed90697dbbb1500c1d210fdcab283a023f6d4a",
+    "crates/rentemester-server/src/product_http/tasks.rs": "2fdc1047050ef7bc358e1a9ff7df7037c2db66ea46360783a2073a3eda5538d5",
+    "crates/rentemester-storage/src/portable_backup/tasks.rs": "d68999845becd0972f10dffb1f87e7e16fac1cdc03f86848b1cf36a8258c7fed",
+    "crates/rentemester-storage/src/tasks/mod.rs": "2670052e00a6d31f0dfc55f87a8d8bcdd403bc5dd45d2a377dfd553509ddcf4a",
+    "docs/cli-contract.md": "0c60f86ad40bd7d2329e7dc024407340f1953e0a2b668f5c513ae5d2de170a23",
+    "protocol/http-v1.json": "00e24d15bf953ba96c64cee340dd411e90279425d7259eff0f9a6863c9720337",
+    "scripts/rust/check-native-tasks.py": "23ea510a3f9c57e04a440e00a1ae3cfb31794f9d9a4e8a1a82af4b92a51d6618",
+    "crates/rentemester-application/src/tasks/reminders.rs": "2f40b8f2580d525c9058e607689b594dc35ad5e98b8b824e567889d110b6bb2b",
+    "crates/rentemester-engine/src/tasks/reminders.rs": "5fbfb0724500017359312e1b82612b895349926343180efdd65027096ac4add2",
+    "crates/rentemester-engine/src/tasks/reminders/generate-main.ts": "7c061ce3bafe7b68ba0d3a2292bc6e382203734f7ac616c88a51149e360a2a7e",
+    "crates/rentemester-engine/src/tasks/reminders/main-reminders.json": "3c28fb1946ed1ad135202b32338d47f16a53373ce47d401885c1e82a3b56f007",
+    "crates/rentemester-engine/src/tasks/reminders/tests.rs": "d1d2a6bb045270f8451d7edd5801e98f8419686627030b9385749b5f1fcca304",
+    "crates/rentemester-server/src/task_worker.rs": "a90c9b9c1986066e47212133d86bfb8258d9f063416edd05eaa917a49c41bdde",
+    "crates/rentemester-storage/src/portable_backup/tasks/reminders.rs": "071b906000c0908f89457cd1d13e5991b2ac6fdd48f8355dda97f87df9f51108",
+    "crates/rentemester-storage/src/portable_backup/tasks/reminders/tests.rs": "2ee993f18fdcb2ca834fa37e4ee4c33b2c2caa335b99612c1494461a3d7a7b07",
+    "crates/rentemester-storage/src/tasks/reminders.rs": "7cca997924d1a44bfae6b53ce17d4f323786a986187c8d52d105663d5341d8cc",
+    "scripts/rust/check-native-task-reminders.ts": "4b771282751ac0718f7ac9d3c11824fee21196d6a90b15ca2b1866c284425543"
+  },
+  "binaries": {
+    "rentemester-server": "6736fd77c3adf2518e32ebec96182822ff7bfe08c6e62ef6cc65a00ba94d1a98",
+    "rentemester-rust": "027ccb6a9c05a7c16e37ec96b04b49f0a5727a96d78c611db1e5dfe79181faa0",
+    "rentemester-mcp": "8e834ea4e7264ca75080c05c92676dc32f450f649481a2a1d6538fbb818cebaf"
+  },
+  "reactBuildTreeSha256": "699564f999b1bf656164c2f07453696ed77eabdd132172dc5b14f4f44aa6d6bc",
+  "binaryProfile": "actual macOS native33 common Rust server + unchanged existing React/StyleX, explicit current transient service worker; not installed Tauri/release qualification",
+  "review": {
+    "performedBy": "Responsible main actual cross-layer diff + independent readonly native_task_source_seams",
+    "repaired": [
+      "Main oracle showed update normalization discards irrelevant followUp daysBefore; preserve actual source snapshot.",
+      "Recovered notification canonical ID alone missed localday/due proof; now reconstruct exact historical engine notification at recipient IANA day.",
+      "Skipped lease claim cannot newly mark worker live.",
+      "Historical revoked recipient label can be disabled, but cannot add unknown disabled recipient."
+    ],
+    "reviewed": [
+      "Fresh cookie/service authority before receipts and source probes; scopes include historical source and notification selection.",
+      "One IMMEDIATE/savepoint servicecharge and lease; one business engine, no local/System grant or savedkey.",
+      "Original4HTTPops, strictconfirmedversioned DTO128KiB and client discoverability/uncertain-write fences.",
+      "Codec5 exact principal/event/snapshot and timezone slot reconstruction; no credentials, grants or runtime in recovery."
+    ],
+    "whole718Accepted": false
+  },
+  "domainGuarantees": [
+    "Current cookie/MFA/service identity and all-company source+notification scopes before receipt, source probe, delivery and visible read. No historical label grants.",
+    "Internal process uses ordinary reopen paired flags and one existing transient servicekey; no saved cookie/key/local:true/System business grant.",
+    "55-second durable lease and60-second no-backlog process with one servicecharge per admitted maintenance, atomic sources/routines/notifications.",
+    "Canonical once/daily recipient-local IANA slot signatures; current catch-up, no duplicates on restart.",
+    "Explicit taskcodec5 authenticates historical reminder/event/principal/results and reconstructs exact notification at IANA date/due; old1\u20134 bytes/coverage preserved, no runtime/keys/grants restored.",
+    "Original4routes and21client operations including native receipt; strict128KiB/currentversion/confirmedcallerkeys/protocol/identity/uncertain-write fences retained."
+  ],
+  "browser": {
+    "reminder-first.json": {
+      "ok": true,
+      "syntheticOnly": true,
+      "configuredThroughExistingReact": true,
+      "disabledRuntimeHonest": true,
+      "noPrematureDelivery": true,
+      "errors": []
+    },
+    "reminder-delivery.json": {
+      "ok": true,
+      "realRegisteredCurrentServiceWorker": true,
+      "visibleNotification": true,
+      "disableSuppression": true,
+      "reenableOriginalOnceSlot": true,
+      "explicitOwnerRunNoDuplicate": true,
+      "clients": [
+        "tasks notifications",
+        "tasks_runtime"
+      ],
+      "errors": []
+    },
+    "reminder-reopen.json": {
+      "ok": true,
+      "workerRestartDedup": true,
+      "exactOriginalConfigureAndRunReceipts": true,
+      "completionSuppresses": true,
+      "errors": []
+    },
+    "runtime.json": {
+      "origin": "http://127.0.0.1:64001",
+      "profile": "local-user-macos",
+      "synthetic": true,
+      "stopped": true,
+      "workspaceRemoved": true
+    }
+  },
+  "preservedFailures": {
+    "failedLogsRetained": true,
+    "diagnosis": "DOM details/summary locator and native ok:true response envelope. After two setup assumptions stopped expanding harness, inspected actual JSX/ARIA, continued only remaining phase on same retained fixture. All firstowner/config/service/delivery effects preserved.",
+    "oldFinancialProviderReplay": false
+  },
+  "remaining": [
+    "Protected task-linked knowledge and all remaining authorized main financial/party/evidence operations with complete lineage-aware adoption.",
+    "Broad UI failures remain unqualified; installed native/Tauri/platform/release/cutover gates and dependencies unchanged, manual desktop LAST."
+  ],
+  "notClaimed": [
+    "Whole718 acceptance or issue closure",
+    "Current packaged Linux/Windows/installed Tauri release parity",
+    "Production promotion/live migration or external review"
+  ]
+}

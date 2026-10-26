@@ -1,0 +1,11 @@
+   Compiling rentemester-client v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.64s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_client-4718455c3385361d)
+
+running 3 tests
+test tasks::tests::series_schema_is_bounded_and_does_not_expose_runtime_or_authority ... ok
+test tasks::tests::refuses_authority_and_unconfirmed_mutations_before_network ... ok
+test tasks::tests::series_routes_preserve_flat_bodies_keys_queries_and_empty_selection ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 68 filtered out; finished in 0.05s
+

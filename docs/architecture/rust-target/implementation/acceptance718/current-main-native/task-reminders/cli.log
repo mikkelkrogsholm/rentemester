@@ -1,0 +1,32 @@
+   Compiling rentemester-client v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-client)
+   Compiling rentemester-cli v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-cli)
+warning: function `accepts` is never used
+  --> crates/rentemester-cli/src/regulatory.rs:94:8
+   |
+94 | pub fn accepts(args: &[String]) -> bool {
+   |        ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `preflight` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:161:8
+    |
+161 | pub fn preflight(args: &[String]) -> Result<bool, crate::dated_reports::Output> {
+    |        ^^^^^^^^^
+
+warning: function `binding_refusal` is never used
+   --> crates/rentemester-cli/src/regulatory.rs:165:8
+    |
+165 | pub fn binding_refusal(args: &[String]) -> crate::dated_reports::Output {
+    |        ^^^^^^^^^^^^^^^
+
+warning: `rentemester-cli` (bin "rentemester-rust" test) generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.62s
+     Running unittests src/main.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_rust-2fc956390d31b49a)
+
+running 2 tests
+test tasks::tests::no_implicit_writes_or_authority_flags ... ok
+test tasks::tests::series_help_and_refusals ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 0.02s
+

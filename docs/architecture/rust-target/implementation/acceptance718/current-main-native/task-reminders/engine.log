@@ -1,0 +1,9 @@
+   Compiling rentemester-engine v0.3.1 (/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/worktrees/issue718-native-reminder-journey-20261026T191846.578259000/integration/crates/rentemester-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.82s
+     Running unittests src/lib.rs (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/debug/deps/rentemester_engine-2d2e741c5aec954a)
+
+running 1 test
+test tasks::reminders::tests::actual_main_reminder_snapshots_schedule_signatures_and_slots_match ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 258 filtered out; finished in 0.10s
+

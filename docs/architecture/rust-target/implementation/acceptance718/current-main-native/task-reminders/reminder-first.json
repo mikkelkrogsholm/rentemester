@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "syntheticOnly": true,
+  "configuredThroughExistingReact": true,
+  "disabledRuntimeHonest": true,
+  "noPrematureDelivery": true,
+  "errors": []
+}

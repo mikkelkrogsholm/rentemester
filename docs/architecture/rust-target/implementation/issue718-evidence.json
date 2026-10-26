@@ -28,7 +28,7 @@
     }
   },
   "remaining": [
-    "Full approved current-main native parity remains: automatic task sources, boards/series/routines/runtime/protected knowledge, company56/control-main lineage-aware adoption and remaining approval/purchase/legacy banking/receivable/party/evidence operations. Manual task application/API/React and native recovery now have separate accepted qualifications.",
+    "Full approved current-main native parity remains: protected task-linked knowledge, company56/control-main lineage-aware adoption and remaining approval/purchase/legacy banking/receivable/party/evidence operations. Manual task, routines, boards, authoritative sources and live reminder journeys now have separate source-bound accepted qualifications; full issue not accepted.",
     "Current-main broad UI failures remain incompletely qualified; no assertion/protocol/identity bypass or unchanged full-suite rerun.",
     "Original #712 dependency and J03 native/Tauri boundary: native/menu/Keychain/WebKit-cookie/close-reopen/cancel/manual installed acceptance LAST; all release/cutover gates retained."
   ],
@@ -164,7 +164,7 @@
     {
       "criterion": 4,
       "browserDisposition": "accepted",
-      "basis": "Retained full #689/J04 actual calculated→reviewed/locked→externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
+      "basis": "Retained full #689/J04 actual calculated\u2192reviewed/locked\u2192externalreceipt recorded/restart with original period/source/blocker/next-action UI; record is not represented as direct filing. Existing annual statutory task/export proof retained."
     }
   ],
   "browser_portion_accepted": true,
@@ -878,5 +878,12 @@
     "report": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-boards/qualification.json",
     "sha256": "d70f2e87dc8b457e286215d7593f430a1f66c5d095aae7845ddbfbf82c7bc13a",
     "scope": "Actual native shared React board preview/apply/relocation/taskmove/CLI/MCP/restart/receipts and explicit source-free codec3, preserving legacy codecs and full remaining scope."
+  },
+  "native_reminders_20261026": {
+    "sourceCommit": "b15832bbde116fcfb2eff63d8694f43c20d212b2",
+    "sgdRun": "issue718-native-reminder-journey-20261026T191846.578259000",
+    "qualification": "docs/architecture/rust-target/implementation/acceptance718/current-main-native/task-reminders/qualification.json",
+    "acceptedJourney": "Existing common React configure\u2192actual current-service native worker delivery\u2192disable/re-enable original slot\u2192stop/restart/dedup/exact configure/run receipts\u2192documented completion suppression; original CLI notifications and MCP runtime.",
+    "whole_issue_accepted": false
   }
 }

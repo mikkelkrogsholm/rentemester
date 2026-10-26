@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "realRegisteredCurrentServiceWorker": true,
+  "visibleNotification": true,
+  "disableSuppression": true,
+  "reenableOriginalOnceSlot": true,
+  "explicitOwnerRunNoDuplicate": true,
+  "clients": [
+    "tasks notifications",
+    "tasks_runtime"
+  ],
+  "errors": []
+}
