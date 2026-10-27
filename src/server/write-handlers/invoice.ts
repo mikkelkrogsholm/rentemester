@@ -23,6 +23,7 @@ import {
 import {
   digisenseAccessPointIdentity,
   resolveDigisenseStatusChecker,
+  digisenseProviderBinding,
   resolveDigisenseTransmitter,
 } from "../../core/efaktura/digisense-wiring";
 import {
@@ -540,7 +541,7 @@ export async function handleInvoiceSendPublic(
       };
       const submitted = await transmitPublicEInvoicePeppol(
         ctx.db,
-        { invoiceDocumentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey) },
+        { invoiceDocumentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey), companyRoot: ctx.companyRoot, providerBinding: resolved.providerBinding },
         resolved.transmitter,
       );
       return {
@@ -597,7 +598,7 @@ export async function handleInvoiceSendPublicStatus(
       };
       const submission = await resumePublicEInvoicePeppolSubmission(
         ctx.db,
-        { invoiceDocumentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey) },
+        { invoiceDocumentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey), companyRoot: ctx.companyRoot, providerBinding: digisenseProviderBinding(resolved.environment, resolved.companyKey) },
         async (queuedDocumentId) => {
           const status = await resolved.client.documentStatus(queuedDocumentId, resolved.companyKey);
           return status.ok

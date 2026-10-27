@@ -80,6 +80,7 @@ export function registerPeppolTools(server: McpServer): void {
       if (!id) return invoiceNotFoundEnvelope(args);
       const result = submitPublicEInvoicePeppol(db, {
         invoiceDocumentId: id,
+        companyRoot: args.company,
         accessPoint: args.accessPoint,
         acknowledgement: args.acknowledgement,
       });

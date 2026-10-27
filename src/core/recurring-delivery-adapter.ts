@@ -12,6 +12,7 @@ import {
 } from "./email";
 import {
   resolveDigisenseStatusChecker,
+  digisenseProviderBinding,
   resolveDigisenseTransmitter,
   digisenseAccessPointIdentity,
 } from "./efaktura/digisense-wiring";
@@ -161,6 +162,8 @@ export function resolveRecurringDeliveryAdapter(
       if (!digisense.ok) return { status: "uncertain", message: digisense.errors.join("; ") };
       const result = await transmit(db, {
         invoiceDocumentId: documentId,
+        companyRoot,
+        providerBinding: digisense.providerBinding,
         accessPoint: digisenseAccessPointIdentity(digisense.companyKey),
       }, digisense.transmitter);
       return mapPeppolResult(result);
@@ -178,6 +181,8 @@ export function resolveRecurringDeliveryAdapter(
       };
       const result = await resume(db, {
         invoiceDocumentId: documentId,
+        companyRoot,
+        providerBinding: digisenseProviderBinding(resolved.environment, resolved.companyKey),
         accessPoint: digisenseAccessPointIdentity(resolved.companyKey),
       }, async (documentId) => {
         const status = await resolved.client.documentStatus(documentId, resolved.companyKey);

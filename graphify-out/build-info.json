@@ -1971,5 +1971,18 @@
     },
     "oauth_client_migration_required": false,
     "oauth_client_usage": "No SDK OAuth client credential providers/storage; production uses server over stdio."
+  },
+  "approved_invoice_pdf_semantic_refresh": {
+    "method": "Graphify extraction agent, scoped semantic additions preserving prior nodes",
+    "sources": {
+      "CHANGELOG.md": "aba61f6275e2e28bfbcb77b26fe7a4f185c1f3f8b01c2a38c910159b35368395",
+      "docs/efaktura-digisense.md": "2058d364e86e38f9095a5909dbb0c1c2724c78ddf68406c37d740e125afc7dde",
+      "docs/mcp-tool-surface.md": "53a33ec5c9b6cef7f623636e920a9854b2160fbb821992989ff7ce297356412f",
+      "docs/mcp-install.md": "ffea073b568c870aa3859bd157ae4b6d149d47d29b10119b3a4cab4736b95200",
+      "docs/cockpit-api.md": "7040902f611f463a88ed0268dc8ee06300ff8e0a149d8dd79a7495c75d66bb7c"
+    },
+    "agent_token_usage": "unavailable",
+    "new_nodes": 11,
+    "scope": "Changes in these five files; retained existing semantic layer; outstanding previous sources unchanged."
   }
 }

@@ -34,6 +34,7 @@ import {
   resolveDigisenseRegistrar,
   resolveDigisenseTransmitter,
   resolveDigisenseStatusChecker,
+  digisenseProviderBinding,
   digisenseAccessPointIdentity,
 } from "../../core/efaktura/digisense-wiring";
 import { saveDigisenseSecretConfig, loadDigisenseSecretConfig } from "../../core/efaktura/digisense-config";
@@ -347,7 +348,7 @@ export function registerEfakturaTools(server: McpServer): void {
 
       const result = await transmitPublicEInvoicePeppol(
         db,
-        { invoiceDocumentId: documentId, accessPoint },
+        { invoiceDocumentId: documentId, accessPoint, companyRoot: args.company, providerBinding: resolved.providerBinding },
         resolved.transmitter,
       );
       return wrapCoreResult(result);
@@ -371,7 +372,7 @@ export function registerEfakturaTools(server: McpServer): void {
     withCompanyDbConfirmed<{ company: string; documentId: number; digisenseCompanyKey?: string; confirm?: boolean }>(server, "efaktura_status", async ({ db, args }) => {
       const resolved = resolveDigisenseStatusChecker(db, args.company, { companyKey: args.digisenseCompanyKey });
       if (!resolved.ok) return errorEnvelope(resolved.errors);
-      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: args.documentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey) }, async (queuedDocumentId) => {
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: args.documentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey), companyRoot: args.company, providerBinding: digisenseProviderBinding(resolved.environment, resolved.companyKey) }, async (queuedDocumentId) => {
         const status = await resolved.client.documentStatus(queuedDocumentId, resolved.companyKey);
         return status.ok ? { ok: true, status: status.data.documentStatus, message: status.data.message, publicUrl: status.data.publicUrl } : { ok: false, error: `digisense document-status failed: ${status.error.message}` };
       });

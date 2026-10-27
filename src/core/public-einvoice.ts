@@ -7,6 +7,7 @@ import { normalizeEanNumber } from "./ean";
 import type { InvoicePayload } from "./invoice";
 import { formatAmount, roundDkk, sumDkk } from "./money";
 import { projectVatLines } from "./vat-lines";
+import { snapshotRegisteredDocumentEvidence } from "./document-storage";
 
 const RULE_ID = "DK-INVOICE-PUBLIC-EXPORT-001";
 const OIOUBL_RULE_ID = "DK-INVOICE-PUBLIC-OIOUBL-001";
@@ -35,6 +36,7 @@ type ExportedInvoiceRow = {
 export type ExportPublicEInvoiceInput = {
   invoiceDocumentId: number;
   outPath?: string;
+  companyRoot?: string;
 };
 
 export type ExportPublicEInvoiceResult = {
@@ -275,7 +277,7 @@ function buildPublicEInvoiceXml(invoiceNumber: string, payload: InvoicePayload) 
   ].filter((line) => line !== "").join("\n");
 }
 
-function validateOioUblPayload(invoiceNumber: string, payload: InvoicePayload, eanNumber: string | null) {
+export function validateOioUblPayload(invoiceNumber: string, payload: InvoicePayload, eanNumber: string | null) {
   const errors: string[] = [];
   if (!hasText(payload.issueDate)) errors.push(`invoice ${invoiceNumber} is missing issueDate required for OIOUBL handoff`);
   if (!hasText(payload.dueDate)) errors.push(`invoice ${invoiceNumber} is missing dueDate required for OIOUBL handoff`);
@@ -344,7 +346,8 @@ function validateOioUblPayload(invoiceNumber: string, payload: InvoicePayload, e
   return errors;
 }
 
-function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePayload) {
+/** Caller validates the invoice and, when present, the approved PDF. */
+export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePayload, approvedPdf?: Uint8Array) {
   const currency = (payload.currency ?? "DKK").trim().toUpperCase();
   const vatPercent = formatVatPercent(payload.totals?.vatRate);
   // The tax category is derived from the VAT treatment, not hardcoded "S", so
@@ -468,6 +471,15 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
           "  </cac:OrderReference>",
         ].join("\n")
       : "",
+    ...(approvedPdf ? [
+      "  <cac:AdditionalDocumentReference>",
+      xmlTag("cbc:ID", `${invoiceNumber}.pdf`, "    "),
+      xmlTagWithAttrs("cbc:DocumentTypeCode", { listAgencyID: "6", listID: "UN/ECE 1001" }, "380", "    "),
+      "    <cac:Attachment>",
+      xmlTagWithAttrs("cbc:EmbeddedDocumentBinaryObject", { mimeCode: "application/pdf", encodingCode: "Base64" }, Buffer.from(approvedPdf).toString("base64"), "      "),
+      "    </cac:Attachment>",
+      "  </cac:AdditionalDocumentReference>",
+    ] : []),
     "  <cac:AccountingSupplierParty>",
     "    <cac:Party>",
     xmlTagWithAttrs("cbc:EndpointID", { schemeID: SELLER_ENDPOINT_SCHEME_ID }, sellerEndpoint ? `DK${sellerEndpoint}` : null, "      "),
@@ -609,7 +621,7 @@ export function exportPublicEInvoiceOioUbl(
     return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: [`invoice ${row.invoice_no ?? input.invoiceDocumentId} is missing payload_json`] };
   }
 
-  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string };
+  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string; approvedPdf?: { preflightId: string; sha256: string; xmlSha256: string } };
   const invoiceNumber = payload.invoiceNumber ?? row.invoice_no ?? String(input.invoiceDocumentId);
   const eanNumber = normalizeEanNumber(payload.buyer?.eanNumber);
 
@@ -640,8 +652,22 @@ export function exportPublicEInvoiceOioUbl(
     };
   }
 
-  const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, normalizedPayload);
+  let pdfBytes: Buffer | undefined;
+  if (payload.approvedPdf) {
+    if (!input.companyRoot) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Approved PDF export requires the company root"] };
+    const evidence = db.query("SELECT stored_path, sha256_hash, payload_json FROM documents WHERE document_type = 'issued_invoice_pdf' AND invoice_no = ? ORDER BY id").all(invoiceNumber) as Array<{ stored_path: string; sha256_hash: string; payload_json: string }>;
+    if (evidence.length !== 1 || evidence[0]!.payload_json !== row.payload_json || evidence[0]!.sha256_hash !== payload.approvedPdf.sha256) {
+      return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Approved PDF evidence is missing or does not match the invoice"] };
+    }
+    try {
+      pdfBytes = snapshotRegisteredDocumentEvidence(input.companyRoot, { storedPath: evidence[0]!.stored_path, expectedSha256: evidence[0]!.sha256_hash, documentType: "issued_invoice_pdf" }).bytes;
+    } catch {
+      return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Approved PDF evidence failed integrity verification"] };
+    }
+  }
+  const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, normalizedPayload, pdfBytes);
   const sha256 = createHash("sha256").update(xml).digest("hex");
+  if (payload.approvedPdf && sha256 !== payload.approvedPdf.xmlSha256) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Generated XML differs from approved preflight evidence"] };
   if (input.outPath) writeFileSync(input.outPath, xml);
   insertAuditLog(db, {
     eventType: "public_einvoice_oioubl_export",
@@ -698,6 +724,7 @@ export type PeppolTransportAcknowledgement = {
 
 export type SubmitPublicEInvoicePeppolInput = {
   invoiceDocumentId: number;
+  companyRoot?: string;
   accessPoint: PeppolAccessPointConfig;
   acknowledgement?: PeppolTransportAcknowledgement;
   /** Optional path to write the submission envelope artifact to. */
@@ -965,7 +992,7 @@ export function submitPublicEInvoicePeppol(
 
   // Reuse the shipped OIOUBL handoff slice unchanged as the validated input
   // package. Its own validation surfaces missing public-recipient metadata.
-  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId });
+  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId, companyRoot: input.companyRoot });
   if (!oioubl.ok || !oioubl.sha256) {
     return {
       ok: false,
@@ -1129,10 +1156,21 @@ export type PeppolTransmitter = (input: {
 
 export type TransmitPublicEInvoicePeppolInput = {
   invoiceDocumentId: number;
+  companyRoot?: string;
+  providerBinding?: string;
   accessPoint: PeppolAccessPointConfig;
 };
 
 export type ResumePublicEInvoicePeppolInput = TransmitPublicEInvoicePeppolInput;
+
+function approvedProviderMatches(db: Database, input: TransmitPublicEInvoicePeppolInput): boolean {
+  const row = loadExportedInvoice(db, input);
+  if (!row?.payload_json) return true;
+  try {
+    const payload = JSON.parse(row.payload_json) as { approvedPdf?: { providerBinding?: string } };
+    return !payload.approvedPdf || (typeof input.providerBinding === "string" && input.providerBinding === payload.approvedPdf.providerBinding);
+  } catch { return false; }
+}
 
 /** A status-only lookup: it must never deliver a document. */
 export type PeppolSubmissionStatusChecker = (documentId: string) => Promise<{
@@ -1162,7 +1200,8 @@ export async function resumePublicEInvoicePeppolSubmission(
   input: ResumePublicEInvoicePeppolInput,
   checkStatus: PeppolSubmissionStatusChecker,
 ): Promise<SubmitPublicEInvoicePeppolResult> {
-  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId });
+  if (!approvedProviderMatches(db, input)) return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["DigiSense configuration differs from the approved PDF preflight"] };
+  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId, companyRoot: input.companyRoot });
   if (!oioubl.ok || !oioubl.sha256 || !oioubl.xml) {
     return { ok: false, invoiceNumber: oioubl.invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID, ...oioubl.appliedRules], errors: oioubl.errors };
   }
@@ -1240,6 +1279,7 @@ export async function transmitPublicEInvoicePeppol(
   input: TransmitPublicEInvoicePeppolInput,
   transmitter: PeppolTransmitter,
 ): Promise<SubmitPublicEInvoicePeppolResult> {
+  if (!approvedProviderMatches(db, input)) return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["DigiSense configuration differs from the approved PDF preflight"] };
   const configErrors = validateAccessPointConfig(input.accessPoint);
   if (configErrors.length > 0) {
     return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: configErrors };
@@ -1247,7 +1287,7 @@ export async function transmitPublicEInvoicePeppol(
 
   // Reuse the shipped OIOUBL handoff slice as the validated transport payload;
   // its own validation surfaces missing public-recipient metadata.
-  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId });
+  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId, companyRoot: input.companyRoot });
   if (!oioubl.ok || !oioubl.sha256 || !oioubl.xml) {
     return {
       ok: false,

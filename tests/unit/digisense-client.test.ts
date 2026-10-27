@@ -131,7 +131,7 @@ describe("digisense client — lookup-participant", () => {
     const { client, requests } = clientWith(200, JSON.stringify({
       participantAbleToReceive: true,
       matchedServiceEndpointUrls: ["https://ap.example/x"],
-      matchedDocumentTypes: ["Invoice"],
+      matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "Invoice" }],
     }));
     const result = await client.lookupParticipant({
       networkType: "Nemhandel",
@@ -143,7 +143,10 @@ describe("digisense client — lookup-participant", () => {
       "https://test-api.digisense.dk/ap/api/rest/lookup-participant?networkType=Nemhandel&participantScheme=DK%3ACVR&participantValue=DK12345678",
     );
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.data.participantAbleToReceive).toBe(true);
+    if (result.ok) {
+      expect(result.data.participantAbleToReceive).toBe(true);
+      expect(result.data.matchedDocumentTypes).toEqual([{ scheme: "busdox-docid-qns", value: "Invoice" }]);
+    }
   });
 });
 

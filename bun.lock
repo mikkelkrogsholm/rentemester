@@ -23,7 +23,7 @@
     },
     "app": {
       "name": "rentemester-cockpit",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "@fontsource/ibm-plex-mono": "^5.3.0",
         "@fontsource/ibm-plex-sans": "^5.3.0",

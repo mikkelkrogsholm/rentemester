@@ -1,0 +1,42 @@
+import { describe, expect, test } from "bun:test";
+import { checkDigisenseInvoiceReadiness } from "../../src/core/efaktura/digisense-preflight";
+import type { DigisenseClient } from "../../src/core/efaktura/digisense-client";
+const OIOUBL = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0";
+
+function client(options: { valid?: boolean; reachable?: boolean } = {}) {
+  const calls: unknown[] = [];
+  const stub: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> = {
+    async validateDocument(xml) {
+      calls.push(xml);
+      return { ok: true, status: 200, data: { statusCode: 200, success: options.valid !== false, errors: [] } };
+    },
+    async lookupParticipant(query) {
+      calls.push(query);
+      return { ok: true, status: 200, data: {
+        participantAbleToReceive: options.reachable !== false,
+        matchedServiceEndpointUrls: ["https://example.invalid/endpoint"],
+        matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: OIOUBL }],
+      } };
+    },
+  };
+  return { stub, calls };
+}
+
+describe("DigiSense invoice preflight", () => {
+  test("validates the exact XML and checks the EAN without delivering", async () => {
+    const { stub, calls } = client();
+    expect(await checkDigisenseInvoiceReadiness(stub, "<Invoice/>", "5790000000013")).toEqual({ ok: true });
+    expect(calls).toEqual(["<Invoice/>", { networkType: "Nemhandel", documentType: OIOUBL, participantScheme: "GLN", participantValue: "5790000000013" }]);
+  });
+
+  test("fails closed on invalid documents, unreachable recipients and oversized XML", async () => {
+    const invalid = client({ valid: false });
+    expect((await checkDigisenseInvoiceReadiness(invalid.stub, "<Invoice/>", "5790000000013")).ok).toBe(false);
+    expect(invalid.calls).toHaveLength(1);
+    const unreachable = client({ reachable: false });
+    expect((await checkDigisenseInvoiceReadiness(unreachable.stub, "<Invoice/>", "5790000000013")).ok).toBe(false);
+    const oversized = client();
+    expect((await checkDigisenseInvoiceReadiness(oversized.stub, "x".repeat(10_000_001), "5790000000013")).ok).toBe(false);
+    expect(oversized.calls).toHaveLength(0);
+  });
+});

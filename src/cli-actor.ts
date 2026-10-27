@@ -73,6 +73,7 @@ export const MUTATING_COMMANDS = new Set([
   // gated. Samme actor-attribuerede skrivning skal gates ens.
   "system export-saft",
   "invoice issue",
+  "invoice preflight-approved-pdf",
   "invoice imported-receivables-backfill-apply",
   "invoice imported-receivable-settlement-apply",
   "bank legacy-binding-apply",

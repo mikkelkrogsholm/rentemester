@@ -9,12 +9,14 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { type InvoicePayload } from "../../../core/invoice";
 import { issueInvoice } from "../../../core/issued-invoices";
+import { preflightApprovedInvoice, snapshotApprovedInvoiceSource } from "../../../core/approved-invoice-preflight";
+import { resolveDigisenseStatusChecker, digisenseProviderBinding } from "../../../core/efaktura/digisense-wiring";
 import { resolveInvoiceMasterData } from "../../../core/master-data";
 import { postIssuedInvoiceToLedger } from "../../../core/invoice-booking";
 import { renderIssuedInvoicePdf } from "../../../core/invoice-pdf";
 import { issueCreditNote, type IssueCreditNoteInput } from "../../../core/credit-notes";
 import { withActor } from "../../actor";
-import { envelopeShape, wrapCoreResult } from "../../envelope";
+import { envelopeShape, wrapCoreResult, errorEnvelope } from "../../envelope";
 import {
   withCompanyDbConfirmed,
   resolveIssuedInvoiceDocumentId,
@@ -80,6 +82,9 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         payload: invoicePayloadSchema,
         customerId: z.number().int().positive().optional(),
+        approvedPdfPath: z.string().min(1).optional(),
+        preflightId: z.string().uuid().optional(),
+        pdfReviewed: z.boolean().optional(),
         confirm: confirmField,
       },
       outputSchema: envelopeShape,
@@ -89,16 +94,49 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
       company: string;
       payload: InvoicePayload;
       customerId?: number;
+      approvedPdfPath?: string;
+      preflightId?: string;
+      pdfReviewed?: boolean;
       confirm?: boolean;
-    }>(server, "invoice_issue", ({ db, args }) => {
+    }>(server, "invoice_issue", ({ db, args, actor }) => {
       const resolved = resolveInvoiceMasterData(db, args.payload, { customerId: args.customerId });
       if (!resolved.ok) return wrapCoreResult(resolved);
-      const result = issueInvoice(db, args.company, resolved.payload!);
+      let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string } | undefined;
+      if (args.approvedPdfPath || args.preflightId || args.pdfReviewed !== undefined) {
+        if (!args.approvedPdfPath || !args.preflightId || args.pdfReviewed !== true) return errorEnvelope(["Approved PDF issuance requires approvedPdfPath, preflightId and pdfReviewed:true"]);
+        const provider = resolveDigisenseStatusChecker(db, args.company);
+        if (!provider.ok) return errorEnvelope(provider.errors);
+        try { approved = { preflightId: args.preflightId, pdfBytes: snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes, visualReviewConfirmed: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey) }; }
+        catch { return errorEnvelope(["Approved PDF could not be safely read"]); }
+      }
+      const result = issueInvoice(db, args.company, resolved.payload!, actor, approved);
       // EJER-3: surface master-data notes (fx "Betalingsfrist 30 dage fra
       // kundekortet — virksomhedens standard er 14 dage.") in the success
       // envelope, so a deviating kundefrist is never silently applied.
       const notes = (resolved as { notes?: string[] }).notes;
       return wrapCoreResult(result.ok && notes && notes.length > 0 ? { ...result, notes } : result);
+    }),
+  );
+
+  server.registerTool(
+    "invoice_preflight_approved_pdf",
+    {
+      title: "Preflight approved invoice PDF",
+      description: "Kontrollerer PDF og DigiSense uden at udstede eller sende. Kontroller faktura og PDF visuelt før invoice_issue; angiv at modtageren har aftalt indlejrede bilag.",
+      inputSchema: { company: z.string().min(1), payload: invoicePayloadSchema, customerId: z.number().int().positive().optional(), approvedPdfPath: z.string().min(1), attachmentAgreed: z.boolean(), confirm: confirmField },
+      outputSchema: envelopeShape,
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    },
+    withCompanyDbConfirmed<{ company: string; payload: InvoicePayload; customerId?: number; approvedPdfPath: string; attachmentAgreed: boolean; confirm?: boolean }>(server, "invoice_preflight_approved_pdf", async ({ db, args, actor }) => {
+      if (!args.attachmentAgreed) return errorEnvelope(["Recipient agreement for an embedded attachment is required"]);
+      let pdfBytes: Buffer;
+      try { pdfBytes = snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes; }
+      catch { return errorEnvelope(["Approved PDF could not be safely read"]); }
+      const resolved = resolveInvoiceMasterData(db, args.payload, { customerId: args.customerId });
+      if (!resolved.ok) return wrapCoreResult(resolved);
+      const provider = resolveDigisenseStatusChecker(db, args.company);
+      if (!provider.ok) return errorEnvelope(provider.errors);
+      return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), ...actor }, provider.client));
     }),
   );
 

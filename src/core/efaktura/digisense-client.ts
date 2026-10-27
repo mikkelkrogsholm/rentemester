@@ -153,7 +153,7 @@ export type ValidateDocumentError = {
   context: string;
   pattern: string;
   description: string;
-  xpath: string;
+  xpath: string | null;
   type: "error" | "warning";
 };
 
@@ -177,7 +177,7 @@ export type LookupParticipantQuery = {
 export type LookupParticipantResponse = {
   participantAbleToReceive: boolean;
   matchedServiceEndpointUrls: string[];
-  matchedDocumentTypes: string[];
+  matchedDocumentTypes: Array<{ scheme: string; value: string }>;
 };
 
 // --- deliver-document ------------------------------------------------------

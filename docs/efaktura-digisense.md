@@ -5,8 +5,11 @@ modtage** e-fakturaer (OIOUBL / Peppol BIS 3.0) over **NemHandel** og **PEPPOL**
 Digisense er Rentemesters compliance-partner og leverer det **certificerede
 access point** — Rentemester genererer fakturaen, Digisense transporterer den.
 
-> Status: integrationen er testet end-to-end mod DigiSense TEST med ægte
-> OIOUBL-validering, acknowledged levering og deduplikeret inbound. Produktion
+> Status: det eksisterende standardflow er testet end-to-end mod DigiSense TEST
+> med ægte OIOUBL-validering, acknowledged levering og deduplikeret inbound.
+> Den nye PDF-vedhæftning har bestået DigiSenses faktiske formatkontrol med
+> syntetiske data. Leveringsflowet er testet med en simuleret klient; en
+> end-to-end-test i DigiSense TEST udestår. Produktion
 > er ikke aktiveret eller prøvet og kræver en særskilt go-live-godkendelse. Se
 > [Test vs. produktion](#test-vs-produktion).
 
@@ -112,6 +115,58 @@ rentemester efaktura registrer \
 ---
 
 ## Trin 3 — Send en e-faktura
+
+### Godkendt ekstern faktura-PDF
+
+En ekstern PDF kan bruges som fakturaens uforanderlige PDF og indlejres i
+OIOUBL-fakturaen. Modtageren skal have aftalt indlejrede bilag. Først vises det
+næste mulige nummer uden at reservere det:
+
+```bash
+rentemester invoice preview-number --company <sti-eller-slug> --issue-date 2026-05-16
+```
+
+Nummeret kan ændre sig, hvis en anden faktura udstedes imens. Lav PDF'en med
+nummeret og de endelige fakturaoplysninger, og kør derefter:
+
+```bash
+rentemester invoice preflight-approved-pdf --company <sti-eller-slug> \
+  --input faktura.json --approved-pdf faktura.pdf \
+  --attachment-agreed yes --actor user:<dig> --confirm yes
+```
+
+Kontrollen læser PDF'ens tekstlag, sammenholder centrale oplysninger, validerer
+den præcise XML hos DigiSense og kontrollerer, at EAN-modtageren er registreret
+til OIOUBL 2.02. Den reserverer intet nummer. Svaret indeholder et
+`preflightId`, PDF- og XML-hashes samt fakturagrundlaget. **Gennemgå PDF'en
+visuelt mod hele grundlaget**: tekstforekomst alene kan ikke bevise, at et
+beløb eller en reference står i den rigtige sammenhæng. Et vellykket opslag
+er heller ikke en leveringskvittering eller en garanti for, hvordan modtageren
+viser bilaget. Fakturaer med linjespecifik momsklassifikation og PDF'er uden
+læsbart tekstlag understøttes ikke i dette forløb.
+
+Efter gennemgangen udstedes med samme JSON, PDF og `preflightId`:
+
+```bash
+rentemester invoice issue --company <sti-eller-slug> --input faktura.json \
+  --approved-pdf faktura.pdf --preflight-id <id> --pdf-reviewed yes \
+  --actor user:<dig> --confirm yes
+```
+
+Forhåndskontrollen gælder i én time. Ændres nummer, selskabsidentitet,
+DigiSense-miljø eller -selskabsnøgle, betalingsoplysninger, fakturagrundlag eller PDF, afvises udstedelsen og
+kontrollen skal gentages. Ved udstedelse gemmes de gennemgåede PDF-bytes som
+fakturaens kanoniske PDF. Ved eksport og afsendelse verificeres filens hash og
+XML'ens identitet igen, og afsendelse kræver samme DigiSense-miljø og
+selskabsnøgle; manglende eller ændret evidens stopper afsendelsen.
+
+MCP-operationerne `sales_invoice_number_preview`,
+`sales_invoice_approved_pdf_preflight` og `sales_invoice_issue` understøtter
+samme forløb. MCP kræver, at PDF'en ligger under virksomhedens
+`invoices/drafts`-mappe; brug `attachmentAgreed: true`, derefter
+`approvedPdfPath`, `preflightId`, `pdfReviewed: true` og `confirm: true`.
+Ingen af disse trin bogfører eller sender fakturaen. Afsendelse sker efter de
+normale regler nedenfor.
 
 Sender en allerede **udstedt** offentlig e-faktura gennem Digisense. Flowet er:
 `validate-document` (schematron) → `deliver-document` → poll til *delivered*. En

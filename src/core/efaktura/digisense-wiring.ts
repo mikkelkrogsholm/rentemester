@@ -13,6 +13,7 @@
 // state og må gerne returneres.
 
 import type { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
 import { createDigisenseClient, type DigisenseClient, type KsefEnvironment } from "./digisense-client";
 import { createDigisenseTransmitter } from "./digisense-transmitter";
 import { defaultDocumentDownloader, type DigisenseDocumentDownloader } from "./digisense-receive";
@@ -21,12 +22,17 @@ import { resolveBoundDigisenseCompanyKey } from "./digisense-identity";
 import type { PeppolTransmitter, PeppolAccessPointConfig } from "../public-einvoice";
 
 export type ResolveDigisenseTransmitter =
-  | { ok: true; transmitter: PeppolTransmitter; companyKey: string }
+  | { ok: true; transmitter: PeppolTransmitter; companyKey: string; providerBinding: string }
   | { ok: false; errors: string[] };
 
 export type ResolveDigisenseStatusChecker =
-  | { ok: true; client: DigisenseClient; companyKey: string }
+  | { ok: true; client: DigisenseClient; companyKey: string; environment: "test" | "production" }
   | { ok: false; errors: string[] };
+
+/** Bind a preflight to the resolved account and environment, never to its secret. */
+export function digisenseProviderBinding(environment: "test" | "production", companyKey: string) {
+  return createHash("sha256").update(JSON.stringify(["digisense", environment, companyKey])).digest("hex");
+}
 
 /** Resolves the status-only client for a previously queued Digisense document. */
 export function resolveDigisenseStatusChecker(
@@ -38,7 +44,7 @@ export function resolveDigisenseStatusChecker(
   if (!secret) return { ok: false, errors: [digisenseNotConfiguredError("kontrolleres leveringsstatus")] };
   const companyKey = resolveBoundDigisenseCompanyKey(db, options.companyKey);
   if (!companyKey.ok) return { ok: false, errors: companyKey.errors };
-  return { ok: true, companyKey: companyKey.value, client: createDigisenseClient({ apiLicenseKey: secret.apiLicenseKey, environment: secret.environment }) };
+  return { ok: true, companyKey: companyKey.value, environment: secret.environment, client: createDigisenseClient({ apiLicenseKey: secret.apiLicenseKey, environment: secret.environment }) };
 }
 
 /**
@@ -102,7 +108,7 @@ export function resolveDigisenseTransmitter(
     companyKey: companyKey.value,
     ksefEnvironment,
   });
-  return { ok: true, transmitter, companyKey: companyKey.value };
+  return { ok: true, transmitter, companyKey: companyKey.value, providerBinding: digisenseProviderBinding(secret.environment, companyKey.value) };
 }
 
 export type ResolveDigisenseReceiver =

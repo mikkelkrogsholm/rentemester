@@ -6,6 +6,16 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-27
+
+### Added
+
+- En godkendt ekstern PDF kan forhåndskontrolleres og gemmes som fakturaens
+  uforanderlige PDF. Den samme hashkontrollerede PDF indlejres ved OIOUBL-
+  afsendelse, når modtagerens bilagsaftale er bekræftet.
+- CLI og MCP kan vise næste mulige fakturanummer uden reservation og kræver
+  fornyet forhåndskontrol ved ændret nummer, PDF eller fakturagrundlag.
+
 ## [0.4.0] - 2026-10-26
 
 ### Added

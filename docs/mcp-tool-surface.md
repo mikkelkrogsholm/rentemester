@@ -130,7 +130,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 269 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 271 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -305,10 +305,10 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 119
-- **Ordinary write-tools**: 149
+- **Read-tools**: 120
+- **Ordinary write-tools**: 150
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **269** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **271** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 
@@ -369,6 +369,7 @@ Document-party resolution uses exactly one visible state per document: `resolved
 | `invoice_overdue` | `invoice overdue` | `{ company, asOf?, minDays? }` | Lister forfaldne, ikke fuldt afregnede fakturaer. |
 | `invoice_status` | `invoice status` | `{ company, documentId? \| invoiceNumber?, asOf? }` | Viser åben saldo og status på en faktura. |
 | `invoice_validate` | `invoice validate` | `{ payload: InvoicePayload }` | Validerer faktura-payload uden at gemme. |
+| `invoice_preview_number` | `invoice preview-number` | `{ company, issueDate }` | Viser et muligt næste nummer uden reservation. Det kan ændre sig inden udstedelse. |
 | `journal_dry_run` | `journal dry-run` | `{ company, payload: JournalEntryInput }` | Forhåndsviser hvad `journal_post` ville gøre — uden at skrive. Intet journalnummer forbruges. |
 | `journal_list` | `journal list` | `{ company, from?, to?, status?, limit?, offset? }` | Lister finansposteringer med filtre på datointerval og status (`all`/`posted`/`reversed`). Pagineret (default 500, cap 5000) — `data` har `total`/`hasMore`/`nextOffset`. |
 | `mileage_list` | `mileage list` | `{ company }` | Lister registrerede kørselsposter. |
@@ -479,7 +480,8 @@ modpostering.
 | `invoice_claim_compensation` | `invoice claim-compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk?, note?, confirm }` | Registrerer kompensationskrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
 | `invoice_claim_interest` | `invoice claim-interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate, note?, confirm }` | Registrerer morarentekrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). Et nyt krav opkræver kun renten for perioden siden sidste krav (inkrementelt — ingen dobbelt-opkrævning), så rente kan registreres ad flere omgange. |
 | `invoice_credit_note` | `invoice credit-note` | `{ company, payload: CreditNotePayload, confirm }` | Udsteder kreditnota mod eksisterende faktura. Forudsætning: den oprindelige faktura er udstedt med `invoice_issue` og bogført med `invoice_post`. |
-| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, confirm }` | Udsteder kundefaktura + immutable snapshot. Startpunktet for invoice-livscyklen. |
+| `invoice_preflight_approved_pdf` | `invoice preflight-approved-pdf` | `{ company, payload, customerId?, approvedPdfPath, attachmentAgreed: true, confirm: true }` | Kontrollerer PDF og DigiSense før nummerreservation. PDF'en skal ligge direkte i selskabets `invoices/drafts`. Resultatet kræver visuel gennemgang. |
+| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, approvedPdfPath?, preflightId?, pdfReviewed?, confirm }` | Udsteder kundefaktura + immutable snapshot. For godkendt ekstern PDF kræves alle tre PDF-felter og en gyldig forhåndskontrol. |
 | `invoice_post` | `invoice post` | `{ company, documentId? \| invoiceNumber?, confirm }` | Bogfører udstedt faktura i finansen. Forudsætning: `invoice_issue`. |
 | `invoice_post_compensation` | `invoice post-compensation` | `{ company, documentId? \| invoiceNumber?, date?, confirm }` | Bogfører registreret kompensation. Forudsætning: `invoice_claim_compensation`. |
 | `invoice_post_interest` | `invoice post-interest` | `{ company, documentId? \| invoiceNumber?, claimId?, date?, confirm }` | Bogfører registreret morarentekrav. Uden `claimId` bogføres det ældste endnu ikke bogførte krav (kronologisk). Forudsætning: `invoice_claim_interest`. |

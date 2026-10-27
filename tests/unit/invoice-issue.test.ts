@@ -9,7 +9,7 @@ import { issueCreditNote } from "../../src/core/credit-notes";
 import { migrate, openDb } from "../../src/core/db";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
-import { issueInvoice } from "../../src/core/issued-invoices";
+import { issueInvoice, previewNextInvoiceNumber, prepareInvoiceApprovalPayload } from "../../src/core/issued-invoices";
 import { seedAccounts } from "../../src/core/ledger";
 import { companyPaths, ensureCompanyDirs } from "../../src/core/paths";
 import { storeViesValidation } from "../../src/core/vies";
@@ -33,6 +33,49 @@ function failingDocumentInsertDb(realDb: any) {
 }
 
 describe("invoice issue", () => {
+  test("previews separate daily numbers without writing sequence state", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-daily-preview-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    try {
+      db.run("INSERT INTO companies (id, name, cvr, invoice_number_format) VALUES (1, 'Synthetic', 'DK12345678', 'daily')");
+      expect(previewNextInvoiceNumber(db, "2026-10-26")).toBe("RM-26-10-26-01");
+      expect(previewNextInvoiceNumber(db, "2026-10-27")).toBe("RM-26-10-27-01");
+      expect(db.query("SELECT COUNT(*) AS n FROM sequences").get()).toEqual({ n: 0 });
+      expect(() => previewNextInvoiceNumber(db, "2026-02-30")).toThrow();
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+  test("a number preview does not reserve a number and becomes stale after issuance", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-number-preview-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    try {
+      const candidate = previewNextInvoiceNumber(db, "2026-05-16");
+      expect(candidate).toBe("2026-0001");
+      expect(previewNextInvoiceNumber(db, "2026-05-16")).toBe(candidate);
+      expect(db.query("SELECT COUNT(*) AS n FROM sequences").get()).toEqual({ n: 0 });
+      const payload = {
+        invoiceType: "full" as const, issueDate: "2026-05-16", invoiceNumber: candidate,
+        seller: { name: "Synthetic seller", address: "Testvej 1", vatOrCvr: "DK12345678" },
+        buyer: { name: "Synthetic buyer", address: "Testvej 2" },
+        lines: [{ description: "Service", quantity: 1, unitPriceExVat: 100, lineTotalExVat: 100 }],
+        totals: { netAmount: 100, vatRate: 0.25, vatAmount: 25, grossAmount: 125 },
+        currency: "DKK",
+      };
+      const approval = prepareInvoiceApprovalPayload(db, payload);
+      const changedApproval = prepareInvoiceApprovalPayload(db, { ...payload, buyer: { ...payload.buyer, name: "Other buyer" } });
+      expect(approval.ok).toBe(true);
+      expect(changedApproval.ok).toBe(true);
+      if (approval.ok && changedApproval.ok) expect(approval.payloadSha256).not.toBe(changedApproval.payloadSha256);
+      expect(issueInvoice(db, root, payload).ok).toBe(true);
+      expect(previewNextInvoiceNumber(db, "2026-05-16")).toBe("2026-0002");
+      expect(prepareInvoiceApprovalPayload(db, payload).ok).toBe(false);
+      expect(issueInvoice(db, root, payload).ok).toBe(false);
+      expect(previewNextInvoiceNumber(db, "2026-05-16")).toBe("2026-0002");
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
   test("persists the currency in canonical form even when given lower-case", () => {
     // validateInvoice only checks the currency after normalize(), so 'dkk'
     // passes. The persisted documents.currency must be the canonical 'DKK' so
