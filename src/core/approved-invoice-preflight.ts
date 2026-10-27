@@ -69,8 +69,8 @@ export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload,
 /** Prepare evidence only; no invoice number is reserved and no document is sent. */
 export async function preflightApprovedInvoice(
   db: Database,
-  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; providerBinding: string } & ResolveActorInput,
-  client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant">,
+  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; providerBinding: string; environment?: "test" | "production" } & ResolveActorInput,
+  client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> & Partial<Pick<DigisenseClient, "validateAuth" | "listParticipantsForCompany">>,
 ) {
   if (!input.bilateralAttachmentAgreement) return { ok: false as const, errors: ["Recipient agreement for an embedded attachment is required"] };
   if (!/^[a-f0-9]{64}$/.test(input.providerBinding)) return { ok: false as const, errors: ["A resolved DigiSense provider binding is required"] };
@@ -97,7 +97,7 @@ export async function preflightApprovedInvoice(
   const pdfErrors = approvedInvoiceTextErrors(parsed.pages.map((page) => page.text).join("\n"), prepared.payload, prepared.invoiceNumber);
   if (pdfErrors.length) return { ok: false as const, errors: pdfErrors };
   const xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes);
-  const readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!);
+  const readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production");
   if (!readiness.ok) return { ok: false as const, errors: [readiness.error] };
   const id = randomUUID(), pdfSha256 = digest(pdfBytes), xmlSha256 = digest(xml);
   const actor = resolveActor(input);

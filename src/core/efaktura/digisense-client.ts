@@ -180,6 +180,15 @@ export type LookupParticipantResponse = {
   matchedDocumentTypes: Array<{ scheme: string; value: string }>;
 };
 
+export type RegisteredParticipant = {
+  networkType: string;
+  direction: string;
+  participantType: string;
+  participantId: string;
+  companyKey: string;
+  documentProfiles: string | null;
+};
+
 // --- deliver-document ------------------------------------------------------
 /** KSeF's documented environment values (not our config labels). */
 export type KsefEnvironment = "PROD" | "TEST" | "DEMO";
@@ -276,6 +285,8 @@ export type DigisenseClient = {
   lookupParticipant(
     query: LookupParticipantQuery,
   ): Promise<DigisenseResult<LookupParticipantResponse>>;
+  /** License-scoped registration list; response is never exposed to callers. */
+  listParticipantsForCompany?(): Promise<DigisenseResult<{ participants: RegisteredParticipant[] }>>;
   /** Lever XML-faktura. XML-body som string. 202 => poll status. */
   deliverDocument(
     xml: string,
@@ -419,6 +430,10 @@ export function createDigisenseClient(
         })}`,
         headers: authHeaders(),
       });
+    },
+
+    listParticipantsForCompany() {
+      return requestJson<{ participants: RegisteredParticipant[] }>({ method: "GET", url: `${baseUrl}/list-participants-for-company`, headers: authHeaders() });
     },
 
     deliverDocument(xml, query) {

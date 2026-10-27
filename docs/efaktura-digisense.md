@@ -7,8 +7,8 @@ access point** — Rentemester genererer fakturaen, Digisense transporterer den.
 
 > Status: det eksisterende standardflow er testet end-to-end mod DigiSense TEST
 > med ægte OIOUBL-validering, acknowledged levering og deduplikeret inbound.
-> Den nye PDF-vedhæftning har bestået DigiSenses faktiske formatkontrol med
-> syntetiske data. Leveringsflowet er testet med en simuleret klient; en
+> Den nye PDF-vedhæftning har bestået DigiSenses faktiske formatkontrol og
+> forhåndskontrol i testmiljøet med syntetiske data. Leveringsflowet er testet med en simuleret klient; en
 > end-to-end-test i DigiSense TEST udestår. Produktion
 > er ikke aktiveret eller prøvet og kræver en særskilt go-live-godkendelse. Se
 > [Test vs. produktion](#test-vs-produktion).
@@ -144,6 +144,11 @@ beløb eller en reference står i den rigtige sammenhæng. Et vellykket opslag
 er heller ikke en leveringskvittering eller en garanti for, hvordan modtageren
 viser bilaget. Fakturaer med linjespecifik momsklassifikation og PDF'er uden
 læsbart tekstlag understøttes ikke i dette forløb.
+
+I DigiSense TEST kan licensens egen test-GLN bekræftes via licensens registrerede
+testdeltager, hvis det offentlige opslag returnerer 404. Dette gælder kun for
+test-GLN'en i testmiljøet og kræver en indgående NemHandel-registrering med
+den passende fakturaprofil. Produktion bruger fortsat det offentlige opslag.
 
 Efter gennemgangen udstedes med samme JSON, PDF og `preflightId`:
 

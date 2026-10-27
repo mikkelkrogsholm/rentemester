@@ -12,9 +12,10 @@ const OIOUBL_INVOICE_TYPE = "urn:oasis:names:specification:ubl:schema:xsd:Invoic
  * or proof that the recipient will retain or display an embedded attachment.
  */
 export async function checkDigisenseInvoiceReadiness(
-  client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant">,
+  client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> & Partial<Pick<DigisenseClient, "validateAuth" | "listParticipantsForCompany">>,
   xml: string,
   recipientEan: string,
+  environment: "test" | "production" = "production",
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const ean = normalizeEanNumber(recipientEan);
   if (!ean) return { ok: false, error: "A valid recipient EAN is required" };
@@ -29,6 +30,19 @@ export async function checkDigisenseInvoiceReadiness(
   const recipient = await client.lookupParticipant({
     networkType: "Nemhandel", documentType: OIOUBL_INVOICE_TYPE, participantScheme: "GLN", participantValue: ean,
   });
+  // The test service's public participant lookup queries the live registry and
+  // can return 404 for its own registered sandbox GLN. Only that license's
+  // explicitly assigned test GLN may use the test-only registration list.
+  if (!recipient.ok && recipient.error.status === 404 && environment === "test" && client.validateAuth && client.listParticipantsForCompany) {
+    const auth = await client.validateAuth();
+    if (auth.ok && normalizeEanNumber(auth.data.testGlnNumber) === ean) {
+      const registered = await client.listParticipantsForCompany();
+      if (registered.ok && Array.isArray(registered.data?.participants) && registered.data.participants.some((p) =>
+        p.networkType === "nemhandel" && p.direction === "inbound" && p.participantType === "GLN" &&
+        p.participantId === ean && typeof p.companyKey === "string" && p.companyKey.length > 0 &&
+        (p.documentProfiles === "default-nemhandel" || p.documentProfiles === "default-nemhandel-with-order-only"))) return { ok: true };
+    }
+  }
   if (!recipient.ok || recipient.data?.participantAbleToReceive !== true ||
       !Array.isArray(recipient.data.matchedServiceEndpointUrls) ||
       !recipient.data.matchedServiceEndpointUrls.some((url) => typeof url === "string" && url.trim().length > 0) ||

@@ -136,7 +136,7 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
       if (!resolved.ok) return wrapCoreResult(resolved);
       const provider = resolveDigisenseStatusChecker(db, args.company);
       if (!provider.ok) return errorEnvelope(provider.errors);
-      return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), ...actor }, provider.client));
+      return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment, ...actor }, provider.client));
     }),
   );
 

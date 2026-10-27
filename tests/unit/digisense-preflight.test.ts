@@ -39,4 +39,22 @@ describe("DigiSense invoice preflight", () => {
     expect((await checkDigisenseInvoiceReadiness(oversized.stub, "x".repeat(10_000_001), "5790000000013")).ok).toBe(false);
     expect(oversized.calls).toHaveLength(0);
   });
+
+  test("only the license's own registered test GLN can use the sandbox fallback", async () => {
+    const { stub } = client();
+    const testGln = "5790000000013";
+    const fallback = {
+      ...stub,
+      async lookupParticipant() { return { ok: false as const, error: { status: 404, message: "not found" } }; },
+      async validateAuth() { return { ok: true as const, status: 200, data: { apiLicenseKey: "synthetic", label: "test", signatureSecret: "synthetic", testGlnNumber: testGln, companyKeyConstraint: null } }; },
+      async listParticipantsForCompany() { return { ok: true as const, status: 200, data: { participants: [{ networkType: "nemhandel", direction: "inbound", participantType: "GLN", participantId: testGln, companyKey: "synthetic", documentProfiles: "default-nemhandel" }] } }; },
+    };
+    expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", testGln, "test")).ok).toBe(true);
+    expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", testGln, "production")).ok).toBe(false);
+    expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", "5790000000014", "test")).ok).toBe(false);
+    const unavailable = { ...fallback, async lookupParticipant() { return { ok: false as const, error: { status: 500, message: "unavailable" } }; } };
+    expect((await checkDigisenseInvoiceReadiness(unavailable, "<Invoice/>", testGln, "test")).ok).toBe(false);
+    const wrongProfile = { ...fallback, async listParticipantsForCompany() { return { ok: true as const, status: 200, data: { participants: [{ networkType: "nemhandel", direction: "inbound", participantType: "GLN", participantId: testGln, companyKey: "synthetic", documentProfiles: null }] } }; } };
+    expect((await checkDigisenseInvoiceReadiness(wrongProfile, "<Invoice/>", testGln, "test")).ok).toBe(false);
+  });
 });
