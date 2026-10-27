@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { roundDkk } from "./money";
 
-export type ReconciliationStatus = "all" | "matched" | "unmatched";
+export type ReconciliationStatus = "all" | "matched" | "unmatched" | "ambiguous";
 
 export type BankReconciliationFilters = {
   status?: ReconciliationStatus;
@@ -42,8 +42,10 @@ export type BankReconciliationReport = {
   periodEnd: string;
   matchedCount: number;
   unmatchedCount: number;
+  ambiguousCount: number;
   matchedAmountTotal: number;
   unmatchedAmountTotal: number;
+  ambiguousAmountTotal: number;
   matched: Array<{
     bankTransactionId: number;
     transactionDate: string;
@@ -59,6 +61,16 @@ export type BankReconciliationReport = {
     amount: number;
     importBatchId: string | null;
   }>;
+  // A journal linked to more than one bank row reconciles the ledger movement
+  // twice; such rows are evidence of a broken state, never a green match.
+  ambiguous: Array<{
+    bankTransactionId: number;
+    transactionDate: string;
+    text: string;
+    amount: number;
+    journalEntryId: number;
+    journalEntryNo: string;
+  }>;
   errors: string[];
 };
 
@@ -67,12 +79,12 @@ const RULE_ID = "DK-BOOKKEEPING-RECONCILIATION-001";
 
 
 function normalizedStatus(status?: string): ReconciliationStatus {
-  return status === "matched" || status === "unmatched" || status === "all" ? status : "all";
+  return status === "matched" || status === "unmatched" || status === "ambiguous" || status === "all" ? status : "all";
 }
 
 function validateStatus(status?: string) {
-  if (!status || status === "all" || status === "matched" || status === "unmatched") return null;
-  return "status must be one of all, matched, unmatched when present";
+  if (!status || status === "all" || status === "matched" || status === "unmatched" || status === "ambiguous") return null;
+  return "status must be one of all, matched, unmatched, ambiguous when present";
 }
 
 function normalizeTextMatch(textMatch?: string) {
@@ -83,7 +95,7 @@ function normalizeTextMatch(textMatch?: string) {
 function matchesFilters(row: {
   amount: number;
   text: string;
-  reconciliation_status: "matched" | "unmatched";
+  reconciliation_status: "matched" | "unmatched" | "ambiguous";
 }, filters: BankReconciliationFilters = {}) {
   const status = normalizedStatus(filters.status);
   const textMatch = normalizeTextMatch(filters.textMatch);
@@ -105,7 +117,13 @@ export function listBankTransactions(db: Database, filters: BankReconciliationFi
   const rows = db.query(
     `SELECT bt.id, bt.transaction_date, bt.booking_date, bt.text, bt.amount, bt.currency, bt.reference, bt.import_batch_id, bt.status, bt.bank_account_id,
             br.journal_entry_id, br.journal_entry_no AS entry_no,
-            CASE WHEN br.journal_entry_id IS NULL THEN 'unmatched' ELSE 'matched' END as reconciliation_status
+            CASE
+              WHEN br.journal_entry_id IS NULL THEN 'unmatched'
+              WHEN EXISTS(SELECT 1 FROM bank_journal_reconciliations other
+                           WHERE other.journal_entry_id = br.journal_entry_id
+                             AND other.bank_transaction_id <> bt.id) THEN 'ambiguous'
+              ELSE 'matched'
+            END as reconciliation_status
      FROM bank_transactions bt
      LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id = bt.id
      WHERE (? IS NULL OR bt.transaction_date >= ?)
@@ -129,7 +147,7 @@ export function listBankTransactions(db: Database, filters: BankReconciliationFi
     bank_account_id: number | null;
     journal_entry_id: number | null;
     entry_no: string | null;
-    reconciliation_status: "matched" | "unmatched";
+    reconciliation_status: "matched" | "unmatched" | "ambiguous";
   }>;
 
   const filtered = rows.filter((row) => matchesFilters(row, filters)).map((row) => ({
@@ -166,10 +184,13 @@ export function buildBankReconciliationReport(db: Database, periodStart: string,
       periodEnd,
       matchedCount: 0,
       unmatchedCount: 0,
+      ambiguousCount: 0,
       matchedAmountTotal: 0,
       unmatchedAmountTotal: 0,
+      ambiguousAmountTotal: 0,
       matched: [],
       unmatched: [],
+      ambiguous: [],
       errors,
     };
   }
@@ -178,7 +199,13 @@ export function buildBankReconciliationReport(db: Database, periodStart: string,
   const rows = db.query(
     `SELECT bt.id as bank_transaction_id, bt.transaction_date, bt.text, bt.amount, bt.import_batch_id,
             br.journal_entry_id, br.journal_entry_no AS entry_no,
-            CASE WHEN br.journal_entry_id IS NULL THEN 'unmatched' ELSE 'matched' END as reconciliation_status
+            CASE
+              WHEN br.journal_entry_id IS NULL THEN 'unmatched'
+              WHEN EXISTS(SELECT 1 FROM bank_journal_reconciliations other
+                           WHERE other.journal_entry_id = br.journal_entry_id
+                             AND other.bank_transaction_id <> bt.id) THEN 'ambiguous'
+              ELSE 'matched'
+            END as reconciliation_status
      FROM bank_transactions bt
      LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id = bt.id
      WHERE bt.transaction_date >= ? AND bt.transaction_date <= ?
@@ -192,18 +219,30 @@ export function buildBankReconciliationReport(db: Database, periodStart: string,
     import_batch_id: string | null;
     journal_entry_id: number | null;
     entry_no: string | null;
-    reconciliation_status: "matched" | "unmatched";
+    reconciliation_status: "matched" | "unmatched" | "ambiguous";
   }>;
 
   const matched: BankReconciliationReport["matched"] = [];
   const unmatched: BankReconciliationReport["unmatched"] = [];
+  const ambiguous: BankReconciliationReport["ambiguous"] = [];
   let matchedAmountTotal = 0;
   let unmatchedAmountTotal = 0;
+  let ambiguousAmountTotal = 0;
 
   for (const row of rows) {
     if (!matchesFilters({ amount: Number(row.amount), text: row.text, reconciliation_status: row.reconciliation_status }, filters)) continue;
     const amount = roundDkk(Number(row.amount));
-    if (row.journal_entry_id) {
+    if (row.reconciliation_status === "ambiguous") {
+      ambiguous.push({
+        bankTransactionId: row.bank_transaction_id,
+        transactionDate: row.transaction_date,
+        text: row.text,
+        amount,
+        journalEntryId: row.journal_entry_id!,
+        journalEntryNo: row.entry_no!,
+      });
+      ambiguousAmountTotal += amount;
+    } else if (row.journal_entry_id) {
       matched.push({
         bankTransactionId: row.bank_transaction_id,
         transactionDate: row.transaction_date,
@@ -232,10 +271,13 @@ export function buildBankReconciliationReport(db: Database, periodStart: string,
     periodEnd,
     matchedCount: matched.length,
     unmatchedCount: unmatched.length,
+    ambiguousCount: ambiguous.length,
     matchedAmountTotal: roundDkk(matchedAmountTotal),
     unmatchedAmountTotal: roundDkk(unmatchedAmountTotal),
+    ambiguousAmountTotal: roundDkk(ambiguousAmountTotal),
     matched,
     unmatched,
+    ambiguous,
     errors: [],
   };
 }
