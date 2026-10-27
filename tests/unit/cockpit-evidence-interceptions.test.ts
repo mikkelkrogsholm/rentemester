@@ -32,6 +32,13 @@ test("recognizes cancellation arriving while the protocol command is pending", a
   } })).toBeUndefined();
 });
 
+test("recognizes exact cancellation arriving after the protocol error", async () => {
+  const cancelledNetworkRequests = new Set<string>();
+  const settled = settlePausedRequest({ ...options, cancelledNetworkRequests, operation: invalidId });
+  setTimeout(() => cancelledNetworkRequests.add("1234.3"), 10);
+  expect(await settled).toBeUndefined();
+});
+
 test("an invalid Fetch id without exact Network cancellation still blocks the candidate", async () => {
   for (const cancelledNetworkRequests of [new Set<string>(), new Set([options.requestId]), new Set(["another-network-request"])]) {
     const failure = await settlePausedRequest({ ...options, cancelledNetworkRequests, operation: invalidId });

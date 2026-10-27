@@ -29,9 +29,14 @@ export async function settlePausedRequest(options: {
     if (
       cause instanceof Error &&
       /^Chrome protocol error \(Fetch\.(fulfillRequest|continueRequest)\): Invalid InterceptionId\.$/.test(cause.message) &&
-      options.networkId !== undefined &&
-      options.cancelledNetworkRequests.has(options.networkId)
-    ) return undefined;
+      options.networkId !== undefined
+    ) {
+      // CDP may deliver the command error before Network.loadingFailed. Keep
+      // handling attached, but give the exact cancellation event a bounded
+      // opportunity to arrive before deciding whether this is a real failure.
+      if (!options.cancelledNetworkRequests.has(options.networkId)) await new Promise((resolve) => setTimeout(resolve, 250));
+      if (options.cancelledNetworkRequests.has(options.networkId)) return undefined;
+    }
     return new Error(
       `${options.scenario} interception failed: ${options.url ?? "unknown URL"} (Fetch id ${options.requestId}, Network id ${options.networkId ?? "missing"}): ${String(cause)}`,
       { cause },
