@@ -147,8 +147,10 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
   dispatch.on("invoice", "preflight-approved-pdf", async (ctx) => {
     const input = ctx.arg("--input"), pdfPath = ctx.arg("--approved-pdf");
     if (!input || !pdfPath) { console.error("Missing --input or --approved-pdf"); process.exitCode = 2; return; }
-    if (ctx.arg("--confirm") !== "yes" || ctx.arg("--attachment-agreed") !== "yes") {
-      ctx.emitResult({ ok: false, errors: ["--confirm yes and --attachment-agreed yes are required"] }); process.exitCode = 1; return;
+    const policy = ctx.arg("--attachment-policy") ?? "embedded";
+    if (policy !== "none" && policy !== "embedded") { ctx.emitResult({ ok: false, errors: ["--attachment-policy must be embedded or none"] }); process.exitCode = 1; return; }
+    if (ctx.arg("--confirm") !== "yes" || (policy === "embedded" && ctx.arg("--attachment-agreed") !== "yes")) {
+      ctx.emitResult({ ok: false, errors: ["--confirm yes is required; embedded PDF additionally requires --attachment-agreed yes"] }); process.exitCode = 1; return;
     }
     let pdfBytes: Buffer;
     try { pdfBytes = snapshotDocumentSource(pdfPath, 7_000_000).bytes; }
@@ -162,7 +164,7 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       if (!resolved.ok) { ctx.emitResult(resolved as Record<string, unknown>); process.exitCode = 1; return; }
       const provider = resolveDigisenseStatusChecker(db, root);
       if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); process.exitCode = 1; return; }
-      const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, descriptionDifferencesReviewed: ctx.arg("--description-reviewed") === "yes", providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment }, provider.client);
+      const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, attachmentPolicy: policy, bilateralAttachmentAgreement: ctx.arg("--attachment-agreed") === "yes", descriptionDifferencesReviewed: ctx.arg("--description-reviewed") === "yes", providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment }, provider.client);
       ctx.emitResult(result as Record<string, unknown>);
       if (!result.ok) process.exitCode = 1;
     } finally { db.close(); }

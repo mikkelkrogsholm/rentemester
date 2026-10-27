@@ -31,6 +31,10 @@ const invoiceLineSchema = z.object({
     .describe(
       "Line total excluding VAT, in kroner (decimal DKK). Must equal quantity * unitPriceExVat.",
     ),
+  unitCode: z.string().optional().describe("OIOUBL unit code, such as EA."),
+  taxClassification: z.enum(["taxable", "exempt", "reverse_charge"]).optional().describe("Explicit VAT classification for this invoice line."),
+  vatRate: z.number().optional().describe("Line VAT rate as a fraction, for example 0.25."),
+  reverseChargeBasis: z.string().optional().describe("Legal basis for a reverse-charge line."),
 });
 
 const invoiceTotalsSchema = z.object({
@@ -102,6 +106,8 @@ const invoiceBuyerSchema = z.object({
     .boolean()
     .optional()
     .describe("Set true when the buyer is a Danish public-sector body (forces full invoice + EAN)."),
+  buyerReference: z.string().optional().describe("Explicit buyer reference for the electronic invoice."),
+  orderReference: z.string().optional().describe("Explicit buyer order reference for the electronic invoice."),
 });
 
 export const invoicePayloadSchema = z

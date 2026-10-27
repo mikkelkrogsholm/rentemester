@@ -371,6 +371,7 @@ export function issueInvoice(
   try {
     const result = db.transaction(() => {
       let approvalEvidence: { id: string; invoice_no: string; payload_sha256: string; pdf_sha256: string; xml_sha256: string; created_at: string; provider_binding: string } | undefined;
+      let approvedAttachmentPolicy: "embedded" | "none" | undefined;
       if (approvedPdf && approvedPdfBytes) {
         approvalEvidence = db.query("SELECT id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,created_at,provider_binding FROM approved_invoice_preflights WHERE id=?").get(approvedPdf.preflightId) as typeof approvalEvidence;
         const current = prepareInvoiceApprovalPayload(db, rawPayload);
@@ -386,6 +387,8 @@ export function issueInvoice(
             !approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)) {
           return { ok: false as const, error: "Approved PDF or invoice changed since preflight; repeat preflight and review" };
         }
+        const approvedXml = approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)!;
+        approvedAttachmentPolicy = approvedXml.includes("<cbc:EmbeddedDocumentBinaryObject") ? "embedded" : "none";
         if (explicitInvoiceNumber && explicitInvoiceNumber !== current.invoiceNumber) return { ok: false as const, error: "Approved invoice number is no longer available" };
       }
       let invoiceNumber: InvoiceNumber;
@@ -410,7 +413,7 @@ export function issueInvoice(
         // #221: persist the resolved payment details into the snapshot so the
         // at-issue PDF — and any later `invoice render` — show where to pay.
         ...(paymentDetails ? { payment: paymentDetails } : {}),
-        ...(approvalEvidence ? { approvedPdf: { preflightId: approvalEvidence.id, sha256: approvalEvidence.pdf_sha256, xmlSha256: approvalEvidence.xml_sha256, providerBinding: approvalEvidence.provider_binding } } : {}),
+        ...(approvalEvidence ? { approvedPdf: { preflightId: approvalEvidence.id, sha256: approvalEvidence.pdf_sha256, xmlSha256: approvalEvidence.xml_sha256, providerBinding: approvalEvidence.provider_binding, attachmentPolicy: approvedAttachmentPolicy } } : {}),
       };
       const serialized = JSON.stringify(issuedPayload, null, 2);
       const hash = sha256(serialized);
