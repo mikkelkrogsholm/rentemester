@@ -48,7 +48,7 @@ const invoiceTotalsSchema = z.object({
   vatRate: z
     .number()
     .optional()
-    .describe("VAT rate as a fraction (0.25 = 25%). Required for standard-VAT invoices; must be omitted for reverse-charge invoices."),
+    .describe("VAT rate as a fraction (0.25 = 25%). Required for standard-VAT invoices without explicit line classifications; omitted for reverse-charge invoices."),
   vatAmount: z
     .number()
     .optional()
