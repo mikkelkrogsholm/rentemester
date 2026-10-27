@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { openDb, migrate } from "../../src/core/db";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { approvedInvoiceTextErrors, preflightApprovedInvoice, snapshotApprovedInvoiceSource } from "../../src/core/approved-invoice-preflight";
@@ -11,7 +12,7 @@ import { renderDocumentPdf } from "../../src/design/pdf-render";
 import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { seedAccounts } from "../../src/core/ledger";
-import { exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
+import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
 
 const providerBinding = "a".repeat(64);
 const payload = {
@@ -24,10 +25,51 @@ const payload = {
 
 const client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> = {
   async validateDocument() { return { ok: true, status: 200, data: { statusCode: 200, success: true, errors: [] } }; },
-  async lookupParticipant() { return { ok: true, status: 200, data: { participantAbleToReceive: true, matchedServiceEndpointUrls: ["https://example.invalid"], matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0" }] } }; },
+  async lookupParticipant() { return { ok: true, status: 200, data: { participantAbleToReceive: true, matchedServiceEndpointUrls: ["https://example.invalid"], matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.1::2.1" }] } }; },
 };
 
 describe("approved invoice evidence", () => {
+  test("validates and binds the actual 2.02 XML for a recipient registered only for that version", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recipient-legacy-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
+    try {
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const xmls: string[] = [];
+      const legacyClient = {
+        async validateDocument(xml: string) { xmls.push(xml); return { ok: true as const, status: 200, data: { statusCode: 200, success: true, errors: [] } }; },
+        async lookupParticipant(query: { documentType?: string }) { return query.documentType?.includes("OIOUBL-2.1::2.1") ? { ok: false as const, error: { status: 404, message: "not found" } } : { ok: true as const, status: 200, data: { participantAbleToReceive: true, matchedServiceEndpointUrls: ["https://example.invalid"], matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0" }] } }; },
+      };
+      const pre = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, legacyClient);
+      if (!pre.ok) throw new Error(pre.errors.join(", "));
+      expect(xmls).toHaveLength(2);
+      expect(xmls[0]).toContain("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>");
+      expect(xmls[1]).toContain("<cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>");
+      expect(pre.xmlSha256).toBe(createHash("sha256").update(xmls[1]).digest("hex"));
+      const issued = issueInvoice(db, root, payload, {}, { preflightId: pre.preflightId, pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
+      expect(issued.ok).toBe(true);
+      expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).xml).toBe(xmls[1]);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+  test("legacy approved 2.02 XML remains byte-identical after new preflights move to 2.1", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-legacy-approved-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
+    try {
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pre = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, client);
+      if (!pre.ok) throw new Error(pre.errors.join(", "));
+      const legacyXml = buildPublicEInvoiceOioUblXml(pre.invoiceNumber, pre.payload, pdf, "2.02");
+      const legacyHash = createHash("sha256").update(legacyXml).digest("hex");
+      expect(legacyHash).not.toBe(pre.xmlSha256);
+      db.run("INSERT INTO approved_invoice_preflights(id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,buyer_ean,provider_binding,actor) SELECT 'legacy',invoice_no,payload_sha256,pdf_sha256,?,buyer_ean,provider_binding,actor FROM approved_invoice_preflights WHERE id=?", [legacyHash, pre.preflightId]);
+      const issued = issueInvoice(db, root, payload, {}, { preflightId: "legacy", pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
+      expect(issued.ok).toBe(true);
+      const exported = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root });
+      expect(exported.xml).toBe(legacyXml);
+      expect(exported.sha256).toBe(legacyHash);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
   test("accepts separated text fields but still rejects missing words and amounts", () => {
     const separated = "2026-0001 2026-05-16 2026-06-16 Synthetic Testvej Buyer Seller 1 DK12345678 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00";
     expect(approvedInvoiceTextErrors(separated, payload, "2026-0001")).toEqual([]);
@@ -79,6 +121,8 @@ describe("approved invoice evidence", () => {
       expect(db.query("SELECT vat_code, credit_amount FROM journal_lines WHERE vat_code IS NOT NULL").all()).toEqual([{ vat_code: "DK_SALE_EXEMPT", credit_amount: 100 }]);
       const exported = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root });
       expect(exported.ok).toBe(true);
+      expect(exported.xml).toContain("<cbc:UBLVersionID>2.1</cbc:UBLVersionID>");
+      expect(exported.xml).toContain("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>");
       expect(exported.sha256).toBe(pre.xmlSha256);
       expect(exported.xml).toContain("ZeroRated");
       expect(Buffer.from(exported.xml!.match(/<cbc:EmbeddedDocumentBinaryObject[^>]*>([^<]+)</)![1], "base64")).toEqual(pdf);
@@ -87,6 +131,7 @@ describe("approved invoice evidence", () => {
         return { ok: true, transmissionId: "synthetic-delivery", transmittedAt: "2026-05-16T10:00:00Z" };
       });
       expect(sent.ok).toBe(true);
+      expect(sent.envelope).toContain("<Format>OIOUBL-2.1</Format>");
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
   test("MCP PDF source cannot escape the company's draft store through a symlink", () => {

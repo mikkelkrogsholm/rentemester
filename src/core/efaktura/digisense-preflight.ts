@@ -4,7 +4,10 @@ import type { DigisenseClient } from "./digisense-client";
 // DigiSense documents a 10 MB maximum for deliver-document. Use the lower
 // decimal interpretation so a preview never approves an oversized request.
 const MAX_DOCUMENT_BYTES = 10_000_000;
-const OIOUBL_INVOICE_TYPE = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0";
+const OIOUBL_INVOICE_TYPES = {
+  "2.1": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.1::2.1",
+  "2.02": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0",
+} as const;
 
 /**
  * Check the exact XML with DigiSense and check recipient reachability without
@@ -16,7 +19,9 @@ export async function checkDigisenseInvoiceReadiness(
   xml: string,
   recipientEan: string,
   environment: "test" | "production" = "production",
-): Promise<{ ok: true } | { ok: false; error: string }> {
+  version: "2.1" | "2.02" = "2.1",
+): Promise<{ ok: true } | { ok: false; error: string; code?: "recipient_not_found" }> {
+  const documentType = OIOUBL_INVOICE_TYPES[version];
   const ean = normalizeEanNumber(recipientEan);
   if (!ean) return { ok: false, error: "A valid recipient EAN is required" };
   if (!xml || Buffer.byteLength(xml, "utf8") > MAX_DOCUMENT_BYTES) {
@@ -28,7 +33,7 @@ export async function checkDigisenseInvoiceReadiness(
     return { ok: false, error: "DigiSense could not validate the invoice XML" };
   }
   const recipient = await client.lookupParticipant({
-    networkType: "Nemhandel", documentType: OIOUBL_INVOICE_TYPE, participantScheme: "GLN", participantValue: ean,
+    networkType: "Nemhandel", documentType, participantScheme: "GLN", participantValue: ean,
   });
   // The test service's public participant lookup queries the live registry and
   // can return 404 for its own registered sandbox GLN. Only that license's
@@ -45,15 +50,15 @@ export async function checkDigisenseInvoiceReadiness(
   }
   if (!recipient.ok) {
     const status = recipient.error.status;
-    return { ok: false, error: status === 404
-      ? "DigiSense recipient lookup returned HTTP 404 for the supplied GLN and OIOUBL 2.02 invoice profile; confirm the registration and profile before sending"
-      : `DigiSense recipient lookup failed${typeof status === "number" ? ` (HTTP ${status})` : ""}; recipient capability could not be confirmed` };
+    return status === 404
+      ? { ok: false, code: "recipient_not_found", error: `DigiSense recipient lookup returned HTTP 404 for the supplied GLN and OIOUBL ${version} invoice profile; confirm the registration and profile before sending` }
+      : { ok: false, error: `DigiSense recipient lookup failed${typeof status === "number" ? ` (HTTP ${status})` : ""}; recipient capability could not be confirmed` };
   }
   if (recipient.data?.participantAbleToReceive !== true ||
       !Array.isArray(recipient.data.matchedServiceEndpointUrls) ||
       !recipient.data.matchedServiceEndpointUrls.some((url) => typeof url === "string" && url.trim().length > 0) ||
       !Array.isArray(recipient.data.matchedDocumentTypes) ||
-      !recipient.data.matchedDocumentTypes.some((type) => type?.scheme === "busdox-docid-qns" && type.value === OIOUBL_INVOICE_TYPE)) {
+      !recipient.data.matchedDocumentTypes.some((type) => type?.scheme === "busdox-docid-qns" && type.value === documentType)) {
     return { ok: false, error: "DigiSense could not confirm that the recipient can receive an invoice" };
   }
   return { ok: true };
