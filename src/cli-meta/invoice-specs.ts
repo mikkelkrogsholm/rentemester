@@ -41,9 +41,9 @@ export const invoiceSpecs: CommandSpec[] = [
   },
   {
     key: "invoice preflight-approved-pdf",
-    usage: "invoice preflight-approved-pdf --company <path> --input <file.json> --approved-pdf <path> --attachment-agreed yes --confirm yes [--description-reviewed yes] [--customer-id <n>]",
+    usage: "invoice preflight-approved-pdf --company <path> --input <file.json> --approved-pdf <path> --confirm yes [--attachment-policy embedded|none] [--attachment-agreed yes] [--description-reviewed yes] [--customer-id <n>]",
     description: "Kontrollerer PDF, fakturagrundlag og DigiSense uden at udstede eller sende fakturaen. Kræver efterfølgende visuel gennemgang.",
-    allowedFlags: ["--company", "--input", "--approved-pdf", "--attachment-agreed", "--confirm", "--description-reviewed", "--customer-id"],
+    allowedFlags: ["--company", "--input", "--approved-pdf", "--attachment-policy", "--attachment-agreed", "--confirm", "--description-reviewed", "--customer-id"],
   },
   {
     key: "invoice create",

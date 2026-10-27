@@ -539,9 +539,11 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
 
 /** Reconstruct exactly the XML bound to the approval, including legacy 2.02. */
 export function approvedOioUblXml(invoiceNumber: string, payload: InvoicePayload, pdf: Uint8Array, expectedHash: string): string | undefined {
-  for (const version of ["2.1", "2.02"] as const) {
-    const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, payload, pdf, version);
-    if (createHash("sha256").update(xml).digest("hex") === expectedHash) return xml;
+  for (const attachment of [pdf, undefined]) {
+    for (const version of ["2.1", "2.02"] as const) {
+      const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, payload, attachment, version);
+      if (createHash("sha256").update(xml).digest("hex") === expectedHash) return xml;
+    }
   }
   return undefined;
 }
@@ -629,7 +631,7 @@ export function exportPublicEInvoiceOioUbl(
     return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: [`invoice ${row.invoice_no ?? input.invoiceDocumentId} is missing payload_json`] };
   }
 
-  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string; approvedPdf?: { preflightId: string; sha256: string; xmlSha256: string } };
+  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string; approvedPdf?: { preflightId: string; sha256: string; xmlSha256: string; attachmentPolicy?: "embedded" | "none" } };
   const invoiceNumber = payload.invoiceNumber ?? row.invoice_no ?? String(input.invoiceDocumentId);
   const eanNumber = normalizeEanNumber(payload.buyer?.eanNumber);
 
@@ -677,6 +679,7 @@ export function exportPublicEInvoiceOioUbl(
     ? approvedOioUblXml(invoiceNumber, normalizedPayload, pdfBytes, payload.approvedPdf.xmlSha256)
     : buildPublicEInvoiceOioUblXml(invoiceNumber, normalizedPayload, pdfBytes);
   if (!xml) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Generated XML differs from approved preflight evidence"] };
+  if (payload.approvedPdf?.attachmentPolicy && (xml.includes("<cbc:EmbeddedDocumentBinaryObject") ? "embedded" : "none") !== payload.approvedPdf.attachmentPolicy) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["XML attachment policy differs from approved evidence"] };
   const sha256 = createHash("sha256").update(xml).digest("hex");
   if (payload.approvedPdf && sha256 !== payload.approvedPdf.xmlSha256) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Generated XML differs from approved preflight evidence"] };
   if (input.outPath) writeFileSync(input.outPath, xml);

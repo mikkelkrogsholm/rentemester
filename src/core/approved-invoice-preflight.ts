@@ -92,10 +92,12 @@ export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload,
 /** Prepare evidence only; no invoice number is reserved and no document is sent. */
 export async function preflightApprovedInvoice(
   db: Database,
-  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; descriptionDifferencesReviewed?: boolean; providerBinding: string; environment?: "test" | "production" } & ResolveActorInput,
+  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; attachmentPolicy?: "embedded" | "none"; descriptionDifferencesReviewed?: boolean; providerBinding: string; environment?: "test" | "production" } & ResolveActorInput,
   client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> & Partial<Pick<DigisenseClient, "validateAuth" | "listParticipantsForCompany">>,
 ) {
-  if (!input.bilateralAttachmentAgreement) return { ok: false as const, errors: ["Recipient agreement for an embedded attachment is required"] };
+  const attachmentPolicy = input.attachmentPolicy ?? "embedded";
+  if (attachmentPolicy !== "embedded" && attachmentPolicy !== "none") return { ok: false as const, errors: ["Invalid PDF attachment policy"] };
+  if (attachmentPolicy === "embedded" && !input.bilateralAttachmentAgreement) return { ok: false as const, errors: ["Recipient agreement for an embedded attachment is required"] };
   if (!/^[a-f0-9]{64}$/.test(input.providerBinding)) return { ok: false as const, errors: ["A resolved DigiSense provider binding is required"] };
   if (input.pdfBytes.byteLength === 0 || input.pdfBytes.byteLength > 7_000_000) return { ok: false as const, errors: ["PDF is empty or exceeds the preflight size limit"] };
   const pdfBytes = Buffer.from(input.pdfBytes);
@@ -123,13 +125,14 @@ export async function preflightApprovedInvoice(
   if (pdfErrors.length) return { ok: false as const, errors: pdfErrors };
   if (warnings.length && input.descriptionDifferencesReviewed !== true) return { ok: false as const, errors: ["PDF description differences require explicit visual review before preflight", ...warnings], warnings };
   let version: "2.1" | "2.02" = "2.1";
-  let xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes, version);
+  const transportPdf = attachmentPolicy === "embedded" ? pdfBytes : undefined;
+  let xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, transportPdf, version);
   let readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production", "2.1");
   // A 2.02-only recipient is still supported, but only after validating and
   // checking that exact older document; all other errors remain fail-closed.
   if (!readiness.ok && readiness.code === "recipient_not_found") {
     version = "2.02";
-    xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes, version);
+    xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, transportPdf, version);
     readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production", version);
   }
   if (!readiness.ok) return { ok: false as const, errors: [readiness.error, ...warnings], warnings };
@@ -141,7 +144,7 @@ export async function preflightApprovedInvoice(
     if (!current.ok || current.payloadSha256 !== prepared.payloadSha256) return { ok: false as const, errors: ["Invoice changed during preflight; repeat it"] };
     db.query("INSERT INTO approved_invoice_preflights(id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,buyer_ean,provider_binding,actor) VALUES(?,?,?,?,?,?,?,?)")
       .run(id, prepared.invoiceNumber, prepared.payloadSha256, pdfSha256, xmlSha256, ean!, input.providerBinding, actor.auditActor);
-    insertAuditLog(db, { eventType: "approved_invoice_preflight", entityType: "invoice_preflight", entityId: id, message: `Invoice preflight ${prepared.invoiceNumber}: PDF ${pdfSha256}, XML ${xmlSha256}; description differences reviewed: ${warnings.length > 0}`, ...input });
-    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, oioublVersion: version, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, warnings, requiresVisualReview: true as const };
+    insertAuditLog(db, { eventType: "approved_invoice_preflight", entityType: "invoice_preflight", entityId: id, message: `Invoice preflight ${prepared.invoiceNumber}: PDF ${pdfSha256}, XML ${xmlSha256}; attachment policy: ${attachmentPolicy}; description differences reviewed: ${warnings.length > 0}`, ...input });
+    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, oioublVersion: version, attachmentPolicy, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, warnings, requiresVisualReview: true as const };
   }).immediate();
 }

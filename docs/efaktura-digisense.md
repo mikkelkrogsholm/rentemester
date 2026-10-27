@@ -120,8 +120,9 @@ rentemester efaktura registrer \
 
 ### Godkendt ekstern faktura-PDF
 
-En ekstern PDF kan bruges som fakturaens uforanderlige PDF og indlejres i
-OIOUBL-fakturaen. Modtageren skal have aftalt indlejrede bilag. Først vises det
+En ekstern PDF kan bruges som fakturaens uforanderlige PDF. Den kan enten
+bevares alene som fakturabevis eller indlejres i OIOUBL-fakturaen. Indlejring
+kræver modtagerens aftale; uden bilag kræves ingen sådan aftale. Først vises det
 næste mulige nummer uden at reservere det:
 
 ```bash
@@ -134,8 +135,14 @@ nummeret og de endelige fakturaoplysninger, og kør derefter:
 ```bash
 rentemester invoice preflight-approved-pdf --company <sti-eller-slug> \
   --input faktura.json --approved-pdf faktura.pdf \
-  --attachment-agreed yes --actor user:<dig> --confirm yes
+  --attachment-policy none --actor user:<dig> --confirm yes
 ```
+
+`none` sender kun den strukturerede faktura og bevarer den godkendte PDF som
+fakturabevis. For at sende PDF'en som bilag vælges `--attachment-policy embedded`
+og `--attachment-agreed yes`, efter at aftalen er bekræftet. Udelades valget,
+bevares den tidligere standard `embedded`, som kræver aftalen. Forhåndskontrollen
+binder både PDF'en og den valgte transport-XML til udstedelsen.
 
 Kontrollen læser PDF'ens tekstlag, sammenholder centrale oplysninger, validerer
 den præcise XML hos DigiSense og kontrollerer, at EAN-modtageren er registreret
@@ -158,7 +165,7 @@ PDF'ens tekstlag, afvises kontrollen med de manglende ord. Sammenhold hele
 beskrivelsen med PDF'en, også oplysninger placeret i andre felter. Kun efter
 denne gennemgang kan kontrollen gentages med `--description-reviewed yes`
 (MCP: `descriptionDifferencesReviewed: true`). Den separate bekræftelse af
-modtagerens accept af bilaget er fortsat obligatorisk. Det afsluttende
+modtagerens accept er obligatorisk ved indlejret bilag. Det afsluttende
 `--pdf-reviewed yes` kræver stadig en visuel kontrol af hele fakturaen.
 
 I DigiSense TEST kan licensens egen test-GLN bekræftes via licensens registrerede

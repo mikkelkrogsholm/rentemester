@@ -13,6 +13,7 @@ import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { seedAccounts } from "../../src/core/ledger";
 import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
+import { invoicePayloadSchema } from "../../src/mcp/tools/invoice/_shared";
 
 const providerBinding = "a".repeat(64);
 const payload = {
@@ -29,6 +30,46 @@ const client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> = 
 };
 
 describe("approved invoice evidence", () => {
+  test("MCP preserves line VAT classification and public buyer references", () => {
+    const input = { ...payload, lines: [{ ...payload.lines[0], taxClassification: "exempt", unitCode: "EA" }], buyer: { ...payload.buyer, orderReference: "ORDER-1" } };
+    const parsed = invoicePayloadSchema.parse(input);
+    expect(parsed.lines?.[0].taxClassification).toBe("exempt");
+    expect(parsed.lines?.[0].unitCode).toBe("EA");
+    expect(parsed.buyer?.buyerReference).toBe("Reference ABC");
+    expect(parsed.buyer?.orderReference).toBe("ORDER-1");
+  });
+  test("exempt invoice keeps the approved PDF while delivering structured XML without an attachment", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-xml-only-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); seedAccounts(db);
+    db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
+    try {
+      const exempt = { ...payload, lines: [{ description: "Exempt synthetic service", quantity: 1, unitPriceExVat: 100, lineTotalExVat: 100, taxClassification: "exempt" as const }], totals: { netAmount: 100, vatAmount: 0, grossAmount: 100 } };
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Exempt synthetic service DKK 100,00 0,00 momsfritaget</p></main>" });
+      let validatedXml = "";
+      const transportClient = { ...client, async validateDocument(xml: string) { validatedXml = xml; return { ok: true as const, status: 200, data: { statusCode: 200, success: true, errors: [] } }; } };
+      const pre = await preflightApprovedInvoice(db, { payload: exempt, pdfBytes: pdf, attachmentPolicy: "none", bilateralAttachmentAgreement: false, providerBinding }, transportClient);
+      if (!pre.ok) throw new Error(pre.errors.join(", "));
+      expect(pre.attachmentPolicy).toBe("none");
+      expect(pre.oioublVersion).toBe("2.1");
+      expect(validatedXml).not.toContain("EmbeddedDocumentBinaryObject");
+      const issued = issueInvoice(db, root, exempt, {}, { preflightId: pre.preflightId, pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
+      expect(issued.ok).toBe(true);
+      expect(readFileSync(issued.pdfStoredPath!)).toEqual(pdf);
+      expect(JSON.parse(readFileSync(issued.storedPath!, "utf8")).approvedPdf.attachmentPolicy).toBe("none");
+      expect(postIssuedInvoiceToLedger(db, { invoiceDocumentId: issued.documentId! }).ok).toBe(true);
+      const exported = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root });
+      expect(exported.xml).toBe(validatedXml);
+      expect(exported.sha256).toBe(pre.xmlSha256);
+      let sends = 0;
+      const send = () => transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, companyRoot: root, providerBinding, accessPoint: { accessPointId: "synthetic", endpointUrl: "https://example.invalid", senderEndpointId: "synthetic-sender" } }, async ({ oioublXml }) => {
+        sends++; expect(oioublXml).toBe(validatedXml); expect(oioublXml).not.toContain("EmbeddedDocumentBinaryObject");
+        return { ok: true, transmissionId: "synthetic-delivery", transmittedAt: "2026-05-16T10:00:00Z" };
+      });
+      expect((await send()).ok).toBe(true); expect((await send()).ok).toBe(true); expect(sends).toBe(1);
+      writeFileSync(issued.pdfStoredPath!, "tampered");
+      expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).ok).toBe(false);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
   test("validates and binds the actual 2.02 XML for a recipient registered only for that version", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-recipient-legacy-"));
     const db = openDb(ensureCompanyDirs(root).db); migrate(db);
