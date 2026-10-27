@@ -196,7 +196,7 @@ export function resolveInvoiceReceivableAccount(
       ? "DK_SALE_25"
       : line.taxClassification === "reverse_charge"
         ? reverseChargeVatCode
-        : "VAT_EXEMPT",
+        : "DK_SALE_EXEMPT",
     amountDkk: roundDkk(line.vatBase * baseScale),
   }));
   const roundedRevenue = roundDkk(expectedRevenueLines.reduce((sum, line) => sum + line.amountDkk, 0));

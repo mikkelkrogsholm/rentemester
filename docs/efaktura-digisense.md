@@ -144,8 +144,17 @@ til OIOUBL 2.02. Den reserverer intet nummer. Svaret indeholder et
 visuelt mod hele grundlaget**: tekstforekomst alene kan ikke bevise, at et
 beløb eller en reference står i den rigtige sammenhæng. Et vellykket opslag
 er heller ikke en leveringskvittering eller en garanti for, hvordan modtageren
-viser bilaget. Fakturaer med linjespecifik momsklassifikation og PDF'er uden
-læsbart tekstlag understøttes ikke i dette forløb.
+viser bilaget. Helt momsfri fakturaer med eksplicit `exempt` på alle linjer
+understøttes; blandede linjeklassifikationer og PDF'er uden læsbart tekstlag
+understøttes ikke i dette forløb.
+
+Hvis en lang linjebeskrivelse næsten matcher, men enkelte ord ikke findes i
+PDF'ens tekstlag, afvises kontrollen med de manglende ord. Sammenhold hele
+beskrivelsen med PDF'en, også oplysninger placeret i andre felter. Kun efter
+denne gennemgang kan kontrollen gentages med `--description-reviewed yes`
+(MCP: `descriptionDifferencesReviewed: true`). Den separate bekræftelse af
+modtagerens accept af bilaget er fortsat obligatorisk. Det afsluttende
+`--pdf-reviewed yes` kræver stadig en visuel kontrol af hele fakturaen.
 
 I DigiSense TEST kan licensens egen test-GLN bekræftes via licensens registrerede
 testdeltager, hvis det offentlige opslag returnerer 404. Dette gælder kun for

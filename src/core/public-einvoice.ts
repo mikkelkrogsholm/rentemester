@@ -312,7 +312,8 @@ export function validateOioUblPayload(invoiceNumber: string, payload: InvoicePay
     payload.vatTreatment === "foreign_reverse_charge";
   if (!isReverseCharge) {
     if (typeof payload.totals?.vatAmount !== "number") errors.push(`invoice ${invoiceNumber} is missing totals.vatAmount required for OIOUBL handoff`);
-    if (typeof payload.totals?.vatRate !== "number") errors.push(`invoice ${invoiceNumber} is missing totals.vatRate required for OIOUBL handoff`);
+    const entirelyExempt = Array.isArray(payload.lines) && payload.lines.length > 0 && payload.lines.every((line) => line.taxClassification === "exempt");
+    if (!entirelyExempt && typeof payload.totals?.vatRate !== "number") errors.push(`invoice ${invoiceNumber} is missing totals.vatRate required for OIOUBL handoff`);
   }
   if (!Array.isArray(payload.lines) || payload.lines.length === 0) {
     errors.push(`invoice ${invoiceNumber} is missing invoice lines required for OIOUBL handoff`);

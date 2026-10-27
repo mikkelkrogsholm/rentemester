@@ -50,7 +50,9 @@ describe("DigiSense invoice preflight", () => {
       async listParticipantsForCompany() { return { ok: true as const, status: 200, data: { participants: [{ networkType: "nemhandel", direction: "inbound", participantType: "GLN", participantId: testGln, companyKey: "synthetic", documentProfiles: "default-nemhandel" }] } }; },
     };
     expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", testGln, "test")).ok).toBe(true);
-    expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", testGln, "production")).ok).toBe(false);
+    const missing = await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", testGln, "production");
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.error).toContain("HTTP 404");
     expect((await checkDigisenseInvoiceReadiness(fallback, "<Invoice/>", "5790000000014", "test")).ok).toBe(false);
     const unavailable = { ...fallback, async lookupParticipant() { return { ok: false as const, error: { status: 500, message: "unavailable" } }; } };
     expect((await checkDigisenseInvoiceReadiness(unavailable, "<Invoice/>", testGln, "test")).ok).toBe(false);
