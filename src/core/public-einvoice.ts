@@ -12,10 +12,8 @@ import { snapshotRegisteredDocumentEvidence } from "./document-storage";
 const RULE_ID = "DK-INVOICE-PUBLIC-EXPORT-001";
 const OIOUBL_RULE_ID = "DK-INVOICE-PUBLIC-OIOUBL-001";
 
-// DigiSense routes the TEST document to NemHandel from these OIOUBL markers.
-// Keep this exporter genuinely OIOUBL 2.02; a Peppol BIS3 customization would
-// instead select DigiSense's separate Peppol participant registry.
-const OIOUBL_UBL_VERSION = "2.0";
+// Preserve 2.02 for historical exports; approved-PDF preflights use OIOUBL 2.1.
+// Peppol BIS3 is a different profile and participant registry.
 const OIOUBL_CUSTOMIZATION_ID = "OIOUBL-2.02";
 const OIOUBL_PROFILE_ID = "Procurement-BilSim-1.0";
 const OIOUBL_PROFILE_SCHEME_ID = "urn:oioubl:id:profileid-1.2";
@@ -348,7 +346,7 @@ export function validateOioUblPayload(invoiceNumber: string, payload: InvoicePay
 }
 
 /** Caller validates the invoice and, when present, the approved PDF. */
-export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePayload, approvedPdf?: Uint8Array) {
+export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePayload, approvedPdf?: Uint8Array, version: "2.02" | "2.1" = "2.02") {
   const currency = (payload.currency ?? "DKK").trim().toUpperCase();
   const vatPercent = formatVatPercent(payload.totals?.vatRate);
   // The tax category is derived from the VAT treatment, not hardcoded "S", so
@@ -449,8 +447,8 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">',
-    xmlTag("cbc:UBLVersionID", OIOUBL_UBL_VERSION, "  "),
-    xmlTag("cbc:CustomizationID", OIOUBL_CUSTOMIZATION_ID, "  "),
+    xmlTag("cbc:UBLVersionID", version === "2.1" ? "2.1" : "2.0", "  "),
+    xmlTag("cbc:CustomizationID", version === "2.1" ? "OIOUBL-2.1" : OIOUBL_CUSTOMIZATION_ID, "  "),
     xmlTagWithAttrs("cbc:ProfileID", { schemeID: OIOUBL_PROFILE_SCHEME_ID, schemeAgencyID: OIOUBL_AGENCY_ID }, OIOUBL_PROFILE_ID, "  "),
     xmlTag("cbc:ID", invoiceNumber, "  "),
     xmlTag("cbc:IssueDate", payload.issueDate, "  "),
@@ -537,6 +535,15 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
     "</Invoice>",
     "",
   ].filter((line) => line !== "").join("\n");
+}
+
+/** Reconstruct exactly the XML bound to the approval, including legacy 2.02. */
+export function approvedOioUblXml(invoiceNumber: string, payload: InvoicePayload, pdf: Uint8Array, expectedHash: string): string | undefined {
+  for (const version of ["2.1", "2.02"] as const) {
+    const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, payload, pdf, version);
+    if (createHash("sha256").update(xml).digest("hex") === expectedHash) return xml;
+  }
+  return undefined;
 }
 
 function loadExportedInvoice(db: Database, input: ExportPublicEInvoiceInput) {
@@ -666,7 +673,10 @@ export function exportPublicEInvoiceOioUbl(
       return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Approved PDF evidence failed integrity verification"] };
     }
   }
-  const xml = buildPublicEInvoiceOioUblXml(invoiceNumber, normalizedPayload, pdfBytes);
+  const xml = payload.approvedPdf && pdfBytes
+    ? approvedOioUblXml(invoiceNumber, normalizedPayload, pdfBytes, payload.approvedPdf.xmlSha256)
+    : buildPublicEInvoiceOioUblXml(invoiceNumber, normalizedPayload, pdfBytes);
+  if (!xml) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Generated XML differs from approved preflight evidence"] };
   const sha256 = createHash("sha256").update(xml).digest("hex");
   if (payload.approvedPdf && sha256 !== payload.approvedPdf.xmlSha256) return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Generated XML differs from approved preflight evidence"] };
   if (input.outPath) writeFileSync(input.outPath, xml);
@@ -862,6 +872,7 @@ function buildPeppolSubmissionEnvelope(args: {
   accessPoint: PeppolAccessPointConfig;
   receiverEndpointId: string;
   oioublSha256: string;
+  format: "OIOUBL-2.02" | "OIOUBL-2.1";
   status: "prepared" | "acknowledged";
   acknowledgement?: PeppolTransportAcknowledgement;
 }) {
@@ -877,7 +888,7 @@ function buildPeppolSubmissionEnvelope(args: {
     xmlTag("Status", args.status, "  "),
     "  <Document>",
     xmlTag("InvoiceNumber", args.invoiceNumber, "    "),
-    xmlTag("Format", OIOUBL_CUSTOMIZATION_ID, "    "),
+    xmlTag("Format", args.format, "    "),
     xmlTag("Profile", OIOUBL_PROFILE_ID, "    "),
     xmlTag("HandoffArtifactSha256", args.oioublSha256, "    "),
     "  </Document>",
@@ -1032,6 +1043,7 @@ export function submitPublicEInvoicePeppol(
     accessPoint: input.accessPoint,
     receiverEndpointId: receiver,
     oioublSha256: oioubl.sha256,
+    format: oioubl.xml?.includes("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>") ? "OIOUBL-2.1" : "OIOUBL-2.02",
     status,
     acknowledgement: input.acknowledgement,
   });
@@ -1313,7 +1325,7 @@ export async function transmitPublicEInvoicePeppol(
   // retryable after a pre-acceptance failure, or already queued at Digisense.
   const reservation = db.transaction(() => {
     const reference = `PEPPOL-${invoiceNumber}-${idempotencyKey.slice(0, 12)}`;
-    const envelope = buildPeppolSubmissionEnvelope({ submissionReference: reference, idempotencyKey, invoiceNumber, accessPoint: input.accessPoint, receiverEndpointId: receiver, oioublSha256, status: "prepared" });
+    const envelope = buildPeppolSubmissionEnvelope({ submissionReference: reference, idempotencyKey, invoiceNumber, accessPoint: input.accessPoint, receiverEndpointId: receiver, oioublSha256, format: oioubl.xml!.includes("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>") ? "OIOUBL-2.1" : "OIOUBL-2.02", status: "prepared" });
     runSql(db,
       `INSERT OR IGNORE INTO peppol_submissions
          (invoice_document_id, invoice_no, idempotency_key, submission_reference, access_point_id, receiver_endpoint_id, oioubl_sha256, envelope_sha256, envelope_xml, status, transmission_id, acknowledged_at)

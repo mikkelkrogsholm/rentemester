@@ -122,8 +122,16 @@ export async function preflightApprovedInvoice(
   const pdfErrors = approvedInvoiceTextErrors(parsed.pages.map((page) => page.text).join("\n"), prepared.payload, prepared.invoiceNumber, warnings);
   if (pdfErrors.length) return { ok: false as const, errors: pdfErrors };
   if (warnings.length && input.descriptionDifferencesReviewed !== true) return { ok: false as const, errors: ["PDF description differences require explicit visual review before preflight", ...warnings], warnings };
-  const xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes);
-  const readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production");
+  let version: "2.1" | "2.02" = "2.1";
+  let xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes, version);
+  let readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production", "2.1");
+  // A 2.02-only recipient is still supported, but only after validating and
+  // checking that exact older document; all other errors remain fail-closed.
+  if (!readiness.ok && readiness.code === "recipient_not_found") {
+    version = "2.02";
+    xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes, version);
+    readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production", version);
+  }
   if (!readiness.ok) return { ok: false as const, errors: [readiness.error, ...warnings], warnings };
   const id = randomUUID(), pdfSha256 = digest(pdfBytes), xmlSha256 = digest(xml);
   const actor = resolveActor(input);
@@ -134,6 +142,6 @@ export async function preflightApprovedInvoice(
     db.query("INSERT INTO approved_invoice_preflights(id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,buyer_ean,provider_binding,actor) VALUES(?,?,?,?,?,?,?,?)")
       .run(id, prepared.invoiceNumber, prepared.payloadSha256, pdfSha256, xmlSha256, ean!, input.providerBinding, actor.auditActor);
     insertAuditLog(db, { eventType: "approved_invoice_preflight", entityType: "invoice_preflight", entityId: id, message: `Invoice preflight ${prepared.invoiceNumber}: PDF ${pdfSha256}, XML ${xmlSha256}; description differences reviewed: ${warnings.length > 0}`, ...input });
-    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, warnings, requiresVisualReview: true as const };
+    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, oioublVersion: version, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, warnings, requiresVisualReview: true as const };
   }).immediate();
 }

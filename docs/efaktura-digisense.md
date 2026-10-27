@@ -139,7 +139,12 @@ rentemester invoice preflight-approved-pdf --company <sti-eller-slug> \
 
 Kontrollen læser PDF'ens tekstlag, sammenholder centrale oplysninger, validerer
 den præcise XML hos DigiSense og kontrollerer, at EAN-modtageren er registreret
-til OIOUBL 2.02. Den reserverer intet nummer. Svaret indeholder et
+til samme dokumenttype. Den prøver OIOUBL 2.1 først; ved et 404-opslag kan den
+prøve OIOUBL 2.02 med ny XML-validering og et særskilt opslag. Andre fejl
+omgås ikke. Ældre godkendte XML-beviser genskabes i deres oprindelige version.
+OIOUBL 2.1 bruger UBL 2.1 og `CustomizationID` `OIOUBL-2.1`, jf.
+[Økonomistyrelsens beskrivelse](https://oes.dk/media/xq2b3iwe/nyt-i-navision-stat-112003.pdf).
+Kontrollen reserverer intet nummer. Svaret indeholder et
 `preflightId`, PDF- og XML-hashes samt fakturagrundlaget. **Gennemgå PDF'en
 visuelt mod hele grundlaget**: tekstforekomst alene kan ikke bevise, at et
 beløb eller en reference står i den rigtige sammenhæng. Et vellykket opslag

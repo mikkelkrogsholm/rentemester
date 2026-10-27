@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { checkDigisenseInvoiceReadiness } from "../../src/core/efaktura/digisense-preflight";
 import type { DigisenseClient } from "../../src/core/efaktura/digisense-client";
-const OIOUBL = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0";
+const OIOUBL = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.1::2.1";
 
 function client(options: { valid?: boolean; reachable?: boolean } = {}) {
   const calls: unknown[] = [];
@@ -38,6 +38,8 @@ describe("DigiSense invoice preflight", () => {
     const oversized = client();
     expect((await checkDigisenseInvoiceReadiness(oversized.stub, "x".repeat(10_000_001), "5790000000013")).ok).toBe(false);
     expect(oversized.calls).toHaveLength(0);
+    const wrongVersion = { ...client().stub, async lookupParticipant() { return { ok: true as const, status: 200, data: { participantAbleToReceive: true, matchedServiceEndpointUrls: ["https://example.invalid"], matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.02::2.0" }] } }; } };
+    expect((await checkDigisenseInvoiceReadiness(wrongVersion, "<Invoice/>", "5790000000013")).ok).toBe(false);
   });
 
   test("only the license's own registered test GLN can use the sandbox fallback", async () => {

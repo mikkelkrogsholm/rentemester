@@ -13,7 +13,7 @@ import { validateJournalTransactionDate } from "./periods";
 import { requireCachedViesValidation } from "./vies";
 import { buildIssuedInvoicePdf } from "./invoice-pdf";
 import { canonicalJson } from "./canonical-json";
-import { buildPublicEInvoiceOioUblXml } from "./public-einvoice";
+import { approvedOioUblXml } from "./public-einvoice";
 import { strengthenGdprErasureAliasesForIdentity } from "./gdpr";
 import {
   companyAddressLine,
@@ -383,7 +383,7 @@ export function issueInvoice(
             current.payloadSha256 !== approvalEvidence.payload_sha256 ||
             createHash("sha256").update(canonicalJson(issuanceSnapshot)).digest("hex") !== current.payloadSha256 ||
             createHash("sha256").update(approvedPdfBytes).digest("hex") !== approvalEvidence.pdf_sha256 ||
-            createHash("sha256").update(buildPublicEInvoiceOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes)).digest("hex") !== approvalEvidence.xml_sha256) {
+            !approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)) {
           return { ok: false as const, error: "Approved PDF or invoice changed since preflight; repeat preflight and review" };
         }
         if (explicitInvoiceNumber && explicitInvoiceNumber !== current.invoiceNumber) return { ok: false as const, error: "Approved invoice number is no longer available" };
