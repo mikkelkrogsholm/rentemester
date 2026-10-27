@@ -13,6 +13,7 @@ import { applyImportedReceivableBankSettlement, applyLegacyImportedReceivableBac
 import { openLedgerReadOnly } from "../../core/ledger-inspection";
 import { companyPaths } from "../../core/paths";
 import { invoiceStatusDa } from "../../core/messages";
+import { previewNextInvoiceNumber } from "../../core/issued-invoices";
 import type { CommandDispatch } from "../../cli-dispatch";
 import { emitHumanReport, formatKroner } from "../../cli-format";
 import { resolveInvoiceDocumentId } from "./_shared";
@@ -52,6 +53,14 @@ function renderInvoiceRowsHuman(title: string, rows: any[], emptyMessage: string
 }
 
 export function registerQueryCommands(dispatch: CommandDispatch): void {
+  dispatch.on("invoice", "preview-number", (ctx) => {
+    const issueDate = ctx.arg("--issue-date");
+    if (!issueDate) { console.error("Missing --issue-date"); process.exitCode = 2; return; }
+    const db = openLedgerReadOnly(companyPaths(ctx.companyRoot()).db);
+    try { ctx.emitResult({ ok: true, invoiceNumber: previewNextInvoiceNumber(db, issueDate), reserved: false }); }
+    catch (error) { ctx.emitResult({ ok: false, errors: [error instanceof Error ? error.message : "Could not preview invoice number"] }); process.exitCode = 1; }
+    finally { db.close(); }
+  });
   dispatch.on("invoice", "imported-receivable-settlement-plan", (ctx) => {
     const inputPath=ctx.arg("--input") ?? ctx.fatal("Missing required --input <file.json>");
     const input=readJsonObjectCliInput(ctx,inputPath,"--input") as ImportedReceivableBankSettlementInput;

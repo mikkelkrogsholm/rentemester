@@ -242,6 +242,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   workflow({ id: "customer-invoice-lifecycle", capabilityId: "customer-invoicing", title: "Customer and invoice lifecycle", intendedOutcome: "Create a customer, issue and post an invoice, then handle delivery, payment, reminder or credit-note branches.", steps: [
     write("create-customer", mcp("customer_create"), "Create canonical customer master data.", { outputIdentities: ["customerId"], canonicalRecords: ["customers"] }),
     read("validate-invoice", mcp("invoice_validate"), "Validate the invoice payload.", { dependsOn: ["create-customer"], boundary: "dry-run" }),
+    write("preflight-approved-pdf", mcp("invoice_preflight_approved_pdf"), "Validate the approved PDF and check DigiSense before reserving an invoice number; visual review and recipient agreement are required.", { dependsOn: ["validate-invoice"], outputIdentities: ["preflightId", "invoiceNumber"], condition: "Optional approved-PDF branch.", canonicalRecords: ["invoice preflight evidence"] }),
     write("issue-invoice", mcp("invoice_issue"), "Issue immutable invoice evidence.", { dependsOn: ["validate-invoice"], outputIdentities: ["invoiceNumber", "documentId"], uncertainOutcomeReadBack: mcp("invoice_find"), canonicalRecords: ["issued invoices", "invoice documents"] }),
     write("post-invoice", mcp("invoice_post"), "Post the issued invoice.", { dependsOn: ["issue-invoice"], boundary: "irreversible", uncertainOutcomeReadBack: mcp("invoice_status"), canonicalRecords: ["journal entries", "invoice open balance"] }),
     write("send-email", mcp("invoice_send_email"), "Send the issued invoice by configured email.", { dependsOn: ["issue-invoice"], condition: "Optional delivery branch. SMTP has no provider reconciliation contract: read canonical delivery evidence before any retry.", retryClass: "unsafe-read-back", canonicalRecords: ["email delivery evidence"] }),
@@ -598,8 +599,8 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 269, hash: "7033b9228199350dbda6227ffcde262070f94e3e883eefc6937c1b221af50829" },
-  cli: { count: 319, hash: "3526cef0f3c1f5c352777da1d0609a82d8932aa80f55b635f4321d5dc843d266" },
+  mcp: { count: 271, hash: "505c94c29bead00bdfacdd6d4a59a275d3dfe842d48d39408b2f3dc110a672ee" },
+  cli: { count: 321, hash: "cbb40c500f6d7990191532c97474231bc1dcdad19bffbde0a4aeb458d0f26853" },
   http: { count: 264, hash: "26495100ba7c9f7ce0d22fcadb92afb47de2bf6e6cd9b2464192e9f7aed1bc2b" },
 };
 

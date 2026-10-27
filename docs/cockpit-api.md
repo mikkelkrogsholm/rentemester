@@ -370,7 +370,7 @@ a friendly health probe and any other non-`/api` path is a JSON `404`.
 |---|---|---|---|
 | Driver | The cockpit SPA / any HTTP client | An external MCP client/agent | The in-process `runAgentLoop()` |
 | Scope | Workspace; company by slug | Explicit company or task workspace/scope | One company, one run |
-| Surface | Catalogued HTTP routes | 269 loose tools | A single fixed loop |
+| Surface | Catalogued HTTP routes | 271 loose tools | A single fixed loop |
 | Writes | Ledger pipeline or separate workspace domain | Write tools with `confirm` | The loop books deterministically |
 
 All four rest on the same `src/core/`, the same rules and the same

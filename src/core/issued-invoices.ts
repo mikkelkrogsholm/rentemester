@@ -3,15 +3,17 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "./paths";
-import { addDays } from "./dates";
+import { addDays, isValidIsoDate } from "./dates";
 import { validateInvoice, type InvoicePayload } from "./invoice";
 import { promoteTempFileExclusive, removeIfExists, writeTempFileFor } from "./atomic-file";
 import { insertAuditLog, type ResolveActorInput } from "./actor";
-import { companySequenceScope, fiscalYearLabelFromDate, reserveSequenceValue, nextSequenceValue } from "./sequences";
+import { companySequenceScope, fiscalYearLabelFromDate, reserveSequenceValue, nextSequenceValue, currentSequenceValue } from "./sequences";
 import { retainUntilForDate } from "./retention";
 import { validateJournalTransactionDate } from "./periods";
 import { requireCachedViesValidation } from "./vies";
 import { buildIssuedInvoicePdf } from "./invoice-pdf";
+import { canonicalJson } from "./canonical-json";
+import { buildPublicEInvoiceOioUblXml } from "./public-einvoice";
 import { strengthenGdprErasureAliasesForIdentity } from "./gdpr";
 import {
   companyAddressLine,
@@ -208,6 +210,30 @@ function nextIssuedInvoiceNumber(db: Database, issueDate: string) {
   return canonicalInvoiceNumber(scope, nextValue);
 }
 
+/** A non-binding candidate; issuance must still reserve it transactionally. */
+export function previewNextInvoiceNumber(db: Database, issueDate: string): InvoiceNumber {
+  if (!isValidIsoDate(issueDate)) throw new Error("issueDate must be present in YYYY-MM-DD format");
+  const { scope, currentFloor, sequenceScope } = invoiceSequenceState(db, issueDate);
+  return canonicalInvoiceNumber(scope, currentSequenceValue(db, "issued_invoice", sequenceScope, currentFloor) + 1);
+}
+
+/** Snapshot the financial and payment fields that an invoice approval covers. */
+export function prepareInvoiceApprovalPayload(db: Database, rawPayload: InvoicePayload) {
+  if (Object.hasOwn(rawPayload, "approvedPdf")) return { ok: false as const, errors: ["approvedPdf is reserved for issued evidence"] };
+  const payload = enrichInvoiceFromCompany(db, rawPayload);
+  const validation = validateInvoice(payload);
+  if (!validation.ok) return { ok: false as const, errors: validation.errors };
+  const invoiceNumber = previewNextInvoiceNumber(db, payload.issueDate!);
+  if (payload.invoiceNumber && payload.invoiceNumber !== invoiceNumber) {
+    return { ok: false as const, errors: [`invoice number is no longer the next available number: ${invoiceNumber}`] };
+  }
+  const currency = (payload.currency ?? "DKK").trim().toUpperCase();
+  const payment = resolveCompanyPaymentDetails(db, currency);
+  const snapshot = { ...payload, currency, invoiceNumber, ...(payment ? { payment } : {}) };
+  const payloadSha256 = createHash("sha256").update(canonicalJson(snapshot)).digest("hex");
+  return { ok: true as const, payload: snapshot, payloadSha256, invoiceNumber };
+}
+
 /**
  * Result of a dry-run invoice render (#440). The bytes are the customer-facing
  * PDF — identical to what `issueInvoice` produces for the same input — but
@@ -290,13 +316,20 @@ export function issueInvoice(
   companyRoot: string,
   rawPayload: InvoicePayload,
   actor: ResolveActorInput = {},
+  approvedPdf?: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string },
 ): IssueInvoiceResult {
   // #221: fill the seller identity + due date from the stored company profile
   // before validation, so the owner never re-types their own master data.
   const payload = enrichInvoiceFromCompany(db, rawPayload);
   const validation = validateInvoice(payload);
   const appliedRules = [...new Set([...(validation.appliedRules ?? []), RULE_ID, LOCK_RULE_ID])];
+  if (Object.hasOwn(rawPayload, "approvedPdf")) return { ok: false, appliedRules, errors: ["approvedPdf is reserved for issued evidence"] };
   if (!validation.ok) return { ok: false, appliedRules, errors: validation.errors };
+  if (approvedPdf && (!approvedPdf.visualReviewConfirmed || approvedPdf.pdfBytes.byteLength === 0 || approvedPdf.pdfBytes.byteLength > 7_000_000)) {
+    return { ok: false, appliedRules, errors: ["Approved PDF requires visual review and a supported PDF size"] };
+  }
+  // Hold exactly one snapshot through verification and immutable publication.
+  const approvedPdfBytes = approvedPdf ? Buffer.from(approvedPdf.pdfBytes) : undefined;
 
   if (getCompanySettings(db).invoiceNumberFormat === "daily" &&
       (payload.issueDate! < "2000-01-01" || payload.issueDate! > "2099-12-31")) {
@@ -337,6 +370,24 @@ export function issueInvoice(
 
   try {
     const result = db.transaction(() => {
+      let approvalEvidence: { id: string; invoice_no: string; payload_sha256: string; pdf_sha256: string; xml_sha256: string; created_at: string; provider_binding: string } | undefined;
+      if (approvedPdf && approvedPdfBytes) {
+        approvalEvidence = db.query("SELECT id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,created_at,provider_binding FROM approved_invoice_preflights WHERE id=?").get(approvedPdf.preflightId) as typeof approvalEvidence;
+        const current = prepareInvoiceApprovalPayload(db, rawPayload);
+        const issuanceSnapshot = current.ok ? { ...payload, currency: invoiceCurrency, invoiceNumber: current.invoiceNumber, ...(paymentDetails ? { payment: paymentDetails } : {}) } : null;
+        const companyCvr = getCompanySettings(db).cvr?.replace(/^DK/i, "").replace(/\s/g, "");
+        const sellerCvr = payload.seller?.vatOrCvr?.replace(/^DK/i, "").replace(/\s/g, "");
+        const age = approvalEvidence ? Date.now() - Date.parse(`${approvalEvidence.created_at.replace(" ", "T")}Z`) : NaN;
+        if (!approvalEvidence || approvalEvidence.provider_binding !== approvedPdf.providerBinding || !Number.isFinite(age) || age < 0 || age > 60 * 60 * 1000 || !current.ok || current.invoiceNumber !== approvalEvidence.invoice_no ||
+            !companyCvr || companyCvr !== sellerCvr ||
+            current.payloadSha256 !== approvalEvidence.payload_sha256 ||
+            createHash("sha256").update(canonicalJson(issuanceSnapshot)).digest("hex") !== current.payloadSha256 ||
+            createHash("sha256").update(approvedPdfBytes).digest("hex") !== approvalEvidence.pdf_sha256 ||
+            createHash("sha256").update(buildPublicEInvoiceOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes)).digest("hex") !== approvalEvidence.xml_sha256) {
+          return { ok: false as const, error: "Approved PDF or invoice changed since preflight; repeat preflight and review" };
+        }
+        if (explicitInvoiceNumber && explicitInvoiceNumber !== current.invoiceNumber) return { ok: false as const, error: "Approved invoice number is no longer available" };
+      }
       let invoiceNumber: InvoiceNumber;
       if (explicitInvoiceNumber !== undefined) {
         const reserved = reserveManualInvoiceNumber(db, payload.issueDate!, explicitInvoiceNumber);
@@ -359,10 +410,11 @@ export function issueInvoice(
         // #221: persist the resolved payment details into the snapshot so the
         // at-issue PDF — and any later `invoice render` — show where to pay.
         ...(paymentDetails ? { payment: paymentDetails } : {}),
+        ...(approvalEvidence ? { approvedPdf: { preflightId: approvalEvidence.id, sha256: approvalEvidence.pdf_sha256, xmlSha256: approvalEvidence.xml_sha256, providerBinding: approvalEvidence.provider_binding } } : {}),
       };
       const serialized = JSON.stringify(issuedPayload, null, 2);
       const hash = sha256(serialized);
-      const pdfBytes = buildIssuedInvoicePdf(issuedPayload);
+      const pdfBytes = approvedPdfBytes ?? buildIssuedInvoicePdf(issuedPayload);
       const pdfHash = createHash("sha256").update(pdfBytes).digest("hex");
       storedPath = join(paths.invoicesIssued, `${invoiceNumber}.json`);
       pdfStoredPath = join(paths.invoicesIssued, `${invoiceNumber}.pdf`);

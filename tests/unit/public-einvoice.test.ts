@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import {
   exportPublicEInvoiceOioUbl,
+  buildPublicEInvoiceOioUblXml,
   exportPublicEInvoicePreview,
   submitPublicEInvoicePeppol,
   transmitPublicEInvoicePeppol,
@@ -45,6 +46,16 @@ const ACCESS_POINT = {
 };
 
 describe("public e-invoice preview export", () => {
+  test("embeds the exact supplied PDF bytes in an additional document reference", () => {
+    const bytes = Buffer.from("synthetic PDF bytes for encoding\x00\xff", "latin1");
+    const xml = buildPublicEInvoiceOioUblXml(PUBLIC_INVOICE.invoiceNumber, PUBLIC_INVOICE, bytes);
+    const encoded = xml.match(/<cbc:EmbeddedDocumentBinaryObject mimeCode="application\/pdf" encodingCode="Base64">([^<]+)<\/cbc:EmbeddedDocumentBinaryObject>/)?.[1];
+    expect(encoded).toBeDefined();
+    expect(Buffer.from(encoded!, "base64")).toEqual(bytes);
+    expect(xml).toContain('<cbc:DocumentTypeCode listAgencyID="6" listID="UN/ECE 1001">380</cbc:DocumentTypeCode>');
+    expect(xml.indexOf("<cac:AdditionalDocumentReference>")).toBeLessThan(xml.indexOf("<cac:AccountingSupplierParty>"));
+    expect(buildPublicEInvoiceOioUblXml(PUBLIC_INVOICE.invoiceNumber, PUBLIC_INVOICE)).not.toContain("EmbeddedDocumentBinaryObject");
+  });
   test("exports a deterministic preview artifact for public-recipient invoices", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-public-einvoice-"));
     const outPath = join(root, "public-invoice.xml");

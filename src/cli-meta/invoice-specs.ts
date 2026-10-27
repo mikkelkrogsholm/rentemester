@@ -1,6 +1,7 @@
 import type { CommandSpec } from "./_shared";
 
 export const invoiceSpecs: CommandSpec[] = [
+  { key: "invoice preview-number", usage: "invoice preview-number --company <path> --issue-date <YYYY-MM-DD>", description: "Viser næste mulige fakturanummer uden at reservere det; nummeret kan ændre sig før udstedelse.", allowedFlags: ["--company", "--issue-date"] },
   {
     key: "invoice validate",
     usage: "invoice validate --input <file.json>",
@@ -18,9 +19,9 @@ export const invoiceSpecs: CommandSpec[] = [
   },
   {
     key: "invoice issue",
-    usage: "invoice issue --company <path> --input <file.json> [--customer-id <n>]",
+    usage: "invoice issue --company <path> --input <file.json> [--customer-id <n>] [--approved-pdf <path> --preflight-id <id> --pdf-reviewed yes --confirm yes]",
     description: "Udsteder en kundefaktura og gemmer et immutabelt snapshot.",
-    allowedFlags: ["--company", "--input", "--customer-id"],
+    allowedFlags: ["--company", "--input", "--customer-id", "--approved-pdf", "--preflight-id", "--pdf-reviewed", "--confirm"],
     examplePath: "examples/full-invoice.dk.json",
     exampleHint: "rentemester invoice issue --example > faktura.json",
     inputNotes: [
@@ -37,6 +38,12 @@ export const invoiceSpecs: CommandSpec[] = [
       'currency: "DKK"',
       "dueDate: YYYY-MM-DD",
     ],
+  },
+  {
+    key: "invoice preflight-approved-pdf",
+    usage: "invoice preflight-approved-pdf --company <path> --input <file.json> --approved-pdf <path> --attachment-agreed yes --confirm yes [--customer-id <n>]",
+    description: "Kontrollerer PDF, fakturagrundlag og DigiSense uden at udstede eller sende fakturaen. Kræver efterfølgende visuel gennemgang.",
+    allowedFlags: ["--company", "--input", "--approved-pdf", "--attachment-agreed", "--confirm", "--customer-id"],
   },
   {
     key: "invoice create",

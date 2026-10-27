@@ -328,6 +328,18 @@ export function renderIssuedInvoicePdf(db: Database, companyRoot: string, input:
     }
   }
 
+  // An externally approved PDF cannot be recreated by the built-in renderer.
+  // Missing evidence must never silently replace the approved document.
+  try {
+    const snapshot = JSON.parse(invoice.payload_json) as { approvedPdf?: unknown };
+    if (snapshot.approvedPdf !== undefined) return {
+      ok: false, appliedRules: [RULE_ID],
+      errors: [`approved invoice PDF evidence for ${invoiceNumber} is missing; refusing to regenerate it`],
+    };
+  } catch {
+    return { ok: false, appliedRules: [RULE_ID], errors: [`invoice ${invoiceNumber} has invalid payload_json`] };
+  }
+
   // Older ledgers can contain an issued invoice without a PDF evidence row.
   // That is the only case in which this command may create one.  It publishes
   // to an absent path exclusively and never replaces an existing file.

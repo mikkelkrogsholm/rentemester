@@ -110,6 +110,8 @@ export const MCP_OPERATION_NAMING: Readonly<Record<string, McpOperationNaming>> 
   "invoice_imported_receivable_settlement_apply": {"originalName":"invoice_imported_receivable_settlement_apply","canonicalName":"sales_imported_receivable_settlement_apply","domain":"sales","resource":"imported_receivable_settlement","action":"apply"},
   "invoice_imported_receivable_settlement_status": {"originalName":"invoice_imported_receivable_settlement_status","canonicalName":"sales_imported_receivable_settlement_status","domain":"sales","resource":"imported_receivable_settlement","action":"status"},
   "invoice_issue": {"originalName":"invoice_issue","canonicalName":"sales_invoice_issue","domain":"sales","resource":"invoice","action":"issue"},
+  "invoice_preview_number": {"originalName":"invoice_preview_number","canonicalName":"sales_invoice_number_preview","domain":"sales","resource":"invoice_number","action":"preview"},
+  "invoice_preflight_approved_pdf": {"originalName":"invoice_preflight_approved_pdf","canonicalName":"sales_invoice_approved_pdf_preflight","domain":"sales","resource":"invoice_approved_pdf","action":"preflight"},
   "invoice_render": {"originalName":"invoice_render","canonicalName":"sales_invoice_render","domain":"sales","resource":"invoice","action":"render"},
   "invoice_credit_note": {"originalName":"invoice_credit_note","canonicalName":"sales_credit_note_create","domain":"sales","resource":"credit_note","action":"create"},
   "invoice_post": {"originalName":"invoice_post","canonicalName":"sales_invoice_post","domain":"sales","resource":"invoice","action":"post"},

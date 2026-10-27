@@ -9,6 +9,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { validateInvoice, type InvoicePayload } from "../../../core/invoice";
+import { previewNextInvoiceNumber } from "../../../core/issued-invoices";
 import {
   buildInvoiceList,
   findInvoices,
@@ -35,6 +36,12 @@ const statusEnum = z
   .optional();
 
 export function registerInvoiceQueryTools(server: McpServer): void {
+  server.registerTool("invoice_preview_number", {
+    title: "Preview next invoice number",
+    description: "Viser det næste mulige nummer uden at reservere det. Nummeret kan ændre sig før udstedelse.",
+    inputSchema: { company: z.string().min(1), issueDate: z.string() }, outputSchema: envelopeShape,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, withCompanyDb<{ company: string; issueDate: string }>(server, ({ db, args }) => wrapCoreResult({ ok: true, invoiceNumber: previewNextInvoiceNumber(db, args.issueDate), reserved: false })));
   server.registerTool("invoice_imported_receivables", { title:"List imported receivables", description:"Lists source-evidenced imported receivables as of a date. These are explicitly not native Rentemester invoices; use invoice_list for native invoices.", inputSchema:{ company:z.string().min(1), asOf:z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }, outputSchema:envelopeShape, annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false} }, withCompanyDb<{company:string;asOf:string}>(server,({db,args})=>wrapCoreResult(listImportedReceivables(db,args.asOf))));
   server.registerTool(
     "invoice_validate",

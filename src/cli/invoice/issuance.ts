@@ -16,6 +16,8 @@ import {
   type InvoicePayload,
 } from "../../core/invoice";
 import { issueInvoice } from "../../core/issued-invoices";
+import { preflightApprovedInvoice } from "../../core/approved-invoice-preflight";
+import { snapshotDocumentSource } from "../../core/document-storage";
 import { renderIssuedInvoicePdf } from "../../core/invoice-pdf";
 import {
   exportPublicEInvoiceOioUbl,
@@ -27,6 +29,8 @@ import {
 } from "../../core/public-einvoice";
 import {
   resolveDigisenseTransmitter,
+  resolveDigisenseStatusChecker,
+  digisenseProviderBinding,
   digisenseAccessPointIdentity,
 } from "../../core/efaktura/digisense-wiring";
 import { issueCreditNote, type IssueCreditNoteInput } from "../../core/credit-notes";
@@ -117,7 +121,19 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       process.exit(1);
       return;
     }
-    const result = issueInvoice(db, root, resolved.payload!);
+    const pdfPath = ctx.arg("--approved-pdf"), preflightId = ctx.arg("--preflight-id");
+    let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string } | undefined;
+    if (pdfPath || preflightId || ctx.arg("--pdf-reviewed")) {
+      if (!pdfPath || !preflightId || ctx.arg("--pdf-reviewed") !== "yes" || ctx.arg("--confirm") !== "yes") {
+        ctx.emitResult({ ok: false, errors: ["Approved PDF issuance requires --approved-pdf, --preflight-id, --pdf-reviewed yes and --confirm yes"] });
+        db.close(); process.exitCode = 1; return;
+      }
+      const provider = resolveDigisenseStatusChecker(db, root);
+      if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); db.close(); process.exitCode = 1; return; }
+      try { approved = { preflightId, pdfBytes: snapshotDocumentSource(pdfPath, 7_000_000).bytes, visualReviewConfirmed: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey) }; }
+      catch { ctx.emitResult({ ok: false, errors: ["Approved PDF could not be safely read"] }); db.close(); process.exitCode = 1; return; }
+    }
+    const result = issueInvoice(db, root, resolved.payload!, {}, approved);
     // EJER-3: surface master-data notes (afvigende kundefrist) alongside the
     // core result so a deviating betalingsfrist is never silently applied.
     const issueNotes = (resolved as { notes?: string[] }).notes;
@@ -125,6 +141,31 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       ? { ...result, notes: issueNotes }
       : result) as Record<string, unknown>);
     db.close();
+    if (!result.ok) process.exitCode = 1;
+  });
+
+  dispatch.on("invoice", "preflight-approved-pdf", async (ctx) => {
+    const input = ctx.arg("--input"), pdfPath = ctx.arg("--approved-pdf");
+    if (!input || !pdfPath) { console.error("Missing --input or --approved-pdf"); process.exitCode = 2; return; }
+    if (ctx.arg("--confirm") !== "yes" || ctx.arg("--attachment-agreed") !== "yes") {
+      ctx.emitResult({ ok: false, errors: ["--confirm yes and --attachment-agreed yes are required"] }); process.exitCode = 1; return;
+    }
+    let pdfBytes: Buffer;
+    try { pdfBytes = snapshotDocumentSource(pdfPath, 7_000_000).bytes; }
+    catch { ctx.emitResult({ ok: false, errors: ["Approved PDF could not be safely read"] }); process.exitCode = 1; return; }
+    const root = ctx.companyRoot(), db = openDb(companyPaths(root).db);
+    try {
+      migrate(db);
+      const payload = readJsonObjectCliInput(ctx, input, "--input") as unknown as InvoicePayload;
+      const customerId = Number(ctx.arg("--customer-id"));
+      const resolved = resolveInvoiceMasterData(db, payload, { customerId: Number.isInteger(customerId) && customerId > 0 ? customerId : undefined });
+      if (!resolved.ok) { ctx.emitResult(resolved as Record<string, unknown>); process.exitCode = 1; return; }
+      const provider = resolveDigisenseStatusChecker(db, root);
+      if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); process.exitCode = 1; return; }
+      const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey) }, provider.client);
+      ctx.emitResult(result as Record<string, unknown>);
+      if (!result.ok) process.exitCode = 1;
+    } finally { db.close(); }
   });
 
   // invoice create (#212): the guided path. A human supplies only the
@@ -277,6 +318,7 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
     const documentId = resolveInvoiceDocumentId(db, ctx);
     const result = exportPublicEInvoiceOioUbl(db, {
       invoiceDocumentId: documentId,
+      companyRoot: ctx.companyRoot(),
       outPath: out,
     });
     ctx.emitResult(result as Record<string, unknown>);
@@ -310,6 +352,7 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
     const documentId = resolveInvoiceDocumentId(db, ctx);
     const result = submitPublicEInvoicePeppol(db, {
       invoiceDocumentId: documentId,
+      companyRoot: ctx.companyRoot(),
       accessPoint,
       acknowledgement,
       outPath: ctx.arg("--out"),
@@ -352,7 +395,7 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
     const accessPoint: PeppolAccessPointConfig = digisenseAccessPointIdentity(resolved.companyKey);
     const result = await transmitPublicEInvoicePeppol(
       db,
-      { invoiceDocumentId: documentId, accessPoint },
+      { invoiceDocumentId: documentId, accessPoint, companyRoot: root, providerBinding: resolved.providerBinding },
       resolved.transmitter,
     );
     ctx.emitResult(result as unknown as Record<string, unknown>);

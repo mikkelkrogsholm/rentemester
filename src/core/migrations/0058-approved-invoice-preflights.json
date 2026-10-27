@@ -1,0 +1,5 @@
+{
+  "id": 58,
+  "name": "approved-invoice-preflights-v58",
+  "sql": "CREATE TABLE IF NOT EXISTS approved_invoice_preflights (id TEXT PRIMARY KEY, invoice_no TEXT NOT NULL, payload_sha256 TEXT NOT NULL CHECK(length(payload_sha256)=64), pdf_sha256 TEXT NOT NULL CHECK(length(pdf_sha256)=64), xml_sha256 TEXT NOT NULL CHECK(length(xml_sha256)=64), buyer_ean TEXT NOT NULL, provider_binding TEXT NOT NULL, actor TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);\nCREATE TRIGGER IF NOT EXISTS approved_invoice_preflights_no_update BEFORE UPDATE ON approved_invoice_preflights BEGIN SELECT RAISE(ABORT, 'invoice preflight evidence is immutable'); END;\nCREATE TRIGGER IF NOT EXISTS approved_invoice_preflights_no_delete BEFORE DELETE ON approved_invoice_preflights BEGIN SELECT RAISE(ABORT, 'invoice preflight evidence is append-only'); END;"
+}
