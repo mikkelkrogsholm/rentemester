@@ -127,6 +127,15 @@ describe("digisense client — validate-document", () => {
 });
 
 describe("digisense client — lookup-participant", () => {
+  test("reads the authenticated license's test registrations without a company selector", async () => {
+    const { client, requests } = clientWith(200, JSON.stringify({ participants: [] }));
+    const result = await client.listParticipantsForCompany!();
+    expect(requests[0]!.method).toBe("GET");
+    expect(requests[0]!.url).toBe("https://test-api.digisense.dk/ap/api/rest/list-participants-for-company");
+    expect(requests[0]!.headers.Authorization).toBe(LICENSE_KEY);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.participants).toEqual([]);
+  });
   test("encodes the query string", async () => {
     const { client, requests } = clientWith(200, JSON.stringify({
       participantAbleToReceive: true,
