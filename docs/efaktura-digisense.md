@@ -7,9 +7,11 @@ access point** — Rentemester genererer fakturaen, Digisense transporterer den.
 
 > Status: det eksisterende standardflow er testet end-to-end mod DigiSense TEST
 > med ægte OIOUBL-validering, acknowledged levering og deduplikeret inbound.
-> Den nye PDF-vedhæftning har bestået DigiSenses faktiske formatkontrol og
-> forhåndskontrol i testmiljøet med syntetiske data. Leveringsflowet er testet med en simuleret klient; en
-> end-to-end-test i DigiSense TEST udestår. Produktion
+> PDF-vedhæftningen er også testet end-to-end i DigiSense TEST: en syntetisk
+> faktura med en registreret testafsenders CVR blev forhåndskontrolleret, udstedt
+> og leveret til licensens test-GLN. Den modtagne PDF var byte-identisk med den
+> godkendte PDF, og et gentaget afsendelseskald returnerede det eksisterende
+> resultat. Produktion
 > er ikke aktiveret eller prøvet og kræver en særskilt go-live-godkendelse. Se
 > [Test vs. produktion](#test-vs-produktion).
 
