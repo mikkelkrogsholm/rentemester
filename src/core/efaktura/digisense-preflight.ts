@@ -43,7 +43,13 @@ export async function checkDigisenseInvoiceReadiness(
         (p.documentProfiles === "default-nemhandel" || p.documentProfiles === "default-nemhandel-with-order-only"))) return { ok: true };
     }
   }
-  if (!recipient.ok || recipient.data?.participantAbleToReceive !== true ||
+  if (!recipient.ok) {
+    const status = recipient.error.status;
+    return { ok: false, error: status === 404
+      ? "DigiSense recipient lookup returned HTTP 404 for the supplied GLN and OIOUBL 2.02 invoice profile; confirm the registration and profile before sending"
+      : `DigiSense recipient lookup failed${typeof status === "number" ? ` (HTTP ${status})` : ""}; recipient capability could not be confirmed` };
+  }
+  if (recipient.data?.participantAbleToReceive !== true ||
       !Array.isArray(recipient.data.matchedServiceEndpointUrls) ||
       !recipient.data.matchedServiceEndpointUrls.some((url) => typeof url === "string" && url.trim().length > 0) ||
       !Array.isArray(recipient.data.matchedDocumentTypes) ||

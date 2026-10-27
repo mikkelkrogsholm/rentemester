@@ -58,7 +58,7 @@ function issuedInvoiceJournalLines(doc: { invoice_no: string }, payload: any, gr
       ? "DK_SALE_25"
       : taxLine.taxClassification === "reverse_charge"
         ? reverseChargeVatCode
-        : "VAT_EXEMPT";
+        : "DK_SALE_EXEMPT";
     lines.push({ accountNo: input.revenueAccountNo ?? "1000", creditAmount: roundDkk(taxLine.vatBase * baseScale), vatCode, text: `Revenue ${doc.invoice_no} (${taxLine.taxClassification})` });
   }
   // Per-line FX rounding can leave one øre between the explicit bases and the

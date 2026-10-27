@@ -123,11 +123,11 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
     {
       title: "Preflight approved invoice PDF",
       description: "Kontrollerer PDF og DigiSense uden at udstede eller sende. Kontroller faktura og PDF visuelt før invoice_issue; angiv at modtageren har aftalt indlejrede bilag.",
-      inputSchema: { company: z.string().min(1), payload: invoicePayloadSchema, customerId: z.number().int().positive().optional(), approvedPdfPath: z.string().min(1), attachmentAgreed: z.boolean(), confirm: confirmField },
+      inputSchema: { company: z.string().min(1), payload: invoicePayloadSchema, customerId: z.number().int().positive().optional(), approvedPdfPath: z.string().min(1), attachmentAgreed: z.boolean(), descriptionDifferencesReviewed: z.boolean().optional().describe("Set only after visually reviewing any reported description differences against the PDF and invoice."), confirm: confirmField },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    withCompanyDbConfirmed<{ company: string; payload: InvoicePayload; customerId?: number; approvedPdfPath: string; attachmentAgreed: boolean; confirm?: boolean }>(server, "invoice_preflight_approved_pdf", async ({ db, args, actor }) => {
+    withCompanyDbConfirmed<{ company: string; payload: InvoicePayload; customerId?: number; approvedPdfPath: string; attachmentAgreed: boolean; descriptionDifferencesReviewed?: boolean; confirm?: boolean }>(server, "invoice_preflight_approved_pdf", async ({ db, args, actor }) => {
       if (!args.attachmentAgreed) return errorEnvelope(["Recipient agreement for an embedded attachment is required"]);
       let pdfBytes: Buffer;
       try { pdfBytes = snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes; }
@@ -136,7 +136,7 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
       if (!resolved.ok) return wrapCoreResult(resolved);
       const provider = resolveDigisenseStatusChecker(db, args.company);
       if (!provider.ok) return errorEnvelope(provider.errors);
-      return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment, ...actor }, provider.client));
+      return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, descriptionDifferencesReviewed: args.descriptionDifferencesReviewed, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment, ...actor }, provider.client));
     }),
   );
 

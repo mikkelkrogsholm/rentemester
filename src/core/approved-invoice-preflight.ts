@@ -30,25 +30,34 @@ export function snapshotApprovedInvoiceSource(companyRoot: string, path: string)
 }
 
 /** Presence checks complement, but cannot replace, a person's visual review. */
-export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload, invoiceNumber: string): string[] {
+export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload, invoiceNumber: string, warnings: string[] = []): string[] {
   const haystack = compact(text);
   const errors: string[] = [];
-  const requireOne = (label: string, values: Array<string | undefined>) => {
-    if (!values.some((value) => value && haystack.includes(compact(value)))) errors.push(`PDF is missing ${label}`);
+  const requireOne = (label: string, values: Array<string | undefined>, allowSeparatedWords = false) => {
+    if (!values.some((value) => {
+      if (!value) return false;
+      if (haystack.includes(compact(value))) return true;
+      if (!allowSeparatedWords) return false;
+      // PDF text extraction may interleave separate layout fields. Check each
+      // meaningful word independently; visual confirmation remains mandatory.
+      const words = value.normalize("NFKC").toLocaleLowerCase("da-DK").match(/[\p{L}\p{N}]+/gu) ?? [];
+      const available = new Set(text.normalize("NFKC").toLocaleLowerCase("da-DK").match(/[\p{L}\p{N}]+/gu) ?? []);
+      return words.length > 1 && words.every((word) => available.has(word));
+    })) errors.push(`PDF is missing ${label}`);
   };
   const date = (value: string | undefined) => value ? [value, `${value.slice(8, 10)}.${value.slice(5, 7)}.${value.slice(0, 4)}`, `${value.slice(8, 10)}-${value.slice(5, 7)}-${value.slice(0, 4)}`] : [];
   const amount = (value: number | undefined) => value === undefined ? [] : [formatAmount(value) ?? undefined, new Intl.NumberFormat("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)];
   requireOne("invoice number", [invoiceNumber]);
   requireOne("issue date", date(payload.issueDate));
   requireOne("due date", date(payload.dueDate));
-  requireOne("seller name", [payload.seller?.name]);
-  requireOne("seller address", [payload.seller?.address]);
+  requireOne("seller name", [payload.seller?.name], true);
+  requireOne("seller address", [payload.seller?.address], true);
   requireOne("seller identifier", [payload.seller?.vatOrCvr, payload.seller?.vatOrCvr?.replace(/^DK/i, "")]);
-  requireOne("buyer name", [payload.buyer?.name]);
-  requireOne("buyer address", [payload.buyer?.address]);
+  requireOne("buyer name", [payload.buyer?.name], true);
+  requireOne("buyer address", [payload.buyer?.address], true);
   if (payload.buyer?.vatOrCvr) requireOne("buyer identifier", [payload.buyer.vatOrCvr, payload.buyer.vatOrCvr.replace(/^DK/i, "")]);
   requireOne("buyer EAN", [normalizeEanNumber(payload.buyer?.eanNumber) ?? undefined]);
-  requireOne("buyer reference", [payload.buyer?.buyerReference ?? payload.buyer?.orderReference]);
+  requireOne("buyer reference", [payload.buyer?.buyerReference ?? payload.buyer?.orderReference], true);
   requireOne("currency", [payload.currency ?? "DKK"]);
   requireOne("net amount", amount(payload.totals?.netAmount));
   requireOne("VAT amount", amount(payload.totals?.vatAmount ?? 0));
@@ -57,10 +66,24 @@ export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload,
     const percentage = payload.totals.vatRate * 100;
     requireOne("VAT rate", [`${percentage}%`, `${String(percentage).replace(".", ",")}%`]);
   }
-  for (const line of payload.lines ?? []) requireOne("line description", [line.description]);
+  for (const line of payload.lines ?? []) {
+    const before = errors.length;
+    requireOne("line description", [line.description], true);
+    if (errors.length === before || !line.description) continue;
+    // Long descriptions can also contain labels for information displayed in
+    // separate PDF fields. A near match is never proof of equivalence: expose
+    // the unmatched words for the mandatory human review before issuance.
+    const words = line.description.normalize("NFKC").toLocaleLowerCase("da-DK").match(/[\p{L}\p{N}]+/gu) ?? [];
+    const available = new Set(text.normalize("NFKC").toLocaleLowerCase("da-DK").match(/[\p{L}\p{N}]+/gu) ?? []);
+    const missing = words.filter((word) => !available.has(word));
+    if (words.length >= 20 && missing.length > 0 && missing.length / words.length <= 0.1 && missing.every((word) => !/\d/u.test(word))) {
+      errors.pop();
+      warnings.push(`PDF line description requires visual review; words not found: ${missing.join(", ")}`);
+    }
+  }
   if (payload.vatTreatment === "domestic_reverse_charge" || payload.vatTreatment === "foreign_reverse_charge") {
     requireOne("reverse-charge classification", ["omvendt betalingspligt", "reverse charge"]);
-  } else if (payload.totals?.vatRate === 0) {
+  } else if (payload.totals?.vatRate === 0 || (payload.lines?.length && payload.lines.every((line) => line.taxClassification === "exempt"))) {
     requireOne("VAT exemption classification", ["momsfritaget", "exempt from VAT"]);
   }
   return errors;
@@ -69,7 +92,7 @@ export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload,
 /** Prepare evidence only; no invoice number is reserved and no document is sent. */
 export async function preflightApprovedInvoice(
   db: Database,
-  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; providerBinding: string; environment?: "test" | "production" } & ResolveActorInput,
+  input: { payload: InvoicePayload; pdfBytes: Uint8Array; bilateralAttachmentAgreement: boolean; descriptionDifferencesReviewed?: boolean; providerBinding: string; environment?: "test" | "production" } & ResolveActorInput,
   client: Pick<DigisenseClient, "validateDocument" | "lookupParticipant"> & Partial<Pick<DigisenseClient, "validateAuth" | "listParticipantsForCompany">>,
 ) {
   if (!input.bilateralAttachmentAgreement) return { ok: false as const, errors: ["Recipient agreement for an embedded attachment is required"] };
@@ -87,18 +110,21 @@ export async function preflightApprovedInvoice(
     const vies = requireCachedViesValidation(db, prepared.payload.buyer?.vatOrCvr, "buyer.vatOrCvr");
     if (!vies.ok) errors.push(...vies.errors);
   }
-  if (prepared.payload.lines?.some((line) => line.taxClassification)) errors.push("PDF review for line-level tax classifications is not supported");
+  if (prepared.payload.lines?.some((line) => line.taxClassification) &&
+      !prepared.payload.lines.every((line) => line.taxClassification === "exempt")) errors.push("PDF review for mixed or non-exempt line-level tax classifications is not supported");
   if (!prepared.payload.buyer?.buyerReference && !prepared.payload.buyer?.orderReference) errors.push("An explicit buyer reference is required");
   if (errors.length) return { ok: false as const, errors };
   let parsed: Awaited<ReturnType<typeof parsePdfBytes>>;
   try { parsed = await parsePdfBytes(pdfBytes); }
   catch { return { ok: false as const, errors: ["PDF could not be safely parsed"] }; }
   if (parsed.status !== "ok") return { ok: false as const, errors: ["PDF must contain a readable text layer"] };
-  const pdfErrors = approvedInvoiceTextErrors(parsed.pages.map((page) => page.text).join("\n"), prepared.payload, prepared.invoiceNumber);
+  const warnings: string[] = [];
+  const pdfErrors = approvedInvoiceTextErrors(parsed.pages.map((page) => page.text).join("\n"), prepared.payload, prepared.invoiceNumber, warnings);
   if (pdfErrors.length) return { ok: false as const, errors: pdfErrors };
+  if (warnings.length && input.descriptionDifferencesReviewed !== true) return { ok: false as const, errors: ["PDF description differences require explicit visual review before preflight", ...warnings], warnings };
   const xml = buildPublicEInvoiceOioUblXml(prepared.invoiceNumber, prepared.payload, pdfBytes);
   const readiness = await checkDigisenseInvoiceReadiness(client, xml, ean!, input.environment ?? "production");
-  if (!readiness.ok) return { ok: false as const, errors: [readiness.error] };
+  if (!readiness.ok) return { ok: false as const, errors: [readiness.error, ...warnings], warnings };
   const id = randomUUID(), pdfSha256 = digest(pdfBytes), xmlSha256 = digest(xml);
   const actor = resolveActor(input);
   return db.transaction(() => {
@@ -107,7 +133,7 @@ export async function preflightApprovedInvoice(
     if (!current.ok || current.payloadSha256 !== prepared.payloadSha256) return { ok: false as const, errors: ["Invoice changed during preflight; repeat it"] };
     db.query("INSERT INTO approved_invoice_preflights(id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,buyer_ean,provider_binding,actor) VALUES(?,?,?,?,?,?,?,?)")
       .run(id, prepared.invoiceNumber, prepared.payloadSha256, pdfSha256, xmlSha256, ean!, input.providerBinding, actor.auditActor);
-    insertAuditLog(db, { eventType: "approved_invoice_preflight", entityType: "invoice_preflight", entityId: id, message: `Invoice preflight ${prepared.invoiceNumber}: PDF ${pdfSha256}, XML ${xmlSha256}`, ...input });
-    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, requiresVisualReview: true as const };
+    insertAuditLog(db, { eventType: "approved_invoice_preflight", entityType: "invoice_preflight", entityId: id, message: `Invoice preflight ${prepared.invoiceNumber}: PDF ${pdfSha256}, XML ${xmlSha256}; description differences reviewed: ${warnings.length > 0}`, ...input });
+    return { ok: true as const, preflightId: id, invoiceNumber: prepared.invoiceNumber, payloadSha256: prepared.payloadSha256, pdfSha256, xmlSha256, payload: prepared.payload, warnings, requiresVisualReview: true as const };
   }).immediate();
 }

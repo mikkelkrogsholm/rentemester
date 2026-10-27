@@ -162,7 +162,7 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       if (!resolved.ok) { ctx.emitResult(resolved as Record<string, unknown>); process.exitCode = 1; return; }
       const provider = resolveDigisenseStatusChecker(db, root);
       if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); process.exitCode = 1; return; }
-      const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment }, provider.client);
+      const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, bilateralAttachmentAgreement: true, descriptionDifferencesReviewed: ctx.arg("--description-reviewed") === "yes", providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment }, provider.client);
       ctx.emitResult(result as Record<string, unknown>);
       if (!result.ok) process.exitCode = 1;
     } finally { db.close(); }
