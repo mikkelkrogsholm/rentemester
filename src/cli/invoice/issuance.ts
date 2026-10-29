@@ -121,16 +121,22 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       process.exit(1);
       return;
     }
+    const transport = ctx.arg("--transport") ?? "digisense";
+    if (transport !== "email" && transport !== "digisense") { ctx.emitResult({ ok: false, errors: ["--transport must be email or digisense"] }); db.close(); process.exitCode = 1; return; }
     const pdfPath = ctx.arg("--approved-pdf"), preflightId = ctx.arg("--preflight-id");
-    let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string } | undefined;
+    let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; transport: "email" | "digisense"; providerBinding?: string } | undefined;
     if (pdfPath || preflightId || ctx.arg("--pdf-reviewed")) {
       if (!pdfPath || !preflightId || ctx.arg("--pdf-reviewed") !== "yes" || ctx.arg("--confirm") !== "yes") {
         ctx.emitResult({ ok: false, errors: ["Approved PDF issuance requires --approved-pdf, --preflight-id, --pdf-reviewed yes and --confirm yes"] });
         db.close(); process.exitCode = 1; return;
       }
-      const provider = resolveDigisenseStatusChecker(db, root);
-      if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); db.close(); process.exitCode = 1; return; }
-      try { approved = { preflightId, pdfBytes: snapshotDocumentSource(pdfPath, 7_000_000).bytes, visualReviewConfirmed: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey) }; }
+      let providerBinding: string | undefined;
+      if (transport === "digisense") {
+        const provider = resolveDigisenseStatusChecker(db, root);
+        if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); db.close(); process.exitCode = 1; return; }
+        providerBinding = digisenseProviderBinding(provider.environment, provider.companyKey);
+      }
+      try { approved = { preflightId, pdfBytes: snapshotDocumentSource(pdfPath, 7_000_000).bytes, visualReviewConfirmed: true, transport, providerBinding }; }
       catch { ctx.emitResult({ ok: false, errors: ["Approved PDF could not be safely read"] }); db.close(); process.exitCode = 1; return; }
     }
     const result = issueInvoice(db, root, resolved.payload!, {}, approved);
@@ -147,7 +153,9 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
   dispatch.on("invoice", "preflight-approved-pdf", async (ctx) => {
     const input = ctx.arg("--input"), pdfPath = ctx.arg("--approved-pdf");
     if (!input || !pdfPath) { console.error("Missing --input or --approved-pdf"); process.exitCode = 2; return; }
-    const policy = ctx.arg("--attachment-policy") ?? "embedded";
+    const transport = ctx.arg("--transport") ?? "digisense";
+    if (transport !== "email" && transport !== "digisense") { ctx.emitResult({ ok: false, errors: ["--transport must be email or digisense"] }); process.exitCode = 1; return; }
+    const policy = ctx.arg("--attachment-policy") ?? (transport === "email" ? "none" : "embedded");
     if (policy !== "none" && policy !== "embedded") { ctx.emitResult({ ok: false, errors: ["--attachment-policy must be embedded or none"] }); process.exitCode = 1; return; }
     if (ctx.arg("--confirm") !== "yes" || (policy === "embedded" && ctx.arg("--attachment-agreed") !== "yes")) {
       ctx.emitResult({ ok: false, errors: ["--confirm yes is required; embedded PDF additionally requires --attachment-agreed yes"] }); process.exitCode = 1; return;
@@ -162,6 +170,10 @@ export function registerIssuanceCommands(dispatch: CommandDispatch): void {
       const customerId = Number(ctx.arg("--customer-id"));
       const resolved = resolveInvoiceMasterData(db, payload, { customerId: Number.isInteger(customerId) && customerId > 0 ? customerId : undefined });
       if (!resolved.ok) { ctx.emitResult(resolved as Record<string, unknown>); process.exitCode = 1; return; }
+      if (transport === "email") {
+        const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, transport, attachmentPolicy: policy, bilateralAttachmentAgreement: false, descriptionDifferencesReviewed: ctx.arg("--description-reviewed") === "yes" });
+        ctx.emitResult(result as Record<string, unknown>); if (!result.ok) process.exitCode = 1; return;
+      }
       const provider = resolveDigisenseStatusChecker(db, root);
       if (!provider.ok) { ctx.emitResult(provider as Record<string, unknown>); process.exitCode = 1; return; }
       const result = await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, attachmentPolicy: policy, bilateralAttachmentAgreement: ctx.arg("--attachment-agreed") === "yes", descriptionDifferencesReviewed: ctx.arg("--description-reviewed") === "yes", providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment }, provider.client);

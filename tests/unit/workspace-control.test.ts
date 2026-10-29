@@ -310,7 +310,7 @@ describe("workspace control database", () => {
       const db = openWorkspaceControlDb(workspace);
       db.run(`INSERT INTO "user" (id,name,email,emailVerified,createdAt,updatedAt,twoFactorEnabled) VALUES ('u','U','u@example.test',0,'2026-01-01','2026-01-01',0)`);
       db.run(`UPDATE "user" SET emailVerified = 1 WHERE id = 'u'`);
-      db.run(`INSERT INTO "account" (id,issuer,accountId,providerId,userId,password,createdAt,updatedAt) VALUES ('a','credential','u','credential','u','old','2026-01-01','2026-01-01')`);
+      db.run(`INSERT INTO "account" (id,accountId,providerId,userId,password,createdAt,updatedAt) VALUES ('a','u','credential','u','old','2026-01-01','2026-01-01')`);
       db.run(`UPDATE "account" SET password = 'new' WHERE id = 'a'`);
       db.run(`INSERT INTO "session" (id,expiresAt,token,createdAt,updatedAt,userId) VALUES ('s','2027-01-01','opaque','2026-01-01','2026-01-01','u')`);
       db.run(`DELETE FROM "session" WHERE id = 's'`);
@@ -449,7 +449,7 @@ describe("workspace control database", () => {
       const expectedColumns: Record<string, string[]> = {
         user: ["id", "name", "email", "emailVerified", "image", "createdAt", "updatedAt", "twoFactorEnabled"],
         session: ["id", "expiresAt", "token", "createdAt", "updatedAt", "ipAddress", "userAgent", "userId"],
-        account: ["id", "issuer", "accountId", "providerId", "userId", "accessToken", "refreshToken", "idToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "scope", "password", "createdAt", "updatedAt"],
+        account: ["id", "accountId", "providerId", "userId", "accessToken", "refreshToken", "idToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "scope", "password", "createdAt", "updatedAt"],
         verification: ["id", "identifier", "value", "expiresAt", "createdAt", "updatedAt"],
         twoFactor: ["id", "secret", "backupCodes", "userId", "verified", "failedVerificationCount", "lockedUntil"],
         rateLimit: ["id", "key", "count", "lastRequest"],

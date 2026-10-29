@@ -316,7 +316,7 @@ export function issueInvoice(
   companyRoot: string,
   rawPayload: InvoicePayload,
   actor: ResolveActorInput = {},
-  approvedPdf?: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string },
+  approvedPdf?: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; transport?: "digisense" | "email"; providerBinding?: string },
 ): IssueInvoiceResult {
   // #221: fill the seller identity + due date from the stored company profile
   // before validation, so the owner never re-types their own master data.
@@ -328,6 +328,8 @@ export function issueInvoice(
   if (approvedPdf && (!approvedPdf.visualReviewConfirmed || approvedPdf.pdfBytes.byteLength === 0 || approvedPdf.pdfBytes.byteLength > 7_000_000)) {
     return { ok: false, appliedRules, errors: ["Approved PDF requires visual review and a supported PDF size"] };
   }
+  const reviewTransport = approvedPdf?.transport ?? "digisense";
+  if (reviewTransport !== "email" && reviewTransport !== "digisense") return { ok: false, appliedRules, errors: ["Invalid invoice review transport"] };
   // Hold exactly one snapshot through verification and immutable publication.
   const approvedPdfBytes = approvedPdf ? Buffer.from(approvedPdf.pdfBytes) : undefined;
 
@@ -370,25 +372,29 @@ export function issueInvoice(
 
   try {
     const result = db.transaction(() => {
-      let approvalEvidence: { id: string; invoice_no: string; payload_sha256: string; pdf_sha256: string; xml_sha256: string; created_at: string; provider_binding: string } | undefined;
+      let approvalEvidence: { id: string; invoice_no: string; payload_sha256: string; pdf_sha256: string; xml_sha256: string | null; created_at: string; provider_binding: string | null } | undefined;
       let approvedAttachmentPolicy: "embedded" | "none" | undefined;
       if (approvedPdf && approvedPdfBytes) {
-        approvalEvidence = db.query("SELECT id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,created_at,provider_binding FROM approved_invoice_preflights WHERE id=?").get(approvedPdf.preflightId) as typeof approvalEvidence;
+        approvalEvidence = db.query(reviewTransport === "email"
+          ? "SELECT id,invoice_no,payload_sha256,pdf_sha256,NULL AS xml_sha256,created_at,NULL AS provider_binding FROM email_invoice_pdf_reviews WHERE id=?"
+          : "SELECT id,invoice_no,payload_sha256,pdf_sha256,xml_sha256,created_at,provider_binding FROM approved_invoice_preflights WHERE id=?").get(approvedPdf.preflightId) as typeof approvalEvidence;
         const current = prepareInvoiceApprovalPayload(db, rawPayload);
         const issuanceSnapshot = current.ok ? { ...payload, currency: invoiceCurrency, invoiceNumber: current.invoiceNumber, ...(paymentDetails ? { payment: paymentDetails } : {}) } : null;
         const companyCvr = getCompanySettings(db).cvr?.replace(/^DK/i, "").replace(/\s/g, "");
         const sellerCvr = payload.seller?.vatOrCvr?.replace(/^DK/i, "").replace(/\s/g, "");
         const age = approvalEvidence ? Date.now() - Date.parse(`${approvalEvidence.created_at.replace(" ", "T")}Z`) : NaN;
-        if (!approvalEvidence || approvalEvidence.provider_binding !== approvedPdf.providerBinding || !Number.isFinite(age) || age < 0 || age > 60 * 60 * 1000 || !current.ok || current.invoiceNumber !== approvalEvidence.invoice_no ||
+        if (!approvalEvidence || (reviewTransport === "digisense" && (!approvedPdf.providerBinding || approvalEvidence.provider_binding !== approvedPdf.providerBinding)) || !Number.isFinite(age) || age < 0 || age > 60 * 60 * 1000 || !current.ok || current.invoiceNumber !== approvalEvidence.invoice_no ||
             !companyCvr || companyCvr !== sellerCvr ||
             current.payloadSha256 !== approvalEvidence.payload_sha256 ||
             createHash("sha256").update(canonicalJson(issuanceSnapshot)).digest("hex") !== current.payloadSha256 ||
             createHash("sha256").update(approvedPdfBytes).digest("hex") !== approvalEvidence.pdf_sha256 ||
-            !approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)) {
+            (reviewTransport === "digisense" && (!approvalEvidence.xml_sha256 || !approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)))) {
           return { ok: false as const, error: "Approved PDF or invoice changed since preflight; repeat preflight and review" };
         }
-        const approvedXml = approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256)!;
-        approvedAttachmentPolicy = approvedXml.includes("<cbc:EmbeddedDocumentBinaryObject") ? "embedded" : "none";
+        if (reviewTransport === "digisense") {
+          const approvedXml = approvedOioUblXml(current.invoiceNumber, current.payload, approvedPdfBytes, approvalEvidence.xml_sha256!)!;
+          approvedAttachmentPolicy = approvedXml.includes("<cbc:EmbeddedDocumentBinaryObject") ? "embedded" : "none";
+        }
         if (explicitInvoiceNumber && explicitInvoiceNumber !== current.invoiceNumber) return { ok: false as const, error: "Approved invoice number is no longer available" };
       }
       let invoiceNumber: InvoiceNumber;
@@ -413,7 +419,7 @@ export function issueInvoice(
         // #221: persist the resolved payment details into the snapshot so the
         // at-issue PDF — and any later `invoice render` — show where to pay.
         ...(paymentDetails ? { payment: paymentDetails } : {}),
-        ...(approvalEvidence ? { approvedPdf: { preflightId: approvalEvidence.id, sha256: approvalEvidence.pdf_sha256, xmlSha256: approvalEvidence.xml_sha256, providerBinding: approvalEvidence.provider_binding, attachmentPolicy: approvedAttachmentPolicy } } : {}),
+        ...(approvalEvidence ? { approvedPdf: { preflightId: approvalEvidence.id, sha256: approvalEvidence.pdf_sha256, transport: reviewTransport, ...(reviewTransport === "digisense" ? { xmlSha256: approvalEvidence.xml_sha256, providerBinding: approvalEvidence.provider_binding, attachmentPolicy: approvedAttachmentPolicy } : {}) } } : {}),
       };
       const serialized = JSON.stringify(issuedPayload, null, 2);
       const hash = sha256(serialized);
@@ -499,7 +505,7 @@ export function issueInvoice(
         eventType: "invoice_issue",
         entityType: "document",
         entityId: inserted.id,
-        message: `Issued invoice ${invoiceNumber}`,
+        message: `Issued invoice ${invoiceNumber}${approvalEvidence ? `; reviewed PDF ${approvalEvidence.pdf_sha256}; preflight ${approvalEvidence.id}; transport ${reviewTransport}` : ""}`,
         createdBy: actor.createdBy,
         createdByProgram: actor.createdByProgram,
       });

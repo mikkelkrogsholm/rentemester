@@ -19,9 +19,9 @@ export const invoiceSpecs: CommandSpec[] = [
   },
   {
     key: "invoice issue",
-    usage: "invoice issue --company <path> --input <file.json> [--customer-id <n>] [--approved-pdf <path> --preflight-id <id> --pdf-reviewed yes --confirm yes]",
+    usage: "invoice issue --company <path> --input <file.json> [--customer-id <n>] [--transport digisense|email] [--approved-pdf <path> --preflight-id <id> --pdf-reviewed yes --confirm yes]",
     description: "Udsteder en kundefaktura og gemmer et immutabelt snapshot.",
-    allowedFlags: ["--company", "--input", "--customer-id", "--approved-pdf", "--preflight-id", "--pdf-reviewed", "--confirm"],
+    allowedFlags: ["--company", "--input", "--customer-id", "--approved-pdf", "--preflight-id", "--pdf-reviewed", "--confirm", "--transport"],
     examplePath: "examples/full-invoice.dk.json",
     exampleHint: "rentemester invoice issue --example > faktura.json",
     inputNotes: [
@@ -41,9 +41,9 @@ export const invoiceSpecs: CommandSpec[] = [
   },
   {
     key: "invoice preflight-approved-pdf",
-    usage: "invoice preflight-approved-pdf --company <path> --input <file.json> --approved-pdf <path> --confirm yes [--attachment-policy embedded|none] [--attachment-agreed yes] [--description-reviewed yes] [--customer-id <n>]",
-    description: "Kontrollerer PDF, fakturagrundlag og DigiSense uden at udstede eller sende fakturaen. Kræver efterfølgende visuel gennemgang.",
-    allowedFlags: ["--company", "--input", "--approved-pdf", "--attachment-policy", "--attachment-agreed", "--confirm", "--description-reviewed", "--customer-id"],
+    usage: "invoice preflight-approved-pdf --company <path> --input <file.json> --approved-pdf <path> --confirm yes [--transport digisense|email] [--attachment-policy embedded|none] [--attachment-agreed yes] [--description-reviewed yes] [--customer-id <n>]",
+    description: "Kontrollerer PDF og fakturagrundlag uden udstedelse eller afsendelse. Transport digisense (standard) kontrollerer også DigiSense; email kræver hverken EAN eller provider. Kræver efterfølgende visuel gennemgang.",
+    allowedFlags: ["--company", "--input", "--approved-pdf", "--attachment-policy", "--attachment-agreed", "--confirm", "--description-reviewed", "--customer-id", "--transport"],
   },
   {
     key: "invoice create",

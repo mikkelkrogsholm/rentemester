@@ -1,0 +1,5 @@
+{
+  "id": 59,
+  "name": "email-invoice-pdf-reviews-v59",
+  "sql": "CREATE TABLE IF NOT EXISTS email_invoice_pdf_reviews (id TEXT PRIMARY KEY, invoice_no TEXT NOT NULL, payload_sha256 TEXT NOT NULL CHECK(length(payload_sha256)=64), pdf_sha256 TEXT NOT NULL CHECK(length(pdf_sha256)=64), actor TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);\nCREATE TRIGGER IF NOT EXISTS email_invoice_pdf_reviews_no_update BEFORE UPDATE ON email_invoice_pdf_reviews BEGIN SELECT RAISE(ABORT, 'invoice PDF review evidence is immutable'); END;\nCREATE TRIGGER IF NOT EXISTS email_invoice_pdf_reviews_no_delete BEFORE DELETE ON email_invoice_pdf_reviews BEGIN SELECT RAISE(ABORT, 'invoice PDF review evidence is append-only'); END;"
+}

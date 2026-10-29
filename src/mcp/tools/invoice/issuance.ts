@@ -83,6 +83,7 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
         payload: invoicePayloadSchema,
         customerId: z.number().int().positive().optional(),
         approvedPdfPath: z.string().min(1).optional(),
+        transport: z.enum(["digisense", "email"]).optional().describe("Review transport; defaults to digisense. Email uses only local PDF review and never sends."),
         preflightId: z.string().uuid().optional(),
         pdfReviewed: z.boolean().optional(),
         confirm: confirmField,
@@ -94,6 +95,7 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
       company: string;
       payload: InvoicePayload;
       customerId?: number;
+      transport?: "email" | "digisense";
       approvedPdfPath?: string;
       preflightId?: string;
       pdfReviewed?: boolean;
@@ -101,12 +103,18 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
     }>(server, "invoice_issue", ({ db, args, actor }) => {
       const resolved = resolveInvoiceMasterData(db, args.payload, { customerId: args.customerId });
       if (!resolved.ok) return wrapCoreResult(resolved);
-      let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; providerBinding: string } | undefined;
+      if (args.transport !== undefined && args.transport !== "email" && args.transport !== "digisense") return errorEnvelope(["Invalid invoice review transport"]);
+      const transport = args.transport ?? "digisense";
+      let approved: { preflightId: string; pdfBytes: Uint8Array; visualReviewConfirmed: boolean; transport: "email" | "digisense"; providerBinding?: string } | undefined;
       if (args.approvedPdfPath || args.preflightId || args.pdfReviewed !== undefined) {
         if (!args.approvedPdfPath || !args.preflightId || args.pdfReviewed !== true) return errorEnvelope(["Approved PDF issuance requires approvedPdfPath, preflightId and pdfReviewed:true"]);
-        const provider = resolveDigisenseStatusChecker(db, args.company);
-        if (!provider.ok) return errorEnvelope(provider.errors);
-        try { approved = { preflightId: args.preflightId, pdfBytes: snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes, visualReviewConfirmed: true, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey) }; }
+        let providerBinding: string | undefined;
+        if (transport === "digisense") {
+          const provider = resolveDigisenseStatusChecker(db, args.company);
+          if (!provider.ok) return errorEnvelope(provider.errors);
+          providerBinding = digisenseProviderBinding(provider.environment, provider.companyKey);
+        }
+        try { approved = { preflightId: args.preflightId, pdfBytes: snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes, visualReviewConfirmed: true, transport, providerBinding }; }
         catch { return errorEnvelope(["Approved PDF could not be safely read"]); }
       }
       const result = issueInvoice(db, args.company, resolved.payload!, actor, approved);
@@ -122,18 +130,20 @@ export function registerInvoiceIssuanceTools(server: McpServer): void {
     "invoice_preflight_approved_pdf",
     {
       title: "Preflight approved invoice PDF",
-      description: "Kontrollerer PDF og DigiSense uden at udstede eller sende. Vælg none for struktureret faktura uden PDF-bilag; embedded kræver modtageraftale. Kontroller PDF visuelt før udstedelse.",
-      inputSchema: { company: z.string().min(1), payload: invoicePayloadSchema, customerId: z.number().int().positive().optional(), approvedPdfPath: z.string().min(1), attachmentPolicy: z.enum(["embedded", "none"]).optional(), attachmentAgreed: z.boolean().optional(), descriptionDifferencesReviewed: z.boolean().optional().describe("Set only after visually reviewing any reported description differences against the PDF and invoice."), confirm: confirmField },
+      description: "Kontrollerer PDF uden at udstede eller sende. Transport email er lokal uden EAN/provider; digisense er standard og kontrollerer DigiSense. Vælg none for struktureret faktura uden PDF-bilag; embedded kræver modtageraftale. Kontroller PDF visuelt før udstedelse.",
+      inputSchema: { company: z.string().min(1), payload: invoicePayloadSchema, customerId: z.number().int().positive().optional(), approvedPdfPath: z.string().min(1), transport: z.enum(["digisense", "email"]).optional(), attachmentPolicy: z.enum(["embedded", "none"]).optional(), attachmentAgreed: z.boolean().optional(), descriptionDifferencesReviewed: z.boolean().optional().describe("Set only after visually reviewing any reported description differences against the PDF and invoice."), confirm: confirmField },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    withCompanyDbConfirmed<{ company: string; payload: InvoicePayload; customerId?: number; approvedPdfPath: string; attachmentPolicy?: "embedded" | "none"; attachmentAgreed?: boolean; descriptionDifferencesReviewed?: boolean; confirm?: boolean }>(server, "invoice_preflight_approved_pdf", async ({ db, args, actor }) => {
-      if ((args.attachmentPolicy ?? "embedded") === "embedded" && !args.attachmentAgreed) return errorEnvelope(["Recipient agreement for an embedded attachment is required"]);
+    withCompanyDbConfirmed<{ company: string; payload: InvoicePayload; customerId?: number; approvedPdfPath: string; transport?: "digisense" | "email"; attachmentPolicy?: "embedded" | "none"; attachmentAgreed?: boolean; descriptionDifferencesReviewed?: boolean; confirm?: boolean }>(server, "invoice_preflight_approved_pdf", async ({ db, args, actor }) => {
+      if (args.transport !== undefined && args.transport !== "email" && args.transport !== "digisense") return errorEnvelope(["Invalid invoice review transport"]);
+      if ((args.attachmentPolicy ?? (args.transport === "email" ? "none" : "embedded")) === "embedded" && !args.attachmentAgreed) return errorEnvelope(["Recipient agreement for an embedded attachment is required"]);
       let pdfBytes: Buffer;
       try { pdfBytes = snapshotApprovedInvoiceSource(args.company, args.approvedPdfPath).bytes; }
       catch { return errorEnvelope(["Approved PDF could not be safely read"]); }
       const resolved = resolveInvoiceMasterData(db, args.payload, { customerId: args.customerId });
       if (!resolved.ok) return wrapCoreResult(resolved);
+      if (args.transport === "email") return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, transport: "email", attachmentPolicy: args.attachmentPolicy, bilateralAttachmentAgreement: false, descriptionDifferencesReviewed: args.descriptionDifferencesReviewed, ...actor }));
       const provider = resolveDigisenseStatusChecker(db, args.company);
       if (!provider.ok) return errorEnvelope(provider.errors);
       return wrapCoreResult(await preflightApprovedInvoice(db, { payload: resolved.payload!, pdfBytes, attachmentPolicy: args.attachmentPolicy, bilateralAttachmentAgreement: args.attachmentAgreed === true, descriptionDifferencesReviewed: args.descriptionDifferencesReviewed, providerBinding: digisenseProviderBinding(provider.environment, provider.companyKey), environment: provider.environment, ...actor }, provider.client));

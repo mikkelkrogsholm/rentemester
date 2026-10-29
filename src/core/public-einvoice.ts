@@ -631,7 +631,8 @@ export function exportPublicEInvoiceOioUbl(
     return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: [`invoice ${row.invoice_no ?? input.invoiceDocumentId} is missing payload_json`] };
   }
 
-  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string; approvedPdf?: { preflightId: string; sha256: string; xmlSha256: string; attachmentPolicy?: "embedded" | "none" } };
+  const payload = JSON.parse(row.payload_json) as InvoicePayload & { invoiceNumber?: string; approvedPdf?: { preflightId: string; sha256: string; xmlSha256: string; transport?: "email" | "digisense"; attachmentPolicy?: "embedded" | "none" } };
+  if (payload.approvedPdf?.transport === "email") return { ok: false, appliedRules: [OIOUBL_RULE_ID], errors: ["Email PDF review does not approve DigiSense/OIOUBL transport"] };
   const invoiceNumber = payload.invoiceNumber ?? row.invoice_no ?? String(input.invoiceDocumentId);
   const eanNumber = normalizeEanNumber(payload.buyer?.eanNumber);
 

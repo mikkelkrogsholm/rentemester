@@ -1,0 +1,5 @@
+{
+  "id": 35,
+  "name": "rentemester-better-auth-account-key-v35",
+  "sql": "DROP INDEX account_issuer_accountId_uidx;\nALTER TABLE \"account\" DROP COLUMN \"issuer\";\nCREATE UNIQUE INDEX account_providerId_accountId_uidx ON \"account\" (\"providerId\", \"accountId\");\n"
+}

@@ -14,7 +14,7 @@ penetrationstest eller en erklæring om produktionsgodkendelse.
 ## Konklusion
 
 Rentemester har nu et første, sammenhængende hosted sikkerhedslag baseret på
-Better Auth 1.7.1: individuelle brugere, password-hash, verificeret e-mail,
+Better Auth 1.7.7: individuelle brugere, password-hash, verificeret e-mail,
 TOTP med krypterede recovery codes, øjeblikkelig sessionstilbagekaldelse,
 rate-limit, eksplicit Origin/CSRF-kontrol, medlemskab pr. virksomhed og en
 central, testet permissionmatrix. Hosted webhandlinger tilskrives den konkrete
@@ -66,7 +66,7 @@ De centrale kilder for denne undersøgelse er:
 
 | Område | Status | Fund |
 | --- | --- | --- |
-| Individuelt login | Implementeret | Better Auth 1.7.1; offentlig signup er lukket. |
+| Individuelt login | Implementeret | Better Auth 1.7.7; offentlig signup er lukket. |
 | Password-hashing | Implementeret | Credentials ejes og hashes af Better Auth, ikke af egen kryptokode. |
 | TOTP MFA | Implementeret | Enrollment og login-challenge; første enrollment tilbagekalder password-only sessioner. |
 | Recovery codes | Implementeret | Better Auths krypterede engangskoder og replay-test. |

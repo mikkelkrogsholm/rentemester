@@ -28,8 +28,8 @@ function addOwner(workspace: string) {
     (id,name,email,emailVerified,createdAt,updatedAt,twoFactorEnabled)
     VALUES ('owner','Snapshot Owner','owner@example.test',1,?,?,1)`).run(createdAt, createdAt);
   db.query(`INSERT INTO "account"
-    (id,accountId,providerId,issuer,userId,password,createdAt,updatedAt)
-    VALUES ('credential','owner','credential','credential','owner','private-password-hash',?,?)`).run(createdAt, createdAt);
+    (id,accountId,providerId,userId,password,createdAt,updatedAt)
+    VALUES ('credential','owner','credential','owner','private-password-hash',?,?)`).run(createdAt, createdAt);
   db.query(`INSERT INTO "session"
     (id,expiresAt,token,createdAt,updatedAt,userId)
     VALUES ('private-session',?,'private-session-token',?,?,'owner')`).run(

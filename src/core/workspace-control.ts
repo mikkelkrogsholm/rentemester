@@ -383,7 +383,9 @@ export function openWorkspaceControlDb(workspaceRoot: string): Database {
         ) {
           throw new Error(`workspace control migration artifact ${migration.id} is malformed`);
         }
-        db.exec(parsed.sql);
+        // Bun 1.4 can mask a final-statement constraint failure when exec
+        // parses trailing whitespace as another empty statement.
+        db.exec(parsed.sql.trim());
         db.query(
           `INSERT INTO workspace_schema_migrations
              (id, name, checksum, applied_by_version, applied_by_commit)

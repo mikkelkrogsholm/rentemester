@@ -120,6 +120,58 @@ rentemester efaktura registrer \
 
 ### Godkendt ekstern faktura-PDF
 
+For emaillevering vælges `--transport email` eksplicit ved både forhåndskontrol
+og udstedelse. Det lokale review kræver hverken EAN, DigiSense-konfiguration
+eller netværkskald. `--transport digisense` er den bagudkompatible standard;
+EAN-, XML-, provider- og bilagskontrollerne nedenfor gælder fortsat for den.
+
+Eksempel med en syntetisk fuld dansk faktura i `faktura.json`, flere linjer,
+`totals.vatRate: 0.25` og summer, der stemmer med linjerne:
+
+```bash
+rentemester invoice preflight-approved-pdf --company <sti-eller-slug> \
+  --input faktura.json --approved-pdf faktura.pdf --transport email \
+  --actor user:<dig> --confirm yes
+# Sammenhold PDF visuelt med hele grundlaget før næste kommando.
+rentemester invoice issue --company <sti-eller-slug> --input faktura.json \
+  --approved-pdf faktura.pdf --preflight-id <id-fra-kontrollen> \
+  --transport email --pdf-reviewed yes --actor user:<dig> --confirm yes
+rentemester invoice post --company <sti-eller-slug> \
+  --invoice-number <udstedt-nummer> --actor user:<dig>
+rentemester invoice render --company <sti-eller-slug> \
+  --invoice-number <udstedt-nummer> --actor user:<dig>
+```
+
+Email-review bruger `attachment-policy none` som standard og afviser `embedded`;
+den policy beskriver indlejring i DigiSense-XML, ikke en mailvedhæftning.
+Reviewet binder nummer, fakturagrundlag, betalingsoplysninger og PDF-hash i
+append-only evidens og gælder i én time. Udstedelse reserverer først nummeret
+under transaktionslås. Ændret PDF/grundlag, udløbet review eller et nummer brugt
+af en anden udstedelse kræver ny kontrol og visuel gennemgang. Det valgte
+transportspor kan ikke skiftes mellem review og udstedelse.
+
+`invoice render` returnerer stien og hash til de allerede udstedte kanoniske
+PDF-bytes og verificerer deres integritet. En autoriseret ekstern
+SAML-mailtransport kan vedhæfte den fil og eventuelt en separat kundetimelog.
+Rentemester udfører ingen SMTP-konfiguration eller afsendelse i dette forløb;
+en ekstern afsendelse registreres heller ikke automatisk som leveret i ledgeren.
+En timelog indgår ikke i fakturaens PDF-review. Manglende eller manipuleret
+kanonisk PDF genskabes aldrig. Et email-review godkender ikke senere
+DigiSense/OIOUBL-eksport eller afsendelse, heller ikke hvis køber har EAN.
+
+MCP bruger `transport: "email"` i både `invoice_preflight_approved_pdf` og
+`invoice_issue` (gateway-operationerne `sales_invoice_approved_pdf_preflight`
+og `sales_invoice_issue`). PDF'en skal ligge direkte i `invoices/drafts`.
+Kontrollen kræver `confirm: true`; udstedelsen kræver derudover samme
+`approvedPdfPath`, `preflightId` og `pdfReviewed: true`. Email-svaret indeholder
+`transport`, `attachmentPolicy: "none"`, `payloadSha256`, `pdfSha256`,
+`invoiceNumber`, `preflightId`, `warnings` og `requiresVisualReview: true`;
+der er ingen XML-hash eller OIOUBL-version. Ensartet standardmoms, herunder
+flere eksplicit `taxable`-linjer med samme sats, understøttes. Blandede
+linjeklassifikationer er fortsat ikke understøttet af PDF-reviewet.
+
+For DigiSense-transporten gælder følgende forløb:
+
 En ekstern PDF kan bruges som fakturaens uforanderlige PDF. Den kan enten
 bevares alene som fakturabevis eller indlejres i OIOUBL-fakturaen. Indlejring
 kræver modtagerens aftale; uden bilag kræves ingen sådan aftale. Først vises det
