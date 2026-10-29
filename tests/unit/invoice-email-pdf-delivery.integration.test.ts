@@ -7,7 +7,11 @@ import { preflightApprovedInvoice } from "../../src/core/approved-invoice-prefli
 import { migrate, openDb } from "../../src/core/db";
 import { sendInvoiceEmail, type EmailMessage, type EmailTransport } from "../../src/core/email";
 import { issueInvoice } from "../../src/core/issued-invoices";
+import { verifyAuditChain } from "../../src/core/ledger";
 import { ensureCompanyDirs } from "../../src/core/paths";
+import { readSchemaMigrations, supportedSchemaMigrations } from "../../src/core/schema-version";
+import { createSystemBackup } from "../../src/core/system-backups";
+import { restoreSystemBackup } from "../../src/core/system-restore";
 import { renderDocumentPdf } from "../../src/design/pdf-render";
 
 const payload = {
@@ -33,12 +37,13 @@ async function reviewedInvoice() {
   try {
     migrate(db);
     db.run("INSERT INTO companies (id,name,cvr) VALUES (1,'Synthetic Seller','DK12345678')");
-    const approvedBytes = renderDocumentPdf({
+    const approvedBytes = Buffer.from(renderDocumentPdf({
       title: "Synthetic approved invoice", date: payload.issueDate, footer: "",
       html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 DK87654321</p><p>Consulting 1 100,00 Training 2 125,00 250,00 DKK 350,00 25% 87,50 437,50</p></main>",
-    });
+    }));
     const review = await preflightApprovedInvoice(db, {
-      payload, pdfBytes: approvedBytes, transport: "email", createdBy: "user:synthetic-reviewer",
+      payload, pdfBytes: approvedBytes, transport: "email", bilateralAttachmentAgreement: false,
+      createdBy: "user:synthetic-reviewer",
     });
     if (!review.ok) throw new Error(review.errors.join(", "));
     expect(review).toMatchObject({ transport: "email", requiresVisualReview: true });
@@ -53,7 +58,7 @@ async function reviewedInvoice() {
     const send = (transport: EmailTransport) => sendInvoiceEmail(db, root, {
       invoiceDocumentId: issued.documentId!, kind: "invoice", to: "buyer@example.test", smtp, transport,
     });
-    return { db, issued, approvedBytes, send, close };
+    return { root, db, issued, approvedBytes, send, close };
   } catch (error) { close(); throw error; }
 }
 
@@ -76,6 +81,49 @@ function attachedPdf(message: EmailMessage) {
 }
 
 describe("reviewed email PDF issuance through the existing SMTP adapter", () => {
+  test("backup and restore preserve migration 59, email PDF review evidence and append-only protections", async () => {
+    const f = await reviewedInvoice();
+    const restoreRoot = mkdtempSync(join(tmpdir(), "rentemester-reviewed-email-restore-"));
+    try {
+      const reviews = f.db.query("SELECT * FROM email_invoice_pdf_reviews ORDER BY id").all();
+      expect(reviews).toHaveLength(1);
+      const migration = readSchemaMigrations(f.db).find(row => row.id === 59);
+      expect(migration).toMatchObject(supportedSchemaMigrations().find(row => row.id === 59)!);
+      expect(migration).toMatchObject({ id: 59, name: "email-invoice-pdf-reviews-v59" });
+      const reviewAudit = f.db.query("SELECT * FROM audit_log WHERE event_type='approved_invoice_preflight' ORDER BY id").all();
+      expect(reviewAudit).toHaveLength(1);
+      const snapshot = readFileSync(f.issued.storedPath!);
+      const backup = createSystemBackup(f.db, f.root, { createdAt: "2026-10-29T19:00:00.000Z" });
+      expect(backup.ok, backup.errors.join("; ")).toBe(true);
+      const backupBytes = readFileSync(join(backup.backupDir!, "ledger.sqlite"));
+      const restored = restoreSystemBackup({
+        backupDir: backup.backupDir!, targetCompanyRoot: join(restoreRoot, "company"),
+        createdBy: "user:synthetic-restorer",
+      });
+      expect(restored.ok, restored.errors.join("; ")).toBe(true);
+      const db = openDb(restored.restoredDbPath!);
+      try {
+        expect(readSchemaMigrations(db).find(row => row.id === 59)).toEqual(migration);
+        expect(db.query("SELECT * FROM email_invoice_pdf_reviews ORDER BY id").all()).toEqual(reviews);
+        expect(db.query("SELECT * FROM audit_log WHERE event_type='approved_invoice_preflight' ORDER BY id").all()).toEqual(reviewAudit);
+        expect(verifyAuditChain(db, { companyRoot: restored.targetCompanyRoot! }).ok).toBe(true);
+        const issuedPaths = ensureCompanyDirs(restored.targetCompanyRoot!).invoicesIssued;
+        expect(readFileSync(join(issuedPaths, "2026-0001.json"))).toEqual(snapshot);
+        const pdf = readFileSync(join(issuedPaths, "2026-0001.pdf"));
+        expect(pdf).toEqual(f.approvedBytes);
+        expect(createHash("sha256").update(pdf).digest("hex")).toBe(f.issued.pdfSha256!);
+        expect(() => db.run("UPDATE email_invoice_pdf_reviews SET pdf_sha256=?", ["a".repeat(64)])).toThrow("immutable");
+        expect(() => db.run("DELETE FROM email_invoice_pdf_reviews")).toThrow("append-only");
+        expect(db.query("SELECT * FROM email_invoice_pdf_reviews ORDER BY id").all()).toEqual(reviews);
+        expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 0 });
+      } finally { db.close(); }
+      expect(readFileSync(join(backup.backupDir!, "ledger.sqlite"))).toEqual(backupBytes);
+    } finally {
+      f.close();
+      rmSync(restoreRoot, { recursive: true, force: true });
+    }
+  }, 30_000);
+
   test("delivers the exact approved multiline 25% VAT PDF once and preserves the immutable snapshot", async () => {
     const f = await reviewedInvoice();
     try {
