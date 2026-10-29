@@ -13,7 +13,7 @@ migration af virkelige data er udført.
 | Versioneret GHCR-flow | release-candidate/promote-workflows og release-manifest | Tests af workflow- og godkendelseskontrakter; ingen ekstern push |
 | Lokal én-virksomhedsprofil | `src/cli/local.ts` og deployment-konfiguration | Launcher-, loopback- og profiltests |
 | Hosted isoleret workspace | serverkonfiguration og workspace-control DB | deployment-, readiness- og RBAC-tests |
-| Individuelt login | Better Auth 1.7.1-adapteren | auth-unit og cookie-E2E |
+| Individuelt login | Better Auth 1.7.7-adapteren | auth-unit og cookie-E2E |
 | MFA og recovery | TOTP, enrollment-gate og engangskoder | challenge-, replay- og revocation-tests |
 | Sessionstilbagekaldelse | Better Auth-sessioner og security epochs | logout-all, password/reset og disable-tests |
 | CSRF/cookies/rate-limit | central Origin-gate, cookie-policy og proxykontrakt | fail-closed HTTP- og config-tests |

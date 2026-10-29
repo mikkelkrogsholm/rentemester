@@ -320,7 +320,14 @@ kontrakt.
 
 ### Flerbruger og adgang
 
-Hosted-profilen bruger Better Auth 1.7.1 mod en separat workspace-control-
+Opgradering til Better Auth 1.7.7 anvender workspace-migration v35: den
+udgåede `account.issuer`-kolonne og dens indeks erstattes atomisk af et unikt
+indeks på `(providerId, accountId)`. Eksisterende konti, password-hashes og sessioner
+bevares. Dublerede provider/account-par afviser hele migrationen atomisk og
+kræver manuel afklaring; brugere sammenlægges aldrig automatisk. Dette følger
+[Better Auths 1.7-opgraderingsvejledning](https://www.better-auth.com/docs/guides/1-7-upgrade-guide#account-identity-keeps-the-provider-key).
+
+Hosted-profilen bruger Better Auth 1.7.7 mod en separat workspace-control-
 database. Det tidligere fælles bearer-token er fortsat kun en eksplicit
 legacy/test-seam og er ikke hosted-slutløsningen. Den implementerede model har:
 

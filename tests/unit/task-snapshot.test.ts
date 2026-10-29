@@ -34,7 +34,7 @@ function populated(db: ReturnType<typeof openWorkspaceControlDb>) {
   const n: TaskNotification = { notificationId: "notification-1", recipientId: "synthetic-owner", taskId: task.taskId, reminderId: "owner-reminder", slotKey: "2026-10-09", createdAt: now, title: task.title };
   db.query("INSERT INTO rm_task_notifications(notification_id,recipient_id,task_id,reminder_id,slot_key,payload_json,created_at) VALUES(?,?,?,?,?,?,?)").run(n.notificationId, n.recipientId, n.taskId, n.reminderId, n.slotKey, canonicalJson(n), now);
   db.query("UPDATE rm_task_runtime SET last_tick_at=?,lease_owner='private-runtime-lease',lease_until=? WHERE id=1").run(now, now);
-  db.query('INSERT INTO "account"(id,accountId,providerId,issuer,userId,password,createdAt,updatedAt) VALUES(?,?,?, ?,?,?,?,?)').run("private-account", "synthetic-owner", "credential", "credential", "synthetic-owner", "private-password", now, now);
+  db.query('INSERT INTO "account"(id,accountId,providerId,userId,password,createdAt,updatedAt) VALUES(?,?,?,?,?,?,?)').run("private-account", "synthetic-owner", "credential", "synthetic-owner", "private-password", now, now);
   return { task, done, savedBoard, series };
 }
 
