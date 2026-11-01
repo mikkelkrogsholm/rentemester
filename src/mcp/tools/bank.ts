@@ -34,7 +34,7 @@ import { currentMcpAuthenticatedPrincipal } from "../security";
 import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../../core/direct-bank-purchase-payable-correction";
 import { applyLegacyBankBinding, applyLegacyPayablePaymentBackfill, planLegacyBankBinding, planLegacyPayablePaymentBackfill } from "../../core/legacy-bank-payable-backfill";
 
-const statusSchema = z.enum(["all", "matched", "unmatched"]).optional();
+const statusSchema = z.enum(["all", "matched", "unmatched", "ambiguous"]).optional();
 
 export function registerBankTools(server: McpServer): void {
   const legacyBinding={bankAccountId:z.number().int().positive(),ledgerAccountNo:z.string().min(1),cutoff:z.string().regex(/^\d{4}-\d{2}-\d{2}$/)};
@@ -87,7 +87,7 @@ export function registerBankTools(server: McpServer): void {
       inputSchema: {
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         status: statusSchema.describe(
-          "Filter by reconciliation status: 'all' (default), 'matched' or 'unmatched'.",
+          "Filter by reconciliation status: 'all' (default), 'matched', 'unmatched' or 'ambiguous'. 'ambiguous' markerer bankrækker hvis journal også afstemmer en anden bankrække — en fejltilstand der kræver review, aldrig en grøn afstemning.",
         ),
         from: z
           .string()
@@ -121,7 +121,7 @@ export function registerBankTools(server: McpServer): void {
     },
     withCompanyDb<{
       company: string;
-      status?: "all" | "matched" | "unmatched";
+      status?: "all" | "matched" | "unmatched" | "ambiguous";
       from?: string;
       to?: string;
       textMatch?: string;
@@ -247,7 +247,7 @@ export function registerBankTools(server: McpServer): void {
           .min(1)
           .describe("End of the reconciliation period (inclusive), in YYYY-MM-DD format."),
         status: statusSchema.describe(
-          "Filter by reconciliation status: 'all' (default), 'matched' or 'unmatched'.",
+          "Filter by reconciliation status: 'all' (default), 'matched', 'unmatched' or 'ambiguous'. 'ambiguous' markerer bankrækker hvis journal også afstemmer en anden bankrække — en fejltilstand der kræver review, aldrig en grøn afstemning.",
         ),
         textMatch: z
           .string()
@@ -274,7 +274,7 @@ export function registerBankTools(server: McpServer): void {
       company: string;
       from: string;
       to: string;
-      status?: "all" | "matched" | "unmatched";
+      status?: "all" | "matched" | "unmatched" | "ambiguous";
       textMatch?: string;
       amount?: number;
       account?: string;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -7,7 +7,8 @@ import { migrate, openDb } from "../../src/core/db";
 import { seedAccounts, postJournalEntry, postVerifiedHistoricalImportEntry, reverseJournalEntry, verifyAuditChain } from "../../src/core/ledger";
 import { addBankAccount, importBankCsv } from "../../src/core/bank";
 import { linkBankTransactionToJournal, planBankReconciliationCorrection, applyBankReconciliationCorrection } from "../../src/core/bank-journal-reconciliation";
-import { listBankTransactions } from "../../src/core/reconciliation";
+import { listBankTransactions, buildBankReconciliationReport } from "../../src/core/reconciliation";
+import { createPeriodCloseReadinessPacket } from "../../src/core/period-close-readiness";
 import { syncUnmatchedBankTransactionExceptions } from "../../src/core/exceptions";
 
 function setup() {
@@ -136,6 +137,180 @@ describe("append-only bank reconciliation for imported journals", () => {
       expect(verifyAuditChain(db,{companyRoot:root}).ok).toBe(true);
     } finally { db.close(); rmSync(root,{recursive:true,force:true}); }
   });
+
+function setupSameAmountRows() {
+  const root = mkdtempSync(join(tmpdir(), "rentemester-bank-one-journal-"));
+  const paths = ensureCompanyDirs(root);
+  const db = openDb(paths.db);
+  migrate(db);
+  seedAccounts(db);
+  const account = addBankAccount(db, { name: "Same-amount bank", slug: "same-amount-bank", ledgerAccountNo: "2000" });
+  expect(account.ok).toBe(true);
+  const csv = join(root, "bank.csv");
+  writeFileSync(csv, [
+    "transaction_date,text,amount,currency,reference",
+    "2026-03-04,Same amount one,-100.00,DKK,BANK-A",
+    "2026-03-05,Same amount two,-100.00,DKK,BANK-B",
+  ].join("\n"));
+  const imported = importBankCsv(db, root, csv, { account: "same-amount-bank" });
+  expect(imported.ok).toBe(true);
+  const banks = db.query("SELECT id, reference FROM bank_transactions ORDER BY id").all() as Array<{ id: number; reference: string }>;
+  const posted = postVerifiedHistoricalImportEntry(db, {
+    transactionDate: "2026-03-02",
+    text: "Single journal for one bank movement",
+    createdBy: "agent:test",
+    lines: [
+      { accountNo: "3000", debitAmount: 100 },
+      { accountNo: "2000", creditAmount: 100 },
+    ],
+  });
+  expect(posted.ok).toBe(true);
+  return { root, db, bank1: banks[0]!.id, bank2: banks[1]!.id, journalId: Number(posted.entryId) };
+}
+
+describe("one journal entry may reconcile at most one bank transaction", () => {
+  test("accepts the first link, stays idempotent, and rejects a second same-amount bank row", () => {
+    const { root, db, bank1, bank2, journalId } = setupSameAmountRows();
+    try {
+      const first = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank1,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(first.ok).toBe(true);
+
+      const repeated = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank1,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(repeated.ok).toBe(true);
+      expect(repeated.idempotent).toBe(true);
+
+      const second = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank2,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(second.ok).toBe(false);
+      expect(second.errors.join(" ")).toContain(`journal entry ${journalId} is already reconciled to bank transaction ${bank1}`);
+      expect(db.query("SELECT COUNT(*) AS n FROM bank_journal_reconciliation_links").get()).toEqual({ n: 1 });
+      expect(listBankTransactions(db, { status: "matched" }).rows.map((row) => row.id)).toEqual([bank1]);
+      expect(verifyAuditChain(db, { companyRoot: root }).ok).toBe(true);
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("the database itself rejects a duplicate-journal link inserted behind the module guard", () => {
+    const { root, db, bank1, bank2, journalId } = setupSameAmountRows();
+    try {
+      const first = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank1,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(first.ok).toBe(true);
+      expect(() => db.run(
+        "INSERT INTO bank_journal_reconciliation_links (bank_transaction_id, journal_entry_id, match_method, created_by, created_by_program) VALUES (?, ?, 'manual-review', 'agent:test', 'raw-sql')",
+        [bank2, journalId],
+      )).toThrow("already reconciled to another bank transaction");
+      expect(db.query("SELECT COUNT(*) AS n FROM bank_journal_reconciliation_links").get()).toEqual({ n: 1 });
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("audit verification reports a legacy duplicate-journal link as an error without mutating it", () => {
+    const { root, db, bank1, bank2, journalId } = setupSameAmountRows();
+    try {
+      const first = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank1,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(first.ok).toBe(true);
+      db.exec("DROP TRIGGER bank_journal_reconciliation_links_one_bank_row_per_journal");
+      db.run(
+        "INSERT INTO bank_journal_reconciliation_links (bank_transaction_id, journal_entry_id, match_method, created_by, created_by_program) VALUES (?, ?, 'manual-review', 'agent:legacy', 'legacy-fixture')",
+        [bank2, journalId],
+      );
+      const migration = JSON.parse(readFileSync(join(import.meta.dir, "../../src/core/migrations/0057-bank-journal-one-bank-row-per-journal.json"), "utf8")) as { sql: string };
+      db.exec(migration.sql);
+
+      const legacyRows = db.query("SELECT id, bank_transaction_id, journal_entry_id FROM bank_journal_reconciliation_links ORDER BY id").all();
+      expect(legacyRows).toHaveLength(2);
+      const verified = verifyAuditChain(db, { companyRoot: root });
+      expect(verified.ok).toBe(false);
+      expect(JSON.stringify(verified)).toContain(`journal entry ${journalId}: reconciles 2 bank transactions`);
+      expect(db.query("SELECT id, bank_transaction_id, journal_entry_id FROM bank_journal_reconciliation_links ORDER BY id").all()).toEqual(legacyRows);
+      expect(() => db.run(
+        "INSERT INTO bank_journal_reconciliation_links (bank_transaction_id, journal_entry_id, match_method, created_by, created_by_program) VALUES (?, ?, 'manual-review', 'agent:test', 'raw-sql')",
+        [bank2, journalId],
+      )).toThrow("already reconciled to another bank transaction");
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("read-only projections report the duplicate state as ambiguous, never as matched", () => {
+    const { root, db, bank1, bank2, journalId } = setupSameAmountRows();
+    try {
+      const first = linkBankTransactionToJournal(db, {
+        bankTransactionId: bank1,
+        journalEntryId: journalId,
+        matchMethod: "exact-date-amount",
+        createdBy: "agent:test",
+      });
+      expect(first.ok).toBe(true);
+      expect(listBankTransactions(db, { status: "matched" }).rows.map((row) => row.id)).toEqual([bank1]);
+      expect(listBankTransactions(db, { status: "ambiguous" }).rows).toEqual([]);
+
+      db.exec("DROP TRIGGER bank_journal_reconciliation_links_one_bank_row_per_journal");
+      db.run(
+        "INSERT INTO bank_journal_reconciliation_links (bank_transaction_id, journal_entry_id, match_method, created_by, created_by_program) VALUES (?, ?, 'manual-review', 'agent:legacy', 'legacy-fixture')",
+        [bank2, journalId],
+      );
+      const migration = JSON.parse(readFileSync(join(import.meta.dir, "../../src/core/migrations/0057-bank-journal-one-bank-row-per-journal.json"), "utf8")) as { sql: string };
+      db.exec(migration.sql);
+
+      expect(listBankTransactions(db).rows.map((row) => [row.id, row.reconciliationStatus]).sort((a, b) => a[0] - b[0]))
+        .toEqual([[bank1, "ambiguous"], [bank2, "ambiguous"]]);
+      expect(listBankTransactions(db, { status: "matched" }).rows).toEqual([]);
+      expect(listBankTransactions(db, { status: "unmatched" }).rows).toEqual([]);
+      expect(listBankTransactions(db, { status: "ambiguous" }).rows.map((row) => row.id).sort((a, b) => a - b)).toEqual([bank1, bank2]);
+
+      const report = buildBankReconciliationReport(db, "2026-03-01", "2026-03-31");
+      expect(report.ok).toBe(true);
+      expect(report.matchedCount).toBe(0);
+      expect(report.unmatchedCount).toBe(0);
+      expect(report.ambiguousCount).toBe(2);
+      expect(report.matchedAmountTotal).toBe(0);
+      expect(report.ambiguousAmountTotal).toBe(-200);
+      expect(report.ambiguous.map((row) => row.bankTransactionId).sort((a, b) => a - b)).toEqual([bank1, bank2]);
+      expect(report.ambiguous.every((row) => row.journalEntryId === journalId)).toBe(true);
+
+      const readiness = createPeriodCloseReadinessPacket(db, { periodStart: "2026-01-01", periodEnd: "2026-03-31" });
+      const bankControl = readiness.items.find((item) => item.code === "BANK_UNRECONCILED");
+      expect(bankControl?.status).toBe("blocked");
+      expect(bankControl?.evidence).toEqual([
+        expect.objectContaining({ id: bank1, reconciliation_status: "ambiguous" }),
+        expect.objectContaining({ id: bank2, reconciliation_status: "ambiguous" }),
+      ]);
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
 
   test("supersedes an append-only link and retains a green audit through a second correction", () => {
     const { root, db, bank1 } = setup();

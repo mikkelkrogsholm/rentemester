@@ -1,0 +1,5 @@
+{
+  "id": 57,
+  "name": "bank-journal-one-bank-row-per-journal-v57",
+  "sql": "CREATE TRIGGER IF NOT EXISTS bank_journal_reconciliation_links_one_bank_row_per_journal BEFORE INSERT ON bank_journal_reconciliation_links WHEN EXISTS (SELECT 1 FROM bank_journal_reconciliation_links link WHERE link.journal_entry_id = NEW.journal_entry_id AND link.bank_transaction_id <> NEW.bank_transaction_id) BEGIN SELECT RAISE(ABORT, 'bank-journal reconciliation link journal entry is already reconciled to another bank transaction'); END;"
+}
