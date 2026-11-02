@@ -961,7 +961,7 @@ type IssuedInvoiceRepairReversalAuthorization = {
   replacementJournalEntryId: number;
 };
 
-function protectedInvoiceReversalError(
+function protectedApplicationReversalError(
   db: Database,
   original: {
     id: number;
@@ -972,6 +972,17 @@ function protectedInvoiceReversalError(
   input: ReverseJournalInput,
   authorization?: IssuedInvoiceRepairReversalAuthorization,
 ): string | null {
+  // Payable rows are append-only: reversing only their journal would leave
+  // the open-item register counting recognition/payment that no longer exists.
+  const payable = db.query(`
+    SELECT id FROM payables WHERE journal_entry_id = ?
+    UNION ALL
+    SELECT payable_id AS id FROM payable_payments WHERE journal_entry_id = ?
+    LIMIT 1
+  `).get(original.id, original.id) as { id: number } | null;
+  if (payable) {
+    return `journal entry ${input.entryId} is protected payable evidence (payable ${payable.id}) and cannot be reversed without an atomic payable correction workflow`;
+  }
   if (original.document_id == null) return null;
   const document = db.query(
     `SELECT document_type FROM documents
@@ -1020,7 +1031,7 @@ function reverseJournalEntryInternal(
   // leave the invoice/payment/claim row pointing at dead evidence forever and
   // could strand a bank source or receivable balance. Refuse until the domain
   // can reverse both the journal and its application state atomically.
-  const protectedError = protectedInvoiceReversalError(db, original, input, authorization);
+  const protectedError = protectedApplicationReversalError(db, original, input, authorization);
   if (protectedError) {
     return {
       ok: false,
@@ -1091,7 +1102,7 @@ function reverseJournalEntryInternal(
   let result: { entryId: JournalEntryId; entryNo: string; entryHash: string };
   try {
     const apply = () => {
-    const protectedInsideLock = protectedInvoiceReversalError(db, original, input, authorization);
+    const protectedInsideLock = protectedApplicationReversalError(db, original, input, authorization);
     if (protectedInsideLock) throw new Error(protectedInsideLock);
     // KODE-4: re-check the period lock inside the write transaction, matching
     // applyJournalEntry — a reversal date that fell into a period closed after
