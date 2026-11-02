@@ -224,9 +224,9 @@ function invoiceInflowByPeriod(
   windowEnd: string,
 ): Map<string, bigint> {
   const byPeriod = new Map<string, bigint>();
-  // `asOfDate` only affects overdue flags, not the open balance — pass the
+  // Forecasts use all known open items, rather than a historical snapshot. Pass the
   // window start so the list is computed deterministically.
-  const list = buildInvoiceList(db, { status: "all", asOfDate: windowStart });
+  const list = buildInvoiceList(db, { status: "all", asOfDate: windowStart }, { balanceScope: "all-recorded" });
   for (const row of list.rows) {
     if (row.openBalance <= 0) continue;
     const due = row.effectiveDueDate;
@@ -521,7 +521,7 @@ export function buildThirteenWeekLiquidityForecast(db:Database,input:ThirteenWee
   const start=input.startDate, end=addDays(start,weeks*7-1), openingBalanceVerified=bankAccountNumbers(db).length>0, openingOre=toOre(bookedBankBalance(db,addDays(start,-1)));
   const rows:WeeklyLiquidityPeriod[]=[];let baseCashOre=openingOre, scenarioCashOre=openingOre, lowestOre=openingOre;
   const occurrences=plannedCommitmentOccurrences(db,start,weeks);
-  const invoices=buildInvoiceList(db,{status:"all",asOfDate:start}).rows.filter((r):r is typeof r & {effectiveDueDate:string}=>r.openBalance>0&&typeof r.effectiveDueDate==="string"&&r.effectiveDueDate>=start&&r.effectiveDueDate<=addDays(start,weeks*7-1));
+  const invoices=buildInvoiceList(db,{status:"all",asOfDate:start},{balanceScope:"all-recorded"}).rows.filter((r):r is typeof r & {effectiveDueDate:string}=>r.openBalance>0&&typeof r.effectiveDueDate==="string"&&r.effectiveDueDate>=start&&r.effectiveDueDate<=addDays(start,weeks*7-1));
   const payables=buildPayablesList(db,{status:"open",asOfDate:start}).rows.filter(x=>x.dueDate>=start&&x.dueDate<=end);
   const supplements=(input.supplements??[]).filter((item) =>
     Boolean(input.companySlug) && item.companySlug === input.companySlug &&

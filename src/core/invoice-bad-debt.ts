@@ -239,7 +239,7 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
     return { ok: false, appliedRules: [RULE_ID, VAT_RULE_ID], errors: ["non-DKK bad-debt write-offs require deterministic DKK invoice totals"] };
   }
 
-  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate);
+  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate, { balanceScope: "all-recorded" });
   if (!status.ok) return { ok: false, appliedRules: [RULE_ID, VAT_RULE_ID], errors: status.errors };
   const openBalance = roundDkk(Number(status.openBalance ?? 0));
   if (!(openBalance > 0)) return { ok: false, appliedRules: [RULE_ID, VAT_RULE_ID], errors: [`invoice ${invoice.invoice_no} has no open principal balance to write off`] };
@@ -263,7 +263,7 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
 
   try {
     const result = db.transaction(() => {
-      const lockedStatus = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate);
+      const lockedStatus = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate, { balanceScope: "all-recorded" });
       if (!lockedStatus.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID, VAT_RULE_ID], errors: lockedStatus.errors });
       const lockedOpenBalance = roundDkk(Number(lockedStatus.openBalance ?? 0));
       if (grossAmount > lockedOpenBalance) {
@@ -373,7 +373,7 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
         createdByProgram: input.createdByProgram,
       });
 
-      const after = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate);
+      const after = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate, { balanceScope: "all-recorded" });
       if (!after.ok) throw new TransactionRejectionError({ errors: after.errors });
 
       return {

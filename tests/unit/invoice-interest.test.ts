@@ -819,6 +819,7 @@ describe("invoice late interest", () => {
     // Status nets the correction off the interest-claim balance.
     const status = getInvoiceStatus(db, issued.documentId!, "2026-03-31");
     expect(status.totalInterestCorrections).toBe(602.74);
+    expect(getInvoiceStatus(db, issued.documentId!, "2026-03-30").totalInterestCorrections).toBe(0);
     expect(status.totalInterestClaims).toBe(1013.70); // 1616,44 − 602,74
 
     // Idempotent: nothing left to correct.
