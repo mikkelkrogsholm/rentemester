@@ -1705,9 +1705,9 @@
     "www/tsconfig.json": "efa75aad0e2700a840ea4b4d3cd7e2825d098e76590f6ea01238e8a6f0913fde",
     ".gitattributes": "d1580533de3f8a648e168aa83833886a092e0e07cee9da22df8aea2c31a4e428"
   },
-  "graph_sha256": "4b6218b3918d78a1c18f2100b99cd40fb352baab4bb9c6e6e08b5825289cbe74",
-  "nodes": 11323,
-  "edges": 41065,
+  "graph_sha256": "7ecc0c4cc7bfb76b0053ba78faf72cf26cb2c5691703ff9fa519b7b332088926",
+  "nodes": 11329,
+  "edges": 41097,
   "communities": 479,
   "structural": {
     "command": "graphify update .",
@@ -1997,6 +1997,28 @@
     "limitations": [
       "Summarizes concepts; linked external documents were not fetched or independently verified.",
       "Prior pending semantic sources remain pending."
+    ]
+  },
+  "uncertain_einvoice_status_semantic_refresh": {
+    "method": "Scoped additive semantic extraction; retain prior semantic content and preceding structural graph update",
+    "source_commit": "7c5bc419822e8c9748896668debbf4857d66bc0f",
+    "coverage": {
+      "docs/cockpit-api.md": "changed lines 335-342",
+      "docs/efaktura-digisense.md": "changed lines 329-341",
+      "docs/mcp-tool-surface.md": "changed line 242"
+    },
+    "source_sha256": {
+      "docs/cockpit-api.md": "1b9dd4d27973f6b1212d0a2f8dd27da91ec5089d6194547b1458d8908cea73fc",
+      "docs/efaktura-digisense.md": "daea6d21308d074f0f0035b5bfc70392042ad691fe556f821a5f748e8c0dff2a",
+      "docs/mcp-tool-surface.md": "dd2a8e9d41bd855693798cb16fcb89ed451167993515dac8c550bef862e55012"
+    },
+    "new_nodes": 3,
+    "new_edges": 3,
+    "native_token_usage": "unavailable",
+    "limitations": [
+      "Extraction summarizes changed passages only; other material and pending sources are not re-extracted.",
+      "Prior structural graph update adjusted community assignments; existing semantic content and hyperedges retained.",
+      "Earlier efaktura-digisense.md semantic source locations after line 328 predate the 11 inserted lines and may be stale; preserved unchanged."
     ]
   }
 }
