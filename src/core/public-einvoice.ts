@@ -893,6 +893,27 @@ function recordSubmissionEvent(
   );
 }
 
+// Before event-backed reservations, a failed or thrown transport left only
+// this audit message, without proving whether the provider accepted it. Newer
+// failures have one matching append-only outcome event for each audit entry.
+export function hasUnmatchedTransmissionFailure(db: Database, invoiceDocumentId: number): boolean {
+  const result = db.query(`
+    SELECT 1 FROM audit_log a
+    WHERE a.event_type = 'public_einvoice_peppol_transmission'
+      AND a.entity_type = 'document' AND a.entity_id = ?
+      AND a.message LIKE 'PEPPOL transmission failed for invoice %'
+    GROUP BY a.message
+    HAVING COUNT(*) > (
+      SELECT COUNT(*) FROM peppol_submission_events e
+      JOIN peppol_submissions s ON s.id = e.submission_id
+      WHERE s.invoice_document_id = ? AND e.event_type IN ('delivery_failed', 'queued')
+        AND a.message = 'PEPPOL transmission failed for invoice ' || COALESCE(s.invoice_no, CAST(s.invoice_document_id AS TEXT))
+          || ' via access point ' || s.access_point_id || ': ' || e.message
+    ) LIMIT 1
+  `).get(String(invoiceDocumentId), invoiceDocumentId);
+  return Boolean(result);
+}
+
 function validateAccessPointConfig(config: PeppolAccessPointConfig | undefined): string[] {
   const errors: string[] = [];
   if (!config) {
@@ -1440,6 +1461,9 @@ export async function transmitPublicEInvoicePeppol(
     const prior = db.query("SELECT 1 FROM peppol_submissions WHERE invoice_document_id = ? AND oioubl_sha256 <> ? LIMIT 1").get(input.invoiceDocumentId, oioublSha256);
     if (prior) return { action: "different_artifact" as const };
     if (submissionIdentityConflict(db, input.invoiceDocumentId, idempotencyKey, input.accessPoint)) return { action: "different_identity" as const };
+    const existing = db.query("SELECT id, status, transmission_id FROM peppol_submissions WHERE idempotency_key = ?").get(idempotencyKey) as { id: number; status: string; transmission_id: string | null } | null;
+    // Do not create a new row that would obscure an older audit-only attempt.
+    if (!existing && hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return { action: "legacy_failure" as const };
     const reference = `PEPPOL-${invoiceNumber}-${idempotencyKey.slice(0, 12)}`;
     const envelope = buildPeppolSubmissionEnvelope({ submissionReference: reference, idempotencyKey, invoiceNumber, accessPoint: input.accessPoint, receiverEndpointId: receiver, oioublSha256, format: oioubl.xml!.includes("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>") ? "OIOUBL-2.1" : "OIOUBL-2.02", status: "prepared" });
     runSql(db,
@@ -1459,13 +1483,19 @@ export async function transmitPublicEInvoicePeppol(
     if (row.status === "acknowledged" || effective) return { row, action: "acknowledged" as const, documentId: effective?.document_id ?? row.transmission_id };
     const latest = latestSubmissionEvent(db, row.id);
     const queued = queuedSubmissionEvent(db, row.id);
-    if (queued && hasText(queued.document_id)) {
-      const acceptedStatus = latest?.event_type === "status_observed" ? latest.status : queued.status;
-      return { row, action: "accepted" as const, documentId: queued.document_id, acceptedStatus };
+    // Older versions stored the provider document ID on a prepared row,
+    // without a queued event. It is acceptance evidence just as much as a
+    // queued event, and must never trigger a second delivery.
+    const queuedDocumentId = queued?.document_id ?? (row.status === "prepared" ? row.transmission_id : null);
+    if (hasText(queuedDocumentId)) {
+      const acceptedStatus = latest?.event_type === "status_observed" ? latest.status : queued?.status;
+      return { row, action: "accepted" as const, documentId: queuedDocumentId, acceptedStatus };
     }
-    if (latest?.event_type === "delivery_failed" && latest.status !== "pre-acceptance-failed") {
-      return { row, action: "uncertain" as const };
-    }
+    if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return { action: "legacy_failure" as const };
+    // A later safe failure cannot erase an earlier ambiguous attempt. Older
+    // event writers did not classify failures as proven pre-acceptance.
+    const uncertainFailure = db.query("SELECT 1 FROM peppol_submission_events WHERE submission_id = ? AND event_type = 'delivery_failed' AND COALESCE(status, '') <> 'pre-acceptance-failed' LIMIT 1").get(row.id);
+    if (uncertainFailure) return { row, action: "uncertain" as const };
     if (latest?.event_type === "delivery_reserved") return { row, action: "in_progress" as const };
     // Legacy DigiSense attempts without an environment binding cannot safely be
     // retried: the status API could later have no unambiguous provider identity.
@@ -1476,6 +1506,7 @@ export async function transmitPublicEInvoicePeppol(
     return { row, action: "deliver" as const };
   }).immediate();
   if (reservation.action === "different_artifact") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
+  if (reservation.action === "legacy_failure") return { ok: false, invoiceNumber, status: "uncertain", appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A historical PEPPOL transmission failure has no matching delivery outcome evidence; reconcile with the provider before any further delivery"] };
   if (reservation.action === "different_identity") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different or unverifiable PEPPOL transport identity or provider environment already exists for this invoice; reconcile existing provider evidence"] };
   if (reservation.action === "acknowledged") return { ...rowToSubmissionResult(db, reservation.row, invoiceNumber, true), status: "acknowledged", transmissionId: reservation.documentId ?? undefined };
   if (reservation.action === "accepted") return { ok: true, invoiceNumber, submissionReference: reservation.row.submission_reference, idempotencyKey, status: isTerminalAcceptedFailure(reservation.acceptedStatus) ? "failed" : "prepared", duplicate: true, transmissionId: reservation.documentId, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [] };
