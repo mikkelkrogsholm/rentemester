@@ -857,6 +857,8 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 							</strong>
 							. Handlingen observerer kun den eksisterende DigiSense-afsendelse
 							og sender ikke fakturaen igen.
+							{checkingPublicStatus.peppolStatus?.status === "uncertain" &&
+								" Et tidligere forsøg kræver fortsat manuel afstemning, også hvis det kendte dokument er leveret."}
 						</p>
 					}
 					confirmLabel="Kontrollér status"
@@ -1790,7 +1792,9 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 										(row.peppolStatus === null ||
 											row.peppolStatus.status === "retryable");
 									const canCheckPublicStatus =
-										row.peppolStatus?.status === "queued";
+										row.peppolStatus?.status === "queued" ||
+										(row.peppolStatus?.status === "uncertain" &&
+											Boolean(row.peppolStatus.transmissionId));
 									// #429: "Send på mail" appears only when the customer
 									// has an e-mail on the kontaktkort — without it the
 									// dialog has no recipient to prefill, and the issue

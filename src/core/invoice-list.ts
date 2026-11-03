@@ -2,6 +2,7 @@ import type { Database } from "bun:sqlite";
 import { getInvoiceStatus } from "./invoice-payments";
 import { normalizeEanNumber } from "./ean";
 import { todayIsoDate } from "./dates";
+import { hasUnmatchedTransmissionFailure } from "./public-einvoice";
 
 export type InvoiceQueryStatus = "open" | "paid" | "credited" | "refunded" | "overpaid" | "written_off" | "overdue" | "all";
 
@@ -24,8 +25,8 @@ export type InvoiceListFilters = {
  * append-only `peppol_submissions` table populated by
  * `submitPublicEInvoicePeppol` / `transmitPublicEInvoicePeppol` (#128).
  *
- * `null` when the invoice has never been submitted/transmitted as a public
- * e-faktura. The read model distinguishes accepted `queued` delivery from a
+ * `null` when no submission or historical transmission failure is recorded.
+ * The read model distinguishes accepted `queued` delivery from a
  * terminal provider `failed` result, a pre-acceptance `retryable` failure and
  * an active `in_progress` reservation. This distinction prevents both duplicate
  * delivery and a UI dead end after a safe-to-retry failure.
@@ -216,17 +217,17 @@ function loadLatestPeppolStatus(db: Database, invoiceDocumentId: number): Invoic
     const row = db
       .query(
         `SELECT s.submission_reference,
-                COALESCE(d.document_id, CASE WHEN s.status = 'acknowledged' THEN s.transmission_id END, q.document_id) AS transmission_id,
+                COALESCE(d.document_id, s.transmission_id, q.document_id) AS transmission_id,
                 COALESCE(d.observed_at, CASE WHEN s.status = 'acknowledged' THEN s.acknowledged_at END) AS acknowledged_at,
                 CASE
                   WHEN d.id IS NOT NULL OR s.status = 'acknowledged' THEN 'acknowledged'
                   WHEN latest.event_type = 'delivery_reserved' THEN 'in_progress'
                   WHEN latest.event_type = 'delivery_failed' AND COALESCE(latest.status, '') <> 'pre-acceptance-failed' THEN 'uncertain'
-                  WHEN q.id IS NOT NULL AND (
+                  WHEN (q.id IS NOT NULL OR (s.status = 'prepared' AND s.transmission_id IS NOT NULL)) AND (
                     q.status IN ('document-not-valid', 'unable-to-deliver', 'unknown-server-error')
                     OR latest.status IN ('document-not-valid', 'unable-to-deliver', 'unknown-server-error')
                   ) THEN 'failed'
-                  WHEN q.id IS NOT NULL AND latest.event_type IN ('queued', 'status_observed') THEN 'queued'
+                  WHEN (q.id IS NOT NULL AND latest.event_type IN ('queued', 'status_observed')) OR (s.status = 'prepared' AND s.transmission_id IS NOT NULL) THEN 'queued'
                   ELSE 'retryable'
                 END AS status
          FROM peppol_submissions s
@@ -256,9 +257,14 @@ function loadLatestPeppolStatus(db: Database, invoiceDocumentId: number): Invoic
           acknowledged_at: string | null;
         }
       | null;
-    if (!row) return null;
+    // An unresolved audit may describe an earlier duplicate even when a later
+    // submission was accepted. Preserve its document ID for status observation.
+    const unresolvedAudit = hasUnmatchedTransmissionFailure(db, invoiceDocumentId);
+    if (!row) return unresolvedAudit ? { status: "uncertain", submissionReference: "ukendt", transmissionId: null, acknowledgedAt: null } : null;
+    const uncertainEvent = db.query(`SELECT 1 FROM peppol_submission_events e JOIN peppol_submissions s ON s.id = e.submission_id WHERE s.invoice_document_id = ? AND e.event_type = 'delivery_failed' AND COALESCE(e.status, '') <> 'pre-acceptance-failed' LIMIT 1`).get(invoiceDocumentId);
+    const status = unresolvedAudit || ((row.status === "retryable" || row.status === "in_progress") && uncertainEvent) ? "uncertain" : row.status;
     return {
-      status: row.status,
+      status,
       submissionReference: row.submission_reference,
       transmissionId: row.transmission_id,
       acknowledgedAt: row.acknowledged_at,

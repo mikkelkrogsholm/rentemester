@@ -375,9 +375,12 @@ export type InvoiceSendEInvoiceInput = {
 export type InvoiceSendEInvoiceSummary = {
   invoiceNumber: string | null;
   submissionReference: string | null;
-  status: "prepared" | "acknowledged" | null;
+  status: "prepared" | "failed" | "uncertain" | "acknowledged" | null;
   duplicate: boolean;
   transmissionId?: string | null;
+  providerStatus?: string | null;
+  reconciliationRequired?: boolean;
+  reconciliationMessage?: string | null;
   envelopeSha256: string | null;
   oioublSha256: string | null;
 };

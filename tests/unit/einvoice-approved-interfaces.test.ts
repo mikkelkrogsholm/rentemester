@@ -13,6 +13,9 @@ import { renderDocumentPdf } from "../../src/design/pdf-render";
 import { registerInvoiceIssuanceTools } from "../../src/mcp/tools/invoice/issuance";
 import { registerEfakturaTools } from "../../src/mcp/tools/efaktura";
 import { syntheticDigisenseFetch } from "../helpers/synthetic-digisense-fetch";
+import { issueInvoice } from "../../src/core/issued-invoices";
+import { transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
+import { digisenseAccessPointIdentity, digisenseProviderBinding } from "../../src/core/efaktura/digisense-wiring";
 
 const payload = {
   invoiceType: "full" as const, issueDate: "2026-05-16", dueDate: "2026-06-16", currency: "DKK",
@@ -43,6 +46,45 @@ function checkArtifact(xml: string, hash: string) {
 }
 
 describe("synthetic approved DigiSense interfaces", () => {
+  test.each(["CLI", "MCP"] as const)("%s status observes a queued document with unresolved historical ambiguity", async (surface) => {
+    const f = setup();
+    const originalFetch = globalThis.fetch;
+    const calls: Array<{ route: string; body: string }> = [];
+    globalThis.fetch = syntheticDigisenseFetch((route, body) => calls.push({ route, body })) as typeof fetch;
+    try {
+      const issued = issueInvoice(f.db, f.root, { ...payload, invoiceNumber: "2026-0001", vatTreatment: "standard" });
+      expect(issued.ok).toBe(true);
+      const queued = await transmitPublicEInvoicePeppol(f.db, { invoiceDocumentId: issued.documentId!, accessPoint: digisenseAccessPointIdentity("synthetic-key"), providerBinding: digisenseProviderBinding("test", "synthetic-key") }, () => ({ ok: false, error: "queued", queuedDocumentId: "synthetic-queued" }));
+      expect(queued.transmissionId).toBe("synthetic-queued");
+      f.db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(issued.documentId), `PEPPOL transmission failed for invoice ${issued.invoiceNumber} via access point digisense: historical timeout`]);
+      if (surface === "CLI") {
+        const log = join(f.root, "fake-status.jsonl");
+        const proc = Bun.spawn(["bun", "run", "--preload", "./tests/helpers/synthetic-digisense-preload.ts", "src/cli.ts", "efaktura", "leveringsstatus", "--document-id", String(issued.documentId), "--confirm", "yes", "--company", f.root, "--actor", "user:synthetic"], { env: { ...process.env, SYNTHETIC_DIGISENSE_LOG: log }, stdout: "pipe", stderr: "pipe" });
+        const [out, err, code] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited]);
+        expect(err).toBe(""); expect(code).toBe(1);
+        expect(JSON.parse(out)).toMatchObject({ ok: true, status: "uncertain", transmissionId: "synthetic-queued", providerStatus: "delivered", reconciliationRequired: true });
+        const network = readFileSync(log, "utf8").trim().split("\n").map((line) => JSON.parse(line));
+        expect(network).toHaveLength(1);
+        expect(network[0].route).toContain("/document-status/");
+        const alias = Bun.spawn(["bun", "run", "--preload", "./tests/helpers/synthetic-digisense-preload.ts", "src/cli.ts", "efaktura", "status", "--document-id", String(issued.documentId), "--confirm", "yes", "--company", f.root, "--actor", "user:synthetic"], { env: { ...process.env, SYNTHETIC_DIGISENSE_LOG: log }, stdout: "pipe", stderr: "pipe" });
+        const [aliasOut, aliasErr, aliasCode] = await Promise.all([new Response(alias.stdout).text(), new Response(alias.stderr).text(), alias.exited]);
+        expect(aliasErr).toBe(""); expect(aliasCode).toBe(1);
+        expect(JSON.parse(aliasOut)).toMatchObject({ ok: true, status: "uncertain", transmissionId: "synthetic-queued", providerStatus: "delivered", reconciliationRequired: true });
+        expect(readFileSync(log, "utf8").trim().split("\n")).toHaveLength(1);
+      } else {
+        const server = new McpServer({ name: "synthetic", version: "1" });
+        server.server.getClientVersion = () => ({ name: "synthetic", version: "1" });
+        registerEfakturaTools(server);
+        const registered = (server as any)._registeredTools;
+        const status = (await registered.efaktura_status.handler({ company: f.root, documentId: issued.documentId, confirm: true }, { signal: new AbortController().signal })).structuredContent;
+        expect(status).toMatchObject({ ok: true, data: { status: "uncertain", transmissionId: "synthetic-queued", providerStatus: "delivered", reconciliationRequired: true } });
+        expect(calls).toHaveLength(1);
+        expect(calls[0]!.route).toContain("/document-status/");
+      }
+      expect((f.db.query("SELECT COUNT(*) AS n FROM peppol_submission_events WHERE event_type = 'delivered'").get() as { n: number }).n).toBe(1);
+    } finally { globalThis.fetch = originalFetch; f.close(); }
+  });
+
   test("CLI reviews, issues, posts and transmits the same hash-bound XML", async () => {
     const f = setup();
     try {
@@ -66,6 +108,15 @@ describe("synthetic approved DigiSense interfaces", () => {
       expect(validations[0].body).toBe(deliveries[0].body); expect(validations[1].body).toBe(deliveries[0].body);
       checkArtifact(deliveries[0].body, pre.xmlSha256);
       expect((f.db.query("SELECT oioubl_sha256 FROM peppol_submissions").get() as any).oioubl_sha256).toBe(pre.xmlSha256);
+      f.db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(issued.documentId), `PEPPOL transmission failed for invoice ${issued.invoiceNumber} via access point digisense: historical timeout`]);
+      const proc = Bun.spawn(["bun", "run", "--preload", "./tests/helpers/synthetic-digisense-preload.ts", "src/cli.ts", "efaktura", "leveringsstatus", "--document-id", String(issued.documentId), "--confirm", "yes", "--company", f.root, "--actor", "user:synthetic"], { env: { ...process.env, SYNTHETIC_DIGISENSE_LOG: log }, stdout: "pipe", stderr: "pipe" });
+      const [out, err, code] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited]);
+      expect(err).toBe("");
+      expect(code).toBe(1);
+      const status = JSON.parse(out);
+      expect(status).toMatchObject({ ok: true, status: "uncertain", transmissionId: "synthetic-document", providerStatus: "delivered", reconciliationRequired: true });
+      expect(status.reconciliationMessage).toContain("reconcile with the provider");
+      expect(readFileSync(log, "utf8").trim().split("\n")).toHaveLength(calls.length);
     } finally { f.close(); }
   });
   test("MCP reviews, issues, posts and transmits the same hash-bound XML", async () => {
@@ -93,6 +144,12 @@ describe("synthetic approved DigiSense interfaces", () => {
       expect(validations[0].body).toBe(deliveries[0].body); expect(validations[1].body).toBe(deliveries[0].body);
       checkArtifact(deliveries[0].body, pre.data.xmlSha256);
       expect((f.db.query("SELECT oioubl_sha256 FROM peppol_submissions").get() as any).oioubl_sha256).toBe(pre.data.xmlSha256);
+      f.db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(issued.data.documentId), `PEPPOL transmission failed for invoice ${issued.data.invoiceNumber} via access point digisense: historical timeout`]);
+      const callCount = calls.length;
+      const status = await call("efaktura_status", { documentId: issued.data.documentId, confirm: true });
+      expect(status).toMatchObject({ ok: true, data: { status: "uncertain", transmissionId: "synthetic-document", providerStatus: "delivered", reconciliationRequired: true } });
+      expect(status.data.reconciliationMessage).toContain("reconcile with the provider");
+      expect(calls).toHaveLength(callCount);
     } finally { globalThis.fetch = originalFetch; f.close(); }
   });
 });

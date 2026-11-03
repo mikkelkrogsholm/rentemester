@@ -23,6 +23,8 @@ import { configureBackupLock } from "../../src/core/backup-governance";
 import { createSystemBackup } from "../../src/core/system-backups";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { setInvoiceDigisenseDependenciesForTests } from "../../src/server/write-handlers/invoice";
+import { digisenseAccessPointIdentity, digisenseProviderBinding } from "../../src/core/efaktura/digisense-wiring";
+import { transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -171,11 +173,11 @@ describe("Cockpit write — DigiSense e-faktura", () => {
     let deliveries = 0;
     let statusCalls = 0;
     setInvoiceDigisenseDependenciesForTests({
-      resolveTransmitter: () => ({ ok: true, companyKey: "company-a", transmitter: () => {
+      resolveTransmitter: () => ({ ok: true, companyKey: "company-a", providerBinding: digisenseProviderBinding("test", "company-a"), transmitter: () => {
         deliveries += 1;
         return { ok: false, error: "queued", queuedDocumentId: "queued-1" };
       } }),
-      resolveStatusChecker: () => ({ ok: true, companyKey: "company-a", client: { documentStatus: async () => {
+      resolveStatusChecker: () => ({ ok: true, environment: "test", companyKey: "company-a", client: { documentStatus: async () => {
         statusCalls += 1;
         return { ok: true, data: { documentStatus: "delivered", message: "done", publicUrl: null } };
       } } } as any),
@@ -190,6 +192,33 @@ describe("Cockpit write — DigiSense e-faktura", () => {
       expect(observed.body.submission.status).toBe("acknowledged");
       expect(statusCalls).toBe(1);
       expect(deliveries).toBe(1);
+    } finally {
+      setInvoiceDigisenseDependenciesForTests(null);
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("status response keeps historical uncertainty alongside the observed document status", async () => {
+    const { root: ws, slug } = makeWorkspace("digisense-status-uncertain");
+    let checks = 0;
+    setInvoiceDigisenseDependenciesForTests({
+      resolveStatusChecker: () => ({ ok: true, environment: "test", companyKey: "company-a", client: { documentStatus: async () => {
+        checks++;
+        return { ok: true, data: { documentStatus: "delivered", message: "done", publicUrl: null } };
+      } } } as any),
+    });
+    try {
+      const documentId = issuePublicInvoice(ws, slug);
+      const db = openDb(companyPaths(companyRootForSlug(ws, slug)).db);
+      try {
+        await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: documentId, accessPoint: digisenseAccessPointIdentity("company-a"), providerBinding: digisenseProviderBinding("test", "company-a") }, () => ({ ok: false, error: "queued", queuedDocumentId: "known-id" }));
+        db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(documentId), "PEPPOL transmission failed for invoice 2026-0001 via access point digisense: old timeout"]);
+      } finally { db.close(); }
+      const observed = await post(config({ workspaceRoot: ws }), `/api/companies/${slug}/invoices/send-public/status`, { invoiceDocumentId: documentId, confirm: true });
+      expect(observed.status).toBe(200);
+      expect(observed.body.submission).toMatchObject({ status: "uncertain", transmissionId: "known-id", providerStatus: "delivered", reconciliationRequired: true });
+      expect(observed.body.submission.reconciliationMessage).toContain("reconcile with the provider");
+      expect(checks).toBe(1);
     } finally {
       setInvoiceDigisenseDependenciesForTests(null);
       rmSync(ws, { recursive: true, force: true });

@@ -466,6 +466,24 @@ describe("InvoicesView — write actions", () => {
     expect(screen.queryByRole("button", { name: "Opdatér leveringsstatus" })).not.toBeInTheDocument();
   });
 
+  test("an uncertain delivery with a known document ID can be checked but not sent", async () => {
+    mockFetch(route({ invoices: [{
+      documentId: 12, invoiceNo: "2026-00012", invoiceDate: "2026-03-15",
+      customerName: "Synthetic customer", customerEmail: null,
+      buyerEanNumber: "5790000123456", buyerPublicRecipient: true,
+      peppolStatus: { status: "uncertain", submissionReference: "PEPPOL-12", transmissionId: "known-id", acknowledgedAt: null },
+      lastEmailedAt: null, lastReminderAt: null, lastReminderSequence: 0,
+      grossAmount: 1000, openBalance: 1000, currency: "DKK", status: "open",
+      effectiveDueDate: "2026-04-14", overdueDays: 0,
+    }] }));
+    renderView();
+    await screen.findByRole("heading", { name: "Fakturaer" });
+    expect(screen.getByText("E-faktura-status ukendt — afklar manuelt")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Send e-faktura" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Opdatér leveringsstatus" }));
+    expect(screen.getByText(/Et tidligere forsøg kræver fortsat manuel afstemning/)).toBeInTheDocument();
+  });
+
   test("Send e-faktura is hidden for an archived year (no live ledger)", async () => {
     mockFetch(route({ archived: true, selectedYear: "2025", invoices: [] }));
     renderView();

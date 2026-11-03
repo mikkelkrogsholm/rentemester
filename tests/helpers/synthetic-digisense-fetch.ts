@@ -7,6 +7,7 @@ export function syntheticDigisenseFetch(record: (route: string, body: string) =>
     record(url.pathname, body);
     if (url.pathname.endsWith("/validate-document")) return Response.json({ statusCode: 200, success: true, errors: [] });
     if (url.pathname.endsWith("/lookup-participant")) return Response.json({ participantAbleToReceive: true, matchedServiceEndpointUrls: ["https://example.invalid"], matchedDocumentTypes: [{ scheme: "busdox-docid-qns", value: "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##OIOUBL-2.1::2.1" }] });
+    if (url.pathname.includes("/document-status/")) return Response.json({ statusCode: 200, documentStatus: "delivered", documentId: "synthetic-queued", message: "ok" });
     if (url.pathname.endsWith("/deliver-document")) return Response.json({ statusCode: 200, documentStatus: "delivered", documentId: "synthetic-document", message: "ok" });
     throw new Error(`Unexpected synthetic request: ${url.pathname}`);
   };

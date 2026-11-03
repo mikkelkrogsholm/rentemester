@@ -326,8 +326,19 @@ Hvis en afsendelse ender som `prepared` med et Digisense documentId, brug
 `efaktura leveringsstatus --document-id <lokalt-id> --confirm yes` (eller den kompatible alias
 `efaktura status`, eller
 `efaktura_status`). Den kalder kun `document-status`, gemmer append-only
-statusevidens og kalder aldrig `document-delivery` igen. Når status er
-`delivered`, bliver resultatet effektivt `acknowledged` for senere send.
+statusevidens og kalder aldrig `document-delivery` igen. Når det kendte
+providerdokument er `delivered`, bliver det normalt effektivt `acknowledged`.
+
+Et ældre, uafklaret afsendelsesforsøg kan dog være en ekstra levering. Så
+returnerer et vellykket statusopslag `ok:true`, `status:"uncertain"`,
+`reconciliationRequired:true`, `reconciliationMessage`, `transmissionId` og
+`providerStatus`. `providerStatus` beskriver kun det kendte dokument, ikke om
+et tidligere forsøg også blev leveret. Afstem historikken med provideren; send
+ikke igen. CLI'en udskriver resultatet og afslutter med kode 1 ved `uncertain`.
+Et statusopslag kan også bruge allerede gemt leveringsbevis uden et nyt kald.
+Hvis opslaget fejler, er `ok:false`, og fejlene beskriver både opslagsfejlen og
+det uafklarede forsøg. Sikkert statusopslag kræver verificerbar binding til
+samme DigiSense-miljø og konto.
 
 KSeF-værdierne følger Digisense-kontrakten: `PROD`, `TEST` og `DEMO`.
 De følger samme forudsætninger og confirm/actor-gates som CLI'en. Se de

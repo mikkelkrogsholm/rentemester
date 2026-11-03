@@ -88,6 +88,11 @@ describe("MUTATING_COMMANDS governance-klasser (audit AGENT-1/AGENT-2)", () => {
   // Audit 2026-06-11 (AGENT-3): COMPLETENESS-værn. En kurateret liste over de
   // CLI-kommandoer hvis handler skriver til company-db'en eller audit_log'en
   // (verificeret ved at læse src/cli/*.ts-handlerne mod deres core-funktioner).
+  test("both DigiSense delivery status commands are actor-gated mutations", () => {
+    expect(MUTATING_COMMANDS.has("efaktura status")).toBe(true);
+    expect(MUTATING_COMMANDS.has("efaktura leveringsstatus")).toBe(true);
+  });
+
   // Hver SKAL stå i MUTATING_COMMANDS, ellers kører den uden actor-gate og
   // skriver en u-attribueret række. Tilføj nye db/audit-skrivende kommandoer
   // her samtidig med at de tilføjes i MUTATING_COMMANDS — det fanger den

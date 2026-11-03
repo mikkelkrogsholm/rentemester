@@ -252,6 +252,7 @@ export const MUTATING_COMMANDS = new Set([
   "efaktura modtag",
   "efaktura modtag-workspace",
   "efaktura status",
+  "efaktura leveringsstatus",
   // ===== END DIGISENSE E-FAKTURA (#efaktura) =====
 ]);
 
