@@ -255,7 +255,7 @@ function invoiceSuggestion(db: Database, bank: ReturnType<typeof unmatchedBankTr
   // against its credit note by creditNoteRefundSuggestion (#182), a separate
   // matching direction.
   if (!(Number(bank.amount) > 0)) return null;
-  const status = getInvoiceStatus(db, doc.id, bank.transaction_date);
+  const status = getInvoiceStatus(db, doc.id, bank.transaction_date, { balanceScope: "all-recorded" });
   if (!status.ok) return null;
   const openBalance = roundDkk(Number(status.openBalance ?? 0));
   const claimOpenBalance = roundDkk(Number(status.claimOpenBalance ?? 0));
@@ -427,7 +427,7 @@ function creditNoteRefundSuggestion(
   const grossAmount = roundDkk(Number(doc.amount_inc_vat ?? 0));
   if (!(grossAmount > 0)) return null;
   const refundAmount = Math.abs(Number(bank.amount));
-  const status = getInvoiceStatus(db, doc.original_invoice_document_id, bank.transaction_date);
+  const status = getInvoiceStatus(db, doc.original_invoice_document_id, bank.transaction_date, { balanceScope: "all-recorded" });
   if (!status.ok) return null;
   const refundableCreditBalance = roundDkk(Math.max(0, -Number(status.openBalance ?? 0)));
   if (!(refundableCreditBalance > 0) || refundAmount > refundableCreditBalance) return null;

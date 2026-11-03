@@ -187,11 +187,22 @@ export function getInvoiceStatus(
   db: Database,
   invoiceDocumentId: number,
   asOfDate?: string,
-  options: { skipEvidenceValidation?: boolean } = {},
+  options: { skipEvidenceValidation?: boolean; balanceScope?: "all-recorded" } = {},
 ): InvoiceStatusResult {
   const invoice = getIssuedInvoice(db, invoiceDocumentId);
   if (!invoice) return { ok: false, errors: [`invoice document ${invoiceDocumentId} does not exist`] };
   if (invoice.document_type !== "issued_invoice") return { ok: false, errors: [`document ${invoiceDocumentId} is not an issued invoice`] };
+
+  if (asOfDate !== undefined && !looksLikeIsoDate(asOfDate)) {
+    return { ok: false, errors: ["asOfDate must be YYYY-MM-DD when present"] };
+  }
+  // Mutation eligibility must retain all recorded effects, including later
+  // payments. Explicit historical reads instead use an inclusive cutoff.
+  const cutoff = options.balanceScope === "all-recorded" ? undefined : asOfDate;
+  if (cutoff && invoice.invoice_date && invoice.invoice_date > cutoff) {
+    return { ok: false, errors: [`invoice document ${invoiceDocumentId} is not effective as of ${cutoff}`] };
+  }
+  const parameters = cutoff ? [invoiceDocumentId, cutoff] : [invoiceDocumentId];
 
   if (!options.skipEvidenceValidation) {
     const evidence = validateInvoiceJournalEvidence(db, { invoiceDocumentId });
@@ -205,60 +216,60 @@ export function getInvoiceStatus(
   const payments = db.query(
     `SELECT p.id, p.payment_date, p.amount, p.bank_transaction_id, p.journal_entry_id, p.note
      FROM invoice_payments p
-     WHERE p.invoice_document_id = ?
+     WHERE p.invoice_document_id = ?${cutoff ? " AND p.payment_date <= ?" : ""}
      ORDER BY p.id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
+  ).all(...parameters) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
 
   const creditNotes = db.query(
     `SELECT id, invoice_no, amount_inc_vat, invoice_date
      FROM documents
-     WHERE document_type = 'credit_note' AND payment_details = ?
+     WHERE document_type = 'credit_note' AND payment_details = ?${cutoff ? " AND invoice_date <= ?" : ""}
      ORDER BY id ASC`
-  ).all(invoice.invoice_no) as Array<{ id: number; invoice_no: string; amount_inc_vat: number | null; invoice_date: string | null }>;
+  ).all(...(cutoff ? [invoice.invoice_no, cutoff] : [invoice.invoice_no])) as Array<{ id: number; invoice_no: string; amount_inc_vat: number | null; invoice_date: string | null }>;
 
   const refunds = db.query(
     `SELECT id, refund_date, amount, bank_transaction_id, journal_entry_id, note
-     FROM invoice_refunds WHERE invoice_document_id = ? ORDER BY id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; refund_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
+     FROM invoice_refunds WHERE invoice_document_id = ?${cutoff ? " AND refund_date <= ?" : ""} ORDER BY id ASC`
+  ).all(...parameters) as Array<{ id: number; refund_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
 
   const claimPayments = db.query(
     `SELECT id, payment_date, amount, bank_transaction_id, journal_entry_id, note
-     FROM invoice_claim_payments WHERE invoice_document_id = ? ORDER BY id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
+     FROM invoice_claim_payments WHERE invoice_document_id = ?${cutoff ? " AND payment_date <= ?" : ""} ORDER BY id ASC`
+  ).all(...parameters) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number | null; note: string | null }>;
 
   const badDebtWriteOffs = db.query(
     `SELECT id, writeoff_date, gross_amount, net_amount, vat_amount, journal_entry_id, note
-     FROM invoice_bad_debt_writeoffs WHERE invoice_document_id = ? ORDER BY id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; writeoff_date: string; gross_amount: number; net_amount: number; vat_amount: number; journal_entry_id: number; note: string | null }>;
+     FROM invoice_bad_debt_writeoffs WHERE invoice_document_id = ?${cutoff ? " AND writeoff_date <= ?" : ""} ORDER BY id ASC`
+  ).all(...parameters) as Array<{ id: number; writeoff_date: string; gross_amount: number; net_amount: number; vat_amount: number; journal_entry_id: number; note: string | null }>;
 
   const reminders = db.query(
     `SELECT r.id, r.reminder_date, r.fee_amount, r.note, p.journal_entry_id
      FROM invoice_reminders r
      LEFT JOIN invoice_reminder_postings p ON p.reminder_id = r.id
-     WHERE r.invoice_document_id = ? ORDER BY r.reminder_date ASC, r.id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; reminder_date: string; fee_amount: number; note: string | null; journal_entry_id: number | null }>;
+     WHERE r.invoice_document_id = ?${cutoff ? " AND r.reminder_date <= ?" : ""} ORDER BY r.reminder_date ASC, r.id ASC`
+  ).all(...parameters) as Array<{ id: number; reminder_date: string; fee_amount: number; note: string | null; journal_entry_id: number | null }>;
 
   const compensationClaims = db.query(
     `SELECT c.id, c.claim_date, c.amount_dkk, c.note, p.journal_entry_id
      FROM invoice_compensation_claims c
      LEFT JOIN invoice_compensation_postings p ON p.compensation_claim_id = c.id
-     WHERE c.invoice_document_id = ? ORDER BY c.claim_date ASC, c.id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; claim_date: string; amount_dkk: number; note: string | null; journal_entry_id: number | null }>;
+     WHERE c.invoice_document_id = ?${cutoff ? " AND c.claim_date <= ?" : ""} ORDER BY c.claim_date ASC, c.id ASC`
+  ).all(...parameters) as Array<{ id: number; claim_date: string; amount_dkk: number; note: string | null; journal_entry_id: number | null }>;
 
   const interestClaims = db.query(
     `SELECT c.id, c.claim_date, c.amount_dkk, c.reference_rate_percent, c.annual_interest_rate_percent, c.overdue_days, c.note, p.journal_entry_id
      FROM invoice_interest_claims c
      LEFT JOIN invoice_interest_postings p ON p.interest_claim_id = c.id
-     WHERE c.invoice_document_id = ? ORDER BY c.claim_date ASC, c.id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; claim_date: string; amount_dkk: number; reference_rate_percent: number; annual_interest_rate_percent: number; overdue_days: number; note: string | null; journal_entry_id: number | null }>;
+     WHERE c.invoice_document_id = ?${cutoff ? " AND c.claim_date <= ?" : ""} ORDER BY c.claim_date ASC, c.id ASC`
+  ).all(...parameters) as Array<{ id: number; claim_date: string; amount_dkk: number; reference_rate_percent: number; annual_interest_rate_percent: number; overdue_days: number; note: string | null; journal_entry_id: number | null }>;
 
   // Correcting reversals of over-claimed late interest (back-dated balance
   // reductions); they net DOWN the interest-claim balance.
   const interestCorrections = db.query(
     `SELECT id, correction_date, amount_dkk, journal_entry_id
      FROM invoice_interest_corrections
-     WHERE invoice_document_id = ? ORDER BY id ASC`
-  ).all(invoiceDocumentId) as Array<{ id: number; correction_date: string; amount_dkk: number; journal_entry_id: number }>;
+     WHERE invoice_document_id = ?${cutoff ? " AND correction_date <= ?" : ""} ORDER BY id ASC`
+  ).all(...parameters) as Array<{ id: number; correction_date: string; amount_dkk: number; journal_entry_id: number }>;
 
   const grossAmount = roundDkk(Number(invoice.amount_inc_vat ?? 0));
   const creditedAmount = sumDkk(creditNotes.map((c) => Number(c.amount_inc_vat ?? 0)));

@@ -117,7 +117,7 @@ export function calculateInvoiceLateCompensation(db: Database, input: CalculateI
   if (!invoice) return { ok: false, appliedRules: [RULE_ID], errors: [`invoice document ${input.invoiceDocumentId} does not exist`] };
   if (invoice.document_type !== "issued_invoice") return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.invoiceDocumentId} is not an issued invoice`] };
 
-  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate);
+  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate, { balanceScope: "all-recorded" });
   if (!status.ok) return { ok: false, appliedRules: [RULE_ID], errors: status.errors };
 
   const payload = invoice.payload_json ? JSON.parse(invoice.payload_json) : null;
@@ -209,7 +209,7 @@ function registerInvoiceLateCompensationTxn(db: Database, input: RegisterInvoice
     createdByProgram: input.createdByProgram,
   });
 
-  const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate);
+  const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate, { balanceScope: "all-recorded" });
   return {
     ok: true,
     claimId: inserted.id,
@@ -323,7 +323,7 @@ export function postInvoiceLateCompensationToLedger(db: Database, input: PostInv
         createdByProgram: input.createdByProgram,
       });
 
-      const statusAfter = getInvoiceStatus(db, claim.invoice_document_id, transactionDate);
+      const statusAfter = getInvoiceStatus(db, claim.invoice_document_id, transactionDate, { balanceScope: "all-recorded" });
       return {
         ...journal,
         claimId: claim.id,
