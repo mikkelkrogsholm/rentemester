@@ -275,6 +275,57 @@ function buildPublicEInvoiceXml(invoiceNumber: string, payload: InvoicePayload) 
   ].filter((line) => line !== "").join("\n");
 }
 
+type BankPayment = { code: "42" | "31"; channel: "DK:BANK" | "IBAN"; account: string; branch?: string; bic?: string };
+
+// Payment comes only from the immutable invoice snapshot, never live bank settings.
+function invoiceBankPayment(payload: InvoicePayload): { payment?: BankPayment; errors: string[] } {
+  const p = payload.payment;
+  if (!p || typeof p !== "object" || Array.isArray(p)) return { errors: ["payment details are missing or invalid in the issued invoice"] };
+  const allowed = new Set(["bankName", "registrationNo", "accountNo", "iban", "bic", "accountOwner", "customerNo"]);
+  if (Object.entries(p).some(([key, value]) => !allowed.has(key) || (value !== null && value !== undefined && typeof value !== "string"))) return { errors: ["unsupported or invalid payment details in the issued invoice"] };
+  const normalize = (value: string | null | undefined) => (value ?? "").replace(/\s/g, "").toUpperCase();
+  const reg = normalize(p.registrationNo), rawAccount = normalize(p.accountNo), iban = normalize(p.iban), bic = normalize(p.bic);
+  const account = /^\d{1,10}$/.test(rawAccount) ? rawAccount.padStart(10, "0") : rawAccount;
+  const errors: string[] = [];
+  if (iban) {
+    if (!iban.startsWith("DK")) errors.push("only Danish IBAN accounts are supported for OIOUBL");
+    if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban) || (iban.startsWith("DK") && !/^DK[0-9]{16}$/.test(iban))) errors.push("payment IBAN has an invalid format");
+    else {
+      const rearranged = iban.slice(4) + iban.slice(0, 4);
+      let rem = 0;
+      for (const c of rearranged) for (const digit of (/[A-Z]/.test(c) ? String(c.charCodeAt(0) - 55) : c)) rem = (rem * 10 + Number(digit)) % 97;
+      if (rem !== 1) errors.push("payment IBAN has an invalid checksum");
+    }
+  }
+  if (bic && (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic) || (iban.startsWith("DK") && bic.slice(4, 6) !== "DK"))) errors.push("payment BIC has an invalid format or country");
+  if (reg || account) {
+    if (!/^\d{4}$/.test(reg) || !/^\d{10}$/.test(account) || /^0+$/.test(reg) || /^0+$/.test(account)) errors.push("payment requires a 4-digit registration number and 10-digit Danish account number");
+    if (iban && (!iban.startsWith("DK") || iban.slice(4) !== reg + account)) errors.push("payment IBAN conflicts with the Danish bank account");
+    if ((payload.currency ?? "DKK").trim().toUpperCase() !== "DKK") errors.push("Danish domestic payment requires DKK currency");
+    return { payment: errors.length ? undefined : { code: "42", channel: "DK:BANK", account, branch: reg, ...(bic ? { bic } : {}) }, errors };
+  }
+  if (!iban || !bic) errors.push("payment requires a Danish bank account or a valid IBAN and BIC");
+  return { payment: errors.length ? undefined : { code: "31", channel: "IBAN", account: iban, bic }, errors };
+}
+
+function paymentXml(payment: BankPayment, dueDate: string | undefined): string {
+  return [
+    "  <cac:PaymentMeans>",
+    xmlTag("cbc:ID", "1", "    "),
+    xmlTagWithAttrs("cbc:PaymentMeansCode", { listID: "urn:oioubl:codelist:paymentmeanscode-1.1", listAgencyID: OIOUBL_AGENCY_ID }, payment.code, "    "),
+    xmlTag("cbc:PaymentDueDate", dueDate, "    "),
+    xmlTagWithAttrs("cbc:PaymentChannelCode", { listID: "urn:oioubl:codelist:paymentchannelcode-1.1", listAgencyID: OIOUBL_AGENCY_ID }, payment.channel, "    "),
+    "    <cac:PayeeFinancialAccount>",
+    xmlTag("cbc:ID", payment.account, "      "),
+    "      <cac:FinancialInstitutionBranch>",
+    xmlTag("cbc:ID", payment.branch, "        "),
+    ...(payment.bic ? ["        <cac:FinancialInstitution>", xmlTag("cbc:ID", payment.bic, "          "), "        </cac:FinancialInstitution>"] : []),
+    "      </cac:FinancialInstitutionBranch>",
+    "    </cac:PayeeFinancialAccount>",
+    "  </cac:PaymentMeans>",
+  ].filter(Boolean).join("\n");
+}
+
 export function validateOioUblPayload(invoiceNumber: string, payload: InvoicePayload, eanNumber: string | null) {
   const errors: string[] = [];
   if (!hasText(payload.issueDate)) errors.push(`invoice ${invoiceNumber} is missing issueDate required for OIOUBL handoff`);
@@ -286,16 +337,11 @@ export function validateOioUblPayload(invoiceNumber: string, payload: InvoicePay
   } else if (!normalizeDanishCvrEndpoint(payload.seller?.vatOrCvr)) {
     errors.push(`invoice ${invoiceNumber} seller.vatOrCvr must be a Danish 8-digit CVR for EndpointID schemeID DK:CVR`);
   }
-  // PEPPOL-EN16931-R003: a public-recipient invoice must carry a BuyerReference.
-  // The export falls back to orderReference / invoice number, so this only fails
-  // when none of the three is present (an effectively unreferenced invoice).
-  if (
-    !hasText(payload.buyer?.buyerReference) &&
-    !hasText(payload.buyer?.orderReference) &&
-    !hasText(invoiceNumber)
-  ) {
-    errors.push(`invoice ${invoiceNumber} is missing buyer.buyerReference required by Peppol PEPPOL-EN16931-R003 for public recipients`);
+  if (!hasText(payload.buyer?.buyerReference)) errors.push(`invoice ${invoiceNumber} requires an explicit buyer personal reference for OIOUBL Contact/ID`);
+  for (const [label, value] of [["seller.name", payload.seller?.name], ["buyer.name", payload.buyer?.name], ["buyer.buyerReference", payload.buyer?.buyerReference], ["buyer.orderReference", payload.buyer?.orderReference]] as const) {
+    if (hasText(value) && /^(test|placeholder|dummy|n\/?a)$/i.test(value.trim())) errors.push(`invoice ${invoiceNumber} ${label} contains a placeholder`);
   }
+  errors.push(...invoiceBankPayment(payload).errors.map((error) => `invoice ${invoiceNumber} ${error}`));
   if (!hasText(payload.buyer?.name)) errors.push(`invoice ${invoiceNumber} is missing buyer.name required for OIOUBL handoff`);
   if (!hasText(payload.buyer?.address)) errors.push(`invoice ${invoiceNumber} is missing buyer.address required for OIOUBL handoff`);
   if (!eanNumber) errors.push(`invoice ${invoiceNumber} is missing buyer.eanNumber as 13 digits required for OIOUBL handoff`);
@@ -452,17 +498,11 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
     xmlTagWithAttrs("cbc:ProfileID", { schemeID: OIOUBL_PROFILE_SCHEME_ID, schemeAgencyID: OIOUBL_AGENCY_ID }, OIOUBL_PROFILE_ID, "  "),
     xmlTag("cbc:ID", invoiceNumber, "  "),
     xmlTag("cbc:IssueDate", payload.issueDate, "  "),
-    xmlTag("cbc:DueDate", payload.dueDate, "  "),
+    ...(version === "2.1" ? [xmlTag("cbc:DueDate", payload.dueDate, "  ")] : []),
     xmlTagWithAttrs("cbc:InvoiceTypeCode", { listID: "urn:oioubl:codelist:invoicetypecode-1.1", listAgencyID: OIOUBL_AGENCY_ID }, "380", "  "),
     xmlTag("cbc:DocumentCurrencyCode", currency, "  "),
-    // cbc:BuyerReference (BT-10) — mandatory for a public-recipient invoice
-    // (PEPPOL-EN16931-R003). Falls back to the order reference, then the
-    // invoice number, so a public invoice always carries a buyer reference.
-    xmlTag(
-      "cbc:BuyerReference",
-      payload.buyer?.buyerReference ?? payload.buyer?.orderReference ?? invoiceNumber,
-      "  ",
-    ),
+    // UBL 2.1 carries BuyerReference; 2.02 carries the personal reference in Contact/ID.
+    ...(version === "2.1" ? [xmlTag("cbc:BuyerReference", payload.buyer?.buyerReference, "  ")] : []),
     payload.buyer?.orderReference
       ? [
           "  <cac:OrderReference>",
@@ -502,10 +542,6 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
       "        ",
     ),
     "      </cac:PartyLegalEntity>",
-    "      <cac:Contact>",
-    xmlTag("cbc:ID", "TEST", "        "),
-    xmlTag("cbc:Name", payload.seller?.name, "        "),
-    "      </cac:Contact>",
     "    </cac:Party>",
     "  </cac:AccountingSupplierParty>",
     "  <cac:AccountingCustomerParty>",
@@ -516,11 +552,11 @@ export function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: Inv
     "      </cac:PartyName>",
     buildAddressXml("cac:PostalAddress", payload.buyer?.address, "      "),
     "      <cac:Contact>",
-    xmlTag("cbc:ID", "TEST", "        "),
-    xmlTag("cbc:Name", payload.buyer?.name, "        "),
+    xmlTag("cbc:ID", payload.buyer?.buyerReference, "        "),
     "      </cac:Contact>",
     "    </cac:Party>",
     "  </cac:AccountingCustomerParty>",
+    ...(invoiceBankPayment(payload).payment ? [paymentXml(invoiceBankPayment(payload).payment!, payload.dueDate)] : []),
     "  <cac:TaxTotal>",
     xmlTagWithAttrs("cbc:TaxAmount", { currencyID: currency }, vatAmountForXml, "    "),
     taxSubtotalXml,
@@ -1025,6 +1061,11 @@ export function submitPublicEInvoicePeppol(
     input.invoiceDocumentId,
     input.accessPoint,
   );
+  // Never create a second submission for changed bytes of an earlier invoice.
+  // Existing provider evidence may represent an accepted or delivered document.
+  const differentArtifact = db.query("SELECT 1 FROM peppol_submissions WHERE invoice_document_id = ? AND oioubl_sha256 <> ? LIMIT 1").get(input.invoiceDocumentId, oioubl.sha256);
+  if (differentArtifact) return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
+
   // Idempotent fast-path: an identical submission already exists.
   const existing = db
     .query(
@@ -1322,12 +1363,19 @@ export async function transmitPublicEInvoicePeppol(
     input.invoiceDocumentId,
     input.accessPoint,
   );
+  // Never create a second submission for changed bytes of an earlier invoice.
+  // Existing provider evidence may represent an accepted or delivered document.
+  const differentArtifact = db.query("SELECT 1 FROM peppol_submissions WHERE invoice_document_id = ? AND oioubl_sha256 <> ? LIMIT 1").get(input.invoiceDocumentId, oioubl.sha256);
+  if (differentArtifact) return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
+
   const oioublSha256 = oioubl.sha256;
 
   // Reserve the stable key in SQLite before yielding to any external transport.
   // The append-only event tells a concurrent caller whether it is in progress,
   // retryable after a pre-acceptance failure, or already queued at Digisense.
   const reservation = db.transaction(() => {
+    const prior = db.query("SELECT 1 FROM peppol_submissions WHERE invoice_document_id = ? AND oioubl_sha256 <> ? LIMIT 1").get(input.invoiceDocumentId, oioublSha256);
+    if (prior) return { action: "different_artifact" as const };
     const reference = `PEPPOL-${invoiceNumber}-${idempotencyKey.slice(0, 12)}`;
     const envelope = buildPeppolSubmissionEnvelope({ submissionReference: reference, idempotencyKey, invoiceNumber, accessPoint: input.accessPoint, receiverEndpointId: receiver, oioublSha256, format: oioubl.xml!.includes("<cbc:CustomizationID>OIOUBL-2.1</cbc:CustomizationID>") ? "OIOUBL-2.1" : "OIOUBL-2.02", status: "prepared" });
     runSql(db,
@@ -1357,6 +1405,7 @@ export async function transmitPublicEInvoicePeppol(
     recordSubmissionEvent(db, row.id, "delivery_reserved", { message: "Reserved deterministic PEPPOL delivery attempt" });
     return { row, action: "deliver" as const };
   }).immediate();
+  if (reservation.action === "different_artifact") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
   if (reservation.action === "acknowledged") return { ...rowToSubmissionResult(db, reservation.row, invoiceNumber, true), status: "acknowledged", transmissionId: reservation.documentId ?? undefined };
   if (reservation.action === "accepted") return { ok: true, invoiceNumber, submissionReference: reservation.row.submission_reference, idempotencyKey, status: isTerminalAcceptedFailure(reservation.acceptedStatus) ? "failed" : "prepared", duplicate: true, transmissionId: reservation.documentId, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [] };
   if (reservation.action === "uncertain") return { ok: true, invoiceNumber, submissionReference: reservation.row.submission_reference, idempotencyKey, status: "uncertain", duplicate: true, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [] };

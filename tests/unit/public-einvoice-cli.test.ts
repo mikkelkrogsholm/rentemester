@@ -14,6 +14,7 @@ describe("public e-invoice CLI", () => {
     const outPath = join(root, "public-preview.xml");
 
     writeFileSync(invoiceInput, JSON.stringify({
+      buyer: { buyerReference: "REF-SYNTHETIC" },
       invoiceType: "full",
       vatTreatment: "standard",
       issueDate: "2026-05-20",
@@ -24,6 +25,9 @@ describe("public e-invoice CLI", () => {
     }, null, 2));
 
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    const setupDb = new Database(join(company, "data", "ledger.sqlite"));
+    setupDb.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    setupDb.close();
     const created = Bun.spawn([
       "bun", "run", "src/cli.ts", "customer", "create", "--company", company,
       "--name", "Aarhus Kommune", "--address", "Rådhuspladsen 2, 8000 Aarhus C", "--ean", "5790000000001"
@@ -89,6 +93,7 @@ describe("public e-invoice CLI", () => {
     const outPath = join(root, "public-oioubl.xml");
 
     writeFileSync(invoiceInput, JSON.stringify({
+      buyer: { buyerReference: "REF-SYNTHETIC" },
       invoiceType: "full",
       vatTreatment: "standard",
       issueDate: "2026-05-20",
@@ -100,6 +105,9 @@ describe("public e-invoice CLI", () => {
     }, null, 2));
 
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    const setupDb = new Database(join(company, "data", "ledger.sqlite"));
+    setupDb.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    setupDb.close();
     const created = Bun.spawn([
       "bun", "run", "src/cli.ts", "customer", "create", "--company", company,
       "--name", "Aarhus Kommune", "--address", "Rådhuspladsen 2, 8000 Aarhus C", "--ean", "5790000000001"
@@ -169,12 +177,16 @@ describe("public e-invoice CLI", () => {
     const company = join(root, "company");
     const invoiceInput = join(root, "public-invoice.json");
     writeFileSync(invoiceInput, JSON.stringify({
+      buyer: { buyerReference: "REF-SYNTHETIC" },
       invoiceType: "full", vatTreatment: "standard", issueDate: "2026-05-20", dueDate: "2026-06-19",
       seller: { name: "Rentemester ApS", address: "Testvej 1", vatOrCvr: "DK12345678" },
       lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 }, currency: "DKK",
     }));
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    const setupDb = new Database(join(company, "data", "ledger.sqlite"));
+    setupDb.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    setupDb.close();
     const created = Bun.spawn(["bun", "run", "src/cli.ts", "customer", "create", "--company", company, "--name", "Aarhus Kommune", "--address", "Rådhuspladsen 2, 8000 Aarhus C", "--ean", "5790000000001"], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" });
     const customerId = JSON.parse(await new Response(created.stdout).text()).customerId;
     expect(await created.exited).toBe(0);
@@ -205,6 +217,7 @@ describe("public e-invoice CLI", () => {
     const outPath = join(root, "peppol-submission.json");
 
     writeFileSync(invoiceInput, JSON.stringify({
+      buyer: { buyerReference: "REF-SYNTHETIC" },
       invoiceType: "full",
       vatTreatment: "standard",
       issueDate: "2026-05-20",
@@ -222,6 +235,9 @@ describe("public e-invoice CLI", () => {
     }, null, 2));
 
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    const setupDb = new Database(join(company, "data", "ledger.sqlite"));
+    setupDb.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    setupDb.close();
     const created = Bun.spawn([
       "bun", "run", "src/cli.ts", "customer", "create", "--company", company,
       "--name", "Aarhus Kommune", "--address", "Rådhuspladsen 2, 8000 Aarhus C", "--ean", "5790000000001"

@@ -127,6 +127,7 @@ export type CompanyPaymentDetails = {
   registrationNo: string | null;
   accountNo: string | null;
   iban: string | null;
+  bic: string | null;
 };
 
 export function resolveCompanyPaymentDetails(
@@ -138,12 +139,13 @@ export function resolveCompanyPaymentDetails(
     registration_no: string | null;
     account_no: string | null;
     iban: string | null;
+    bic: string | null;
     currency: string | null;
   }> = [];
   try {
     rows = db
       .query(
-        `SELECT bank_name, registration_no, account_no, iban, currency
+        `SELECT bank_name, registration_no, account_no, iban, bic, currency
            FROM bank_accounts
           WHERE active = 1
           ORDER BY id ASC`,
@@ -162,6 +164,7 @@ export function resolveCompanyPaymentDetails(
     registrationNo: match.registration_no?.trim() || null,
     accountNo: match.account_no?.trim() || null,
     iban: match.iban?.trim() || null,
+    bic: match.bic?.trim() || null,
   };
   if (!details.bankName && !details.registrationNo && !details.accountNo && !details.iban) {
     return undefined;

@@ -59,7 +59,17 @@ export function approvedInvoiceTextErrors(text: string, payload: InvoicePayload,
   requireOne("buyer address", [payload.buyer?.address], true);
   if (payload.buyer?.vatOrCvr) requireOne("buyer identifier", [payload.buyer.vatOrCvr, payload.buyer.vatOrCvr.replace(/^DK/i, "")]);
   if (transport === "digisense" || payload.buyer?.eanNumber) requireOne("buyer EAN", [normalizeEanNumber(payload.buyer?.eanNumber) ?? undefined]);
-  if (transport === "digisense" || payload.buyer?.buyerReference || payload.buyer?.orderReference) requireOne("buyer reference", [payload.buyer?.buyerReference ?? payload.buyer?.orderReference], true);
+  if (transport === "digisense" || payload.buyer?.buyerReference) requireOne("buyer reference", [payload.buyer?.buyerReference], true);
+  if (payload.buyer?.orderReference) requireOne("order reference", [payload.buyer.orderReference], true);
+  if (transport === "digisense" && payload.payment) {
+    if (payload.payment.registrationNo && payload.payment.accountNo) {
+      requireOne("payment registration number", [payload.payment.registrationNo]);
+      requireOne("payment account number", [payload.payment.accountNo]);
+    } else if (payload.payment.iban) {
+      requireOne("payment IBAN", [payload.payment.iban]);
+      requireOne("payment BIC", [payload.payment.bic ?? undefined]);
+    }
+  }
   requireOne("currency", [payload.currency ?? "DKK"]);
   requireOne("net amount", amount(payload.totals?.netAmount));
   requireOne("VAT amount", amount(payload.totals?.vatAmount ?? 0));

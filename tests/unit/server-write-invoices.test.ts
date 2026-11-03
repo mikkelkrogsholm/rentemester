@@ -127,11 +127,12 @@ function issueBody(over: Record<string, unknown> = {}) {
 
 function issuePublicInvoice(ws: string, slug: string): number {
   return withLedger(ws, slug, (db, companyRoot) => {
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic-payment','Synthetic bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, companyRoot, {
       invoiceType: "full", vatTreatment: "standard", issueDate: "2026-05-16",
       invoiceNumber: "2026-0001",
       seller: { name: "Acme ApS", address: "Testvej 1, 2100 København Ø", vatOrCvr: "DK12345678" },
-      buyer: { name: "Kommune", address: "Rådhuspladsen 1, 1550 København V", publicRecipient: true, eanNumber: "5790000000001" },
+      buyer: { name: "Kommune", address: "Rådhuspladsen 1, 1550 København V", publicRecipient: true, eanNumber: "5790000000001", buyerReference: "SYNTHETIC-REF" },
       lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 }, currency: "DKK", dueDate: "2026-06-15",
     });
