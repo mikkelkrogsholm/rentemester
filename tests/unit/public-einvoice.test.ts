@@ -994,6 +994,100 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     rmSync(root, { recursive: true, force: true });
   });
 
+  test("blocks changed account, access point and endpoint after a legacy delivery", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-identity-change-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const accessPoint = digisenseAccessPointIdentity(COMPANY_KEY);
+    const binding = "a".repeat(64);
+    let calls = 0;
+    const transmitter: PeppolTransmitter = () => { calls++; return { ok: true, transmissionId: "doc-1", transmittedAt: "2026-06-01" }; };
+    expect((await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: binding }, transmitter)).ok).toBe(true);
+    for (const changed of [digisenseAccessPointIdentity("other-account"), { ...accessPoint, accessPointId: "other-ap" }, { ...accessPoint, endpointUrl: "https://other.invalid" }]) {
+      const result = await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: changed, providerBinding: binding }, transmitter);
+      expect(result.ok).toBe(false);
+      expect(result.errors.join(" ")).toContain("identity");
+      expect(submitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: changed }).ok).toBe(false);
+    }
+    expect(calls).toBe(1);
+    expect(db.query("SELECT id FROM peppol_submissions").all()).toHaveLength(1);
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("reserves invoice identity across SQLite connections while another account is sending", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-identity-race-"));
+    const path = ensureCompanyDirs(root).db;
+    const db = openDb(path);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const otherDb = openDb(path);
+    let calls = 0;
+    let release!: () => void;
+    const hold = new Promise<void>((resolve) => { release = resolve; });
+    const transmitter: PeppolTransmitter = async () => { calls++; await hold; return { ok: true, transmissionId: "doc-1", transmittedAt: "2026-06-01" }; };
+    const first = transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: digisenseAccessPointIdentity(COMPANY_KEY), providerBinding: "a".repeat(64) }, transmitter);
+    const second = await transmitPublicEInvoicePeppol(otherDb, { invoiceDocumentId: issued.documentId!, accessPoint: digisenseAccessPointIdentity("other-account"), providerBinding: "b".repeat(64) }, transmitter);
+    expect(second.ok).toBe(false);
+    expect(second.errors.join(" ")).toContain("identity");
+    expect(calls).toBe(1);
+    release();
+    expect((await first).ok).toBe(true);
+    expect(db.query("SELECT id FROM peppol_submissions").all()).toHaveLength(1);
+    otherDb.close();
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("rejects environment changes after pre-acceptance failure and permits the bound retry and status", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-environment-retry-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const accessPoint = digisenseAccessPointIdentity(COMPANY_KEY);
+    const binding = "a".repeat(64);
+    let calls = 0;
+    const fail: PeppolTransmitter = () => { calls++; return { ok: false, error: "before delivery", retryableBeforeDelivery: true }; };
+    const queued: PeppolTransmitter = () => { calls++; return { ok: false, error: "queued", queuedDocumentId: "doc-1" }; };
+    expect((await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: binding }, fail)).ok).toBe(false);
+    const wrong = await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "b".repeat(64) }, queued);
+    expect(wrong.ok).toBe(false);
+    expect(wrong.errors.join(" ")).toContain("environment");
+    expect(calls).toBe(1);
+    expect((await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: binding }, queued)).transmissionId).toBe("doc-1");
+    let checks = 0;
+    const observed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: binding }, () => { checks++; return { ok: true, status: "delivered" }; });
+    expect(observed).toMatchObject({ ok: true, status: "acknowledged", transmissionId: "doc-1" });
+    expect(checks).toBe(1);
+    expect(calls).toBe(2);
+    expect(db.query("SELECT id FROM peppol_submissions").all()).toHaveLength(1);
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("does not retry a legacy DigiSense failure without environment evidence", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-unbound-retry-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const accessPoint = digisenseAccessPointIdentity(COMPANY_KEY);
+    let calls = 0;
+    const transmitter: PeppolTransmitter = () => { calls++; return { ok: false, error: "before delivery", retryableBeforeDelivery: true }; };
+    await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint }, transmitter);
+    const retry = await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "a".repeat(64) }, transmitter);
+    expect(retry.ok).toBe(false);
+    expect(retry.errors.join(" ")).toContain("unverifiable");
+    expect(calls).toBe(1);
+    expect(db.query("SELECT id FROM peppol_submission_events WHERE event_type = 'delivery_reserved'").all()).toHaveLength(1);
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("atomically reserves delivery before an async transport so concurrent callers deliver once", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-concurrent-"));
     const db = openDb(ensureCompanyDirs(root).db);
@@ -1170,7 +1264,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     expect(resumed.ok).toBe(true);
     expect(resumed.status).toBe("acknowledged");
     expect(db.query("SELECT id FROM peppol_submission_events WHERE event_type = 'status_observed'").all()).toHaveLength(1);
-    const retry = await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => {
+    const retry = await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding }, () => {
       deliverCalls += 1;
       return { ok: true, transmissionId: "should-not-run", transmittedAt: "2026-06-01T00:00:00Z" };
     });
