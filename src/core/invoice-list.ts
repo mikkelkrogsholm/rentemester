@@ -257,12 +257,12 @@ function loadLatestPeppolStatus(db: Database, invoiceDocumentId: number): Invoic
           acknowledged_at: string | null;
         }
       | null;
-    // Audit-only legacy failures must not look like a never-sent or retryable
-    // invoice in the UI. Keep accepted evidence authoritative for status polling.
+    // An unresolved audit may describe an earlier duplicate even when a later
+    // submission was accepted. Preserve its document ID for status observation.
     const unresolvedAudit = hasUnmatchedTransmissionFailure(db, invoiceDocumentId);
     if (!row) return unresolvedAudit ? { status: "uncertain", submissionReference: "ukendt", transmissionId: null, acknowledgedAt: null } : null;
     const uncertainEvent = db.query(`SELECT 1 FROM peppol_submission_events e JOIN peppol_submissions s ON s.id = e.submission_id WHERE s.invoice_document_id = ? AND e.event_type = 'delivery_failed' AND COALESCE(e.status, '') <> 'pre-acceptance-failed' LIMIT 1`).get(invoiceDocumentId);
-    const status = (row.status === "retryable" || row.status === "in_progress") && (unresolvedAudit || uncertainEvent) ? "uncertain" : row.status;
+    const status = unresolvedAudit || ((row.status === "retryable" || row.status === "in_progress") && uncertainEvent) ? "uncertain" : row.status;
     return {
       status,
       submissionReference: row.submission_reference,

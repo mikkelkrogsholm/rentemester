@@ -1480,9 +1480,10 @@ export async function transmitPublicEInvoicePeppol(
     const bindings = reservations.map((event) => event.message.startsWith("provider-binding:") ? event.message.slice("provider-binding:".length) : null);
     if (bindings.some((binding) => binding !== null && binding !== input.providerBinding)) return { action: "different_identity" as const };
     const effective = effectiveAcknowledgement(db, row);
-    if (row.status === "acknowledged" || effective) return { row, action: "acknowledged" as const, documentId: effective?.document_id ?? row.transmission_id };
     const latest = latestSubmissionEvent(db, row.id);
     const queued = queuedSubmissionEvent(db, row.id);
+    if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return { row, action: "legacy_failure" as const, documentId: effective?.document_id ?? queued?.document_id ?? row.transmission_id };
+    if (row.status === "acknowledged" || effective) return { row, action: "acknowledged" as const, documentId: effective?.document_id ?? row.transmission_id };
     // Older versions stored the provider document ID on a prepared row,
     // without a queued event. It is acceptance evidence just as much as a
     // queued event, and must never trigger a second delivery.
@@ -1491,7 +1492,6 @@ export async function transmitPublicEInvoicePeppol(
       const acceptedStatus = latest?.event_type === "status_observed" ? latest.status : queued?.status;
       return { row, action: "accepted" as const, documentId: queuedDocumentId, acceptedStatus };
     }
-    if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return { action: "legacy_failure" as const };
     // A later safe failure cannot erase an earlier ambiguous attempt. Older
     // event writers did not classify failures as proven pre-acceptance.
     const uncertainFailure = db.query("SELECT 1 FROM peppol_submission_events WHERE submission_id = ? AND event_type = 'delivery_failed' AND COALESCE(status, '') <> 'pre-acceptance-failed' LIMIT 1").get(row.id);
@@ -1506,7 +1506,7 @@ export async function transmitPublicEInvoicePeppol(
     return { row, action: "deliver" as const };
   }).immediate();
   if (reservation.action === "different_artifact") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
-  if (reservation.action === "legacy_failure") return { ok: false, invoiceNumber, status: "uncertain", appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A historical PEPPOL transmission failure has no matching delivery outcome evidence; reconcile with the provider before any further delivery"] };
+  if (reservation.action === "legacy_failure") return { ok: false, invoiceNumber, status: "uncertain", ...(reservation.row ? { submissionReference: reservation.row.submission_reference, idempotencyKey, transmissionId: reservation.documentId ?? undefined } : {}), appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A historical PEPPOL transmission failure has no matching delivery outcome evidence; reconcile with the provider before any further delivery"] };
   if (reservation.action === "different_identity") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different or unverifiable PEPPOL transport identity or provider environment already exists for this invoice; reconcile existing provider evidence"] };
   if (reservation.action === "acknowledged") return { ...rowToSubmissionResult(db, reservation.row, invoiceNumber, true), status: "acknowledged", transmissionId: reservation.documentId ?? undefined };
   if (reservation.action === "accepted") return { ok: true, invoiceNumber, submissionReference: reservation.row.submission_reference, idempotencyKey, status: isTerminalAcceptedFailure(reservation.acceptedStatus) ? "failed" : "prepared", duplicate: true, transmissionId: reservation.documentId, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [] };

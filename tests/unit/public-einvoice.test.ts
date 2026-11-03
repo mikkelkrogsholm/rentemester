@@ -909,6 +909,43 @@ describe("public e-invoice PEPPOL transmission", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
+  test.each(["queued", "acknowledged"] as const)("historical unmatched failure remains uncertain after later %s evidence", async (kind) => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-historical-then-accepted-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const accessPoint = digisenseAccessPointIdentity("synthetic-account");
+    const providerBinding = "a".repeat(64);
+    const input = { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding };
+    let deliveries = 0;
+    const transmitter: PeppolTransmitter = () => {
+      deliveries++;
+      return kind === "queued" ? { ok: false, error: "queued", queuedDocumentId: "known-id" } : { ok: true, transmissionId: "known-id", transmittedAt: "2026-06-01" };
+    };
+    const accepted = await transmitPublicEInvoicePeppol(db, input, transmitter);
+    expect(accepted.transmissionId).toBe("known-id");
+    db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(issued.documentId), `PEPPOL transmission failed for invoice ${issued.invoiceNumber} via access point ${accessPoint.accessPointId}: historical timeout`]);
+    const beforeEvents = (db.query("SELECT COUNT(*) AS n FROM peppol_submission_events").get() as { n: number }).n;
+    const blocked = await transmitPublicEInvoicePeppol(db, input, transmitter);
+    expect(blocked).toMatchObject({ ok: false, status: "uncertain", transmissionId: "known-id" });
+    expect(blocked.errors.join(" ")).toContain("reconcile with the provider");
+    expect(deliveries).toBe(1);
+    expect((db.query("SELECT COUNT(*) AS n FROM peppol_submission_events").get() as { n: number }).n).toBe(beforeEvents);
+    expect(buildInvoiceList(db).rows[0]?.peppolStatus).toMatchObject({ status: "uncertain", transmissionId: "known-id" });
+    let checks = 0;
+    const wrongBinding = await resumePublicEInvoicePeppolSubmission(db, { ...input, providerBinding: "b".repeat(64) }, () => { checks++; return { ok: true, status: "delivered" }; });
+    expect(wrongBinding.ok).toBe(false);
+    expect(checks).toBe(0);
+    const observed = await resumePublicEInvoicePeppolSubmission(db, input, (id) => { checks++; expect(id).toBe("known-id"); return { ok: true, status: "delivered" }; });
+    expect(observed).toMatchObject({ ok: true, status: "acknowledged", transmissionId: "known-id" });
+    expect(checks).toBe(kind === "queued" ? 1 : 0);
+    expect(buildInvoiceList(db).rows[0]?.peppolStatus).toMatchObject({ status: "uncertain", transmissionId: "known-id" });
+    expect(deliveries).toBe(1);
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("an unrelated audit and a matched pre-acceptance failure do not block safe retry", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-matched-audit-"));
     const db = openDb(ensureCompanyDirs(root).db);
