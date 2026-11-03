@@ -1,5 +1,6 @@
 // Tests: src/core/public-einvoice.ts
 import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -1156,12 +1157,16 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     const ap = digisenseAccessPointIdentity(COMPANY_KEY);
+    const providerBinding = "b".repeat(64);
     let deliverCalls = 0;
-    await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => {
+    await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding }, () => {
       deliverCalls += 1;
       return { ok: false, error: "queued", queuedDocumentId: "ds-resume-1" };
     });
-    const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => ({ ok: true, status: "delivered", message: "done", observedAt: "2026-06-01T00:00:00Z" }));
+    let wrongEnvironmentCalls = 0;
+    const wrongEnvironment = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding: "wrong-environment" }, () => { wrongEnvironmentCalls++; return { ok: true, status: "delivered" }; });
+    expect(wrongEnvironment.ok).toBe(false); expect(wrongEnvironmentCalls).toBe(0);
+    const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding }, () => ({ ok: true, status: "delivered", message: "done", observedAt: "2026-06-01T00:00:00Z" }));
     expect(resumed.ok).toBe(true);
     expect(resumed.status).toBe("acknowledged");
     expect(db.query("SELECT id FROM peppol_submission_events WHERE event_type = 'status_observed'").all()).toHaveLength(1);
@@ -1175,4 +1180,57 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     db.close();
     rmSync(root, { recursive: true, force: true });
   });
+  test("legacy Digisense status without environment evidence fails closed", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-status-unbound-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    try {
+      const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+      const accessPoint = digisenseAccessPointIdentity("synthetic-company");
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint }, () => ({ ok: false, error: "queued", queuedDocumentId: "legacy-id" }));
+      let checks = 0;
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "b".repeat(64) }, () => { checks++; return { ok: true, status: "delivered" }; });
+      expect(result.ok).toBe(false); expect(result.errors.join(" ")).toContain("reconcile"); expect(checks).toBe(0);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("observes historical submission evidence without regenerating its XML and rejects ambiguity", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-historical-status-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    try {
+      const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+      const ap = { accessPointId: "synthetic-ap", endpointUrl: "synthetic:endpoint", senderEndpointId: "synthetic-company" };
+      let deliveryCalls = 0;
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => {
+        deliveryCalls++; return { ok: false, error: "queued", queuedDocumentId: "historical-id" };
+      });
+      const current = db.query("SELECT * FROM peppol_submissions").get() as any;
+      const oldHash = createHash("sha256").update("synthetic historical XML").digest("hex");
+      const oldKey = createHash("sha256").update([current.invoice_no, oldHash, ap.accessPointId, ap.senderEndpointId, current.receiver_endpoint_id].join("|")).digest("hex");
+      const oldReference = `PEPPOL-${current.invoice_no}-${oldKey.slice(0, 12)}`;
+      const oldEnvelope = current.envelope_xml.replaceAll(current.oioubl_sha256, oldHash).replaceAll(current.idempotency_key, oldKey).replaceAll(current.submission_reference, oldReference);
+      db.run("DROP TRIGGER peppol_submissions_no_update");
+      db.run("UPDATE peppol_submissions SET oioubl_sha256=?, idempotency_key=?, submission_reference=?, envelope_xml=?, envelope_sha256=?", [oldHash, oldKey, oldReference, oldEnvelope, createHash("sha256").update(oldEnvelope).digest("hex")]);
+      let checks = 0;
+      const checker = (id: string) => { checks++; expect(id).toBe("historical-id"); return { ok: true, status: "delivered", observedAt: "2026-06-01T00:00:00Z" }; };
+      const other = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: { ...ap, senderEndpointId: "other-company" } }, checker);
+      expect(other.ok).toBe(false); expect(checks).toBe(0);
+      db.run("UPDATE peppol_submissions SET envelope_xml=?", [`${oldEnvelope}corrupted`]);
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      expect(checks).toBe(0);
+      db.run("UPDATE peppol_submissions SET envelope_xml=?", [oldEnvelope]);
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker);
+      expect(result).toMatchObject({ ok: true, status: "acknowledged", idempotencyKey: oldKey, transmissionId: "historical-id" });
+      expect(checks).toBe(1); expect(deliveryCalls).toBe(1);
+      const repeat = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker);
+      expect(repeat.status).toBe("acknowledged"); expect(checks).toBe(1);
+      db.run("INSERT INTO peppol_submission_events (submission_id,event_type,document_id,observed_at) VALUES (?, 'queued', 'conflicting-id', '2026-06-01')", [current.id]);
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      db.run("INSERT INTO peppol_submissions (invoice_document_id,invoice_no,idempotency_key,submission_reference,access_point_id,receiver_endpoint_id,oioubl_sha256,envelope_sha256,envelope_xml,status) SELECT invoice_document_id,invoice_no,'other-key','other-reference',access_point_id,receiver_endpoint_id,oioubl_sha256,envelope_sha256,envelope_xml,status FROM peppol_submissions LIMIT 1");
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      expect(checks).toBe(1); expect(deliveryCalls).toBe(1);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
 });

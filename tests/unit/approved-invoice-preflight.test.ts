@@ -12,7 +12,7 @@ import { renderDocumentPdf } from "../../src/design/pdf-render";
 import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { seedAccounts } from "../../src/core/ledger";
-import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
+import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol, resumePublicEInvoicePeppolSubmission } from "../../src/core/public-einvoice";
 import { invoicePayloadSchema } from "../../src/mcp/tools/invoice/_shared";
 
 const providerBinding = "a".repeat(64);
@@ -68,6 +68,42 @@ describe("approved invoice evidence", () => {
       expect((await send()).ok).toBe(true); expect((await send()).ok).toBe(true); expect(sends).toBe(1);
       writeFileSync(issued.pdfStoredPath!, "tampered");
       expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).ok).toBe(false);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+  test("approved PDF submission status remains observable without re-exporting the PDF", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-approved-status-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
+    try {
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pre = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, client);
+      if (!pre.ok) throw new Error(pre.errors.join(", "));
+      const issued = issueInvoice(db, root, payload, {}, { preflightId: pre.preflightId, pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
+      const accessPoint = { accessPointId: "synthetic", endpointUrl: "https://example.invalid", senderEndpointId: "synthetic-sender" };
+      let sends = 0; let checks = 0;
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, companyRoot: root, providerBinding, accessPoint }, () => { sends++; return { ok: false, error: "queued", queuedDocumentId: "approved-queued" }; });
+      // Pre-binding reservations did not record the environment; the issued
+      // approved-PDF payload is the independent historical binding.
+      db.run("DROP TRIGGER peppol_submission_events_no_update");
+      db.run("UPDATE peppol_submission_events SET message='Reserved deterministic PEPPOL delivery attempt' WHERE event_type='delivery_reserved'");
+      // Recreate an earlier accepted XML fingerprint without changing the issued document.
+      const submission = db.query("SELECT * FROM peppol_submissions").get() as any;
+      const historicalXml = buildPublicEInvoiceOioUblXml(pre.invoiceNumber, pre.payload, pdf, "2.02");
+      const historicalHash = createHash("sha256").update(historicalXml).digest("hex");
+      expect(historicalHash).not.toBe(submission.oioubl_sha256);
+      const historicalKey = createHash("sha256").update([submission.invoice_no, historicalHash, accessPoint.accessPointId, accessPoint.senderEndpointId, submission.receiver_endpoint_id].join("|")).digest("hex");
+      const historicalReference = `PEPPOL-${submission.invoice_no}-${historicalKey.slice(0, 12)}`;
+      const historicalEnvelope = submission.envelope_xml.replaceAll(submission.oioubl_sha256, historicalHash).replaceAll(submission.idempotency_key, historicalKey).replaceAll(submission.submission_reference, historicalReference);
+      db.run("DROP TRIGGER peppol_submissions_no_update");
+      db.run("UPDATE peppol_submissions SET oioubl_sha256=?, idempotency_key=?, submission_reference=?, envelope_xml=?, envelope_sha256=?", [historicalHash, historicalKey, historicalReference, historicalEnvelope, createHash("sha256").update(historicalEnvelope).digest("hex")]);
+      writeFileSync(issued.pdfStoredPath!, "unavailable historical PDF bytes");
+      expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).ok).toBe(false);
+      const check = (id: string) => { checks++; expect(id).toBe("approved-queued"); return { ok: true, status: "delivered" }; };
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "wrong" }, check)).ok).toBe(false);
+      const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding }, check);
+      expect(resumed).toMatchObject({ ok: true, status: "acknowledged", transmissionId: "approved-queued", idempotencyKey: historicalKey });
+      expect(sends).toBe(1); expect(checks).toBe(1);
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
   test("validates and binds the actual 2.02 XML for a recipient registered only for that version", async () => {

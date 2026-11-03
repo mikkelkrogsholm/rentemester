@@ -1258,18 +1258,59 @@ export async function resumePublicEInvoicePeppolSubmission(
   input: ResumePublicEInvoicePeppolInput,
   checkStatus: PeppolSubmissionStatusChecker,
 ): Promise<SubmitPublicEInvoicePeppolResult> {
+  const configErrors = validateAccessPointConfig(input.accessPoint);
+  if (configErrors.length) return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: configErrors };
   if (!approvedProviderMatches(db, input)) return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["DigiSense configuration differs from the approved PDF preflight"] };
-  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId, companyRoot: input.companyRoot });
-  if (!oioubl.ok || !oioubl.sha256 || !oioubl.xml) {
-    return { ok: false, invoiceNumber: oioubl.invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID, ...oioubl.appliedRules], errors: oioubl.errors };
+  const invoice = loadExportedInvoice(db, input);
+  if (!invoice || invoice.document_type !== "issued_invoice" || !invoice.payload_json) {
+    return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["Issued invoice evidence is missing"] };
   }
-  const { invoiceNumber, idempotencyKey } = deriveSubmissionIdentity(oioubl, input.invoiceDocumentId, input.accessPoint);
-  const row = db.query(
+  const rows = db.query(
     `SELECT id, invoice_document_id, invoice_no, idempotency_key, submission_reference,
             access_point_id, receiver_endpoint_id, oioubl_sha256, envelope_sha256,
             envelope_xml, status, transmission_id, acknowledged_at
-     FROM peppol_submissions WHERE idempotency_key = ? LIMIT 1`,
-  ).get(idempotencyKey) as PeppolSubmissionRow | null;
+     FROM peppol_submissions WHERE invoice_document_id = ?`,
+  ).all(input.invoiceDocumentId) as PeppolSubmissionRow[];
+  if (rows.length !== 1) return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["No unique PEPPOL submission exists for this invoice"] };
+  const row = rows[0]!;
+  const invoiceNumber = row.invoice_no ?? String(input.invoiceDocumentId);
+  if (invoice.invoice_no && invoice.invoice_no !== invoiceNumber) {
+    return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["PEPPOL submission invoice identity is inconsistent"] };
+  }
+  if (input.accessPoint.accessPointId.trim() === "digisense") {
+    const payload = JSON.parse(invoice.payload_json) as { approvedPdf?: { providerBinding?: string } };
+    const reservations = db.query(
+      "SELECT message FROM peppol_submission_events WHERE submission_id = ? AND event_type = 'delivery_reserved' AND message LIKE 'provider-binding:%'",
+    ).all(row.id) as Array<{ message: string }>;
+    const bindings = reservations.map((event) => event.message.slice("provider-binding:".length));
+    if (payload.approvedPdf?.providerBinding) bindings.push(payload.approvedPdf.providerBinding);
+    if (!input.providerBinding || !bindings.length || bindings.some((binding) => binding !== input.providerBinding)) {
+      return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["DigiSense environment and company cannot be verified from submission evidence; reconcile the document manually with the provider before recording status"] };
+    }
+  }
+  const idempotencyKey = row.idempotency_key;
+  const expectedKey = createHash("sha256").update([
+    invoiceNumber, row.oioubl_sha256, input.accessPoint.accessPointId.trim(),
+    input.accessPoint.senderEndpointId.trim(), row.receiver_endpoint_id,
+  ].join("|")).digest("hex");
+  const tags = [
+    xmlTag("SubmissionReference", row.submission_reference), xmlTag("IdempotencyKey", idempotencyKey),
+    xmlTag("InvoiceNumber", invoiceNumber), xmlTag("HandoffArtifactSha256", row.oioubl_sha256),
+    xmlTag("AccessPointId", input.accessPoint.accessPointId), xmlTag("EndpointUrl", input.accessPoint.endpointUrl),
+    xmlTag("SenderEndpointId", input.accessPoint.senderEndpointId), xmlTag("ReceiverEndpointId", row.receiver_endpoint_id),
+  ];
+  const validEnvelope = tags.every((tag) => tag && row.envelope_xml.split(tag).length === 2)
+    && createHash("sha256").update(row.envelope_xml).digest("hex") === row.envelope_sha256;
+  const events = db.query(
+    `SELECT event_type, document_id, observed_at, status FROM peppol_submission_events
+     WHERE submission_id = ? AND event_type IN ('queued', 'status_observed', 'delivered')`,
+  ).all(row.id) as PeppolSubmissionEventRow[];
+  const ids = events.map((event) => event.document_id);
+  if (row.transmission_id) ids.push(row.transmission_id);
+  if (row.access_point_id !== input.accessPoint.accessPointId.trim() || expectedKey !== idempotencyKey
+      || !validEnvelope || ids.some((id) => !hasText(id)) || new Set(ids).size > 1) {
+    return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["PEPPOL submission identity or evidence is inconsistent with the configured access point"] };
+  }
   // An already acknowledged event is terminal even if a historical queued
   // event was pruned or never recorded. Never require queued evidence before
   // returning that existing result, and never call the status checker for it.
@@ -1303,7 +1344,7 @@ export async function resumePublicEInvoicePeppolSubmission(
     row.id, queuedDocumentId, observed.status ?? "unknown", observedAt,
     observed.message ?? "", observed.publicUrl ?? null,
   );
-  insertAuditLog(db, { eventType: "public_einvoice_peppol_status", entityType: "document", entityId: input.invoiceDocumentId, message: `Observed PEPPOL document ${row.transmission_id} status ${observed.status ?? "unknown"} for invoice ${invoiceNumber}` });
+  insertAuditLog(db, { eventType: "public_einvoice_peppol_status", entityType: "document", entityId: input.invoiceDocumentId, message: `Observed PEPPOL document ${queuedDocumentId} status ${observed.status ?? "unknown"} for invoice ${invoiceNumber}` });
   if (observed.status === "delivered") {
     recordSubmissionEvent(db, row.id, "delivered", { documentId: queuedDocumentId, status: "delivered", observedAt, message: observed.message, publicUrl: observed.publicUrl });
     return { ...rowToSubmissionResult(db, row, invoiceNumber, true), status: "acknowledged", transmissionId: queuedDocumentId };
@@ -1402,7 +1443,7 @@ export async function transmitPublicEInvoicePeppol(
     if (latest?.event_type === "delivery_reserved") return { row, action: "in_progress" as const };
     // A delivery_failed event proves the prior reservation never obtained a
     // remote id, so it is safe to create a new attempt rather than deadlock it.
-    recordSubmissionEvent(db, row.id, "delivery_reserved", { message: "Reserved deterministic PEPPOL delivery attempt" });
+    recordSubmissionEvent(db, row.id, "delivery_reserved", { message: input.providerBinding ? `provider-binding:${input.providerBinding}` : "Reserved deterministic PEPPOL delivery attempt" });
     return { row, action: "deliver" as const };
   }).immediate();
   if (reservation.action === "different_artifact") return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["A different XML artifact was already submitted for this invoice; reconcile existing provider evidence before any further action"] };
