@@ -332,7 +332,14 @@ Observes only a previously queued DigiSense submission. Body:
 `{ invoiceDocumentId, confirm: true }`. It calls DigiSense `document-status`
 and records append-only status evidence; it can never invoke document-delivery
 or redeliver the invoice. Missing DigiSense configuration or an ambiguous local
-company binding is returned as a safe `400` error.
+company binding is returned as a safe `400` error. If an earlier attempt remains
+unreconciled, a successful observation returns `submission.status: "uncertain"`,
+`reconciliationRequired: true`, `reconciliationMessage`, `transmissionId`, and
+`providerStatus`. The provider status describes only the known document; it does
+not resolve a possible earlier delivery. The cockpit keeps the invoice uncertain,
+requires manual provider reconciliation, and allows a status-only check when a
+known document ID exists. An already acknowledged document may use saved evidence
+without another provider call.
 
 ### `POST /api/companies/:slug/budget`
 
