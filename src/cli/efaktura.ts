@@ -38,7 +38,7 @@ import {
   resolveDigisenseRegistrar,
   resolveDigisenseStatusChecker,
 } from "../core/efaktura/digisense-wiring";
-import { digisenseAccessPointIdentity } from "../core/efaktura/digisense-wiring";
+import { digisenseAccessPointIdentity, digisenseProviderBinding } from "../core/efaktura/digisense-wiring";
 import { resumePublicEInvoicePeppolSubmission } from "../core/public-einvoice";
 import { saveDigisenseSecretConfig } from "../core/efaktura/digisense-config";
 import { loadDigisenseSecretConfig } from "../core/efaktura/digisense-config";
@@ -336,7 +336,7 @@ export function register(dispatch: CommandDispatch): void {
     try {
       const resolved = resolveDigisenseStatusChecker(db, root, { companyKey: ctx.trimToNull(ctx.arg("--digisense-company-key") ?? null) ?? undefined });
       if (!resolved.ok) { ctx.emitResult({ ok: false, errors: resolved.errors }); process.exit(1); }
-      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: documentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey) }, async (queuedDocumentId) => {
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: documentId, accessPoint: digisenseAccessPointIdentity(resolved.companyKey), providerBinding: digisenseProviderBinding(resolved.environment, resolved.companyKey) }, async (queuedDocumentId) => {
         const status = await resolved.client.documentStatus(queuedDocumentId, resolved.companyKey);
         return status.ok ? { ok: true, status: status.data.documentStatus, message: status.data.message, publicUrl: status.data.publicUrl } : { ok: false, error: `digisense document-status failed: ${status.error.message}` };
       });

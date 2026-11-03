@@ -383,3 +383,93 @@ aktive virksomheder før første netværkskald.
 - [ ] **Partner-/PR-tekst** til omtale af Digisense som compliance-partner.
 - [x] **Rigtig sandbox-e2e:** validering, acknowledged outbound, status-idempotens
       og deduplikeret inbound er verificeret mod `test-api.digisense.dk`.
+
+### Betalingsoplysninger og referencer i OIOUBL
+
+E-fakturaeksporten anvender kun betalingsoplysningerne i den udstedte fakturas
+uforanderlige payload. Ved godkendt PDF indgår dette snapshot også i den
+reviewede payload-hash. Ret virksomhedens konto før et nyt preflight, hvis den
+er forkert; kontoen på en allerede udstedt faktura bliver ikke ændret.
+Godkendt PDF skal indeholde de samme betalingsoplysninger, og visuel kontrol
+kræves fortsat. Dette gælder også når XML sendes med `attachment-policy none`.
+
+Understøttet i OIOUBL 2.02 og 2.1:
+
+- Dansk konto i DKK: `PaymentMeansCode` 42, `PaymentChannelCode` `DK:BANK`,
+  `PayeeFinancialAccount/ID` med ti cifre og
+  `FinancialInstitutionBranch/ID` med fire cifre. Et kortere kontonummer
+  venstreudfyldes med nuller. En tilstedeværende dansk IBAN skal være gyldig
+  og svare til den samme registrering og konto.
+- Dansk IBAN med BIC: kode 31, kanal `IBAN`, IBAN som konto-ID og BIC som
+  `FinancialInstitutionBranch/FinancialInstitution/ID`; filial-ID udelades.
+  IBAN-kontrolsum, format og BIC-format kontrolleres. Udenlandsk IBAN,
+  FIK, giro, NemKonto, direkte debitering og andre betalingsformer eksporteres
+  ikke. FIK-data og referencer fremstilles aldrig automatisk.
+
+`buyerReference` er kundens **personreference**, som kunden har oplyst, og
+anvendes til den obligatoriske `AccountingCustomerParty/Party/Contact/ID`.
+OIOUBL 2.1 indeholder desuden `BuyerReference`. `orderReference` angives i
+`OrderReference/ID` og erstatter aldrig personreferencen. 2.02 bruger UBL 2.0,
+hvor forfald angives i `PaymentMeans/PaymentDueDate` og ikke i headerens
+`DueDate`. Tomme, ugyldige, modstridende eller åbenlyse placeholder-værdier i
+relevante identitetsfelter afvises før afsendelse. Vareteksten gennemsøges ikke
+for ordet test. En eksisterende submission med en anden XML-hash blokerer en
+ny afsendelse, indtil dens transporthistorik er afklaret.
+
+Kilder: [NemHandels gældende dokumentationsoversigt](https://nemhandel.dk/vejledning-oioubl-dokumentationsoversigt),
+[OIOUBL 2.1-introduktionen](https://oioubl21.oioubl.dk/),
+[OIOUBL-betalingsvejledning, v1.3, afsnit 3.1 og 3.2](https://oioubl21.oioubl.dk/documents/en/en/Guidelines/OIOUBL_GUIDE_PAYMENT.pdf),
+[OIOUBL-kontaktvejledning, afsnit 3.1](https://oioubl21.oioubl.dk/documents/en/en/Guidelines/OIOUBL_GUIDE_CONTACT.pdf),
+[Nordeas danske betalingsformat, kontonummer](https://www.nordea.com/en/doc/cn-betalinger-utf-format-dk-0519.pdf)
+og [Erhvervsstyrelsens CIUS-vejledning, afsnit 5.7](https://erhvervsstyrelsen.dk/vejledning-cius-core-invoice-usage-specification).
+CIUS beskriver sammenhængen til Peppol og er ikke i sig selv OIOUBL 2.02- eller
+2.1-validering. NemHandels demo-dokumentation vedrører en separat OIOUBL 3
+release candidate og bruges ikke som norm for disse profiler.
+
+I udvikling blev otte syntetiske dokumenter (begge versioner, momsfritaget og
+25 %, dansk bank og dansk IBAN) kontrolleret uden netværksafsendelse mod
+OASIS UBL 2.0-XSD henholdsvis NemHandels UBL 2.1-XSD og NemHandels
+OIOUBL Invoice Schematron 1.17.2; alle otte bestod XSD og havde nul
+Schematron-fejl. Schematronpakken er
+`OIOUBL_Schematron_2026-05-01_v1.17.2.ec0bcd89.zip`, SHA-256
+`d8b84ac521abacebde7d15f799f2fcb6dfce01f98ca706fe3c09b7c13c5d4bff`, fra
+[NemHandels versionsarkiv](https://git.erst.dk/openebusiness/common/-/tree/master/released/oioubl),
+og 2.0-XSD er fra [OASIS UBL 2.0](https://docs.oasis-open.org/ubl/os-UBL-2.0/xsd/).
+Dette er konkret validering af de syntetiske eksempler, ikke bevis for alle
+mulige fakturaer eller en modtagers godkendelse. Produktets DigiSense-kontrol af
+den faktiske hashbundne XML er fortsat påkrævet.
+
+### Tidligere leverede e-fakturaer
+
+En leveringsstatus beviser ikke, at modtageren kan betale eller har godkendt
+fakturaen. Undersøg hvert virksomhedsledger separat og read-only. Eksempel:
+
+```sh
+sqlite3 -readonly /sti/til/data/ledger.sqlite '
+SELECT s.id, s.invoice_document_id, s.invoice_no, s.oioubl_sha256,
+       s.status, s.created_at, e.event_type, e.status, e.observed_at
+FROM peppol_submissions AS s
+LEFT JOIN peppol_submission_events AS e ON e.submission_id = s.id
+ORDER BY s.id, e.id;'
+```
+
+Udvælg efter de relevante historiske releaseidentiteter og kontrollér faktisk
+leveret XML mod submissionens SHA-256, hvis originalen er bevaret. Et nyere
+reeksporteret dokument er ikke bevis for de bytes, der blev sendt tidligere.
+Bevar den oprindelige payload, PDF, eventhistorik og transporthash uændret.
+Kontakt og afhjælpning besluttes særskilt på baggrund af det konkrete forhold;
+en betalingsbekræftelse eller kopi af PDF kan være relevant. Kreditnota,
+genafsendelse og nyt fakturanummer skal ikke oprettes automatisk eller antages
+at være nødvendige. Produktionsoplysninger og modtagerkontakt håndteres kun i
+virksomhedens private drift.
+
+Valideringen kan gentages lokalt med en udpakket officiel Schematronpakke,
+OASIS' udpakkede `xsd`-mappe og Python-miljø med `lxml` og `saxonche`:
+
+```sh
+bun run scripts/verify-oioubl-synthetic.ts /tmp/oioubl-matrix
+python scripts/verify-oioubl-schemas.py /tmp/oioubl-matrix /sti/til/udpakket-schematron /sti/til/ubl-2.0-xsd
+```
+
+Scriptet læser kun genererede syntetiske XML-filer og stopper ved første
+XSD- eller Schematron-fejl. Ingen virksomhedsdata eller providerkald anvendes.

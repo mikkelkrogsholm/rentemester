@@ -55,6 +55,8 @@ export type InvoicePayload = {
   reverseChargeBasis?: ReverseChargeBasis;
   reverseChargeNote?: string;
   currency?: string;
+  /** Immutable payment details captured when the invoice is issued. */
+  payment?: import("./invoice-pdf").InvoicePaymentDetails;
   dueDate?: string;
   deliveryDate?: string;
   deliveryPeriodStart?: string;

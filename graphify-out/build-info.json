@@ -1705,9 +1705,9 @@
     "www/tsconfig.json": "efa75aad0e2700a840ea4b4d3cd7e2825d098e76590f6ea01238e8a6f0913fde",
     ".gitattributes": "d1580533de3f8a648e168aa83833886a092e0e07cee9da22df8aea2c31a4e428"
   },
-  "graph_sha256": "aa3fb75ddf7a86baabfc110557c0d2049776dd011cc1e344f6fe10e4d96ea986",
-  "nodes": 11239,
-  "edges": 40703,
+  "graph_sha256": "4b6218b3918d78a1c18f2100b99cd40fb352baab4bb9c6e6e08b5825289cbe74",
+  "nodes": 11323,
+  "edges": 41065,
   "communities": 479,
   "structural": {
     "command": "graphify update .",
@@ -1984,5 +1984,19 @@
     "agent_token_usage": "unavailable",
     "new_nodes": 12,
     "scope": "Changes in these five files; retained existing semantic layer; outstanding previous sources unchanged."
+  },
+  "einvoice_payment_747_semantic_refresh": {
+    "method": "Scoped additive semantic extraction; existing graph nodes and relationships retained",
+    "source": "docs/efaktura-digisense.md",
+    "source_sha256": "6a574ef98a0b9baea2c00ae9be29e436b3a4bef9642368ad567d8dceabb3b08e",
+    "source_commit": "8eed71910c794484278cc5786bffaa0ed539002d",
+    "coverage": "Added lines 387-475 only; original document and other changed sources not re-extracted",
+    "new_nodes": 9,
+    "new_edges": 9,
+    "native_token_usage": "unavailable",
+    "limitations": [
+      "Summarizes concepts; linked external documents were not fetched or independently verified.",
+      "Prior pending semantic sources remain pending."
+    ]
   }
 }

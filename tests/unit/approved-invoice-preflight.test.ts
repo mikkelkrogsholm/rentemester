@@ -12,7 +12,7 @@ import { renderDocumentPdf } from "../../src/design/pdf-render";
 import { renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { seedAccounts } from "../../src/core/ledger";
-import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol } from "../../src/core/public-einvoice";
+import { buildPublicEInvoiceOioUblXml, exportPublicEInvoiceOioUbl, transmitPublicEInvoicePeppol, resumePublicEInvoicePeppolSubmission } from "../../src/core/public-einvoice";
 import { invoicePayloadSchema } from "../../src/mcp/tools/invoice/_shared";
 
 const providerBinding = "a".repeat(64);
@@ -40,11 +40,11 @@ describe("approved invoice evidence", () => {
   });
   test("exempt invoice keeps the approved PDF while delivering structured XML without an attachment", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-xml-only-"));
-    const db = openDb(ensureCompanyDirs(root).db); migrate(db); seedAccounts(db);
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')"); seedAccounts(db);
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
       const exempt = { ...payload, lines: [{ description: "Exempt synthetic service", quantity: 1, unitPriceExVat: 100, lineTotalExVat: 100, taxClassification: "exempt" as const }], totals: { netAmount: 100, vatAmount: 0, grossAmount: 100 } };
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Exempt synthetic service DKK 100,00 0,00 momsfritaget</p></main>" });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Exempt synthetic service DKK 100,00 0,00 momsfritaget</p></main>" });
       let validatedXml = "";
       const transportClient = { ...client, async validateDocument(xml: string) { validatedXml = xml; return { ok: true as const, status: 200, data: { statusCode: 200, success: true, errors: [] } }; } };
       const pre = await preflightApprovedInvoice(db, { payload: exempt, pdfBytes: pdf, attachmentPolicy: "none", bilateralAttachmentAgreement: false, providerBinding }, transportClient);
@@ -70,12 +70,48 @@ describe("approved invoice evidence", () => {
       expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).ok).toBe(false);
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
-  test("validates and binds the actual 2.02 XML for a recipient registered only for that version", async () => {
-    const root = mkdtempSync(join(tmpdir(), "rentemester-recipient-legacy-"));
+  test("approved PDF submission status remains observable without re-exporting the PDF", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-approved-status-"));
     const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pre = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, client);
+      if (!pre.ok) throw new Error(pre.errors.join(", "));
+      const issued = issueInvoice(db, root, payload, {}, { preflightId: pre.preflightId, pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
+      const accessPoint = { accessPointId: "synthetic", endpointUrl: "https://example.invalid", senderEndpointId: "synthetic-sender" };
+      let sends = 0; let checks = 0;
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, companyRoot: root, providerBinding, accessPoint }, () => { sends++; return { ok: false, error: "queued", queuedDocumentId: "approved-queued" }; });
+      // Pre-binding reservations did not record the environment; the issued
+      // approved-PDF payload is the independent historical binding.
+      db.run("DROP TRIGGER peppol_submission_events_no_update");
+      db.run("UPDATE peppol_submission_events SET message='Reserved deterministic PEPPOL delivery attempt' WHERE event_type='delivery_reserved'");
+      // Recreate an earlier accepted XML fingerprint without changing the issued document.
+      const submission = db.query("SELECT * FROM peppol_submissions").get() as any;
+      const historicalXml = buildPublicEInvoiceOioUblXml(pre.invoiceNumber, pre.payload, pdf, "2.02");
+      const historicalHash = createHash("sha256").update(historicalXml).digest("hex");
+      expect(historicalHash).not.toBe(submission.oioubl_sha256);
+      const historicalKey = createHash("sha256").update([submission.invoice_no, historicalHash, accessPoint.accessPointId, accessPoint.senderEndpointId, submission.receiver_endpoint_id].join("|")).digest("hex");
+      const historicalReference = `PEPPOL-${submission.invoice_no}-${historicalKey.slice(0, 12)}`;
+      const historicalEnvelope = submission.envelope_xml.replaceAll(submission.oioubl_sha256, historicalHash).replaceAll(submission.idempotency_key, historicalKey).replaceAll(submission.submission_reference, historicalReference);
+      db.run("DROP TRIGGER peppol_submissions_no_update");
+      db.run("UPDATE peppol_submissions SET oioubl_sha256=?, idempotency_key=?, submission_reference=?, envelope_xml=?, envelope_sha256=?", [historicalHash, historicalKey, historicalReference, historicalEnvelope, createHash("sha256").update(historicalEnvelope).digest("hex")]);
+      writeFileSync(issued.pdfStoredPath!, "unavailable historical PDF bytes");
+      expect(exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId!, companyRoot: root }).ok).toBe(false);
+      const check = (id: string) => { checks++; expect(id).toBe("approved-queued"); return { ok: true, status: "delivered" }; };
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "wrong" }, check)).ok).toBe(false);
+      const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding }, check);
+      expect(resumed).toMatchObject({ ok: true, status: "acknowledged", transmissionId: "approved-queued", idempotencyKey: historicalKey });
+      expect(sends).toBe(1); expect(checks).toBe(1);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+  test("validates and binds the actual 2.02 XML for a recipient registered only for that version", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recipient-legacy-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
+    try {
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
       const xmls: string[] = [];
       const legacyClient = {
         async validateDocument(xml: string) { xmls.push(xml); return { ok: true as const, status: 200, data: { statusCode: 200, success: true, errors: [] } }; },
@@ -94,10 +130,10 @@ describe("approved invoice evidence", () => {
   });
   test("legacy approved 2.02 XML remains byte-identical after new preflights move to 2.1", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-legacy-approved-"));
-    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
       const pre = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, client);
       if (!pre.ok) throw new Error(pre.errors.join(", "));
       const legacyXml = buildPublicEInvoiceOioUblXml(pre.invoiceNumber, pre.payload, pdf, "2.02");
@@ -111,8 +147,27 @@ describe("approved invoice evidence", () => {
       expect(exported.sha256).toBe(legacyHash);
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
+  test("rejects missing payment or placeholder before any provider call", async () => {
+    const root = mkdtempSync(join(tmpdir(), "synthetic-preflight-payment-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO companies (id,name,cvr) VALUES (1,'Synthetic Seller','DK12345678')");
+    const pdf = renderDocumentPdf({ title: "Synthetic", date: payload.issueDate, footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00 1234 5678901234</p></main>" });
+    let calls = 0;
+    const spy = { async validateDocument() { calls++; throw new Error("unexpected provider"); }, async lookupParticipant() { calls++; throw new Error("unexpected provider"); } };
+    try {
+      const missing = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, attachmentPolicy: "none", bilateralAttachmentAgreement: false, providerBinding }, spy);
+      expect(missing.ok).toBe(false); expect(missing.errors.join(" ")).toContain("payment");
+      db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+      const placeholder = await preflightApprovedInvoice(db, { payload: { ...payload, buyer: { ...payload.buyer, buyerReference: "TEST" } }, pdfBytes: pdf, attachmentPolicy: "none", bilateralAttachmentAgreement: false, providerBinding }, spy);
+      expect(placeholder.ok).toBe(false); expect(placeholder.errors.join(" ")).toContain("placeholder");
+      const wrongPdf = renderDocumentPdf({ title: "Synthetic", date: payload.issueDate, footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00 1234 9999999999</p></main>" });
+      const mismatch = await preflightApprovedInvoice(db, { payload, pdfBytes: wrongPdf, attachmentPolicy: "none", bilateralAttachmentAgreement: false, providerBinding }, spy);
+      expect(mismatch.ok).toBe(false); expect(mismatch.errors.join(" ")).toContain("payment account number");
+      expect(calls).toBe(0);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
   test("accepts separated text fields but still rejects missing words and amounts", () => {
-    const separated = "2026-0001 2026-05-16 2026-06-16 Synthetic Testvej Buyer Seller 1 DK12345678 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00";
+    const separated = "2026-0001 2026-05-16 2026-06-16 Synthetic Testvej Buyer Seller 1 DK12345678 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00";
     expect(approvedInvoiceTextErrors(separated, payload, "2026-0001")).toEqual([]);
     expect(approvedInvoiceTextErrors(separated.replace("Buyer", ""), payload, "2026-0001")).toContain("PDF is missing buyer name");
     expect(approvedInvoiceTextErrors(separated.replace("125,00", ""), payload, "2026-0001")).toContain("PDF is missing gross amount");
@@ -120,7 +175,7 @@ describe("approved invoice evidence", () => {
   test("flags small differences in long descriptions for visual review and rejects missing numbers", () => {
     const description = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega";
     const data = { ...payload, lines: [{ ...payload.lines[0], description }] };
-    const text = `2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC DKK 100,00 25% 25,00 125,00 ${description.replace("omega", "")}`;
+    const text = `2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 DKK 100,00 25% 25,00 125,00 ${description.replace("omega", "")}`;
     const warnings: string[] = [];
     expect(approvedInvoiceTextErrors(text, data, "2026-0001", warnings)).toEqual([]);
     expect(warnings).toEqual(["PDF line description requires visual review; words not found: omega"]);
@@ -129,12 +184,12 @@ describe("approved invoice evidence", () => {
   });
   test("description differences require explicit review before creating preflight evidence", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-description-review-"));
-    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
       const description = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega";
       const data = { ...payload, lines: [{ ...payload.lines[0], description }] };
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: `<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC DKK 100,00 25% 25,00 125,00 ${description.replace("omega", "")}</p></main>` });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: `<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 DKK 100,00 25% 25,00 125,00 ${description.replace("omega", "")}</p></main>` });
       const base = { payload: data, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding };
       const refused = await preflightApprovedInvoice(db, base, client);
       expect(refused.ok).toBe(false);
@@ -148,11 +203,11 @@ describe("approved invoice evidence", () => {
   });
   test("an entirely exempt invoice keeps its approved PDF through issue, posting and delivery", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-exempt-approved-"));
-    const db = openDb(ensureCompanyDirs(root).db); migrate(db); seedAccounts(db);
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')"); seedAccounts(db);
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
       const exempt = { ...payload, lines: [{ description: "Exempt synthetic service", quantity: 1, unitPriceExVat: 100, lineTotalExVat: 100, taxClassification: "exempt" as const }], totals: { netAmount: 100, vatAmount: 0, grossAmount: 100 } };
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Exempt synthetic service DKK 100,00 0,00 momsfritaget</p></main>" });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Exempt synthetic service DKK 100,00 0,00 momsfritaget</p></main>" });
       const pre = await preflightApprovedInvoice(db, { payload: exempt, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding }, client);
       if (!pre.ok) throw new Error(pre.errors.join(", "));
       const issued = issueInvoice(db, root, exempt, {}, { preflightId: pre.preflightId, pdfBytes: pdf, visualReviewConfirmed: true, providerBinding });
@@ -192,11 +247,11 @@ describe("approved invoice evidence", () => {
   test("preflight binds the reviewed PDF and payload without reserving a number", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-approved-invoice-"));
     const db = openDb(ensureCompanyDirs(root).db);
-    migrate(db);
+    migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     seedAccounts(db);
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
-      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
+      const pdf = renderDocumentPdf({ title: "Synthetic", date: "2026-05-16", footer: "", html: "<main><p>2026-0001 2026-05-16 2026-06-16 Synthetic Seller Testvej 1 DK12345678 Synthetic Buyer Testvej 2 5790000000013 Reference ABC 1234 5678901234 Consulting DKK 100,00 25% 25,00 125,00</p></main>" });
       const preflight = await preflightApprovedInvoice(db, { payload, pdfBytes: pdf, bilateralAttachmentAgreement: true, providerBinding, createdBy: "user:test" }, client);
       expect(preflight.ok).toBe(true);
       if (!preflight.ok) throw new Error(preflight.errors.join(", "));
@@ -245,7 +300,7 @@ describe("approved invoice evidence", () => {
 
   test("rejects unreadable PDFs and absent recipient agreement before reserving a number", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-approved-invalid-"));
-    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db); db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     db.run("INSERT INTO companies (id, name, cvr) VALUES (1, 'Synthetic Seller', 'DK12345678')");
     try {
       expect((await preflightApprovedInvoice(db, { payload, pdfBytes: Buffer.from("not a PDF"), bilateralAttachmentAgreement: false, providerBinding }, client)).ok).toBe(false);

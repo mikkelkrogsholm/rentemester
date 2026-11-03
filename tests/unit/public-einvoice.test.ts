@@ -1,5 +1,6 @@
 // Tests: src/core/public-einvoice.ts
 import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -32,6 +33,7 @@ const PUBLIC_INVOICE = {
     address: "Rådhuset, 1599 København V",
     publicRecipient: true,
     eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
   },
   lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
   totals: { netAmount: 1500, vatRate: 0.25, vatAmount: 375, grossAmount: 1875 },
@@ -61,6 +63,7 @@ describe("public e-invoice preview export", () => {
     const outPath = join(root, "public-invoice.xml");
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -73,6 +76,7 @@ describe("public e-invoice preview export", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
       },
       lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
       totals: { netAmount: 1500, vatRate: 0.25, vatAmount: 375, grossAmount: 1875 },
@@ -100,6 +104,7 @@ describe("public e-invoice preview export", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-public-einvoice-nonpublic-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -128,6 +133,7 @@ describe("public e-invoice preview export", () => {
     const outPath = join(root, "public-invoice-oioubl.xml");
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -140,6 +146,7 @@ describe("public e-invoice preview export", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
       },
       lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
       totals: { netAmount: 1500, vatRate: 0.25, vatAmount: 375, grossAmount: 1875 },
@@ -168,7 +175,7 @@ describe("public e-invoice preview export", () => {
       '<cac:PartyLegalEntity>\n        <cbc:RegistrationName>Rentemester ApS</cbc:RegistrationName>\n        <cbc:CompanyID schemeID="DK:CVR">DK12345678</cbc:CompanyID>',
     );
     // BuyerReference (BT-10) is mandatory for public recipients (PEPPOL-EN16931-R003).
-    expect(first.xml).toContain("<cbc:BuyerReference>");
+    expect(first.xml).toContain("<cbc:ID>REF-SYNTHETIC</cbc:ID>");
     expect(first.xml).toContain('listID="urn:oioubl:codelist:addressformatcode-1.1" listAgencyID="320">Unstructured</cbc:AddressFormatCode>');
     expect(first.xml).toContain("<cbc:Name>Københavns Kommune</cbc:Name>");
     // VAT percent follows the canonical 0..1→×100 contract: a 0.25 rate renders
@@ -200,6 +207,7 @@ describe("public e-invoice preview export", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-public-oioubl-100pct-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -212,6 +220,7 @@ describe("public e-invoice preview export", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
       },
       lines: [{ description: "Ydelse", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
       totals: { netAmount: 1000, vatRate: 1.0, vatAmount: 1000, grossAmount: 2000 },
@@ -233,6 +242,7 @@ describe("public e-invoice preview export", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-public-oioubl-missing-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -245,6 +255,7 @@ describe("public e-invoice preview export", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
       },
       lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
       totals: { netAmount: 1500, vatRate: 0.25, vatAmount: 375, grossAmount: 1875 },
@@ -272,8 +283,10 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-oioubl-f-inv127-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const payload = {
       ...PUBLIC_INVOICE,
+      payment: { registrationNo: "1234", accountNo: "5678901234" },
       invoiceNumber: "2026-F-INV127",
       lines: [{ description: "Syntetisk testlinje", quantity: 1, unitPriceExVat: 1, lineTotalExVat: 1 }],
       totals: { netAmount: 1, vatRate: 0.25, vatAmount: 0.25, grossAmount: 1.25 },
@@ -304,6 +317,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-jur9-ref-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const { invoiceNumber: _drop, ...base } = PUBLIC_INVOICE;
     const issued = issueInvoice(db, root, {
@@ -319,7 +333,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
 
     const exported = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: issued.documentId! });
     expect(exported.ok).toBe(true);
-    expect(exported.xml).toContain("<cbc:BuyerReference>EAN-REF-12345</cbc:BuyerReference>");
+    expect(exported.xml).toContain("<cbc:ID>EAN-REF-12345</cbc:ID>");
     expect(exported.xml).toContain("<cac:OrderReference>");
     expect(exported.xml).toContain("<cbc:ID>ORDRE-987</cbc:ID>");
     // The configurable unit code overrides the H87 default.
@@ -334,6 +348,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-jur9-standard-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const { invoiceNumber: _drop, ...base } = PUBLIC_INVOICE;
     const issued = issueInvoice(db, root, {
@@ -358,6 +373,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-jur9-rc-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, {
       invoiceType: "full",
@@ -370,6 +386,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
         buyerReference: "EAN-REF-RC",
       },
       lines: [{ description: "Byggeydelse", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
@@ -384,7 +401,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     // Reverse charge => category AE, and the invoice still validates/exports
     // despite carrying no VAT amount/rate.
     expect(exported.xml).toContain(">ReverseCharge</cbc:ID>");
-    expect(exported.xml).toContain("<cbc:BuyerReference>EAN-REF-RC</cbc:BuyerReference>");
+    expect(exported.xml).toContain("<cbc:ID>EAN-REF-RC</cbc:ID>");
     // TaxAmount renders as 0.00 so cac:TaxTotal stays well-formed.
     expect(exported.xml).toContain('<cbc:TaxAmount currencyID="DKK">0.00</cbc:TaxAmount>');
     // JUR-9: reverse charge (AE) must carry an exemption reason (BR-AE-10).
@@ -432,12 +449,14 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-jur9-exempt-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     // issueInvoice rejects a 0% standard invoice (it requires a positive VAT
     // rate/amount), so the exempt (E) export branch is exercised by storing the
     // issued-invoice document row directly with a 0% payload. The export only
     // reads id/invoice_no/invoice_date/document_type/payload_json.
     const payload = {
+      payment: { registrationNo: "1234", accountNo: "5678901234" },
       invoiceNumber: "2026-EXEMPT",
       issueDate: "2026-05-20",
       dueDate: "2026-06-19",
@@ -448,6 +467,7 @@ describe("public e-invoice OIOUBL 2.02 conformance", () => {
         address: "Rådhuset, 1599 København V",
         publicRecipient: true,
         eanNumber: "5790000000001",
+    buyerReference: "REF-SYNTHETIC",
         buyerReference: "EAN-REF-EXEMPT",
       },
       lines: [{ description: "Momsfri ydelse", quantity: 1, unitPriceExVat: 1500, lineTotalExVat: 1500 }],
@@ -506,6 +526,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-submit-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
@@ -540,6 +561,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-idempotent-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
@@ -572,6 +594,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-audit-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
@@ -601,6 +624,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-noconfig-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
@@ -621,6 +645,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-missing-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     // Omit dueDate -> OIOUBL handoff validation fails -> submission must fail too.
     const { dueDate, ...withoutDueDate } = PUBLIC_INVOICE;
@@ -646,6 +671,7 @@ describe("public e-invoice PEPPOL submission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-ack-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
 
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
@@ -686,6 +712,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -727,6 +754,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-idem-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -764,6 +792,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-legacy-ack-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
     const prepared = submitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ACCESS_POINT });
@@ -803,6 +832,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-fail-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -834,6 +864,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-retry-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -864,6 +895,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-invalid-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     // Omit dueDate -> OIOUBL handoff validation fails before any transport.
     const { dueDate, ...withoutDueDate } = PUBLIC_INVOICE;
     const issued = issueInvoice(db, root, withoutDueDate);
@@ -893,6 +925,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-peppol-transmit-throw-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -935,6 +968,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-idem-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -964,6 +998,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-concurrent-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     let calls = 0;
     let release!: () => void;
@@ -990,6 +1025,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-queued-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     expect(issued.ok).toBe(true);
 
@@ -1036,6 +1072,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-terminal-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     let deliverCalls = 0;
     const ap = digisenseAccessPointIdentity(COMPANY_KEY);
@@ -1090,6 +1127,7 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-uncertain-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     let deliverCalls = 0;
     const ambiguous: PeppolTransmitter = () => {
@@ -1116,14 +1154,19 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     const root = mkdtempSync(join(tmpdir(), "rentemester-digisense-resume-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
     const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
     const ap = digisenseAccessPointIdentity(COMPANY_KEY);
+    const providerBinding = "b".repeat(64);
     let deliverCalls = 0;
-    await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => {
+    await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding }, () => {
       deliverCalls += 1;
       return { ok: false, error: "queued", queuedDocumentId: "ds-resume-1" };
     });
-    const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => ({ ok: true, status: "delivered", message: "done", observedAt: "2026-06-01T00:00:00Z" }));
+    let wrongEnvironmentCalls = 0;
+    const wrongEnvironment = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding: "wrong-environment" }, () => { wrongEnvironmentCalls++; return { ok: true, status: "delivered" }; });
+    expect(wrongEnvironment.ok).toBe(false); expect(wrongEnvironmentCalls).toBe(0);
+    const resumed = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap, providerBinding }, () => ({ ok: true, status: "delivered", message: "done", observedAt: "2026-06-01T00:00:00Z" }));
     expect(resumed.ok).toBe(true);
     expect(resumed.status).toBe("acknowledged");
     expect(db.query("SELECT id FROM peppol_submission_events WHERE event_type = 'status_observed'").all()).toHaveLength(1);
@@ -1137,4 +1180,57 @@ describe("public e-invoice PEPPOL transmission — Digisense double-send safety"
     db.close();
     rmSync(root, { recursive: true, force: true });
   });
+  test("legacy Digisense status without environment evidence fails closed", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-status-unbound-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    try {
+      const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+      const accessPoint = digisenseAccessPointIdentity("synthetic-company");
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint }, () => ({ ok: false, error: "queued", queuedDocumentId: "legacy-id" }));
+      let checks = 0;
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint, providerBinding: "b".repeat(64) }, () => { checks++; return { ok: true, status: "delivered" }; });
+      expect(result.ok).toBe(false); expect(result.errors.join(" ")).toContain("reconcile"); expect(checks).toBe(0);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("observes historical submission evidence without regenerating its XML and rejects ambiguity", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-historical-status-"));
+    const db = openDb(ensureCompanyDirs(root).db); migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    try {
+      const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+      const ap = { accessPointId: "synthetic-ap", endpointUrl: "synthetic:endpoint", senderEndpointId: "synthetic-company" };
+      let deliveryCalls = 0;
+      await transmitPublicEInvoicePeppol(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, () => {
+        deliveryCalls++; return { ok: false, error: "queued", queuedDocumentId: "historical-id" };
+      });
+      const current = db.query("SELECT * FROM peppol_submissions").get() as any;
+      const oldHash = createHash("sha256").update("synthetic historical XML").digest("hex");
+      const oldKey = createHash("sha256").update([current.invoice_no, oldHash, ap.accessPointId, ap.senderEndpointId, current.receiver_endpoint_id].join("|")).digest("hex");
+      const oldReference = `PEPPOL-${current.invoice_no}-${oldKey.slice(0, 12)}`;
+      const oldEnvelope = current.envelope_xml.replaceAll(current.oioubl_sha256, oldHash).replaceAll(current.idempotency_key, oldKey).replaceAll(current.submission_reference, oldReference);
+      db.run("DROP TRIGGER peppol_submissions_no_update");
+      db.run("UPDATE peppol_submissions SET oioubl_sha256=?, idempotency_key=?, submission_reference=?, envelope_xml=?, envelope_sha256=?", [oldHash, oldKey, oldReference, oldEnvelope, createHash("sha256").update(oldEnvelope).digest("hex")]);
+      let checks = 0;
+      const checker = (id: string) => { checks++; expect(id).toBe("historical-id"); return { ok: true, status: "delivered", observedAt: "2026-06-01T00:00:00Z" }; };
+      const other = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: { ...ap, senderEndpointId: "other-company" } }, checker);
+      expect(other.ok).toBe(false); expect(checks).toBe(0);
+      db.run("UPDATE peppol_submissions SET envelope_xml=?", [`${oldEnvelope}corrupted`]);
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      expect(checks).toBe(0);
+      db.run("UPDATE peppol_submissions SET envelope_xml=?", [oldEnvelope]);
+      const result = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker);
+      expect(result).toMatchObject({ ok: true, status: "acknowledged", idempotencyKey: oldKey, transmissionId: "historical-id" });
+      expect(checks).toBe(1); expect(deliveryCalls).toBe(1);
+      const repeat = await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker);
+      expect(repeat.status).toBe("acknowledged"); expect(checks).toBe(1);
+      db.run("INSERT INTO peppol_submission_events (submission_id,event_type,document_id,observed_at) VALUES (?, 'queued', 'conflicting-id', '2026-06-01')", [current.id]);
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      db.run("INSERT INTO peppol_submissions (invoice_document_id,invoice_no,idempotency_key,submission_reference,access_point_id,receiver_endpoint_id,oioubl_sha256,envelope_sha256,envelope_xml,status) SELECT invoice_document_id,invoice_no,'other-key','other-reference',access_point_id,receiver_endpoint_id,oioubl_sha256,envelope_sha256,envelope_xml,status FROM peppol_submissions LIMIT 1");
+      expect((await resumePublicEInvoicePeppolSubmission(db, { invoiceDocumentId: issued.documentId!, accessPoint: ap }, checker)).ok).toBe(false);
+      expect(checks).toBe(1); expect(deliveryCalls).toBe(1);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
 });

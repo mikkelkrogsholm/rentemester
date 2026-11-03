@@ -220,6 +220,7 @@ export function previewNextInvoiceNumber(db: Database, issueDate: string): Invoi
 /** Snapshot the financial and payment fields that an invoice approval covers. */
 export function prepareInvoiceApprovalPayload(db: Database, rawPayload: InvoicePayload) {
   if (Object.hasOwn(rawPayload, "approvedPdf")) return { ok: false as const, errors: ["approvedPdf is reserved for issued evidence"] };
+  if (Object.hasOwn(rawPayload, "payment")) return { ok: false as const, errors: ["payment is reserved for issued evidence"] };
   const payload = enrichInvoiceFromCompany(db, rawPayload);
   const validation = validateInvoice(payload);
   if (!validation.ok) return { ok: false as const, errors: validation.errors };
@@ -324,6 +325,7 @@ export function issueInvoice(
   const validation = validateInvoice(payload);
   const appliedRules = [...new Set([...(validation.appliedRules ?? []), RULE_ID, LOCK_RULE_ID])];
   if (Object.hasOwn(rawPayload, "approvedPdf")) return { ok: false, appliedRules, errors: ["approvedPdf is reserved for issued evidence"] };
+  if (Object.hasOwn(rawPayload, "payment")) return { ok: false, appliedRules, errors: ["payment is reserved for issued evidence"] };
   if (!validation.ok) return { ok: false, appliedRules, errors: validation.errors };
   if (approvedPdf && (!approvedPdf.visualReviewConfirmed || approvedPdf.pdfBytes.byteLength === 0 || approvedPdf.pdfBytes.byteLength > 7_000_000)) {
     return { ok: false, appliedRules, errors: ["Approved PDF requires visual review and a supported PDF size"] };

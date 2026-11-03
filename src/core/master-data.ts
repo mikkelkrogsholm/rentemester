@@ -700,6 +700,8 @@ export function resolveInvoiceMasterData(
     payload: {
       ...payload,
       buyer: {
+        buyerReference: trimToNull(payload.buyer?.buyerReference) ?? undefined,
+        orderReference: trimToNull(payload.buyer?.orderReference) ?? undefined,
         name: trimToNull(payload.buyer?.name) ?? customer.name,
         address: trimToNull(payload.buyer?.address) ?? customer.address ?? undefined,
         vatOrCvr: trimToNull(payload.buyer?.vatOrCvr) ?? customer.vat_or_cvr ?? undefined,
