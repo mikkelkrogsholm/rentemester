@@ -938,10 +938,34 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(wrongBinding.ok).toBe(false);
     expect(checks).toBe(0);
     const observed = await resumePublicEInvoicePeppolSubmission(db, input, (id) => { checks++; expect(id).toBe("known-id"); return { ok: true, status: "delivered" }; });
-    expect(observed).toMatchObject({ ok: true, status: "acknowledged", transmissionId: "known-id" });
+    expect(observed).toMatchObject({ ok: true, status: "uncertain", transmissionId: "known-id", providerStatus: "delivered", reconciliationRequired: true, errors: [] });
+    expect(observed.reconciliationMessage).toContain("reconcile with the provider");
+    expect(wrapCoreResult(observed)).toMatchObject({ ok: true, data: { status: "uncertain", transmissionId: "known-id", providerStatus: "delivered", reconciliationRequired: true } });
     expect(checks).toBe(kind === "queued" ? 1 : 0);
     expect(buildInvoiceList(db).rows[0]?.peppolStatus).toMatchObject({ status: "uncertain", transmissionId: "known-id" });
     expect(deliveries).toBe(1);
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("status observations preserve prior uncertainty for pending, rejected and failed lookups", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-uncertain-statuses-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    db.run("INSERT INTO bank_accounts (slug,name,currency,registration_no,account_no) VALUES ('synthetic','Synthetic Bank','DKK','1234','5678901234')");
+    const issued = issueInvoice(db, root, { ...PUBLIC_INVOICE });
+    const input = { invoiceDocumentId: issued.documentId!, accessPoint: ACCESS_POINT };
+    await transmitPublicEInvoicePeppol(db, input, () => ({ ok: false, error: "queued", queuedDocumentId: "known-id" }));
+    db.run("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES ('public_einvoice_peppol_transmission','document',?,?)", [String(issued.documentId), `PEPPOL transmission failed for invoice ${issued.invoiceNumber} via access point ${ACCESS_POINT.accessPointId}: historical timeout`]);
+    for (const providerStatus of ["queued-for-delivery", "unable-to-deliver"]) {
+      const result = await resumePublicEInvoicePeppolSubmission(db, input, () => ({ ok: true, status: providerStatus }));
+      expect(result).toMatchObject({ ok: true, status: "uncertain", providerStatus, transmissionId: "known-id", reconciliationRequired: true });
+    }
+    const failed = await resumePublicEInvoicePeppolSubmission(db, input, () => ({ ok: false, error: "status unavailable" }));
+    expect(failed).toMatchObject({ ok: false, status: "uncertain", transmissionId: "known-id", reconciliationRequired: true });
+    expect(failed.errors.join(" ")).toContain("status unavailable");
+    expect(failed.errors.join(" ")).toContain("reconcile with the provider");
+    expect(db.query("SELECT id FROM peppol_submission_events WHERE event_type = 'status_observed'").all()).toHaveLength(2);
     db.close();
     rmSync(root, { recursive: true, force: true });
   });
@@ -996,6 +1020,7 @@ describe("public e-invoice PEPPOL transmission", () => {
       async () => { statusCalls += 1; return { ok: true, status: "delivered" }; },
     );
     expect(resumed.status).toBe("acknowledged");
+    expect(resumed.reconciliationRequired).toBeUndefined();
     expect(statusCalls).toBe(0);
     expect(buildInvoiceList(db).rows[0]?.peppolStatus?.status).toBe("acknowledged");
 

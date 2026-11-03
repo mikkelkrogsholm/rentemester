@@ -857,6 +857,8 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 							</strong>
 							. Handlingen observerer kun den eksisterende DigiSense-afsendelse
 							og sender ikke fakturaen igen.
+							{checkingPublicStatus.peppolStatus?.status === "uncertain" &&
+								" Et tidligere forsøg kræver fortsat manuel afstemning, også hvis det kendte dokument er leveret."}
 						</p>
 					}
 					confirmLabel="Kontrollér status"

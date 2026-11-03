@@ -480,7 +480,8 @@ describe("InvoicesView — write actions", () => {
     await screen.findByRole("heading", { name: "Fakturaer" });
     expect(screen.getByText("E-faktura-status ukendt — afklar manuelt")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Send e-faktura" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Opdatér leveringsstatus" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Opdatér leveringsstatus" }));
+    expect(screen.getByText(/Et tidligere forsøg kræver fortsat manuel afstemning/)).toBeInTheDocument();
   });
 
   test("Send e-faktura is hidden for an archived year (no live ledger)", async () => {

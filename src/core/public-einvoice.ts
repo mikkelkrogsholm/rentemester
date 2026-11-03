@@ -802,6 +802,10 @@ export type SubmitPublicEInvoicePeppolResult = {
   outPath?: string;
   /** Transport transmission id, set once the invoice has actually been transmitted. */
   transmissionId?: string;
+  /** Status of the known provider document, distinct from invoice-level uncertainty. */
+  providerStatus?: string;
+  reconciliationRequired?: boolean;
+  reconciliationMessage?: string;
   appliedRules: string[];
   errors: string[];
 };
@@ -1354,11 +1358,19 @@ export async function resumePublicEInvoicePeppolSubmission(
       || !validEnvelope || ids.some((id) => !hasText(id)) || new Set(ids).size > 1) {
     return { ok: false, invoiceNumber, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: ["PEPPOL submission identity or evidence is inconsistent with the configured access point"] };
   }
+  const reconciliationMessage = "A historical PEPPOL transmission failure has no matching delivery outcome evidence; reconcile with the provider before any further delivery";
+  const uncertainObservation = (documentId: string, providerStatus: string): SubmitPublicEInvoicePeppolResult => ({
+    ok: true, invoiceNumber, submissionReference: row.submission_reference, idempotencyKey,
+    status: "uncertain", transmissionId: documentId, providerStatus,
+    reconciliationRequired: true, reconciliationMessage,
+    appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [],
+  });
   // An already acknowledged event is terminal even if a historical queued
   // event was pruned or never recorded. Never require queued evidence before
   // returning that existing result, and never call the status checker for it.
   const effective = row ? effectiveAcknowledgement(db, row) : null;
   if (row && effective) {
+    if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return uncertainObservation(effective.document_id, "delivered");
     return {
       ...rowToSubmissionResult(db, row, invoiceNumber, true),
       status: "acknowledged",
@@ -1376,9 +1388,13 @@ export async function resumePublicEInvoicePeppolSubmission(
   try {
     observed = await checkStatus(queuedDocumentId);
   } catch (error) {
-    return { ok: false, invoiceNumber, submissionReference: row.submission_reference, idempotencyKey, status: "prepared", transmissionId: queuedDocumentId, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [error instanceof Error ? error.message : String(error)] };
+    const unresolved = hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId);
+    return { ok: false, invoiceNumber, submissionReference: row.submission_reference, idempotencyKey, status: unresolved ? "uncertain" : "prepared", transmissionId: queuedDocumentId, ...(unresolved ? { reconciliationRequired: true, reconciliationMessage } : {}), appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [error instanceof Error ? error.message : String(error), ...(unresolved ? [reconciliationMessage] : [])] };
   }
-  if (!observed.ok) return { ok: false, invoiceNumber, submissionReference: row.submission_reference, idempotencyKey, status: "prepared", transmissionId: queuedDocumentId, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [observed.error ?? "PEPPOL document-status failed"] };
+  if (!observed.ok) {
+    const unresolved = hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId);
+    return { ok: false, invoiceNumber, submissionReference: row.submission_reference, idempotencyKey, status: unresolved ? "uncertain" : "prepared", transmissionId: queuedDocumentId, ...(unresolved ? { reconciliationRequired: true, reconciliationMessage } : {}), appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: [observed.error ?? "PEPPOL document-status failed", ...(unresolved ? [reconciliationMessage] : [])] };
+  }
   const observedAt = observed.observedAt ?? new Date().toISOString();
   runSql(db,
     `INSERT INTO peppol_submission_events
@@ -1390,8 +1406,10 @@ export async function resumePublicEInvoicePeppolSubmission(
   insertAuditLog(db, { eventType: "public_einvoice_peppol_status", entityType: "document", entityId: input.invoiceDocumentId, message: `Observed PEPPOL document ${queuedDocumentId} status ${observed.status ?? "unknown"} for invoice ${invoiceNumber}` });
   if (observed.status === "delivered") {
     recordSubmissionEvent(db, row.id, "delivered", { documentId: queuedDocumentId, status: "delivered", observedAt, message: observed.message, publicUrl: observed.publicUrl });
+    if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return uncertainObservation(queuedDocumentId, observed.status);
     return { ...rowToSubmissionResult(db, row, invoiceNumber, true), status: "acknowledged", transmissionId: queuedDocumentId };
   }
+  if (hasUnmatchedTransmissionFailure(db, input.invoiceDocumentId)) return uncertainObservation(queuedDocumentId, observed.status ?? "unknown");
   if (isTerminalAcceptedFailure(observed.status)) {
     return {
       ok: true,
