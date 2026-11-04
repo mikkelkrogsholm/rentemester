@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
-import { seedAccounts } from "../../src/core/ledger";
+import { reverseJournalEntry, reverseJournalEntryInCurrentTransaction, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { importBankCsv } from "../../src/core/bank";
 import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry } from "../../src/core/ledger";
@@ -55,6 +55,51 @@ function ingestPurchase(
 }
 
 describe("payables (kreditorstyring)", () => {
+  for (const target of ["bill", "payment"] as const) {
+    for (const inCurrentTransaction of [false, true]) {
+      test(`rejects isolated ${target} reversal (current transaction: ${inCurrentTransaction})`, () => {
+        const { root, db } = setup("rentemester-payable-reversal-");
+        try {
+          const documentId = ingestPurchase(db, root, root, "Synthetic Supplier", "REV-1", 1250, 250);
+          const bill = registerPayable(db, { documentId, billDate: "2026-01-10", dueDate: "2026-02-09", expenseAccountNo: "3000" });
+          expect(bill.ok).toBe(true);
+          let entryId = bill.entryId!;
+          if (target === "payment") {
+            const csv = join(root, "payment.csv");
+            writeFileSync(csv, "transaction_date,booking_date,text,amount,currency,reference\n2026-02-05,2026-02-05,Synthetic payment,-500,DKK,REV-PAY\n");
+            expect(importBankCsv(db, root, csv).ok).toBe(true);
+            const bank = db.query("SELECT id FROM bank_transactions WHERE reference = 'REV-PAY'").get() as { id: number };
+            const payment = payPayableFromBank(db, { payableId: bill.payableId!, bankTransactionId: bank.id });
+            expect(payment.ok).toBe(true);
+            entryId = payment.journalEntryId!;
+          }
+          const snapshot = () => ({
+            status: getPayableStatus(db, bill.payableId!),
+            journals: db.query("SELECT * FROM journal_entries ORDER BY id").all(),
+            audit: db.query("SELECT * FROM audit_log ORDER BY id").all(),
+            sequences: db.query("SELECT * FROM sequences ORDER BY kind, scope").all(),
+            links: db.query("SELECT * FROM bank_journal_reconciliations").all(),
+          });
+          const before = snapshot();
+          const input = { entryId, transactionDate: "2026-02-06", reason: "Synthetic correction" };
+          const result = inCurrentTransaction
+            ? db.transaction(() => reverseJournalEntryInCurrentTransaction(db, input)).immediate()
+            : reverseJournalEntry(db, input);
+          expect(result.ok).toBe(false);
+          expect(result.errors.join(" ")).toContain("atomic payable correction workflow");
+          expect(snapshot()).toEqual(before);
+          const creditors = db.query(`SELECT ROUND(SUM(l.credit_amount-l.debit_amount), 2) AS balance
+            FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE a.account_no='7000'`).get() as { balance: number };
+          expect(creditors.balance).toBe(before.status.openBalance!);
+          expect(verifyAuditChain(db).ok).toBe(true);
+        } finally {
+          db.close();
+          rmSync(root, { recursive: true, force: true });
+        }
+      });
+    }
+  }
+
   test("#594 corrects a mixed taxable/exempt June direct-bank purchase into a July-settled payable without rewriting evidence", () => {
     const { root, db } = setup("rentemester-payables-cross-period-");
     const inbox = mkdtempSync(join(tmpdir(), "rentemester-payables-cross-period-inbox-"));
