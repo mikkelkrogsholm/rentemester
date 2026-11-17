@@ -1427,6 +1427,8 @@ export function verifyAuditChain(db: Database, options: VerifyAuditChainOptions 
   }
   const badCurrent = db.query(`SELECT bank_transaction_id,COUNT(*) AS count FROM bank_journal_reconciliations GROUP BY bank_transaction_id HAVING COUNT(*)<>1`).all() as Array<{bank_transaction_id:number;count:number}>;
   for (const row of badCurrent) errors.push(`bank transaction ${row.bank_transaction_id}: has ${row.count} effective reconciliations; exactly one is required`);
+  const duplicatedJournals = db.query(`SELECT journal_entry_id,COUNT(DISTINCT bank_transaction_id) AS count FROM bank_journal_reconciliations GROUP BY journal_entry_id HAVING COUNT(DISTINCT bank_transaction_id)>1`).all() as Array<{journal_entry_id:number;count:number}>;
+  for (const row of duplicatedJournals) errors.push(`journal entry ${row.journal_entry_id}: reconciles ${row.count} bank transactions; at most one is allowed`);
 
   const orphanLines = db.query(
     `SELECT jl.id, jl.journal_entry_id

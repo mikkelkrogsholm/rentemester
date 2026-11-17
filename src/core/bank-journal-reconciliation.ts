@@ -184,6 +184,16 @@ export function linkBankTransactionToJournal(
     errors.push(`journal entry ${input.journalEntryId} is not an active original posted entry`);
   }
   if (journal.source_bank_transaction_id != null) errors.push(`journal entry ${input.journalEntryId} already carries a direct bank link`);
+  // One journal's bank movement may satisfy at most one bank row; repeating
+  // the same journal link would count the ledger movement twice and produce a
+  // false-green bank reconciliation.
+  const otherBankRow = db.query(
+    `SELECT link.bank_transaction_id
+       FROM bank_journal_reconciliation_links link
+      WHERE link.journal_entry_id = ? AND link.bank_transaction_id <> ?
+      LIMIT 1`,
+  ).get(input.journalEntryId, input.bankTransactionId) as { bank_transaction_id: number } | null;
+  if (otherBankRow) errors.push(`journal entry ${input.journalEntryId} is already reconciled to bank transaction ${otherBankRow.bank_transaction_id}`);
   const bankAmountDkk = bank.currency.trim().toUpperCase() === "DKK" ? Number(bank.amount) : Number(bank.amount_dkk);
   if (!Number.isFinite(bankAmountDkk)) errors.push(`bank transaction ${input.bankTransactionId} has no deterministic DKK amount`);
   if (Number.isFinite(bankAmountDkk) && roundDkk(Number(journal.bank_movement)) !== roundDkk(bankAmountDkk)) {
