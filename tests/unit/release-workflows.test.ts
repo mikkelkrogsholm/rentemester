@@ -87,7 +87,8 @@ describe("release workflow security contract", () => {
     expect(cockpitEvidenceRunner).toContain("Docker did not create an internal evidence network");
     expect(cockpitEvidenceRunner).toContain('"--network",\n      network');
     expect(cockpitEvidenceRunner).not.toContain('"--publish"');
-    expect(cockpitEvidenceRunner).toContain('"{{json .NetworkSettings}}"');
+    expect(cockpitEvidenceRunner).toContain('{{json .NetworkSettings}}');
+    expect(cockpitEvidenceRunner).toContain('{{json .HostConfig}}');
     expect(cockpitEvidenceProxy).toContain("candidate must be attached only to the internal evidence network");
     expect(cockpitEvidenceProxy).toContain("candidate must not publish container ports");
     expect(cockpitEvidenceProxy).toContain("invalid internal application IPv4");

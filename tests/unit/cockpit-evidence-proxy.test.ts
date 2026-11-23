@@ -5,34 +5,51 @@ import {
 } from "../../scripts/release/cockpit-evidence-proxy";
 
 describe("cockpit evidence proxy", () => {
-  test("accepts only one un-published internal network address", () => {
-    expect(
-      internalAppIpv4(
-        { Networks: { evidence: { IPAddress: "172.20.0.2" } }, Ports: {} },
-        "evidence",
-      ),
-    ).toBe("172.20.0.2");
-    expect(() =>
-      internalAppIpv4(
-        { Networks: { evidence: { IPAddress: "8.8.8.8" } }, Ports: {} },
-        "evidence",
-      ),
-    ).toThrow("invalid internal application IPv4");
-    expect(() =>
-      internalAppIpv4(
-        {
-          Networks: { evidence: { IPAddress: "172.20.0.2" }, bridge: { IPAddress: "172.17.0.2" } },
-          Ports: {},
-        },
-        "evidence",
-      ),
-    ).toThrow("only to the internal evidence network");
-    expect(() =>
-      internalAppIpv4(
-        { Networks: { evidence: { IPAddress: "172.20.0.2" } }, Ports: { "4319/tcp": [] } },
-        "evidence",
-      ),
-    ).toThrow("must not publish container ports");
+  const Networks = { evidence: { IPAddress: "172.20.0.2" } };
+  const HostConfig = { PortBindings: {}, PublishAllPorts: false };
+
+  test("accepts exposed ports without host bindings", () => {
+    for (const settings of [
+      { Networks }, { Networks, Ports: null }, { Networks, Ports: {} },
+      { Networks, Ports: { "4319/tcp": null } },
+    ]) {
+      for (const PortBindings of [{}, null]) {
+        expect(internalAppIpv4({
+          NetworkSettings: settings, HostConfig: { ...HostConfig, PortBindings },
+        }, "evidence")).toBe("172.20.0.2");
+      }
+    }
+  });
+
+  test("rejects published or malformed runtime ports", () => {
+    for (const Ports of [
+      { "4319/tcp": [{ HostIp: "127.0.0.1", HostPort: "4319" }] },
+      { "4319/tcp": [], "80/tcp": null }, { "bad": null }, { "65536/tcp": null }, [], false,
+    ]) {
+      expect(() => internalAppIpv4({ NetworkSettings: { Networks, Ports }, HostConfig }, "evidence"))
+        .toThrow("must not publish container ports");
+    }
+  });
+
+  test("requires explicit evidence against host port publication", () => {
+    for (const host of [
+      undefined, {}, { PublishAllPorts: false }, { PortBindings: {} },
+      { ...HostConfig, PublishAllPorts: true }, { ...HostConfig, PublishAllPorts: "false" },
+      { ...HostConfig, PortBindings: { "4319/tcp": [{ HostPort: "8080" }] } },
+      { ...HostConfig, PortBindings: { "4319/tcp": null } }, { ...HostConfig, PortBindings: [] },
+    ]) {
+      expect(() => internalAppIpv4({ NetworkSettings: { Networks }, HostConfig: host }, "evidence"))
+        .toThrow("must not publish container ports");
+    }
+  });
+
+  test("requires a private address on only the internal network", () => {
+    expect(() => internalAppIpv4({
+      NetworkSettings: { Networks: { evidence: { IPAddress: "8.8.8.8" } } }, HostConfig,
+    }, "evidence")).toThrow("invalid internal application IPv4");
+    expect(() => internalAppIpv4({
+      NetworkSettings: { Networks: { ...Networks, bridge: { IPAddress: "172.17.0.2" } } }, HostConfig,
+    }, "evidence")).toThrow("only to the internal evidence network");
   });
 
   test("binds loopback and forwards method, query, headers, body, and response", async () => {
