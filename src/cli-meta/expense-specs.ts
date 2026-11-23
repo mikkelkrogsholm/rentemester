@@ -1,5 +1,7 @@
 import type { CommandSpec } from "./_shared";
 
+const bookingFlags = ["--company", "--document-id", "--bank-transaction-id", "--expense-account", "--vat-treatment", "--payment-account", "--date", "--text"];
+
 export const expenseSpecs: CommandSpec[] = [
   {
     key: "expense vat-preflight",
@@ -9,11 +11,17 @@ export const expenseSpecs: CommandSpec[] = [
     inputNotes: ["Uden --apply er kommandoen en ren dry-run: region, krævet validering, cache-friskhed og provider-kald vises.", "Kun den eksakte form --apply yes må skrive; den kræver actor-attribution og gemmer kun sikker, resumérbar evidens."],
   },
   {
+    key: "expense dry-run",
+    usage: "expense dry-run --company <path> --document-id <n> --bank-transaction-id <n> --expense-account <konto> [--vat-treatment <behandling>] [--payment-account <konto>] [--date <YYYY-MM-DD>] [--text <tekst>]",
+    description: "Viser udgiftens bogføringslinjer efter kontrol af bilag, bankpost og momsevidens på en midlertidig kopi.",
+    allowedFlags: bookingFlags,
+  },
+  {
     key: "expense book",
     usage:
       "expense book --company <path> --document-id <n> --bank-transaction-id <n> --expense-account <konto> [--vat-treatment standard|reverse_charge|representation|exempt|non_deductible] [--payment-account <konto>] [--date <YYYY-MM-DD>] [--text <tekst>]",
     description: "Bogfører en leverandørudgift direkte fra bilag + bankpost.",
-    allowedFlags: ["--company", "--document-id", "--bank-transaction-id", "--expense-account", "--vat-treatment", "--payment-account", "--date", "--text"],
+    allowedFlags: bookingFlags,
     inputNotes: [
       "--document-id og --bank-transaction-id binder udgiften til et indlæst bilag og en importeret bankpost (heltal-id'er)",
       "--expense-account: kontonummeret udgiften bogføres på (fx 3000 Software og SaaS)",

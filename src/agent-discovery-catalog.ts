@@ -212,6 +212,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   workflow({ id: "supplier-expense-booking", capabilityId: "supplier-purchases", title: "Supplier expense booking", intendedOutcome: "Book a documented supplier expense against a bank transaction with the correct VAT treatment.", steps: [
     read("review-document", mcp("documents_list"), "Select the ingested supplier document."),
     read("vat-preflight", mcp("expense_vat_preflight"), "Validate supplier identity, VAT evidence and treatment.", { dependsOn: ["review-document"], boundary: "dry-run" }),
+    read("preview-expense", cli("expense dry-run"), "Inspect the projected account, VAT and bank lines on a disposable ledger copy.", { dependsOn: ["vat-preflight"], boundary: "dry-run", inputIdentities: ["documentId", "bankTransactionId"] }),
     write("book-expense", mcp("expense_book"), "Post the reviewed expense and bank reconciliation.", { dependsOn: ["vat-preflight"], boundary: "irreversible", retryClass: "key-idempotent", inputIdentities: ["documentId", "bankTransactionId"], uncertainOutcomeReadBack: mcp("journal_list"), canonicalRecords: ["journal entries", "bank reconciliations", "document posting link"] }),
     read("verify-posting", mcp("journal_list"), "Read back the posting.", { dependsOn: ["book-expense"] }),
   ], relatedWorkflowIds: ["supplier-payable-handling", "vat-preparation"] }),
@@ -600,7 +601,7 @@ type SurfaceBaseline = { count: number; hash: string };
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
   mcp: { count: 271, hash: "505c94c29bead00bdfacdd6d4a59a275d3dfe842d48d39408b2f3dc110a672ee" },
-  cli: { count: 321, hash: "cbb40c500f6d7990191532c97474231bc1dcdad19bffbde0a4aeb458d0f26853" },
+  cli: { count: 322, hash: "223ba22d92a44cec527897199d75ca7d9f348497ddfb66442e0bfd6804db34df" },
   http: { count: 264, hash: "26495100ba7c9f7ce0d22fcadb92afb47de2bf6e6cd9b2464192e9f7aed1bc2b" },
 };
 

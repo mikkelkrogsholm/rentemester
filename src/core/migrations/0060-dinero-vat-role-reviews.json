@@ -1,0 +1,5 @@
+{
+  "id": 60,
+  "name": "dinero-vat-role-reviews-v60",
+  "sql": "CREATE TABLE IF NOT EXISTS dinero_vat_role_reviews (\n  mapping_id INTEGER PRIMARY KEY REFERENCES account_role_mappings(id),\n  company_cvr TEXT NOT NULL,\n  chart_path TEXT NOT NULL,\n  chart_sha256 TEXT NOT NULL CHECK(length(chart_sha256) = 64),\n  inventory_sha256 TEXT NOT NULL CHECK(length(inventory_sha256) = 64),\n  source_account_name TEXT NOT NULL,\n  previous_dedicated_reverse_charge_account TEXT,\n  last_existing_entry_id INTEGER NOT NULL CHECK(last_existing_entry_id >= 0)\n);\nCREATE TRIGGER IF NOT EXISTS dinero_vat_role_reviews_no_update BEFORE UPDATE ON dinero_vat_role_reviews BEGIN SELECT RAISE(ABORT, 'Dinero VAT role evidence is immutable'); END;\nCREATE TRIGGER IF NOT EXISTS dinero_vat_role_reviews_no_delete BEFORE DELETE ON dinero_vat_role_reviews BEGIN SELECT RAISE(ABORT, 'Dinero VAT role evidence is append-only'); END;"
+}

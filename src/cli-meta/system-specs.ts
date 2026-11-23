@@ -135,5 +135,16 @@ export const systemSpecs: CommandSpec[] = [
     ],
   },
   { key: "accounts roles-status", usage: "accounts roles-status --company <path>", description: "Viser bekræftede konto-roller, mangler og tvetydige importforslag (read-only).", allowedFlags: ["--company"] },
-  { key: "accounts role-confirm", usage: "accounts role-confirm --company <path> --role <role> --account <kontonr>", description: "Bekræfter en kompatibel kontorolle med actor-audit.", allowedFlags: ["--company", "--role", "--account"] },
+  {
+    key: "accounts role-confirm",
+    usage: "accounts role-confirm --company <path> --role <role> --account <kontonr> [--dinero-export <mappe|zip>]",
+    description: "Bekræfter en kompatibel kontorolle med actor og revisionsspor.",
+    allowedFlags: ["--company", "--role", "--account", "--dinero-export"],
+    inputNotes: [
+      "Kør accounts roles-status, og gennemgå selskabets originale Dinero-kontoplan. Ved en ny import med type vat bruges --role og --account.",
+      "Har de gamle momskonti typen liability, angiv desuden --dinero-export <mappe|zip>. CVR i Firmaoplysninger.csv og kontoens nummer, navn og type i den seneste Kontoplan.csv kontrolleres. Der bogføres ingen import.",
+      "For den understøttede Dinero-standardkontoplan bekræftes input_vat på 64060 (købsmoms), output_vat på 64000 (salgsmoms) og reverse_charge_vat på 64040 (ydelser fra udlandet). 64020 er varekøb. Eksportkontrollen kræver et genkendt dansk standardnavn, Type Passiv og tom Momstype. Tilpassede eller modstridende kontodefinitioner kræver særskilt afklaring.",
+      "Kontrollér kontiene efterfølgende med expense dry-run --company <path> --document-id <n> --bank-transaction-id <n> --expense-account <konto> --vat-treatment standard eller reverse_charge.",
+    ],
+  },
 ];

@@ -44,7 +44,9 @@ export function register(dispatch: CommandDispatch): void {
     migrate(db);
     const actor = ctx.cliActor ?? process.env.RENTEMESTER_ACTOR ?? ctx.inferredMutationActor();
     const requiredActor = actor ?? ctx.fatal("actor required for mutations");
-    const result = confirmAccountRole(db, role as typeof ACCOUNT_ROLES[number], requiredAccountNo, requiredActor, "rentemester-cli", "explicit");
+    const dineroExport = ctx.arg("--dinero-export");
+    const accountRole = role as typeof ACCOUNT_ROLES[number];
+    const result = confirmAccountRole(db, accountRole, requiredAccountNo, requiredActor, "rentemester-cli", "explicit", dineroExport);
     const status = accountRoleStatus(db);
     ctx.emitResult(result.ok
       ? { ok: true, resolution: result.resolution, ...status, roles: ACCOUNT_ROLES.map((item) => resolveAccountRole(db, item)) }

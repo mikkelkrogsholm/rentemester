@@ -877,6 +877,9 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
     );
   }
 
+  const amountSideForRow = (row: (typeof rows)[number]) =>
+    vatAmountSideByAccountNo.get(row.account_no) ??
+    vatAccountSemantics.amountSideForEntry(row.account_no, row.reversal_of_entry_id ?? row.entry_id);
   // Dinero's historical representation vouchers can collapse the net expense
   // and the 75% non-deductible VAT into one REPRESENTATION_SPECIAL expense
   // line. Rentemester's native shape keeps those amounts on two lines. Recover
@@ -900,7 +903,7 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
         !representationRows.some((candidate) => candidate.line_id === row.line_id),
     );
     const inputRows = entryRows.filter(
-      (row) => vatAmountSideByAccountNo.get(row.account_no) === "input",
+      (row) => amountSideForRow(row) === "input",
     );
     if (
       representationRows.length !== 1 ||
@@ -955,7 +958,7 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
       touchesVatSettlement: false,
       touchesOther: false,
     };
-    if (vatAmountSideByAccountNo.has(row.account_no)) {
+    if (amountSideForRow(row)) {
       shape.touchesVatAmount = true;
     } else if (vatSettlementAccountNos.has(row.account_no)) {
       shape.touchesVatSettlement = true;
@@ -1048,7 +1051,7 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
     const debit = roundDkk(Number(row.debit_amount ?? 0));
     const credit = roundDkk(Number(row.credit_amount ?? 0));
     const amountSide =
-      vatAmountSideByAccountNo.get(row.account_no) ??
+      amountSideForRow(row) ??
       (trustedDineroInputLineIds.has(row.line_id) ? "input" : undefined);
     const trustedHistoricalImport = isPersistedHistoricalImportProgram(
       row.created_by_program,
@@ -1082,7 +1085,8 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
         row.entry_id,
         (outputVatNetByEntry.get(row.entry_id) ?? 0) + (credit - debit),
       );
-      if (reverseChargeOutputAccountNos.has(row.account_no)) {
+      if (reverseChargeOutputAccountNos.has(row.account_no) ||
+          vatAccountSemantics.dedicatedReverseChargeForEntry(row.reversal_of_entry_id ?? row.entry_id) === row.account_no) {
         dedicatedReverseChargeOutputNetByEntry.set(
           row.entry_id,
           (dedicatedReverseChargeOutputNetByEntry.get(row.entry_id) ?? 0) +
