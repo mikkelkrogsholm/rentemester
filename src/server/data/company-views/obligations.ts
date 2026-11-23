@@ -87,6 +87,10 @@ function liabilityBalancesAsOf(
         WHERE a.type = 'liability'
           AND je.status = 'posted'
           AND je.transaction_date <= ?
+          AND NOT EXISTS (
+            SELECT 1 FROM dinero_vat_role_reviews r JOIN account_role_mappings m ON m.id = r.mapping_id
+            WHERE m.account_no = a.account_no AND coalesce(je.reversal_of_entry_id, je.id) > r.last_existing_entry_id
+          )
         GROUP BY a.id
         ORDER BY a.account_no ASC`,
     )

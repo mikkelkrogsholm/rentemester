@@ -1,5 +1,6 @@
 import { runSql } from "./sqlite";
 import type { Database } from "bun:sqlite";
+import { readDineroVatRoleReview, type DineroVatRoleReview } from "./import/dinero-vat-role-review";
 import { insertAuditLog } from "./actor";
 
 export const ACCOUNT_ROLES = ["bank", "debtors", "creditors", "output_vat", "input_vat", "reverse_charge_vat", "vat_settlement", "operational_default"] as const;
@@ -18,8 +19,11 @@ const expectations: Record<AccountRole, { type: string; normalBalance: string }>
 };
 
 export type AccountRoleConfirmationSource = "native_seed" | "explicit";
+type ReviewedDineroControl = DineroVatRoleReview & {
+  lastExistingEntryId: number;
+};
 export type AccountRoleResolution =
-  | { ok: true; role: AccountRole; accountNo: string; version: number; confirmedBy: string; confirmationSource: AccountRoleConfirmationSource }
+  | { ok: true; role: AccountRole; accountNo: string; version: number; confirmedBy: string; confirmationSource: AccountRoleConfirmationSource; dineroReview?: ReviewedDineroControl }
   | { ok: false; role: AccountRole; error: string };
 
 export type AccountRoleProposal = { role: AccountRole; accountNo: string; source: string; proposedAt: string; compatible: boolean; reason?: string };
@@ -61,17 +65,42 @@ export function accountRoleStatus(db: Database): AccountRoleStatusDetail {
   return { status: ambiguous.length ? "ambiguous" : missing.length ? "incomplete" : "complete", missing, ambiguous, proposals: candidates, candidates, reasons };
 }
 
+function matchesReviewedLiability(db: Database, role: AccountRole, accountNo: string, review: Pick<ReviewedDineroControl, "accountName" | "companyCvr">) {
+  if (expectations[role].type !== "vat") return false;
+  return db.query(`SELECT 1 FROM accounts a JOIN companies c ON c.id = 1
+    WHERE a.account_no = ? AND trim(a.name) = ? AND a.active = 1 AND a.type = 'liability'
+      AND coalesce(a.default_vat_code, '') = '' AND (? = 'input_vat' OR a.normal_balance = 'credit')
+      AND upper(trim(c.cvr)) IN (?, ?)`).get(accountNo, review.accountName, role, review.companyCvr, review.companyCvr.slice(2)) !== null;
+}
+
 export function resolveAccountRole(db: Database, role: AccountRole): AccountRoleResolution {
-  const row = db.query(`SELECT m.account_no, m.version, m.confirmed_by, m.confirmation_source, a.type, a.normal_balance, a.active
+  const row = db.query(`SELECT m.id, m.account_no, m.version, m.confirmed_by, m.confirmation_source, a.type, a.normal_balance, a.active
     FROM account_role_mappings m JOIN accounts a ON a.account_no = m.account_no
-    WHERE m.role = ? AND m.status = 'confirmed'`).get(role) as { account_no: string; version: number; confirmed_by: string; confirmation_source: AccountRoleConfirmationSource; type: string; normal_balance: string; active: number } | null;
+    WHERE m.role = ? AND m.status = 'confirmed'`).get(role) as { id: number; account_no: string; version: number; confirmed_by: string; confirmation_source: AccountRoleConfirmationSource; type: string; normal_balance: string; active: number } | null;
   if (!row) return { ok: false, role, error: `account role '${role}' has no active confirmed mapping` };
   if (row.active !== 1) return { ok: false, role, error: `account role '${role}' maps to inactive account ${row.account_no}` };
   const expected = expectations[role];
+  let dineroReview: ReviewedDineroControl | null = null;
   if (row.type !== expected.type || row.normal_balance !== expected.normalBalance) {
-    return { ok: false, role, error: `account role '${role}' maps to semantically incompatible account ${row.account_no}` };
+    if (row.confirmation_source === "explicit" && row.type === "liability" && expected.type === "vat") {
+      dineroReview = db.query(`SELECT company_cvr AS companyCvr, chart_path AS chartPath,
+        chart_sha256 AS chartSha256, inventory_sha256 AS inventorySha256,
+        source_account_name AS accountName, last_existing_entry_id AS lastExistingEntryId
+        FROM dinero_vat_role_reviews WHERE mapping_id = ?`).get(row.id) as ReviewedDineroControl | null;
+    }
+    if (!dineroReview || !matchesReviewedLiability(db, role, row.account_no, dineroReview)) {
+      return { ok: false, role, error: `account role '${role}' maps to semantically incompatible account ${row.account_no}` };
+    }
   }
-  return { ok: true, role, accountNo: row.account_no, version: row.version, confirmedBy: row.confirmed_by, confirmationSource: row.confirmation_source };
+  return { ok: true, role, accountNo: row.account_no, version: row.version, confirmedBy: row.confirmed_by,
+    confirmationSource: row.confirmation_source, ...(dineroReview ? { dineroReview } : {}) };
+}
+
+/** A shared output account needs per-entry base allocation in the VAT report. */
+export function dedicatedReverseChargeAccount(db: Database): string | null {
+  const output = resolveAccountRole(db, "output_vat");
+  const reverse = resolveAccountRole(db, "reverse_charge_vat");
+  return reverse.ok && (!output.ok || reverse.accountNo !== output.accountNo) ? reverse.accountNo : null;
 }
 
 export function accountRoleCompatibility(db: Database, role: AccountRole, accountNo: string): { ok: true } | { ok: false; error: string } {
@@ -80,6 +109,10 @@ export function accountRoleCompatibility(db: Database, role: AccountRole, accoun
   if (!account) return { ok: false, error: `account ${accountNo} does not exist` };
   if (account.active !== 1) return { ok: false, error: `account ${accountNo} is inactive` };
   if (account.type !== expected.type || account.normal_balance !== expected.normalBalance) {
+    if (expected.type === "vat" && account.type === "liability") {
+      const confirmed = resolveAccountRole(db, role);
+      if (confirmed.ok && confirmed.accountNo === accountNo && confirmed.dineroReview) return { ok: true };
+    }
     return { ok: false, error: `account ${accountNo} is not compatible with role '${role}'` };
   }
   return { ok: true };
@@ -125,21 +158,55 @@ export function persistAccountRoleProposals(db: Database, proposals: ReadonlyArr
   return { stored, ignored, reviewRequired: [...reviewRequired] };
 }
 
-export function confirmAccountRole(db: Database, role: AccountRole, accountNo: string, actor: string, createdByProgram = "rentemester", confirmationSource: AccountRoleConfirmationSource = createdByProgram === "native-account-role-seed" ? "native_seed" : "explicit") {
+export function confirmAccountRole(db: Database, role: AccountRole, accountNo: string, actor: string,
+  createdByProgram = "rentemester",
+  confirmationSource: AccountRoleConfirmationSource = createdByProgram === "native-account-role-seed" ? "native_seed" : "explicit",
+  dineroExport?: string) {
   if (confirmationSource === "explicit" && !/^(user|agent|system):\S.+$/.test(actor)) {
     return { ok: false as const, error: "explicit account-role confirmation requires a canonical actor (user:..., agent:..., or system:...)" };
   }
-  const compatibility = accountRoleCompatibility(db, role, accountNo);
-  if (!compatibility.ok) return { ok: false as const, error: compatibility.error };
-  db.transaction(() => {
+  let review: DineroVatRoleReview | undefined;
+  if (dineroExport !== undefined) {
+    try {
+      review = readDineroVatRoleReview(dineroExport, role, accountNo);
+    } catch (error) {
+      return { ok: false as const, error: error instanceof Error ? error.message : String(error) };
+    }
+  }
+  return db.transaction(() => {
+    const previous = resolveAccountRole(db, role);
+    if (review) {
+      if (confirmationSource !== "explicit" || !matchesReviewedLiability(db, role, accountNo, review)) {
+        return { ok: false as const, error: "Dinero VAT review does not match the ledger company and active legacy liability control" };
+      }
+    }
+    if (expectations[role].type === "vat" && previous.ok && previous.accountNo === accountNo && previous.confirmationSource === confirmationSource) {
+      if (review && previous.dineroReview?.inventorySha256 !== review.inventorySha256) {
+        return { ok: false as const, error: "This role is already confirmed against a different Dinero source. Inspect accounts roles-status for its recorded source digest." };
+      }
+      return { ok: true as const, resolution: previous };
+    }
+    if (!review) {
+      const compatibility = accountRoleCompatibility(db, role, accountNo);
+      if (!compatibility.ok) return { ok: false as const, error: compatibility.error };
+    }
     const current = db.query("SELECT COALESCE(MAX(version), 0) AS n FROM account_role_mappings WHERE role = ?").get(role) as { n: number };
+    const version = current.n + 1;
+    const previousDedicatedAccount = review ? dedicatedReverseChargeAccount(db) : null;
     runSql(db, "UPDATE account_role_mappings SET status = 'superseded' WHERE role = ? AND status = 'confirmed'", role);
-    runSql(db, "INSERT INTO account_role_mappings (role, account_no, version, confirmed_by, confirmation_source) VALUES (?, ?, ?, ?, ?)", role, accountNo, current.n + 1, actor, confirmationSource);
+    const mapping = runSql(db, "INSERT INTO account_role_mappings (role, account_no, version, confirmed_by, confirmation_source) VALUES (?, ?, ?, ?, ?)", role, accountNo, version, actor, confirmationSource);
+    if (review) {
+      runSql(db, `INSERT INTO dinero_vat_role_reviews
+        (mapping_id, company_cvr, chart_path, chart_sha256, inventory_sha256, source_account_name, previous_dedicated_reverse_charge_account, last_existing_entry_id)
+        SELECT ?, ?, ?, ?, ?, ?, ?, coalesce(max(id), 0) FROM journal_entries`,
+        mapping.lastInsertRowid, review.companyCvr, review.chartPath, review.chartSha256, review.inventorySha256, review.accountName, previousDedicatedAccount);
+    }
     runSql(db, "UPDATE account_role_proposals SET status = 'accepted' WHERE role = ? AND account_no = ?", role, accountNo);
     runSql(db, "UPDATE account_role_proposals SET status = 'rejected' WHERE role = ? AND account_no <> ? AND status = 'proposed'", role, accountNo);
-    insertAuditLog(db, { eventType: "account_role_confirmed", entityType: "account_role", entityId: role, message: `Confirmed ${role} -> ${accountNo} (version ${current.n + 1})`, createdBy: actor, createdByProgram });
-  })();
-  return { ok: true as const, resolution: resolveAccountRole(db, role) };
+    const evidence = review ? ` from ${review.chartPath} (SHA-256 ${review.chartSha256}, CVR ${review.companyCvr})` : "";
+    insertAuditLog(db, { eventType: "account_role_confirmed", entityType: "account_role", entityId: role, message: `Confirmed ${role} -> ${accountNo} (version ${version})${evidence}`, createdBy: actor, createdByProgram });
+    return { ok: true as const, resolution: resolveAccountRole(db, role) };
+  }).immediate();
 }
 
 /** Seed only the native chart, and only if the account metadata still fits. */

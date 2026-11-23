@@ -462,7 +462,6 @@ function validateJournalEntryWithPolicy(
 
   const accounts = accountMap(db);
   const vatSemantics = loadVatAccountSemantics(db);
-  const vatAccounts = vatSemantics.amountSideByAccountNo;
   let debitSum = 0n;
   let creditSum = 0n;
   let requiresDocument = false;
@@ -488,7 +487,7 @@ function validateJournalEntryWithPolicy(
       return;
     }
     const account = accounts.get(line.accountNo)!;
-    const isVatControl = vatAccounts.has(line.accountNo);
+    const isVatControl = vatSemantics.amountSideForEntry(line.accountNo, Infinity) !== undefined;
     const isVatSettlement = vatSemantics.settlementAccountNos.has(line.accountNo);
     if (isVatControl) touchesVatControl = true;
     if (isVatSettlement) touchesVatSettlement = true;

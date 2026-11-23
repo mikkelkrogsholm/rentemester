@@ -117,6 +117,16 @@ function canonicalVatCode(momstype: string): string | undefined {
   return VAT_CODE_MAP[trimmed] ?? VAT_CODE_MAP[vatCodeKey(trimmed)];
 }
 
+// Control numbers belong to Dinero's standard chart, not to every ledger
+// using that numbering. A base-account Momstype or an unrelated account
+// name contradicts the proposed control interpretation.
+const dineroVatControlNames: Record<keyof typeof DINERO_VAT_CONTROL_ACCOUNTS, RegExp> = {
+  "64000": /^(salgsmoms|udgående moms)(\s*\((salgsmoms|udgående moms)\))?$/i,
+  "64020": /^moms af (varer|varekøb) (fra|i) udlandet$/i,
+  "64040": /^moms af (ydelser|ydelseskøb) (fra|i) udlandet$/i,
+  "64060": /^(købsmoms|indgående moms)(\s*\((købsmoms|indgående moms)\))?$/i,
+};
+
 /**
  * Classifies a Dinero account `Type` onto a Rentemester account type. Dinero
  * has no separate `Egenkapital` type — equity accounts sit under `Passiv` and
@@ -126,10 +136,15 @@ function canonicalVatCode(momstype: string): string | undefined {
 function classifyAccount(
   dineroType: string,
   accountNo: string,
+  name: string,
+  momstype: string,
 ): { type: ImportAccountType; normalBalance: ImportNormalBalance } | null {
-  const vatControl = DINERO_VAT_CONTROL_ACCOUNTS[accountNo as keyof typeof DINERO_VAT_CONTROL_ACCOUNTS];
-  if (vatControl) return { type: "vat", normalBalance: vatControl.normalBalance };
   const t = dineroType.trim().toLowerCase();
+  const key = accountNo as keyof typeof DINERO_VAT_CONTROL_ACCOUNTS;
+  if (Object.hasOwn(DINERO_VAT_CONTROL_ACCOUNTS, key)) {
+    if (t !== "passiv" || momstype.trim() || !dineroVatControlNames[key].test(name.trim())) return null;
+    return { type: "vat", normalBalance: DINERO_VAT_CONTROL_ACCOUNTS[key].normalBalance };
+  }
   const no = Number(accountNo);
   if (t === "aktiv") return { type: "asset", normalBalance: "debit" };
   if (t === "indtægt" || t === "indtaegt") return { type: "income", normalBalance: "credit" };
@@ -226,11 +241,11 @@ function parseKontoplan(
       errors.push(`${sourceName} line ${i + 1}: account row is missing a Nummer`);
       continue;
     }
-    const classified = classifyAccount(dineroType, accountNo);
+    const classified = classifyAccount(dineroType, accountNo, name, momstype);
     if (!classified) {
-      errors.push(
-        `${sourceName} line ${i + 1}: account '${accountNo}' has an unrecognised Type '${dineroType}'`,
-      );
+      errors.push(Object.hasOwn(DINERO_VAT_CONTROL_ACCOUNTS, accountNo)
+        ? `${sourceName} line ${i + 1}: Dinero VAT control '${accountNo}' has conflicting source name, type or Momstype`
+        : `${sourceName} line ${i + 1}: account '${accountNo}' has an unrecognised Type '${dineroType}'`);
       continue;
     }
     const account: ImportAccount = {
@@ -435,8 +450,7 @@ function parsePosteringer(
   return { openingBalances, cutOverDate };
 }
 
-function parseDineroSource(input: MultiArtifactSource): ParseResult {
-  const errors: string[] = [];
+export function readDineroChart(input: MultiArtifactSource, errors: string[]) {
 
   const firma = requireFile(input, FIRMAOPLYSNINGER, errors);
   const kontoplan = findKontoplan(input);
@@ -444,16 +458,24 @@ function parseDineroSource(input: MultiArtifactSource): ParseResult {
     errors.push("required export file '<year>/Kontoplan.csv' is missing");
   }
   if (!firma || !kontoplan) {
-    return { ok: false, errors };
+    return null;
   }
 
   const companyMasterData = parseFirmaoplysninger(firma.text, errors);
   const { accounts, unmappedVatCodes } = parseKontoplan(kontoplan.text, kontoplan.name, errors);
-  const accountRoleProposals = deriveAccountRoleProposals(accounts);
-
   if (accounts.length === 0) {
     errors.push(`${kontoplan.name}: no accounts parsed from the chart of accounts`);
   }
+
+  return { accounts, unmappedVatCodes, companyMasterData, chartPath: kontoplan.name };
+}
+
+function parseDineroSource(input: MultiArtifactSource): ParseResult {
+  const errors: string[] = [];
+  const chart = readDineroChart(input, errors);
+  if (!chart) return { ok: false, errors };
+  const { accounts, unmappedVatCodes, companyMasterData } = chart;
+  const accountRoleProposals = deriveAccountRoleProposals(accounts);
 
   // Opening balance (#194): the cut-over year's `Posteringer.csv` Primobeholdning
   // rows. An export with no `Posteringer.csv` — or one with no Primobeholdning

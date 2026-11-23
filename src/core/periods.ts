@@ -313,19 +313,19 @@ export function setCompanyVatPeriodType(
           WHERE kind IN ('vat_period', 'vat_quarter')`,
       )
       .all() as Array<{ id: number; period_start: string; period_end: string }>;
-    const vatAccounts = loadVatAccountSemantics(db).amountSideByAccountNo;
+    const vatAccounts = loadVatAccountSemantics(db);
     const postedLines = db
       .query(
-        `SELECT a.account_no, jl.vat_code
+        `SELECT a.account_no, jl.vat_code, coalesce(je.reversal_of_entry_id, je.id) AS entry_id
            FROM journal_lines jl
            JOIN accounts a ON a.id = jl.account_id
            JOIN journal_entries je ON je.id = jl.journal_entry_id
           WHERE je.status = 'posted'`,
       )
-      .all() as Array<{ account_no: string; vat_code: string | null }>;
+      .all() as Array<{ account_no: string; vat_code: string | null; entry_id: number }>;
     const hasVatActivity = postedLines.some((line) => {
       const code = typeof line.vat_code === "string" ? line.vat_code.trim() : "";
-      return vatAccounts.has(line.account_no) || VAT_LINE_CODES.has(code);
+      return vatAccounts.amountSideForEntry(line.account_no, line.entry_id) !== undefined || VAT_LINE_CODES.has(code);
     });
     const incompatibleRecoveryPeriod =
       before.t === null
@@ -368,17 +368,17 @@ export function setCompanyVatPeriodType(
   // exact failure this guard exists to prevent. This mirrors the lens
   // `closeAccountingPeriod` / `validateJournalTransactionDate` already use.
   if (type === null && before.t !== null) {
-    const vatAccounts = loadVatAccountSemantics(db).amountSideByAccountNo;
+    const vatAccounts = loadVatAccountSemantics(db);
     const vatEntryDates = (db
       .query(
-        `SELECT DISTINCT je.transaction_date AS d, a.account_no AS account_no
+        `SELECT DISTINCT je.transaction_date AS d, a.account_no AS account_no, coalesce(je.reversal_of_entry_id, je.id) AS entry_id
            FROM journal_lines jl
            JOIN accounts a ON a.id = jl.account_id
            JOIN journal_entries je ON je.id = jl.journal_entry_id
           WHERE je.status = 'posted'`,
       )
-      .all() as Array<{ d: string; account_no: string }>)
-      .filter((row) => vatAccounts.has(row.account_no));
+      .all() as Array<{ d: string; account_no: string; entry_id: number }>)
+      .filter((row) => vatAccounts.amountSideForEntry(row.account_no, row.entry_id) !== undefined);
     if (vatEntryDates.length > 0) {
       const vatPeriods = db
         .query(

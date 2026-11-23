@@ -559,18 +559,26 @@ export function bookExpenseFromBankInCurrentTransaction(db: Database, input: Boo
   return bookExpenseFromBankInternal(db, input, true);
 }
 
+type ExpensePreviewLine = { accountNo: string; debitAmount: number; creditAmount: number; vatCode: string | null };
+type ExpensePreview = BookExpenseFromBankResult & { dryRun: true; lines: ExpensePreviewLine[] };
+
 /**
  * Runs the exact expense-booking path in an immediate transaction that is
  * always rolled back. This keeps preview validation, journal metadata,
  * reconciliation and audit behavior aligned with an applied booking without
  * exposing a second booking implementation or retaining any writes.
  */
-export function previewBookExpenseFromBank(db: Database, input: BookExpenseFromBankInput): BookExpenseFromBankResult {
-  let result: BookExpenseFromBankResult | undefined;
+export function previewBookExpenseFromBank(db: Database, input: BookExpenseFromBankInput): ExpensePreview {
+  let result: ExpensePreview | undefined;
   const rollback = new Error("expense booking preview rollback");
   try {
     db.transaction(() => {
-      result = bookExpenseFromBankInCurrentTransaction(db, input);
+      const booking = bookExpenseFromBankInCurrentTransaction(db, input);
+      const lines = booking.ok && booking.entryId ? db.query(`SELECT a.account_no AS accountNo,
+        jl.debit_amount AS debitAmount, jl.credit_amount AS creditAmount, jl.vat_code AS vatCode
+        FROM journal_lines jl JOIN accounts a ON a.id = jl.account_id
+        WHERE jl.journal_entry_id = ? ORDER BY jl.id`).all(booking.entryId) as ExpensePreviewLine[] : [];
+      result = { ...booking, dryRun: true, lines };
       throw rollback;
     }).immediate();
   } catch (error) {

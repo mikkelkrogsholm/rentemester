@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { AccountRole } from "./account-roles";
-import { resolveAccountRole } from "./account-roles";
+import { dedicatedReverseChargeAccount, resolveAccountRole } from "./account-roles";
 
 export type VatAmountSide = "output" | "input";
 
@@ -28,9 +28,9 @@ export const VAT_LINE_CODES: ReadonlySet<string> = new Set([
  * general account-number range.  A legacy import may have persisted them as
  * liabilities; newer imports normalise them to `type = 'vat'`.  The output
  * controls can be recognised from that chart evidence. A legacy 64060 is
- * intentionally not recognised here: its liability/credit representation is
- * accepted as input VAT only for the verified historical Dinero pair in the
- * VAT report, never merely because a manual journal used that account number.
+ * not recognised from its number alone. Historical vouchers use their
+ * original evidence; a source-backed operator review additionally classifies
+ * new postings on the reviewed input control.
  */
 export const DINERO_VAT_CONTROL_ACCOUNTS = {
   "64000": { role: "output_vat", normalBalance: "credit", side: "output" },
@@ -49,6 +49,9 @@ export const DINERO_VAT_CONTROL_ACCOUNTS = {
 export type VatAccountSemantics = {
   /** VAT amount accounts and whether their signed movement is output or input VAT. */
   amountSideByAccountNo: ReadonlyMap<string, VatAmountSide>;
+  /** Includes confirmed legacy controls only for journal entries created after the review. */
+  amountSideForEntry(accountNo: string, entryId: number): VatAmountSide | undefined;
+  dedicatedReverseChargeForEntry(entryId: number): string | null;
   /** Output-VAT accounts dedicated to reverse charge rather than ordinary sales. */
   reverseChargeOutputAccountNos: ReadonlySet<string>;
   /** Settlement accounts move the net balance but are not themselves VAT amounts. */
@@ -107,15 +110,21 @@ export function loadVatAccountSemantics(db: Database): VatAccountSemantics {
     }
   }
 
-  for (const [role, side] of [
-    ["output_vat", "output"],
-    ["reverse_charge_vat", "output"],
-    ["input_vat", "input"],
-  ] as const) {
-    const resolution = resolveAccountRole(db, role);
-    if (resolution.ok) amountSideByAccountNo.set(resolution.accountNo, side);
+  // A review is prospective. An ordinary movement on an old liability must
+  // retain its original interpretation even when the first purchase is booked
+  // after review, or the role is later superseded. IDs order writes reliably
+  // for backdated postings and multiple confirmations in the same second.
+  const reviews = db.query(`SELECT m.account_no, m.role, r.last_existing_entry_id, r.previous_dedicated_reverse_charge_account
+    FROM dinero_vat_role_reviews r JOIN account_role_mappings m ON m.id = r.mapping_id
+    ORDER BY r.last_existing_entry_id, r.mapping_id`).all() as Array<{
+    account_no: string; role: AccountRole; last_existing_entry_id: number; previous_dedicated_reverse_charge_account: string | null;
+  }>;
+  const firstReview = new Map<string, (typeof reviews)[number]>();
+  for (const review of reviews) {
+    if (!firstReview.has(review.account_no)) firstReview.set(review.account_no, review);
   }
-
+  const dedicatedChanges = reviews.filter((row) => row.role === "output_vat" || row.role === "reverse_charge_vat");
+  const currentDedicated = dedicatedReverseChargeAccount(db);
   const reverseChargeOutputAccountNos = new Set<string>();
   // Dinero's exact 64040 control is source-native evidence of a dedicated
   // reverse-charge output account, even before its imported role proposal is
@@ -123,24 +132,22 @@ export function loadVatAccountSemantics(db: Database): VatAccountSemantics {
   if (amountSideByAccountNo.get("64040") === "output") {
     reverseChargeOutputAccountNos.add("64040");
   }
-  const outputVat = resolveAccountRole(db, "output_vat");
-  const reverseChargeVat = resolveAccountRole(db, "reverse_charge_vat");
-  // A confirmed role is dedicated only when it is distinct from ordinary
-  // output VAT. Native charts deliberately use 1200 for both, so those need
-  // base-derived allocation at report time.
-  if (
-    reverseChargeVat.ok &&
-    (!outputVat.ok || reverseChargeVat.accountNo !== outputVat.accountNo)
-  ) {
-    reverseChargeOutputAccountNos.add(reverseChargeVat.accountNo);
-  }
-
   const settlementAccountNos = new Set<string>();
   const settlement = resolveAccountRole(db, "vat_settlement");
   if (settlement.ok) settlementAccountNos.add(settlement.accountNo);
 
   return {
     amountSideByAccountNo,
+    amountSideForEntry(accountNo, entryId) {
+      const side = amountSideByAccountNo.get(accountNo);
+      if (side) return side;
+      const review = firstReview.get(accountNo);
+      if (review && entryId > review.last_existing_entry_id) return review.role === "input_vat" ? "input" : "output";
+    },
+    dedicatedReverseChargeForEntry(entryId) {
+      const nextChange = dedicatedChanges.find((row) => entryId <= row.last_existing_entry_id);
+      return nextChange ? nextChange.previous_dedicated_reverse_charge_account : currentDedicated;
+    },
     reverseChargeOutputAccountNos,
     settlementAccountNos,
   };

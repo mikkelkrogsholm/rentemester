@@ -6,6 +6,24 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-23
+
+### Added
+
+- Ældre Dinero-importer kan få bekræftet momskontienes roller ud fra en
+  gennemgået kildekontoplan. Migration 60 gemmer revisionssporet.
+- `expense dry-run` forhåndsviser konteringen uden at bogføre udgiften.
+- Godkendte faktura-PDF'er kan også bruges ved e-maillevering.
+
+### Fixed
+
+- OIOUBL-fakturaer bruger de rettede betalingsoplysninger og referencer.
+  Duplikeret e-fakturalevering kontrolleres på tværs af identiteter og historik.
+
+### Security
+
+- Opdaterede Hono og Node-adapteren til versioner med sikkerhedsrettelser.
+
 ## [0.5.0] - 2026-10-27
 
 ### Added
