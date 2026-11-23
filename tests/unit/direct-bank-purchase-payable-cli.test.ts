@@ -21,13 +21,13 @@ describe("bank direct-payable CLI surface (#594)", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-direct-payable-cli-"));
     const company = join(root, "company");
     try {
-      expect((await run(["init", "--company", company])).exitCode).toBe(0);
+      expect((await run(["init", "--company", company, "--actor", "user:synthetic-reviewer"])).exitCode).toBe(0);
       const base = [
         "bank", "direct-payable-apply", "--company", company,
         "--document-id", "1", "--bank-transaction-id", "1",
         "--bill-date", "2026-01-10", "--due-date", "2026-01-10",
         "--expense-account", "3000", "--plan-hash", "0".repeat(64),
-        "--reason", "synthetic review", "--actor", "user:mikkelfreltoftkrogsholm",
+        "--reason", "synthetic review", "--actor", "user:synthetic-reviewer",
       ];
 
       const deniedActor = await run([...base.slice(0,-1), "agent:not-allowed"]);
@@ -54,7 +54,7 @@ describe("bank direct-payable CLI surface (#594)", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-direct-payable-plan-cli-"));
     const company = join(root, "company");
     try {
-      expect((await run(["init", "--company", company])).exitCode).toBe(0);
+      expect((await run(["init", "--company", company, "--actor", "user:synthetic-reviewer"])).exitCode).toBe(0);
       const result = await run([
         "bank", "direct-payable-plan", "--company", company,
         "--document-id", "1", "--bank-transaction-id", "1",

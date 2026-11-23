@@ -190,6 +190,9 @@ describe("invoice claim settlement", () => {
     expect(status.openBalance).toBe(0);
     expect(status.claimOpenBalance).toBe(0);
     expect(status.totalClaimPayments).toBe(411.75);
+    expect(getInvoiceStatus(db, issued.documentId!, "2026-06-27").totalClaimPayments).toBe(0);
+    expect(getInvoiceStatus(db, issued.documentId!, "2026-06-27").claimOpenBalance).toBe(411.75);
+    expect(getInvoiceStatus(db, issued.documentId!, "2026-06-28").totalClaimPayments).toBe(411.75);
     expect(status.claimPayments).toHaveLength(1);
     expect(status.claimPayments?.[0]?.amount).toBe(411.75);
     expect(status.claimPayments?.[0]?.journalEntryId).toBe(settled.entryId);

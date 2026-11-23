@@ -121,7 +121,7 @@ function issuedInvoiceDocuments(db: Database) {
   }>;
 }
 
-export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {}): InvoiceListResult {
+export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {}, options: { balanceScope?: "all-recorded" } = {}): InvoiceListResult {
   const status = filters.status ?? "all";
   // EJER-1: resolve "as of" ONCE, defaulting to today (canonical Danish-time
   // clock), so every row's overdue check and the reported asOfDate agree —
@@ -147,7 +147,7 @@ export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {})
     if (!includesFolded(customerName, filters.customer)) continue;
     if (normalizedQuery && !includesFolded(doc.invoice_no, normalizedQuery) && !includesFolded(customerName, normalizedQuery)) continue;
 
-    const invoiceStatus = getInvoiceStatus(db, doc.id, asOfDate);
+    const invoiceStatus = getInvoiceStatus(db, doc.id, asOfDate, options);
     if (!invoiceStatus.ok) continue;
     if (filters.minAmount !== undefined && Number(invoiceStatus.grossAmount ?? 0) < filters.minAmount) continue;
     if (filters.maxAmount !== undefined && Number(invoiceStatus.grossAmount ?? 0) > filters.maxAmount) continue;

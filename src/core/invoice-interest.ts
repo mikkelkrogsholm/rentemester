@@ -341,7 +341,7 @@ export function calculateInvoiceLateInterest(db: Database, input: CalculateInvoi
     }
   }
 
-  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate);
+  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate, { balanceScope: "all-recorded" });
   if (!status.ok) return { ok: false, appliedRules: [RULE_ID], errors: status.errors };
 
   const overdueDays = Number(status.overdueDays ?? 0);
@@ -570,7 +570,7 @@ function registerInvoiceLateInterestTxn(db: Database, input: RegisterInvoiceLate
     createdByProgram: input.createdByProgram,
   });
 
-  const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate);
+  const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate, { balanceScope: "all-recorded" });
   return {
     ...calculation,
     ok: true,
@@ -700,7 +700,7 @@ export function postInvoiceLateInterestToLedger(db: Database, input: PostInvoice
         createdByProgram: input.createdByProgram,
       });
 
-      const statusAfter = getInvoiceStatus(db, claim.invoice_document_id, transactionDate);
+      const statusAfter = getInvoiceStatus(db, claim.invoice_document_id, transactionDate, { balanceScope: "all-recorded" });
       return {
         ...journal,
         claimId: claim.id,
@@ -1463,7 +1463,7 @@ export function postInterestCorrection(db: Database, input: PostInterestCorrecti
           ],
         });
       }
-      const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, transactionDate);
+      const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, transactionDate, { balanceScope: "all-recorded" });
       if (!statusAfter.ok) {
         throw new TransactionRejectionError({
           appliedRules: [BOOKKEEPING_RULE_ID],

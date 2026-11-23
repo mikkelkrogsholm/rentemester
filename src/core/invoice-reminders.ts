@@ -76,7 +76,7 @@ export function registerInvoiceReminder(db: Database, input: RegisterInvoiceRemi
     return { ok: false, appliedRules: [RULE_ID], errors: [`reminder fee ${feeAmount} exceeds statutory maximum ${MAX_REMINDER_FEE_DKK}`] };
   }
 
-  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.reminderDate);
+  const status = getInvoiceStatus(db, input.invoiceDocumentId, input.reminderDate, { balanceScope: "all-recorded" });
   if (!status.ok) return { ok: false, appliedRules: [RULE_ID], errors: status.errors };
   if (!status.isOverdue || !(Number(status.openBalance ?? 0) > 0)) {
     return { ok: false, appliedRules: [RULE_ID], errors: ["invoice must be overdue with positive open balance on reminderDate"] };
@@ -228,7 +228,7 @@ export function postInvoiceReminderToLedger(db: Database, input: PostInvoiceRemi
         createdByProgram: input.createdByProgram,
       });
 
-      const statusAfter = getInvoiceStatus(db, reminder.invoice_document_id, transactionDate);
+      const statusAfter = getInvoiceStatus(db, reminder.invoice_document_id, transactionDate, { balanceScope: "all-recorded" });
       return {
         ...journal,
         reminderId: reminder.id,
