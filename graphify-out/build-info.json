@@ -2020,5 +2020,14 @@
       "Prior structural graph update adjusted community assignments; existing semantic content and hyperedges retained.",
       "Earlier efaktura-digisense.md semantic source locations after line 328 predate the 11 inserted lines and may be stale; preserved unchanged."
     ]
+  },
+  "release_0_6_0_semantic_refresh": {
+    "source": "CHANGELOG.md",
+    "source_sha256": "98f6adbbe08bc7938e432c956e977fffc9c264572da4282d8d745da523e45638",
+    "method": "Scoped native-agent semantic extraction following Graphify AST update",
+    "coverage": "0.6.0 entry, lines 9-25. Existing semantic records retained.",
+    "new_nodes": 5,
+    "new_edges": 5,
+    "native_token_usage": "unavailable"
   }
 }
