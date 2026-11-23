@@ -14,7 +14,7 @@ import {
   type Scenario,
   verifyEvidence,
 } from "./cockpit-evidence";
-import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
+import { internalAppIpv4, startLoopbackProxy, type CandidateInspection } from "./cockpit-evidence-proxy";
 import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
 import { startEvidenceBrowser } from "./cockpit-evidence-browser";
@@ -573,15 +573,15 @@ try {
     ],
     true,
   );
-  const settings = JSON.parse(
+  const inspection = JSON.parse(
     await command("docker", [
       "inspect",
       container,
       "--format",
-      "{{json .NetworkSettings}}",
+      '{"NetworkSettings":{{json .NetworkSettings}},"HostConfig":{{json .HostConfig}}}',
     ]),
-  ) as NetworkSettings;
-  const appAddress = internalAppIpv4(settings, network);
+  ) as CandidateInspection;
+  const appAddress = internalAppIpv4(inspection, network);
   const access = startLoopbackProxy(appAddress);
   proxy = access.proxy;
   const base = access.base;

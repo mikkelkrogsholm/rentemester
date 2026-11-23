@@ -1,24 +1,42 @@
-export type NetworkSettings = {
+type NetworkSettings = {
   Networks?: Record<string, { IPAddress?: unknown }>;
   Ports?: unknown;
 };
 
+export type CandidateInspection = {
+  NetworkSettings: NetworkSettings;
+  HostConfig?: { PortBindings?: unknown; PublishAllPorts?: unknown };
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function onlyExposedPorts(ports: unknown) {
+  if (ports === undefined || ports === null) return true;
+  if (!isRecord(ports)) return false;
+  return Object.entries(ports).every(([key, bindings]) => {
+    const match = /^([1-9]\d{0,4})\/(tcp|udp|sctp)$/.exec(key);
+    return match !== null && Number(match[1]) <= 65535 && bindings === null;
+  });
+}
+
 export function internalAppIpv4(
-  settings: NetworkSettings,
+  inspection: CandidateInspection,
   expectedNetwork: string,
 ) {
-  const networks = settings.Networks;
+  const networks = inspection.NetworkSettings?.Networks;
   if (!networks || typeof networks !== "object" || Array.isArray(networks))
     throw new Error("Docker inspect did not return application networks");
   const names = Object.keys(networks);
   if (names.length !== 1 || names[0] !== expectedNetwork)
     throw new Error("candidate must be attached only to the internal evidence network");
+  const host = inspection.HostConfig;
+  const bindings = host?.PortBindings;
   if (
-    settings.Ports !== null &&
-    (!settings.Ports ||
-      typeof settings.Ports !== "object" ||
-      Array.isArray(settings.Ports) ||
-      Object.keys(settings.Ports).length !== 0)
+    host?.PublishAllPorts !== false ||
+    !(bindings === null || (isRecord(bindings) && Object.keys(bindings).length === 0)) ||
+    !onlyExposedPorts(inspection.NetworkSettings.Ports)
   )
     throw new Error("candidate must not publish container ports");
   const address = networks[expectedNetwork]?.IPAddress;
