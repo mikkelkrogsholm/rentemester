@@ -83,7 +83,7 @@ describe("mail-intake ingest CLI", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("routes a no-attachment message to the exception queue (exit 0)", async () => {
+  test("ingests a no-attachment message as EML evidence with metadata (#566)", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-mailcli-noatt-"));
     const company = join(root, "company");
     const eml = join(root, "no-attachment.eml");
@@ -101,15 +101,17 @@ describe("mail-intake ingest CLI", () => {
     expect(exitCode).toBe(0);
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
-    expect(parsed.exceptionsCreated).toBe(1);
+    expect(parsed.evidenceIngested).toBe(1);
+    expect(parsed.exceptionsCreated).toBe(0);
 
-    const exProc = Bun.spawn(
-      ["bun", "run", "src/cli.ts", "exceptions", "list", "--company", company, "--format", "json"],
+    const docProc = Bun.spawn(
+      ["bun", "run", "src/cli.ts", "documents", "list", "--company", company, "--format", "json"],
       { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" },
     );
-    const exStdout = await new Response(exProc.stdout).text();
-    await exProc.exited;
-    expect(exStdout).toContain("MAIL_INTAKE_NO_ATTACHMENT");
+    const docStdout = await new Response(docProc.stdout).text();
+    await docProc.exited;
+    expect(docStdout).toContain(".eml");
+    expect(docStdout).toContain("mail-intake:<cli-noatt@example.com>");
 
     rmSync(root, { recursive: true, force: true });
   });

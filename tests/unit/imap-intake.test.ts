@@ -140,7 +140,7 @@ describe("pollImapMailbox", () => {
     rmSync(companyRoot, { recursive: true, force: true });
   });
 
-  test("routes a message with no attachment into the exception queue", async () => {
+  test("#566 ingests a no-attachment message as EML evidence with metadata", async () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-imap-noatt-"));
     const db = openDb(ensureCompanyDirs(companyRoot).db);
     migrate(db);
@@ -152,17 +152,17 @@ describe("pollImapMailbox", () => {
 
     expect(result.ok).toBe(true);
     expect(result.attachmentsIngested).toBe(0);
-    expect(result.exceptionsCreated).toBe(1);
+    expect(result.evidenceIngested).toBe(1);
+    expect(result.exceptionsCreated).toBe(0);
 
-    const exceptions = listExceptions(db, { status: "open" });
-    expect(exceptions.count).toBe(1);
-    expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_NO_ATTACHMENT");
+    const row = db.query("SELECT mime_type FROM documents").get() as any;
+    expect(row.mime_type).toBe("message/rfc822");
 
     db.close();
     rmSync(companyRoot, { recursive: true, force: true });
   });
 
-  test("re-polling a no-attachment message does not duplicate the exception", async () => {
+  test("#566 re-polling a no-attachment message is idempotent on the evidence document", async () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-imap-exdup-"));
     const db = openDb(ensureCompanyDirs(companyRoot).db);
     migrate(db);
@@ -171,13 +171,14 @@ describe("pollImapMailbox", () => {
       { uid: 4, raw: buildRawMessage({ messageId: "<imap-exdup@example.com>", noAttachment: true }) },
     ]);
     await pollImapMailbox(db, companyRoot, client, { metadata: baseMetadata });
-    await pollImapMailbox(db, companyRoot, client, { metadata: baseMetadata });
+    const second = await pollImapMailbox(db, companyRoot, client, { metadata: baseMetadata });
 
+    expect(second.evidenceIngested).toBe(0);
+    expect(second.evidenceSkipped).toBe(1);
     const exceptions = listExceptions(db, { status: "open" });
-    expect(exceptions.count).toBe(1);
-
-    db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    expect(exceptions.count).toBe(0);
+    const docCount = db.query("SELECT COUNT(*) AS n FROM documents").get() as { n: number };
+    expect(docCount.n).toBe(1);
   });
 
   test("processes multiple messages deterministically", async () => {

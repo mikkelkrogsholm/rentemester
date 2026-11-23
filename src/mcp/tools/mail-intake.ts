@@ -77,6 +77,8 @@ export function registerMailIntakeTools(server: McpServer): void {
         messagesProcessed: result.messagesProcessed,
         attachmentsIngested: result.attachmentsIngested,
         attachmentsSkipped: result.attachmentsSkipped,
+        evidenceIngested: result.evidenceIngested,
+        evidenceSkipped: result.evidenceSkipped,
         exceptionsCreated: result.exceptionsCreated,
         documents: result.documents,
       });
